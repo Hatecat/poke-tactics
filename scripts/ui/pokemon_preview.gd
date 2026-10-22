@@ -59,7 +59,7 @@ func show_pokemon(data: PokemonData) -> void:
 		return
 	_unit = Unit.new()
 	_pivot.add_child(_unit)
-	_unit.setup(data, 0)
+	_unit.setup(TeamMember.create(data), 0)
 	_unit.hide_overlays()
 	_unit.face_towards(Vector3(0, 0, 10))
 	var h := data.model_height

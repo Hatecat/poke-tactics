@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/oddish.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/absorb.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/acid.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/acidspray.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/bulletseed.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/captivate.tres" id="m4"]
+[ext_resource type="Resource" path="res://data/moves/charm.tres" id="m5"]
+[ext_resource type="Resource" path="res://data/moves/confide.tres" id="m6"]
+[ext_resource type="Resource" path="res://data/moves/dazzlinggleam.tres" id="m7"]
+[ext_resource type="Resource" path="res://data/moves/doubleedge.tres" id="m8"]
+[ext_resource type="Resource" path="res://data/moves/energyball.tres" id="m9"]
+[ext_resource type="Resource" path="res://data/moves/facade.tres" id="m10"]
+[ext_resource type="Resource" path="res://data/moves/flail.tres" id="m11"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m12"]
+[ext_resource type="Resource" path="res://data/moves/gigadrain.tres" id="m13"]
+[ext_resource type="Resource" path="res://data/moves/grassknot.tres" id="m14"]
+[ext_resource type="Resource" path="res://data/moves/grassyglide.tres" id="m15"]
+[ext_resource type="Resource" path="res://data/moves/growth.tres" id="m16"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m17"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m18"]
+[ext_resource type="Resource" path="res://data/moves/infestation.tres" id="m19"]
+[ext_resource type="Resource" path="res://data/moves/leafstorm.tres" id="m20"]
+[ext_resource type="Resource" path="res://data/moves/magicalleaf.tres" id="m21"]
+[ext_resource type="Resource" path="res://data/moves/megadrain.tres" id="m22"]
+[ext_resource type="Resource" path="res://data/moves/moonblast.tres" id="m23"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m24"]
+[ext_resource type="Resource" path="res://data/moves/petaldance.tres" id="m25"]
+[ext_resource type="Resource" path="res://data/moves/poisonpowder.tres" id="m26"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m27"]
+[ext_resource type="Resource" path="res://data/moves/razorleaf.tres" id="m28"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/seedbomb.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/sleeppowder.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/sludgebomb.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/solarbeam.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/stunspore.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/swordsdance.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m41"]
+[ext_resource type="Resource" path="res://data/moves/tickle.tres" id="m42"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m43"]
+[ext_resource type="Resource" path="res://data/moves/trailblaze.tres" id="m44"]
+[ext_resource type="Resource" path="res://data/moves/venoshock.tres" id="m45"]
+
+[resource]
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("grass", "poison")
+id = "oddish"
+species_name = "Oddish"
+dex_number = 43
+model_height = 0.76
+base_hp = 45
+base_attack = 50
+base_defense = 55
+base_sp_attack = 75
+base_sp_defense = 65
+base_speed = 30
+size = 1
+move_modifier = 0
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m25"), ExtResource("m35"), ExtResource("m39"), ExtResource("m20")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m44"), ExtResource("m0"), ExtResource("m19"), ExtResource("m11"), ExtResource("m33"), ExtResource("m35"), ExtResource("m2"), ExtResource("m7"), ExtResource("m31"), ExtResource("m45"), ExtResource("m6"), ExtResource("m42"), ExtResource("m39"), ExtResource("m25"), ExtResource("m32"), ExtResource("m40"), ExtResource("m16"), ExtResource("m29"), ExtResource("m8"), ExtResource("m24"), ExtResource("m5"), ExtResource("m9"), ExtResource("m10"), ExtResource("m38"), ExtResource("m15"), ExtResource("m12"), ExtResource("m23"), ExtResource("m27"), ExtResource("m13"), ExtResource("m17"), ExtResource("m14"), ExtResource("m28"), ExtResource("m21"), ExtResource("m20"), ExtResource("m22"), ExtResource("m37"), ExtResource("m18"), ExtResource("m26"), ExtResource("m36"), ExtResource("m30"), ExtResource("m4"), ExtResource("m3"), ExtResource("m34"), ExtResource("m41"), ExtResource("m43"), ExtResource("m1")])

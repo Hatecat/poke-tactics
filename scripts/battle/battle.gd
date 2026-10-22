@@ -3,6 +3,7 @@ extends Node3D
 
 enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, GAME_OVER }
 
+## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
 const COLOR_ACTIVE := Color(1.0, 1.0, 1.0, 0.35)
 const COLOR_MOVE := Color(0.3, 0.6, 1.0, 0.5)
@@ -11,14 +12,14 @@ const COLOR_AREA := Color(1.0, 0.2, 0.15, 0.65)
 const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.55)
 const STEP_TIME := 0.22
 const TURN_PREVIEW := 8
-## Filas de despliegue de cada equipo (jugador abajo, rival arriba).
+## Filas de despliegue de cada equipo en tableros aleatorios (jugador abajo, rival arriba).
 const DEPLOY_ROWS := 4
 const COLOR_DEPLOY := Color(0.3, 0.6, 1.0, 0.3)
 
 ## Equipos y tablero salen del autoload Game (menú principal / editor de equipo).
 var topology: BoardGrid.Topology
-var player_team: Array[PokemonData] = []
-var enemy_team: Array[PokemonData] = []
+var player_team: Array[TeamMember] = []
+var enemy_team: Array[TeamMember] = []
 
 var grid: BoardGrid
 var units: Array[Unit] = []
@@ -35,12 +36,13 @@ var _reach := {} # celda -> celda anterior (para reconstruir caminos)
 var _destinations: Array[Vector2i] = []
 var _targets: Array[Vector2i] = []
 var _deploy_selected: Unit
+var _zones: Array[Dictionary] = [{}, {}] # equipo -> {celda: true}
+var _extra_ct := 0.0
 
 var _board: BoardView
 var _units_root: Node3D
-var _cam_rig: Node3D
+var _cam_rig: CameraRig
 var _camera: Camera3D
-var _cam_yaw := 45.0
 
 var _info_label: RichTextLabel
 var _move_button: Button
@@ -64,7 +66,9 @@ func _ready() -> void:
 	if Game.enemy_team.is_empty():
 		Game.roll_enemy_team()
 	enemy_team = Game.enemy_team.duplicate()
-	_build_environment()
+	_cam_rig = CameraRig.new()
+	add_child(_cam_rig)
+	_camera = _cam_rig.camera
 	_build_ui()
 	_board = BoardView.new()
 	add_child(_board)
@@ -79,37 +83,78 @@ func _start_battle() -> void:
 	for u in units:
 		u.queue_free()
 	units.clear()
-	grid = BoardGrid.new(topology, BOARD_SIZE.x, BOARD_SIZE.y)
-	_generate_terrain()
-	_board.build(grid)
 	active = null
+	var map := Game.map
+	var zones: Array = []
+	if map:
+		grid = map.to_grid()
+		zones = [map.player_zone, map.enemy_zone]
+	else:
+		grid = BoardGrid.new(topology, BOARD_SIZE.x, BOARD_SIZE.y)
+		zones = [MapData.default_zone(grid.width, grid.height, 0, DEPLOY_ROWS),
+			MapData.default_zone(grid.width, grid.height, 1, DEPLOY_ROWS)]
+		var clear: Array[Vector2i] = []
+		clear.append_array(zones[0])
+		clear.append_array(zones[1])
+		Biome.generate(grid, Game.biome, rng, clear, zones[0], zones[1])
+	for team in 2:
+		_zones[team] = {}
+		for c: Vector2i in zones[team]:
+			_zones[team][c] = true
+	_reset_environment()
+	_board.build(grid)
+
+	var p_anchor := _zone_center(0)
 	for i in player_team.size():
-		_spawn(player_team[i], 0, Vector2i(2 + i * 3, BOARD_SIZE.y - 3))
-	for i in enemy_team.size():
-		_spawn(enemy_team[i], 1, Vector2i(BOARD_SIZE.x - 3 - i * 3, 1))
+		_spawn(player_team[i], 0, p_anchor + Vector2i((i - player_team.size() / 2) * 3, 0))
+	if map and not map.enemies.is_empty():
+		for e: Dictionary in map.enemies:
+			var member := TeamMember.from_dict(e, Game.find_species)
+			if member:
+				_spawn(member, 1, e.get("cell", _zone_center(1)), false)
+	else:
+		var e_anchor := _zone_center(1)
+		for i in enemy_team.size():
+			_spawn(enemy_team[i], 1, e_anchor + Vector2i((i - enemy_team.size() / 2) * 3, 0))
 	_banner_box.visible = false
 	_log_label.clear()
-	_log("Tablero %s. Coloca a tu equipo en la zona azul." % ("cuadrado" if topology == BoardGrid.Topology.SQUARE else "hexagonal"))
+	var where: String = map.map_name if map else Biome.NAMES[grid.biome]
+	_log("%s · tablero %s. Coloca a tu equipo en la zona azul." % [where, "cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal"])
 	_begin_deploy()
 
 
-## Colinas generadas con ruido (alturas 0-3), distintas en cada partida.
-func _generate_terrain() -> void:
-	var noise := FastNoiseLite.new()
-	noise.seed = rng.randi()
-	noise.frequency = 0.07
-	for c in grid.all_cells():
-		var w := grid.to_world(c)
-		grid.heights[c] = clampi(floori((noise.get_noise_2d(w.x, w.z) + 0.25) * 4.0), 0, 3)
+func _reset_environment() -> void:
+	for n in ["WorldEnvironment", "Sun"]:
+		var old := get_node_or_null(n)
+		if old:
+			remove_child(old)
+			old.queue_free()
+	CameraRig.build_environment(self, grid.biome)
+	_cam_rig.rotation_step = 90.0 if grid.topology == BoardGrid.Topology.SQUARE else 60.0
 
 
-func _spawn(data: PokemonData, team: int, near: Vector2i) -> void:
+## Celda central (aprox.) de la zona de despliegue de un equipo.
+func _zone_center(team: int) -> Vector2i:
+	var cells: Array = _zones[team].keys()
+	if cells.is_empty():
+		return Vector2i(grid.width / 2, grid.height - 2 if team == 0 else 1)
+	var sum := Vector2.ZERO
+	for c: Vector2i in cells:
+		sum += Vector2(c)
+	sum /= cells.size()
+	return Vector2i(roundi(sum.x), roundi(sum.y))
+
+
+## `in_zone`: buscar el hueco dentro de la zona de despliegue (los rivales fijos de un
+## escenario se colocan donde diga el mapa).
+func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> void:
 	var u := Unit.new()
 	_units_root.add_child(u)
-	u.setup(data, team)
-	_place(u, _find_free_anchor(u, near, _in_zone.bind(team)))
+	u.setup(member, team)
+	var allowed := _in_zone.bind(team) if in_zone else func(c: Vector2i) -> bool: return true
+	_place(u, _find_free_anchor(u, near, allowed))
 	u.position = grid.footprint_center(u.footprint)
-	u.face_towards(grid.to_world(Vector2i(BOARD_SIZE.x / 2, BOARD_SIZE.y / 2)))
+	u.face_towards(grid.to_world(Vector2i(grid.width / 2, grid.height / 2)))
 	u.ct = rng.randf_range(0.0, 20.0)
 	u.fainted.connect(func(x: Unit) -> void: _log("¡%s se debilitó!" % x.display_name()))
 	units.append(u)
@@ -127,7 +172,7 @@ func _find_free_anchor(u: Unit, near: Vector2i, allowed: Callable) -> Vector2i:
 
 
 func _in_zone(c: Vector2i, team: int) -> bool:
-	return c.y >= BOARD_SIZE.y - DEPLOY_ROWS if team == 0 else c.y < DEPLOY_ROWS
+	return _zones[team].has(c)
 
 
 func _zone_cells(team: int) -> Array[Vector2i]:
@@ -147,8 +192,7 @@ func _begin_deploy() -> void:
 	_deploy_box.visible = true
 	UiKit.clear(_order_box)
 	_hint_label.text = "Despliegue: clic en uno de tus Pokémon y luego en una casilla de la zona azul"
-	var center := grid.to_world(Vector2i(BOARD_SIZE.x / 2, BOARD_SIZE.y - DEPLOY_ROWS / 2))
-	_focus_camera(center)
+	_focus_camera(grid.to_world(_zone_center(0)))
 	_refresh_deploy()
 
 
@@ -208,7 +252,7 @@ func _fits(u: Unit, anchor: Vector2i) -> bool:
 	var lo := 99
 	var hi := 0
 	for c in cells:
-		if not grid.is_inside(c):
+		if not grid.is_inside(c) or grid.is_blocked(c):
 			return false
 		lo = mini(lo, grid.get_height(c))
 		hi = maxi(hi, grid.get_height(c))
@@ -225,43 +269,6 @@ func _others_at(u: Unit, cells: Array[Vector2i]) -> Array[Unit]:
 	return found
 
 
-func _build_environment() -> void:
-	var env := Environment.new()
-	env.background_mode = Environment.BG_SKY
-	var sky := Sky.new()
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.35, 0.55, 0.85)
-	sky_mat.sky_horizon_color = Color(0.75, 0.85, 0.95)
-	sky_mat.ground_horizon_color = Color(0.6, 0.7, 0.75)
-	sky.sky_material = sky_mat
-	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = 0.8
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	var world_env := WorldEnvironment.new()
-	world_env.environment = env
-	add_child(world_env)
-
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-55, 35, 0)
-	sun.shadow_enabled = true
-	sun.light_energy = 1.1
-	add_child(sun)
-
-	_cam_rig = Node3D.new()
-	add_child(_cam_rig)
-	var pitch := Node3D.new()
-	pitch.rotation_degrees.x = -35.0
-	_cam_rig.add_child(pitch)
-	_camera = Camera3D.new()
-	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	_camera.size = 12.0
-	_camera.position = Vector3(0, 0, 25)
-	_camera.far = 100.0
-	pitch.add_child(_camera)
-	_cam_rig.rotation_degrees.y = _cam_yaw
-
-
 # --- Bucle de turnos ---------------------------------------------------------
 
 func _next_turn() -> void:
@@ -276,6 +283,7 @@ func _next_turn() -> void:
 	active.set_active(true)
 	moved = false
 	acted = false
+	_extra_ct = 0.0
 	_refresh_turn_order()
 	_focus_camera(active.position)
 	var again := active == previous
@@ -298,6 +306,9 @@ func _next_turn() -> void:
 
 ## Aplica efectos de estado al empezar el turno. Devuelve false si pierde el turno.
 func _start_of_turn(u: Unit) -> bool:
+	var expired := u.tick_stages()
+	if not expired.is_empty():
+		_log("Los cambios de %s de %s se disiparon." % [", ".join(expired), u.display_name()])
 	match u.status:
 		MoveData.Status.POISON, MoveData.Status.BURN:
 			var frac := 8 if u.status == MoveData.Status.POISON else 16
@@ -316,6 +327,15 @@ func _start_of_turn(u: Unit) -> bool:
 			u.status = MoveData.Status.NONE
 			u.refresh_label()
 			_log("%s se despertó." % u.display_name())
+		MoveData.Status.FREEZE:
+			if rng.randf() < 0.2:
+				u.status = MoveData.Status.NONE
+				u.refresh_label()
+				_log("¡%s se descongeló!" % u.display_name())
+			else:
+				_popup(u, "❄", Color(0.7, 0.9, 1.0))
+				_log("%s está congelado." % u.display_name())
+				return false
 		MoveData.Status.PARALYSIS:
 			if rng.randf() < 0.25:
 				_popup(u, "¡PAR!", Color(1.0, 0.9, 0.2))
@@ -327,7 +347,7 @@ func _start_of_turn(u: Unit) -> bool:
 func _end_turn() -> void:
 	state = State.BUSY
 	_set_actions_enabled(false)
-	turns.end_turn(active, moved, acted)
+	turns.end_turn(active, moved, acted, _extra_ct)
 	_board.clear_highlights()
 	_next_turn.call_deferred()
 
@@ -429,9 +449,12 @@ func _on_hover(c: Vector2i) -> void:
 			_board.clear_highlights()
 			_board.highlight(_targets, COLOR_RANGE)
 			if c in _targets:
-				var area := Combat.area_cells(grid, selected_move, active.footprint, c)
+				var res := _resolve(active, active.footprint, selected_move, c)
+				var area: Array[Vector2i] = res.area
+				var path: Array[Vector2i] = res.path
+				_board.highlight(path, COLOR_HOVER)
 				_board.highlight(area, COLOR_AREA)
-				_preview_label.text = _effect_preview(selected_move, area)
+				_preview_label.text = _blocker_note(res, c) + _effect_preview(selected_move, area)
 
 
 func _cancel() -> void:
@@ -440,14 +463,39 @@ func _cancel() -> void:
 		_show_menu()
 
 
+## Área real de un ataque lanzado desde `from` (celdas del atacante) hacia `target`:
+## los proyectiles se detienen en el primer obstáculo o Pokémon del camino.
+## Devuelve {"area", "impact", "blocker" ("", "obstacle", "unit"), "path"}.
+func _resolve(u: Unit, from: Array[Vector2i], move: MoveData, target: Vector2i) -> Dictionary:
+	var empty: Array[Vector2i] = []
+	if not move.projectile:
+		return {"area": Combat.area_cells(grid, move, from, target), "impact": target, "blocker": "", "path": empty}
+	var unit_at := func(c: Vector2i) -> Unit:
+		var other := _unit_at(c)
+		return other if other != u else null
+	var hit := Combat.trace(grid, from, target, unit_at)
+	return {"area": Combat.area_cells(grid, move, from, hit.cell), "impact": hit.cell, "blocker": hit.blocker, "path": hit.path}
+
+
+func _blocker_note(res: Dictionary, target: Vector2i) -> String:
+	if res.blocker == "obstacle":
+		return "[color=#ffb060]¡Hay algo en medio! El ataque chocará antes.[/color]\n"
+	if res.blocker == "unit" and res.impact != target:
+		var who := _unit_at(res.impact)
+		return "[color=#ffb060]¡%s está en la línea de tiro![/color]\n" % (who.display_name() if who else "Alguien")
+	return ""
+
+
 ## Texto con la efectividad y el daño estimado contra cada Pokémon del área.
+## Todos los ataques dañan también a los aliados.
 func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 	var lines := PackedStringArray()
 	for t in _others_at(active, area):
-		if t.team == active.team and not move.hits_allies:
-			continue
 		var who := "[color=#%s]%s[/color]" % [Unit.TEAM_COLORS[t.team].lightened(0.4).to_html(false), t.display_name()]
-		if move.power <= 0:
+		if move.power <= 0 and move.fixed_damage <= 0:
+			if not move.stat_changes.is_empty():
+				lines.append("%s: %s (%d%% de acierto)" % [who, Combat._stages_text(move.stat_changes), move.accuracy])
+				continue
 			var ok := Combat.can_receive_status(t, move.status)
 			lines.append("%s: %s" % [who, "%d%% de acierto" % move.accuracy if ok else "[color=#999999]no tendrá efecto[/color]"])
 			continue
@@ -458,7 +506,15 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 			("[color=#7ee07e]×%s muy eficaz[/color]" % ("4" if eff >= 4.0 else "2") if eff > 1.0 else \
 			("[color=#e08a7e]×%s poco eficaz[/color]" % ("¼" if eff <= 0.25 else "½") if eff < 1.0 else "×1"))
 		var ko := "  [color=#ffcc44]¡puede debilitarlo![/color]" if hi >= t.hp else ""
-		lines.append("%s: %s · %d-%d de daño (PS %d)%s" % [who, tag, lo, hi, t.hp, ko])
+		var ally := "  [color=#ff7070](¡aliado!)[/color]" if t.team == active.team else ""
+		lines.append("%s: %s · %d-%d de daño (PS %d)%s%s" % [who, tag, lo, hi, t.hp, ko, ally])
+	if move.targets_self:
+		var parts := PackedStringArray()
+		if move.heal > 0.0:
+			parts.append("recupera %d PS" % mini(int(active.max_hp * move.heal), active.max_hp - active.hp))
+		if not move.self_stat_changes.is_empty():
+			parts.append(Combat._stages_text(move.self_stat_changes))
+		return "%s: %s" % [active.display_name(), ", ".join(parts)]
 	if lines.is_empty():
 		return "[color=#aaaaaa]Nadie en el área[/color]"
 	return "\n".join(lines)
@@ -524,59 +580,135 @@ func _move_unit(u: Unit, path: Array[Vector2i]) -> void:
 # --- Ataques -----------------------------------------------------------------
 
 func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
-	var area := Combat.area_cells(grid, move, user.footprint, target)
-	user.face_towards(grid.to_world(target))
+	var res := _resolve(user, user.footprint, move, target)
+	var area: Array[Vector2i] = res.area
+	if not move.targets_self:
+		user.face_towards(grid.to_world(target))
 	_log("%s usó [b]%s[/b]." % [user.display_name(), move.display_name])
 	_board.clear_highlights()
 	_board.highlight(area, COLOR_AREA)
 	var anim_len := user.play(move.animation)
-	await _wait(clampf(anim_len * 0.5, 0.3, 0.8))
+	await _wait(clampf(anim_len * 0.4, 0.25, 0.6))
+	_extra_ct += move.extra_ct
+	user.spend_pp(move)
+	await _play_move_fx(user, move, res)
+	if res.blocker == "obstacle":
+		_log("¡El ataque chocó contra un obstáculo!")
+	elif res.blocker == "unit" and res.impact != target:
+		var who := _unit_at(res.impact)
+		if who:
+			_log("¡%s se interpuso en la trayectoria!" % who.display_name())
 
 	var dealt := 0
+	var targets: Array[Unit] = [user]
+	if not move.targets_self:
+		targets = _others_at(user, area)
 	var hit_anything := false
 	# Un Pokémon grande recibe el golpe una sola vez aunque el área cubra varias de sus celdas.
-	for t in _others_at(user, area):
-		if t.team == user.team and not move.hits_allies:
-			continue
+	for t in targets:
 		hit_anything = true
-		if rng.randi_range(1, 100) > move.accuracy:
+		if t != user and rng.randi_range(1, 100) > move.accuracy:
 			_popup(t, "Falló", Color.WHITE)
 			_log("¡%s esquivó el ataque!" % t.display_name())
 			continue
-		if move.power > 0:
+		if move.power > 0 or move.fixed_damage > 0:
 			var dmg := Combat.damage(user, t, move, rng.randf_range(0.85, 1.0))
 			var eff := TypeChart.effectiveness(move.type, t.data.types)
 			if eff == 0.0:
 				_log("No afecta a %s..." % t.display_name())
-			elif eff > 1.0:
+			elif eff > 1.0 and move.fixed_damage == 0:
 				_log("¡Es muy eficaz! (%d)" % dmg)
-			elif eff < 1.0:
+			elif eff < 1.0 and move.fixed_damage == 0:
 				_log("No es muy eficaz... (%d)" % dmg)
 			else:
 				_log("%s recibe %d de daño." % [t.display_name(), dmg])
-			t.take_damage(dmg)
-			dealt += dmg
-			_popup(t, str(dmg), Color(1.0, 0.95, 0.4))
-			_shake(t)
+			if dmg > 0:
+				t.take_damage(dmg)
+				dealt += dmg
+				_popup(t, str(dmg), Color(1.0, 0.95, 0.4))
+				_shake(t)
 		if t.is_alive() and move.status != MoveData.Status.NONE and rng.randi_range(1, 100) <= move.status_chance:
 			if Combat.can_receive_status(t, move.status):
+				Fx.aura(self, t.position, TypeChart.color(move.type), t.data.model_height)
 				t.status = move.status
 				t.status_turns = rng.randi_range(1, 3) if move.status == MoveData.Status.SLEEP else 0
 				t.refresh_label()
 				_log("¡%s está %s!" % [t.display_name(), Combat.STATUS_NAMES[move.status]])
-			elif move.power == 0:
+			elif move.category == MoveData.Category.STATUS:
 				_log("No tiene efecto en %s." % t.display_name())
-		if t.is_alive() and move.knockback > 0:
+		if t.is_alive() and t != user and not move.stat_changes.is_empty() and rng.randi_range(1, 100) <= move.stat_chance:
+			var changed := t.apply_stages(move.stat_changes)
+			if changed:
+				_log("%s: %s." % [t.display_name(), changed])
+				Fx.aura(self, t.position, Fx.DEBUFF_COLOR if move.stat_changes.values()[0] < 0 else Fx.BUFF_COLOR, t.data.model_height, move.stat_changes.values()[0] > 0)
+		if t.is_alive() and t != user and move.knockback > 0:
 			await _knockback(user, t, move.knockback)
 	if not hit_anything:
 		_log("...pero no había nadie.")
+
+	# Efectos sobre el propio usuario.
 	if move.drain > 0.0 and dealt > 0:
-		var heal := maxi(1, int(dealt * move.drain))
-		user.heal(heal)
-		_popup(user, "+%d" % heal, Color(0.4, 1.0, 0.5))
+		_heal(user, maxi(1, int(dealt * move.drain)))
+	if move.heal > 0.0:
+		_heal(user, maxi(1, int(user.max_hp * move.heal)))
+	if not move.self_stat_changes.is_empty() and (dealt > 0 or move.category == MoveData.Category.STATUS):
+		var changed := user.apply_stages(move.self_stat_changes)
+		if changed:
+			_log("%s: %s." % [user.display_name(), changed])
+			var up: bool = move.self_stat_changes.values()[0] > 0
+			Fx.aura(self, user.position, Fx.BUFF_COLOR if up else Fx.DEBUFF_COLOR, user.data.model_height, up)
+	if move.recoil > 0.0 and dealt > 0:
+		var recoil := maxi(1, int(dealt * move.recoil))
+		_log("%s sufre %d de daño por el retroceso." % [user.display_name(), recoil])
+		user.take_damage(recoil)
+		_popup(user, str(recoil), Color(1.0, 0.6, 0.4))
+	if move.self_ko and user.is_alive():
+		user.take_damage(user.hp)
 	await _wait(0.6)
-	user.play("idle")
+	if user.is_alive():
+		user.play("idle")
 	_board.clear_highlights()
+
+
+## Partículas del ataque: proyectil o rayo hasta el impacto y explosión en el área.
+func _play_move_fx(user: Unit, move: MoveData, res: Dictionary) -> void:
+	if move.targets_self or not is_inside_tree():
+		return
+	var area: Array[Vector2i] = res.area
+	var start := user.position + Vector3.UP * user.data.model_height * 0.55
+	if move.projectile:
+		var points: Array[Vector3] = [start]
+		var path: Array[Vector2i] = res.path
+		for c in path:
+			points.append(_aim_point(c))
+		await Fx.projectile(self, points, move.type).finished
+	elif move.area_shape == MoveData.AreaShape.LINE and not area.is_empty():
+		Fx.beam(self, start, _aim_point(area.back()), move.type)
+		await _wait(0.2)
+	var strength := 1.0 if area.size() <= 1 else 0.45
+	for c in area:
+		Fx.burst(self, _aim_point(c), move.type, strength)
+	if move.category == MoveData.Category.STATUS:
+		return
+	await _wait(0.1)
+
+
+## Punto al que apuntar en una celda: el cuerpo del Pokémon que la ocupa o algo sobre el suelo.
+func _aim_point(c: Vector2i) -> Vector3:
+	var u := _unit_at(c)
+	if u:
+		return u.position + Vector3.UP * u.data.model_height * 0.5
+	return grid.to_world(c) + Vector3.UP * 0.35
+
+
+func _heal(u: Unit, amount: int) -> void:
+	amount = mini(amount, u.max_hp - u.hp)
+	if amount <= 0:
+		return
+	u.heal(amount)
+	Fx.aura(self, u.position, Fx.HEAL_COLOR, u.data.model_height)
+	_popup(u, "+%d" % amount, Color(0.4, 1.0, 0.5))
+	_log("%s recupera %d PS." % [u.display_name(), amount])
 
 
 func _knockback(src: Unit, t: Unit, cells: int) -> void:
@@ -611,7 +743,7 @@ func _run_ai(u: Unit) -> void:
 	var best_target := Vector2i.ZERO
 	for dest in options:
 		var at := grid.footprint(dest, u.data.size)
-		for move in u.data.moves:
+		for move in u.usable_moves():
 			for target in Combat.target_cells(grid, move, at):
 				var score := _score_action(u, at, move, target)
 				if score > best_score:
@@ -631,16 +763,39 @@ func _run_ai(u: Unit) -> void:
 
 func _score_action(u: Unit, from: Array[Vector2i], move: MoveData, target: Vector2i) -> float:
 	var score := 0.0
-	for t in _others_at(u, Combat.area_cells(grid, move, from, target)):
-		var sign := 1.0 if t.team != u.team else (-1.0 if move.hits_allies else 0.0)
+	if move.targets_self:
+		# Curarse vale más cuanto más herido. Mejorar stats solo compensa cerca del rival
+		# (las mejoras duran pocos turnos) y si aún no lo hizo mucho.
+		score += move.heal * (u.max_hp - u.hp) * 0.8
+		var near := 1.0 if _distance_to_foe(u, from) <= u.move_range() + 2 else 0.15
+		for key: String in move.self_stat_changes:
+			score += maxf(0.0, 12.0 - 4.0 * u.stages.get(key, 0)) * move.self_stat_changes[key] * near
+		return score
+	if move.self_ko:
+		score -= u.hp
+	var area: Array[Vector2i] = _resolve(u, from, move, target).area
+	for t in _others_at(u, area):
+		# Dañar a un aliado resta (un poco más de lo que sumaría dañar a un rival).
+		var sign := 1.0 if t.team != u.team else -1.2
 		var dmg := Combat.damage(u, t, move, 0.925) * move.accuracy / 100.0
 		var value := minf(dmg, t.hp)
 		if dmg >= t.hp:
 			value += 50.0
 		if move.status != MoveData.Status.NONE and Combat.can_receive_status(t, move.status):
 			value += 25.0 * move.status_chance / 100.0 * move.accuracy / 100.0
+		for key: String in move.stat_changes:
+			value += -6.0 * move.stat_changes[key] * move.stat_chance / 100.0 * move.accuracy / 100.0
 		score += sign * value
 	return score
+
+
+func _distance_to_foe(u: Unit, from: Array[Vector2i]) -> int:
+	var best := 1 << 30
+	for foe in units:
+		if foe.team != u.team and foe.is_alive():
+			for c in foe.footprint:
+				best = mini(best, grid.distance_to_set(from, c))
+	return best
 
 
 func _closest_to_enemy(u: Unit, options: Array[Vector2i]) -> Vector2i:
@@ -669,14 +824,14 @@ func _unit_at(c: Vector2i) -> Unit:
 
 
 func _wait(seconds: float) -> void:
+	# Si se abandonó la batalla a mitad de una animación, la corrutina queda colgada aquí.
+	if not is_inside_tree():
+		await Signal(self, "tree_entered")
 	await get_tree().create_timer(seconds).timeout
 
 
 func _focus_camera(target: Vector3) -> void:
-	# Con zoom lejano casi no se mueve (se ve todo el tablero); con zoom cercano sigue a la unidad.
-	var follow := remap(clampf(_camera.size, 6.0, 26.0), 6.0, 26.0, 1.0, 0.2)
-	var tw := create_tween()
-	tw.tween_property(_cam_rig, "position", Vector3(target.x, 0.0, target.z) * follow, 0.4).set_trans(Tween.TRANS_SINE)
+	_cam_rig.focus(target)
 
 
 func _popup(u: Unit, text: String, color: Color) -> void:
@@ -706,9 +861,7 @@ func _shake(u: Unit) -> void:
 
 
 func _pick_cell(screen_pos: Vector2) -> Variant:
-	var from := _camera.project_ray_origin(screen_pos)
-	var to := from + _camera.project_ray_normal(screen_pos) * 200.0
-	var hit := get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(from, to))
+	var hit := _cam_rig.pick(screen_pos)
 	if hit.is_empty():
 		return null
 	var collider: Object = hit.collider
@@ -732,6 +885,8 @@ func _pick_cell(screen_pos: Vector2) -> Variant:
 # --- Input -------------------------------------------------------------------
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _cam_rig.handle_input(event):
+		return
 	if event is InputEventMouseMotion:
 		var c: Variant = _pick_cell(event.position)
 		if c != null:
@@ -744,26 +899,13 @@ func _unhandled_input(event: InputEvent) -> void:
 					_on_cell_clicked(c)
 			MOUSE_BUTTON_RIGHT:
 				_cancel()
-			MOUSE_BUTTON_WHEEL_UP:
-				_camera.size = maxf(5.0, _camera.size - 0.8)
-			MOUSE_BUTTON_WHEEL_DOWN:
-				_camera.size = minf(26.0, _camera.size + 0.8)
 	elif event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
-			KEY_Q:
-				_rotate_camera(-1)
-			KEY_E:
-				_rotate_camera(1)
 			KEY_ESCAPE:
 				_cancel()
 			KEY_R:
 				if state == State.GAME_OVER:
 					_start_battle()
-
-
-func _rotate_camera(dir: int) -> void:
-	_cam_yaw += dir * (90.0 if topology == BoardGrid.Topology.SQUARE else 60.0)
-	create_tween().tween_property(_cam_rig, "rotation_degrees:y", _cam_yaw, 0.3).set_trans(Tween.TRANS_SINE)
 
 
 # --- UI ----------------------------------------------------------------------
@@ -806,7 +948,7 @@ func _build_ui() -> void:
 	go.custom_minimum_size.y = 48
 	_deploy_box.add_child(go)
 	left_box.add_child(HSeparator.new())
-	left_box.add_child(_button("Abandonar (volver al menú)", _go_to_menu))
+	left_box.add_child(_button("Volver al editor" if Game.testing_map else "Abandonar (volver al menú)", _go_to_menu))
 
 	# Panel derecho: orden de turnos.
 	var right := _panel(root, Vector2(0, 16), Vector2(220, 0))
@@ -862,7 +1004,7 @@ func _build_ui() -> void:
 	root.add_child(_hint_label)
 
 	var keys := Label.new()
-	keys.text = "Clic: seleccionar · Clic der./Esc: cancelar · Q/E: rotar · Rueda: zoom"
+	keys.text = "Clic: seleccionar · Clic der./Esc: cancelar · Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
 	keys.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	keys.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	keys.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -895,7 +1037,7 @@ func _build_ui() -> void:
 		Game.roll_enemy_team()
 		enemy_team = Game.enemy_team.duplicate()
 		_start_battle(), 22))
-	banner_buttons.add_child(UiKit.button("Menú principal", _go_to_menu, 22))
+	banner_buttons.add_child(UiKit.button("Volver al editor" if Game.testing_map else "Menú principal", _go_to_menu, 22))
 
 	_turn_flash = Label.new()
 	_turn_flash.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -910,6 +1052,11 @@ func _build_ui() -> void:
 
 
 func _go_to_menu() -> void:
+	if Game.testing_map:
+		Game.testing_map = false
+		Game.map = null
+		get_tree().change_scene_to_file("res://scenes/map_editor.tscn")
+		return
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
@@ -935,9 +1082,15 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 	_attack_buttons.clear()
 	if _wait_button.get_parent():
 		_actions_box.remove_child(_wait_button)
-	for move in u.data.moves:
-		var b := _button("%s  [%s]" % [move.display_name, Combat.TYPE_NAMES.get(move.type, move.type)],
+	var list: Array[MoveData] = u.moves.duplicate()
+	if u.usable_moves().size() == 1 and u.usable_moves()[0].id == "struggle":
+		list = u.usable_moves()
+	for move in list:
+		var left: int = u.pp.get(move, move.pp)
+		var pp_text := "" if move.id == "struggle" else "   PP %d/%d" % [left, move.pp]
+		var b := _button("%s  [%s]%s" % [move.display_name, Combat.TYPE_NAMES.get(move.type, move.type), pp_text],
 			_begin_pick_target.bind(move))
+		b.set_meta("no_pp", left <= 0)
 		var accent := StyleBoxFlat.new()
 		accent.bg_color = Color(0.18, 0.22, 0.3)
 		accent.border_color = TypeChart.color(move.type)
@@ -958,7 +1111,7 @@ func _set_actions_enabled(enabled: bool) -> void:
 		_rebuild_attack_buttons(active)
 	_move_button.disabled = not enabled or moved
 	for b in _attack_buttons:
-		b.disabled = not enabled or acted
+		b.disabled = not enabled or acted or b.get_meta("no_pp", false)
 	_wait_button.disabled = not enabled
 	if not enabled:
 		_hint_label.text = "" if state == State.GAME_OVER else "Turno rival..." if active and active.team == 1 else ""
@@ -976,11 +1129,17 @@ func _refresh_info(u: Unit) -> void:
 		if profile[t] > 1.0:
 			weak.append(UiKit.type_bbcode(t) + (" ×4" if profile[t] >= 4.0 else ""))
 	var st: String = Combat.STATUS_NAMES.get(u.status, "")
-	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\nPS %d/%d%s\nAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n[font_size=14]Débil a: %s[/font_size]" % [
+	var boosts := PackedStringArray()
+	for key: String in u.stages:
+		if u.stages[key] != 0:
+			boosts.append("[color=#%s]%s %+d[/color] (%d t.)" % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
+				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
+	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\nPS %d/%d%s\nAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
 		u.display_name(), Unit.LEVEL, " / ".join(types), u.hp, u.max_hp,
 		("  (" + st + ")") if st else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
 		u.stats.speed, int(u.ct), u.move_range(), u.data.jump, u.data.size,
+		("Mejoras: " + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",
 		", ".join(weak) if not weak.is_empty() else "—",
 	]
 

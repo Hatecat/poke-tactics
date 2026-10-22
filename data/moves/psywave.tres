@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "psywave"
+display_name = "Psicoonda"
+flavor = "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+type = "psychic"
+category = 1
+power = 0
+accuracy = 100
+range_min = 1
+range_max = 3
+area_shape = 0
+area_size = 0
+projectile = true
+targets_self = false
+status = 0
+status_chance = 0
+knockback = 0
+drain = 0.0
+heal = 0.0
+recoil = 0.0
+fixed_damage = 50
+self_ko = false
+stat_changes = {}
+stat_chance = 100
+self_stat_changes = {}
+extra_ct = 0
+pp = 3
+animation = "fight_d"

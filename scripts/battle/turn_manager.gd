@@ -46,8 +46,9 @@ static func cost(moved: bool, acted: bool) -> float:
 	return COST_WAIT
 
 
-func end_turn(unit: Unit, moved: bool, acted: bool) -> void:
-	unit.ct = minf(unit.ct - cost(moved, acted), CT_MAX - 1.0)
+## `extra` es el CT adicional de ataques que recargan o cargan (Hiperrayo, Rayo Solar...).
+func end_turn(unit: Unit, moved: bool, acted: bool, extra := 0.0) -> void:
+	unit.ct = minf(unit.ct - cost(moved, acted) - extra, CT_MAX - 1.0)
 
 
 ## Simula los próximos `count` turnos asumiendo que todos gastan un turno completo.

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "gigaimpact"
+display_name = "Gigaimpacto"
+flavor = "El usuario carga contra el objetivo con toda la fuerza que tiene y descansa durante el siguiente turno."
+type = "normal"
+category = 0
+power = 150
+accuracy = 90
+range_min = 1
+range_max = 4
+area_shape = 3
+area_size = 4
+projectile = false
+targets_self = false
+status = 0
+status_chance = 0
+knockback = 0
+drain = 0.0
+heal = 0.0
+recoil = 0.0
+fixed_damage = 0
+self_ko = false
+stat_changes = {}
+stat_chance = 100
+self_stat_changes = {}
+extra_ct = 50
+pp = 1
+animation = "fight_b"

@@ -1,16 +1,15 @@
 class_name BoardView
 extends Node3D
-## Dibuja las casillas de una BoardGrid y gestiona los resaltados.
+## Dibuja las casillas de una BoardGrid (suelo, laterales y obstáculos) y gestiona los resaltados.
 
 const TILE_GAP := 0.04
 const BASE_THICKNESS := 0.25
-const GROUND_COLORS: Array[Color] = [
-	Color(0.36, 0.62, 0.32), Color(0.45, 0.66, 0.34), Color(0.55, 0.62, 0.38), Color(0.6, 0.55, 0.42),
-]
-const SIDE_COLOR := Color(0.42, 0.32, 0.22)
+const TOP_THICKNESS := 0.06
 
 var grid: BoardGrid
+var _cells := {} # Vector2i -> Node3D con todo lo de esa casilla
 var _overlays := {} # Vector2i -> MeshInstance3D
+var _mats := {} # Color -> StandardMaterial3D
 var _overlay_mats := {} # Color -> StandardMaterial3D
 
 
@@ -18,9 +17,17 @@ func build(p_grid: BoardGrid) -> void:
 	grid = p_grid
 	for child in get_children():
 		child.queue_free()
+	_cells.clear()
 	_overlays.clear()
 	for c in grid.all_cells():
-		_build_tile(c)
+		_build_cell(c)
+
+
+## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).
+func refresh_cell(c: Vector2i) -> void:
+	if _cells.has(c):
+		_cells[c].queue_free()
+	_build_cell(c)
 
 
 func clear_highlights() -> void:
@@ -36,30 +43,29 @@ func highlight(cells: Array[Vector2i], color: Color) -> void:
 			overlay.visible = true
 
 
-func _build_tile(c: Vector2i) -> void:
+func _build_cell(c: Vector2i) -> void:
+	var root := Node3D.new()
+	add_child(root)
+	_cells[c] = root
 	var top := grid.to_world(c)
 	var thickness := BASE_THICKNESS + top.y
+	var tile_kind: int = grid.tiles.get(c, Biome.Tile.GRASS)
 
-	# Cara superior de hierba sobre un bloque de tierra.
-	const GRASS := 0.06
-	var tile := MeshInstance3D.new()
-	tile.mesh = _tile_mesh(GRASS, 0.0)
-	tile.position = Vector3(top.x, top.y - GRASS * 0.5, top.z)
-	var mat := StandardMaterial3D.new()
-	var h := grid.get_height(c)
-	mat.albedo_color = GROUND_COLORS[clampi(h, 0, GROUND_COLORS.size() - 1)]
+	var color: Color = Biome.TILE_COLORS[tile_kind]
+	color = color.lightened(0.04 * grid.get_height(c))
 	if (c.x + c.y) % 2 == 0:
-		mat.albedo_color = mat.albedo_color.darkened(0.06)
-	tile.material_override = mat
-	add_child(tile)
+		color = color.darkened(0.05)
+	var top_mesh := MeshInstance3D.new()
+	top_mesh.mesh = _tile_mesh(TOP_THICKNESS, 0.0)
+	top_mesh.position = Vector3(top.x, top.y - TOP_THICKNESS * 0.5, top.z)
+	top_mesh.material_override = _material(color, tile_kind == Biome.Tile.WATER or tile_kind == Biome.Tile.ICE)
+	root.add_child(top_mesh)
 
 	var side := MeshInstance3D.new()
-	side.mesh = _tile_mesh(thickness - GRASS, 0.0)
-	side.position = Vector3(top.x, top.y - GRASS - (thickness - GRASS) * 0.5, top.z)
-	var side_mat := StandardMaterial3D.new()
-	side_mat.albedo_color = SIDE_COLOR
-	side.material_override = side_mat
-	add_child(side)
+	side.mesh = _tile_mesh(thickness - TOP_THICKNESS, 0.0)
+	side.position = Vector3(top.x, top.y - TOP_THICKNESS - (thickness - TOP_THICKNESS) * 0.5, top.z)
+	side.material_override = _material(Biome.SIDE_COLORS[grid.biome])
+	root.add_child(side)
 
 	var body := StaticBody3D.new()
 	body.set_meta("cell", c)
@@ -67,15 +73,92 @@ func _build_tile(c: Vector2i) -> void:
 	shape.shape = _tile_mesh(thickness, 0.0).create_convex_shape()
 	body.position = Vector3(top.x, top.y - thickness * 0.5, top.z)
 	body.add_child(shape)
-	add_child(body)
+	root.add_child(body)
+
+	var prop: int = grid.props.get(c, Biome.Prop.NONE)
+	if prop != Biome.Prop.NONE:
+		var p := _prop_node(prop, c)
+		p.position = top
+		root.add_child(p)
 
 	var overlay := MeshInstance3D.new()
 	overlay.mesh = _tile_mesh(0.02, 0.08)
 	overlay.position = Vector3(top.x, top.y + 0.012, top.z)
 	overlay.visible = false
 	overlay.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(overlay)
+	root.add_child(overlay)
 	_overlays[c] = overlay
+
+
+## Obstáculo hecho con primitivas. Tamaño y giro varían de forma estable según la celda.
+func _prop_node(prop: int, c: Vector2i) -> Node3D:
+	var node := Node3D.new()
+	var h := hash(c)
+	var jitter := 0.85 + float(h % 30) / 100.0
+	node.rotation.y = float(h % 360) * PI / 180.0
+	node.scale = Vector3.ONE * jitter
+	match prop:
+		Biome.Prop.TREE:
+			_part(node, _cyl(0.07, 0.09, 0.5), Vector3(0, 0.25, 0), Color(0.42, 0.28, 0.16))
+			_part(node, _sphere(0.36, 0.5), Vector3(0, 0.75, 0), Color(0.24, 0.52, 0.22))
+		Biome.Prop.PINE:
+			_part(node, _cyl(0.06, 0.08, 0.35), Vector3(0, 0.17, 0), Color(0.4, 0.26, 0.15))
+			_part(node, _cyl(0.0, 0.38, 0.6), Vector3(0, 0.6, 0), Color(0.16, 0.38, 0.24))
+			_part(node, _cyl(0.0, 0.28, 0.45), Vector3(0, 0.95, 0), Color(0.18, 0.42, 0.26))
+		Biome.Prop.BOULDER:
+			_part(node, _sphere(0.36, 0.42), Vector3(0, 0.14, 0), Color(0.5, 0.48, 0.46))
+		Biome.Prop.CACTUS:
+			var green := Color(0.3, 0.55, 0.28)
+			_part(node, _capsule(0.12, 0.8), Vector3(0, 0.4, 0), green)
+			_part(node, _capsule(0.07, 0.35), Vector3(0.17, 0.45, 0), green)
+			_part(node, _capsule(0.07, 0.3), Vector3(-0.15, 0.55, 0), green)
+		Biome.Prop.PILLAR:
+			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), Color(0.82, 0.8, 0.76))
+			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), Color(0.7, 0.68, 0.64))
+		Biome.Prop.CRYSTAL:
+			var crystal := _cyl(0.0, 0.18, 0.8, 6)
+			var mi := _part(node, crystal, Vector3(0, 0.4, 0), Color(0.65, 0.45, 0.95))
+			var mat: StandardMaterial3D = mi.material_override.duplicate()
+			mat.emission_enabled = true
+			mat.emission = Color(0.55, 0.35, 0.95)
+			mat.emission_energy_multiplier = 1.2
+			mi.material_override = mat
+			_part(node, _cyl(0.0, 0.1, 0.45, 6), Vector3(0.18, 0.22, 0.05), Color(0.6, 0.4, 0.9)).rotation.z = -0.4
+	return node
+
+
+func _part(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.position = pos
+	mi.material_override = _material(color)
+	parent.add_child(mi)
+	return mi
+
+
+func _cyl(top_r: float, bottom_r: float, h: float, segments := 10) -> CylinderMesh:
+	var m := CylinderMesh.new()
+	m.top_radius = top_r
+	m.bottom_radius = bottom_r
+	m.height = h
+	m.radial_segments = segments
+	return m
+
+
+func _sphere(r: float, h: float) -> SphereMesh:
+	var m := SphereMesh.new()
+	m.radius = r
+	m.height = h
+	m.radial_segments = 12
+	m.rings = 6
+	return m
+
+
+func _capsule(r: float, h: float) -> CapsuleMesh:
+	var m := CapsuleMesh.new()
+	m.radius = r
+	m.height = h
+	return m
 
 
 ## Prisma de la forma de la casilla. `inset` encoge la casilla por los lados.
@@ -94,6 +177,18 @@ func _tile_mesh(thickness: float, inset: float) -> Mesh:
 	cyl.bottom_radius = r
 	cyl.height = thickness
 	return cyl
+
+
+func _material(color: Color, glossy := false) -> StandardMaterial3D:
+	var key := color if not glossy else Color(color, 0.5)
+	if not _mats.has(key):
+		var m := StandardMaterial3D.new()
+		m.albedo_color = color
+		if glossy:
+			m.roughness = 0.15
+			m.metallic_specular = 0.9
+		_mats[key] = m
+	return _mats[key]
 
 
 func _overlay_material(color: Color) -> StandardMaterial3D:

@@ -1,7 +1,9 @@
 class_name PokemonData
 extends Resource
-## Especie de Pokémon: stats base, movilidad en el tablero y set de ataques.
+## Especie de Pokémon: stats base, movilidad en el tablero y ataques.
+## Los de data/pokemon/ se generan con tools/build_data.py.
 
+@export var id := ""
 @export var species_name := ""
 @export var dex_number := 0
 @export var types: PackedStringArray = ["normal"]
@@ -27,4 +29,12 @@ extends Resource
 @export var jump := 1
 
 @export_group("Ataques")
+## Set por defecto (máx. 4).
 @export var moves: Array[MoveData] = []
+## Todos los ataques que puede aprender.
+@export var learnset: Array[MoveData] = []
+
+@export_group("Animaciones")
+## Clip a usar para cada acción cuando el modelo los nombra distinto,
+## p. ej. {"hit": "dizzy"}. Claves: idle, walk, fight_b, fight_d, hit, ko.
+@export var anim_map := {}

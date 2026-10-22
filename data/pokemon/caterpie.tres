@@ -1,22 +1,30 @@
 [gd_resource type="Resource" script_class="PokemonData" format=3]
 
-[ext_resource type="PackedScene" path="res://assets/models/pokemon/caterpie.glb" id="1_8wwbl"]
-[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_68xy7"]
-[ext_resource type="Resource" path="res://data/moves/placaje.tres" id="3_bqvtf"]
-[ext_resource type="Resource" path="res://data/moves/picadura.tres" id="4_e28w4"]
-[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="5_bliy6"]
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/caterpie.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/bugbite.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/electroweb.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/stringshot.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m3"]
 
 [resource]
-script = ExtResource("5_bliy6")
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("bug")
+id = "caterpie"
 species_name = "Caterpie"
 dex_number = 10
-types = PackedStringArray("bug")
-model = ExtResource("1_8wwbl")
-model_height = 0.6
+model_height = 0.59
 base_hp = 45
 base_attack = 30
 base_defense = 35
 base_sp_attack = 20
 base_sp_defense = 20
 base_speed = 45
-moves = Array[ExtResource("2_68xy7")]([ExtResource("3_bqvtf"), ExtResource("4_e28w4")])
+size = 1
+move_modifier = 0
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m3"), ExtResource("m2"), ExtResource("m1")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m0"), ExtResource("m3")])

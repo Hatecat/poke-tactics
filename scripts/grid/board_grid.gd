@@ -20,6 +20,9 @@ var topology: Topology
 var width: int
 var height: int
 var heights: Dictionary = {} # Vector2i -> int
+var tiles: Dictionary = {} # Vector2i -> Biome.Tile
+var props: Dictionary = {} # Vector2i -> Biome.Prop (obstáculos)
+var biome := Biome.Kind.MEADOW
 
 
 func _init(p_topology: Topology, p_width: int, p_height: int) -> void:
@@ -28,6 +31,8 @@ func _init(p_topology: Topology, p_width: int, p_height: int) -> void:
 	height = p_height
 	for c in all_cells():
 		heights[c] = 0
+		tiles[c] = Biome.Tile.GRASS
+		props[c] = Biome.Prop.NONE
 
 
 func all_cells() -> Array[Vector2i]:
@@ -44,6 +49,11 @@ func is_inside(c: Vector2i) -> bool:
 
 func get_height(c: Vector2i) -> int:
 	return heights.get(c, 0)
+
+
+## Hay un obstáculo: no se puede atravesar ni estar encima.
+func is_blocked(c: Vector2i) -> bool:
+	return props.get(c, Biome.Prop.NONE) != Biome.Prop.NONE
 
 
 func direction_count() -> int:
@@ -166,6 +176,51 @@ func to_world(c: Vector2i) -> Vector3:
 		return Vector3(c.x - (width - 1) * 0.5, y, c.y - (height - 1) * 0.5)
 	var x := c.x + (0.5 if c.y & 1 else 0.0)
 	return Vector3(x - width * 0.5 + 0.25, y, (c.y - (height - 1) * 0.5) * HEX_ROW_SPACING)
+
+
+## Casilla que contiene el punto del mundo `p` (ignora la altura).
+func world_to_cell(p: Vector3) -> Vector2i:
+	var origin := to_world(Vector2i.ZERO)
+	var x := p.x - origin.x
+	var z := p.z - origin.z
+	if topology == Topology.SQUARE:
+		return Vector2i(roundi(x), roundi(z))
+	# Axial fraccionario (hexágono "pointy-top" de 1 de ancho) y redondeo cúbico.
+	var r := z / HEX_ROW_SPACING
+	var q := x - r * 0.5
+	var s := -q - r
+	var rq := roundf(q)
+	var rr := roundf(r)
+	var rs := roundf(s)
+	var dq := absf(rq - q)
+	var dr := absf(rr - r)
+	var ds := absf(rs - s)
+	if dq > dr and dq > ds:
+		rq = -rr - rs
+	elif dr > ds:
+		rr = -rq - rs
+	return _axial_to_offset(Vector2i(int(rq), int(rr)))
+
+
+## Celdas que atraviesa el segmento entre los centros de `a` y `b`, en orden y sin `a`.
+func ray(a: Vector2i, b: Vector2i) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	var from := to_world(a)
+	var to := to_world(b)
+	var steps := maxi(1, ceili(Vector2(to.x - from.x, to.z - from.z).length() / 0.2))
+	for i in range(1, steps + 1):
+		var c := world_to_cell(from.lerp(to, float(i) / steps))
+		if c != a and (cells.is_empty() or cells.back() != c) and is_inside(c):
+			cells.append(c)
+	if cells.is_empty() or cells.back() != b:
+		cells.append(b)
+	return cells
+
+
+## Una casilla corta la línea de visión si tiene un obstáculo o es una pared de terreno
+## (al menos 2 niveles más alta que los dos extremos).
+func blocks_sight(c: Vector2i, from: Vector2i, to: Vector2i) -> bool:
+	return is_blocked(c) or get_height(c) >= maxi(get_height(from), get_height(to)) + 2
 
 
 func _offset_to_axial(c: Vector2i) -> Vector2i:

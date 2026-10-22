@@ -1,13 +1,20 @@
 extends Control
-## Menú principal: jugar (eligiendo tablero), editor de equipo y tabla de tipos.
+## Menú principal: jugar (eligiendo tablero, campo o escenario), editores y tabla de tipos.
 
 const SHOWCASE_TIME := 3.5
+const RANDOM_BIOME := -1
 
 var _preview: PokemonPreview
 var _preview_name: Label
 var _showcase_index := 0
 var _map_dialog: Control
 var _play_button: Button
+var _topology_buttons: Array[Button] = []
+var _biome_buttons := {} # Biome.Kind o RANDOM_BIOME -> Button
+var _map_select: OptionButton
+var _map_paths := PackedStringArray()
+var _random_options: Control
+var _selected_biome := RANDOM_BIOME
 
 
 func _ready() -> void:
@@ -16,23 +23,24 @@ func _ready() -> void:
 	add_child(UiKit.background())
 
 	var left := VBoxContainer.new()
-	left.position = Vector2(120, 170)
+	left.position = Vector2(120, 140)
 	left.add_theme_constant_override("separation", 14)
 	add_child(left)
 	var title := UiKit.label("POKÉ TACTICS", 72, UiKit.ACCENT)
 	title.add_theme_constant_override("outline_size", 14)
 	title.add_theme_color_override("font_outline_color", Color(0.1, 0.15, 0.35))
 	left.add_child(title)
-	left.add_child(UiKit.label("Prototipo · Godot 4", 18, Color(1, 1, 1, 0.6)))
+	left.add_child(UiKit.label("Prototipo · Godot 4 · %d Pokémon" % Game.roster.size(), 18, Color(1, 1, 1, 0.6)))
 	var spacer := Control.new()
-	spacer.custom_minimum_size.y = 30
+	spacer.custom_minimum_size.y = 20
 	left.add_child(spacer)
 	_play_button = _menu_button(left, "Jugar", _open_map_dialog)
-	_menu_button(left, "Editor de equipo", func() -> void: get_tree().change_scene_to_file("res://scenes/team_editor.tscn"))
-	_menu_button(left, "Tabla de tipos", func() -> void: get_tree().change_scene_to_file("res://scenes/type_chart.tscn"))
+	_menu_button(left, "Editor de equipo", _go.bind("team_editor"))
+	_menu_button(left, "Editor de escenarios", _go.bind("map_editor"))
+	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
 	_menu_button(left, "Salir", func() -> void: get_tree().quit())
 	var team_info := UiKit.label("", 16, Color(1, 1, 1, 0.7))
-	team_info.text = "Tu equipo: " + (", ".join(Game.player_team.map(func(p: PokemonData) -> String: return p.species_name)) if not Game.player_team.is_empty() else "vacío")
+	team_info.text = "Tu equipo: " + (", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío")
 	left.add_child(team_info)
 
 	_preview = PokemonPreview.new()
@@ -54,22 +62,28 @@ func _ready() -> void:
 	_build_map_dialog()
 
 
+func _go(scene: String) -> void:
+	get_tree().change_scene_to_file("res://scenes/%s.tscn" % scene)
+
+
 func _menu_button(parent: Control, text: String, callback: Callable) -> Button:
 	var b := UiKit.button(text, callback, 24)
-	b.custom_minimum_size = Vector2(340, 56)
+	b.custom_minimum_size = Vector2(340, 54)
 	parent.add_child(b)
 	return b
 
 
 func _next_showcase() -> void:
-	var list: Array[PokemonData] = Game.player_team if not Game.player_team.is_empty() else Game.roster
+	var list: Array = Game.player_team.map(func(m: TeamMember) -> PokemonData: return m.data) if not Game.player_team.is_empty() else Game.roster
 	if list.is_empty():
 		return
-	var p := list[_showcase_index % list.size()]
+	var p: PokemonData = list[_showcase_index % list.size()]
 	_showcase_index += 1
 	_preview.show_pokemon(p)
 	_preview_name.text = "#%03d %s" % [p.dex_number, p.species_name]
 
+
+# --- Diálogo de partida --------------------------------------------------------
 
 func _build_map_dialog() -> void:
 	_map_dialog = ColorRect.new()
@@ -84,48 +98,96 @@ func _build_map_dialog() -> void:
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_map_dialog.add_child(panel)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 16)
+	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	var title := UiKit.label("Elige el tablero", 30, UiKit.ACCENT)
+	var title := UiKit.label("Nueva partida", 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 16)
-	box.add_child(row)
-	row.add_child(_map_option("▦", "Cuadrícula", "4 direcciones.\nLíneas y cruces clásicas.", BoardGrid.Topology.SQUARE))
-	row.add_child(_map_option("⬢", "Hexágonos", "6 direcciones.\nMás flanqueos y ángulos.", BoardGrid.Topology.HEX))
-	var cancel := UiKit.button("Cancelar", func() -> void: _map_dialog.visible = false)
-	box.add_child(cancel)
 
+	var map_row := HBoxContainer.new()
+	map_row.add_child(UiKit.label("Escenario:  ", 18))
+	_map_select = OptionButton.new()
+	_map_select.custom_minimum_size.x = 380
+	_map_select.item_selected.connect(func(_i: int) -> void: _refresh_dialog())
+	map_row.add_child(_map_select)
+	box.add_child(map_row)
 
-func _map_option(icon: String, title: String, desc: String, topology: BoardGrid.Topology) -> Button:
-	var b := Button.new()
-	b.custom_minimum_size = Vector2(260, 230)
-	b.pressed.connect(_start_game.bind(topology))
-	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_FULL_RECT)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	b.add_child(box)
-	for l in [UiKit.label(icon, 80, UiKit.ACCENT), UiKit.label(title, 26), UiKit.label(desc, 15, Color(1, 1, 1, 0.7))]:
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		box.add_child(l)
-	return b
+	_random_options = VBoxContainer.new()
+	_random_options.add_theme_constant_override("separation", 12)
+	box.add_child(_random_options)
+	_random_options.add_child(UiKit.label("Tablero", 18, Color(1, 1, 1, 0.75)))
+	var topo_row := HBoxContainer.new()
+	topo_row.add_theme_constant_override("separation", 12)
+	_random_options.add_child(topo_row)
+	for item in [["▦  Cuadrícula", BoardGrid.Topology.SQUARE], ["⬢  Hexágonos", BoardGrid.Topology.HEX]]:
+		var b := UiKit.button(item[0], func() -> void:
+			Game.topology = item[1]
+			_refresh_dialog(), 20)
+		b.custom_minimum_size = Vector2(290, 50)
+		b.toggle_mode = true
+		topo_row.add_child(b)
+		_topology_buttons.append(b)
+
+	_random_options.add_child(UiKit.label("Campo", 18, Color(1, 1, 1, 0.75)))
+	var biome_grid := GridContainer.new()
+	biome_grid.columns = 3
+	biome_grid.add_theme_constant_override("h_separation", 8)
+	biome_grid.add_theme_constant_override("v_separation", 8)
+	_random_options.add_child(biome_grid)
+	var options: Array = [[RANDOM_BIOME, "🎲  Aleatorio"]]
+	for kind: int in Biome.NAMES:
+		options.append([kind, "%s  %s" % [Biome.ICONS[kind], Biome.NAMES[kind]]])
+	for item in options:
+		var b := UiKit.button(item[1], func() -> void:
+			_selected_biome = item[0]
+			_refresh_dialog(), 18)
+		b.toggle_mode = true
+		b.custom_minimum_size = Vector2(190, 44)
+		biome_grid.add_child(b)
+		_biome_buttons[item[0]] = b
+
+	box.add_child(UiKit.label("El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo.", 14, Color(1, 1, 1, 0.6)))
+	var actions := HBoxContainer.new()
+	actions.add_theme_constant_override("separation", 12)
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_child(actions)
+	actions.add_child(UiKit.button("Cancelar", func() -> void: _map_dialog.visible = false))
+	var go := UiKit.button("¡A combatir!", _start_game, 22)
+	go.custom_minimum_size.x = 260
+	actions.add_child(go)
 
 
 func _open_map_dialog() -> void:
 	if Game.player_team.is_empty():
 		_play_button.text = "Jugar (¡arma tu equipo primero!)"
 		return
+	_map_select.clear()
+	_map_select.add_item("Generado al azar")
+	_map_paths = Game.list_maps()
+	for path in _map_paths:
+		var m: MapData = load(path)
+		_map_select.add_item("%s  (%s)" % [m.map_name, Biome.NAMES[m.biome]])
+	_refresh_dialog()
 	_map_dialog.visible = true
 
 
-func _start_game(topology: BoardGrid.Topology) -> void:
-	Game.topology = topology
+func _refresh_dialog() -> void:
+	_random_options.modulate.a = 1.0 if _map_select.selected <= 0 else 0.35
+	for b in _topology_buttons:
+		b.button_pressed = _topology_buttons.find(b) == Game.topology
+	for kind: int in _biome_buttons:
+		_biome_buttons[kind].button_pressed = kind == _selected_biome
+
+
+func _start_game() -> void:
+	if _map_select.selected > 0:
+		Game.map = load(_map_paths[_map_select.selected - 1])
+	else:
+		Game.map = null
+		Game.biome = _selected_biome if _selected_biome != RANDOM_BIOME else Game.rng.randi_range(0, Biome.NAMES.size() - 1)
 	Game.save()
 	Game.roll_enemy_team()
-	get_tree().change_scene_to_file("res://scenes/battle.tscn")
+	_go("battle")
 
 
 func _unhandled_input(event: InputEvent) -> void:

@@ -1,21 +1,30 @@
 [gd_resource type="Resource" script_class="PokemonData" format=3]
 
-[ext_resource type="PackedScene" path="res://assets/models/pokemon/weedle.glb" id="1_ebyxj"]
-[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_ef50m"]
-[ext_resource type="Resource" path="res://data/moves/picotazo_veneno.tres" id="3_fll6o"]
-[ext_resource type="Resource" path="res://data/moves/picadura.tres" id="4_ocrtb"]
-[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="5_wtoxu"]
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/weedle.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/bugbite.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/electroweb.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/poisonsting.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/stringshot.tres" id="m3"]
 
 [resource]
-script = ExtResource("5_wtoxu")
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("bug", "poison")
+id = "weedle"
 species_name = "Weedle"
 dex_number = 13
-types = PackedStringArray("bug", "poison")
-model = ExtResource("1_ebyxj")
-model_height = 0.6
+model_height = 0.59
 base_hp = 40
 base_attack = 35
 base_defense = 30
 base_sp_attack = 20
 base_sp_defense = 20
-moves = Array[ExtResource("2_ef50m")]([ExtResource("3_fll6o"), ExtResource("4_ocrtb")])
+base_speed = 50
+size = 1
+move_modifier = 0
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m1"), ExtResource("m3"), ExtResource("m2")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m3"), ExtResource("m1"), ExtResource("m0"), ExtResource("m2")])

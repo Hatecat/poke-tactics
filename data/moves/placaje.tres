@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="MoveData" format=3]
-
-[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_dcygc"]
-
-[resource]
-script = ExtResource("1_dcygc")
-display_name = "Placaje"
-power = 40
-knockback = 1

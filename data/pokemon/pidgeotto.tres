@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/pidgeotto.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/aerialace.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/agility.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/aircutter.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/airslash.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/captivate.tres" id="m4"]
+[ext_resource type="Resource" path="res://data/moves/confide.tres" id="m5"]
+[ext_resource type="Resource" path="res://data/moves/doubleedge.tres" id="m6"]
+[ext_resource type="Resource" path="res://data/moves/facade.tres" id="m7"]
+[ext_resource type="Resource" path="res://data/moves/featherdance.tres" id="m8"]
+[ext_resource type="Resource" path="res://data/moves/fly.tres" id="m9"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m10"]
+[ext_resource type="Resource" path="res://data/moves/gust.tres" id="m11"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m12"]
+[ext_resource type="Resource" path="res://data/moves/heatwave.tres" id="m13"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m14"]
+[ext_resource type="Resource" path="res://data/moves/hurricane.tres" id="m15"]
+[ext_resource type="Resource" path="res://data/moves/mudslap.tres" id="m16"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m17"]
+[ext_resource type="Resource" path="res://data/moves/ominouswind.tres" id="m18"]
+[ext_resource type="Resource" path="res://data/moves/pluck.tres" id="m19"]
+[ext_resource type="Resource" path="res://data/moves/quickattack.tres" id="m20"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m21"]
+[ext_resource type="Resource" path="res://data/moves/razorwind.tres" id="m22"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m23"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m24"]
+[ext_resource type="Resource" path="res://data/moves/roost.tres" id="m25"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m26"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m27"]
+[ext_resource type="Resource" path="res://data/moves/skyattack.tres" id="m28"]
+[ext_resource type="Resource" path="res://data/moves/steelwing.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/swift.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/twister.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/uturn.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/whirlwind.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/wingattack.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/workup.tres" id="m41"]
+
+[resource]
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("normal", "flying")
+id = "pidgeotto"
+species_name = "Pidgeotto"
+dex_number = 17
+model_height = 1.13
+base_hp = 63
+base_attack = 60
+base_defense = 55
+base_sp_attack = 50
+base_sp_defense = 50
+base_speed = 71
+size = 1
+move_modifier = 1
+jump = 3
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m6"), ExtResource("m28"), ExtResource("m1"), ExtResource("m10")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m1"), ExtResource("m2"), ExtResource("m29"), ExtResource("m37"), ExtResource("m40"), ExtResource("m28"), ExtResource("m20"), ExtResource("m41"), ExtResource("m16"), ExtResource("m26"), ExtResource("m36"), ExtResource("m5"), ExtResource("m8"), ExtResource("m27"), ExtResource("m33"), ExtResource("m23"), ExtResource("m6"), ExtResource("m17"), ExtResource("m7"), ExtResource("m30"), ExtResource("m10"), ExtResource("m21"), ExtResource("m0"), ExtResource("m12"), ExtResource("m38"), ExtResource("m34"), ExtResource("m31"), ExtResource("m13"), ExtResource("m19"), ExtResource("m32"), ExtResource("m14"), ExtResource("m39"), ExtResource("m25"), ExtResource("m24"), ExtResource("m4"), ExtResource("m3"), ExtResource("m11"), ExtResource("m35"), ExtResource("m15"), ExtResource("m18"), ExtResource("m22"), ExtResource("m9")])

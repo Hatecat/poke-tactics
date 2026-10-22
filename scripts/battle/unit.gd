@@ -9,8 +9,16 @@ const TEAM_COLORS: Array[Color] = [Color(0.25, 0.55, 1.0), Color(1.0, 0.3, 0.25)
 const LOOPING_ANIMS: PackedStringArray = ["idle", "walk", "run"]
 ## Radio del anillo de equipo según el tamaño del Pokémon.
 const RING_SCALE := [1.0, 1.0, 2.1, 2.9]
+## Las mejoras de stats duran estos turnos propios (aplicar otra reinicia la cuenta).
+const STAGE_TURNS := 3
+const MAX_STAGE := 6
+const STRUGGLE_PATH := "res://data/moves/struggle.tres"
+const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_defense": "DfE", "speed": "Vel"}
+const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.", "speed": "Velocidad"}
 
 var data: PokemonData
+## Ataques de este Pokémon concreto (los elegidos en el editor de equipo).
+var moves: Array[MoveData] = []
 var team := 0
 ## Celda ancla; `footprint` son todas las celdas que ocupa (ver BoardGrid.footprint).
 var cell := Vector2i.ZERO
@@ -21,6 +29,12 @@ var hp := 1
 var stats := {}
 var status := MoveData.Status.NONE
 var status_turns := 0
+## Niveles de mejora de stats (-6..+6), como en los juegos.
+var stages := {}
+## Turnos propios que le quedan a cada mejora antes de disiparse.
+var stage_turns := {}
+## Usos restantes de cada ataque en este combate.
+var pp := {}
 
 var _model: Node3D
 var _anim: AnimationPlayer
@@ -36,8 +50,11 @@ var _model_base_pos := Vector3.ZERO
 var _model_base_scale := Vector3.ONE
 
 
-func setup(p_data: PokemonData, p_team: int) -> void:
-	data = p_data
+func setup(member: TeamMember, p_team: int) -> void:
+	data = member.data
+	moves = member.moves.duplicate()
+	for mv in moves:
+		pp[mv] = mv.pp
 	team = p_team
 	max_hp = int((2 * data.base_hp + 31) * LEVEL / 100.0) + LEVEL + 10
 	hp = max_hp
@@ -60,8 +77,73 @@ func is_alive() -> bool:
 	return hp > 0
 
 
+## Stat con sus mejoras aplicadas: ×(2+n)/2 si sube, ×2/(2+n) si baja.
+func stat(stat_name: String) -> float:
+	var n: int = stages.get(stat_name, 0)
+	var mult := (2.0 + n) / 2.0 if n >= 0 else 2.0 / (2.0 - n)
+	return stats[stat_name] * mult
+
+
+## Aplica cambios de stats y devuelve un texto para el registro ("" si no cambió nada).
+func apply_stages(changes: Dictionary) -> String:
+	var parts := PackedStringArray()
+	for key: String in changes:
+		var before: int = stages.get(key, 0)
+		var after := clampi(before + int(changes[key]), -MAX_STAGE, MAX_STAGE)
+		stages[key] = after
+		stage_turns[key] = STAGE_TURNS
+		if after == before:
+			parts.append("%s no puede %s más" % [STAT_LABELS.get(key, key), "subir" if changes[key] > 0 else "bajar"])
+		else:
+			var amount := absi(after - before)
+			var verb := "subió" if after > before else "bajó"
+			parts.append("%s %s%s" % [STAT_LABELS.get(key, key), verb, " mucho" if amount >= 2 else ""])
+	refresh_label()
+	return ", ".join(parts)
+
+
+## Al empezar su turno: las mejoras pierden un turno y las agotadas se disipan.
+## Devuelve los nombres de los stats que volvieron a la normalidad.
+func tick_stages() -> PackedStringArray:
+	var expired := PackedStringArray()
+	for key: String in stage_turns.keys():
+		stage_turns[key] -= 1
+		if stage_turns[key] <= 0:
+			stage_turns.erase(key)
+			if stages.get(key, 0) != 0:
+				expired.append(STAT_LABELS.get(key, key))
+			stages.erase(key)
+	refresh_label()
+	return expired
+
+
+## Ataques que aún puede usar. Sin PP en ninguno, solo le queda Forcejeo.
+func usable_moves() -> Array[MoveData]:
+	var list: Array[MoveData] = []
+	for mv in moves:
+		if pp.get(mv, 0) > 0:
+			list.append(mv)
+	if list.is_empty():
+		list.append(load(STRUGGLE_PATH))
+	return list
+
+
+func spend_pp(mv: MoveData) -> void:
+	if pp.has(mv):
+		pp[mv] = maxi(pp[mv] - 1, 0)
+
+
+## Texto corto de las mejoras activas, p. ej. "Atq+2 Vel-1".
+func stages_text() -> String:
+	var parts := PackedStringArray()
+	for key: String in stages:
+		if stages[key] != 0:
+			parts.append("%s%s%d" % [STAT_SHORT.get(key, key), "+" if stages[key] > 0 else "", stages[key]])
+	return " ".join(parts)
+
+
 func effective_speed() -> float:
-	var s: float = stats.speed
+	var s := stat("speed")
 	if status == MoveData.Status.PARALYSIS:
 		s *= 0.5
 	return s
@@ -86,6 +168,7 @@ func status_text() -> String:
 		MoveData.Status.SLEEP: return "DOR"
 		MoveData.Status.PARALYSIS: return "PAR"
 		MoveData.Status.BURN: return "QUE"
+		MoveData.Status.FREEZE: return "CON"
 	return ""
 
 
@@ -127,6 +210,14 @@ func take_damage(amount: int) -> void:
 	if hp == 0:
 		play("ko")
 		fainted.emit(self)
+	elif amount > 0:
+		var duration := play("hit")
+		get_tree().create_timer(maxf(duration, 0.3)).timeout.connect(_back_to_idle)
+
+
+func _back_to_idle() -> void:
+	if is_alive() and _proc_mode != "walk":
+		play("idle")
 
 
 func heal(amount: int) -> void:
@@ -140,18 +231,23 @@ func face_towards(world_target: Vector3) -> void:
 		_model.rotation.y = atan2(d.x, d.z)
 
 
-## Reproduce la primera animación cuyo nombre contenga `key`. Si el modelo no la
-## tiene (la mayoría del repo no trae animaciones), usa una versión procedural.
-## Devuelve la duración.
+## Reproduce la animación de la acción `key` (idle, walk, fight_b, fight_d, hit, ko).
+## Busca el clip indicado en data.anim_map o, si no hay, uno que contenga `key`.
+## Si el modelo no lo tiene (la mayoría del repo no trae animaciones), usa una
+## versión procedural. Devuelve la duración.
 func play(key: String) -> float:
 	_reset_procedural()
+	var clip_key: String = data.anim_map.get(key, key)
 	if _anim:
 		for anim_name in _anim.get_animation_list():
-			if key in anim_name:
+			if clip_key in anim_name:
 				var anim := _anim.get_animation(anim_name)
 				anim.loop_mode = Animation.LOOP_LINEAR if key in LOOPING_ANIMS else Animation.LOOP_NONE
 				_anim.play(anim_name, 0.15)
 				return anim.length
+		# Sin clip para esta acción: congelar el anterior (si no, p. ej. el de caminar
+		# seguiría en bucle) y usar la versión procedural.
+		_anim.pause()
 	return _play_procedural(key)
 
 
@@ -165,6 +261,13 @@ func _play_procedural(key: String) -> float:
 		tw.tween_property(_model, "rotation:z", PI * 0.5, 0.5).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 		tw.tween_property(_model, "position:y", _model_base_pos.y - data.model_height * 0.15, 0.5)
 		return 0.6
+	elif key == "hit":
+		# Retrocede un poco, como encajando el golpe.
+		var back := -Vector3(sin(_model.rotation.y), 0.0, cos(_model.rotation.y)) * 0.12 * data.size
+		var tw := create_tween()
+		tw.tween_property(_model, "position", _model_base_pos + back, 0.08).set_ease(Tween.EASE_OUT)
+		tw.tween_property(_model, "position", _model_base_pos, 0.2)
+		return 0.3
 	elif key.begins_with("fight"):
 		# Embestida hacia delante y vuelta.
 		var fwd := Vector3(sin(_model.rotation.y), 0.0, cos(_model.rotation.y)) * 0.3 * data.size
@@ -185,7 +288,8 @@ func _reset_procedural() -> void:
 
 func refresh_label() -> void:
 	var st := status_text()
-	_label.text = "%s\n%d/%d%s" % [data.species_name, hp, max_hp, "  " + st if st else ""]
+	var boosts := stages_text()
+	_label.text = "%s\n%d/%d%s%s" % [data.species_name, hp, max_hp, "  " + st if st else "", "\n" + boosts if boosts else ""]
 
 
 func _build_visuals() -> void:

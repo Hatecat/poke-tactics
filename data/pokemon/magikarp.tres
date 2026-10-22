@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/magikarp.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/bounce.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/flail.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/hydropump.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m3"]
+
+[resource]
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("water")
+id = "magikarp"
+species_name = "Magikarp"
+dex_number = 129
+model_height = 1.02
+base_hp = 20
+base_attack = 10
+base_defense = 55
+base_sp_attack = 15
+base_sp_defense = 20
+base_speed = 80
+size = 1
+move_modifier = 0
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m0"), ExtResource("m3")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m1"), ExtResource("m0"), ExtResource("m2"), ExtResource("m3")])

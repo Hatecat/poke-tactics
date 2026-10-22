@@ -1,0 +1,75 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/abra.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/barrier.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/bodyslam.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/calmmind.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/captivate.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/chargebeam.tres" id="m4"]
+[ext_resource type="Resource" path="res://data/moves/confide.tres" id="m5"]
+[ext_resource type="Resource" path="res://data/moves/confusion.tres" id="m6"]
+[ext_resource type="Resource" path="res://data/moves/dazzlinggleam.tres" id="m7"]
+[ext_resource type="Resource" path="res://data/moves/doubleedge.tres" id="m8"]
+[ext_resource type="Resource" path="res://data/moves/drainpunch.tres" id="m9"]
+[ext_resource type="Resource" path="res://data/moves/dynamicpunch.tres" id="m10"]
+[ext_resource type="Resource" path="res://data/moves/energyball.tres" id="m11"]
+[ext_resource type="Resource" path="res://data/moves/facade.tres" id="m12"]
+[ext_resource type="Resource" path="res://data/moves/firepunch.tres" id="m13"]
+[ext_resource type="Resource" path="res://data/moves/foulplay.tres" id="m14"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m15"]
+[ext_resource type="Resource" path="res://data/moves/grassknot.tres" id="m16"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m17"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m18"]
+[ext_resource type="Resource" path="res://data/moves/icepunch.tres" id="m19"]
+[ext_resource type="Resource" path="res://data/moves/irontail.tres" id="m20"]
+[ext_resource type="Resource" path="res://data/moves/knockoff.tres" id="m21"]
+[ext_resource type="Resource" path="res://data/moves/megakick.tres" id="m22"]
+[ext_resource type="Resource" path="res://data/moves/megapunch.tres" id="m23"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m24"]
+[ext_resource type="Resource" path="res://data/moves/psychic.tres" id="m25"]
+[ext_resource type="Resource" path="res://data/moves/psyshock.tres" id="m26"]
+[ext_resource type="Resource" path="res://data/moves/psywave.tres" id="m27"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m28"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/seismictoss.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/shadowball.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/shockwave.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/signalbeam.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/skullbash.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/submission.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/swift.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m41"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m42"]
+[ext_resource type="Resource" path="res://data/moves/thunderpunch.tres" id="m43"]
+[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m44"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m45"]
+[ext_resource type="Resource" path="res://data/moves/triattack.tres" id="m46"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m47"]
+[ext_resource type="Resource" path="res://data/moves/zenheadbutt.tres" id="m48"]
+
+[resource]
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("psychic")
+id = "abra"
+species_name = "Abra"
+dex_number = 63
+model_height = 1.02
+base_hp = 25
+base_attack = 20
+base_defense = 15
+base_sp_attack = 105
+base_sp_defense = 55
+base_speed = 90
+size = 1
+move_modifier = 0
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m25"), ExtResource("m11"), ExtResource("m0"), ExtResource("m26")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m34"), ExtResource("m7"), ExtResource("m37"), ExtResource("m48"), ExtResource("m31"), ExtResource("m20"), ExtResource("m5"), ExtResource("m6"), ExtResource("m32"), ExtResource("m41"), ExtResource("m21"), ExtResource("m29"), ExtResource("m8"), ExtResource("m24"), ExtResource("m47"), ExtResource("m11"), ExtResource("m12"), ExtResource("m39"), ExtResource("m15"), ExtResource("m28"), ExtResource("m17"), ExtResource("m1"), ExtResource("m16"), ExtResource("m14"), ExtResource("m42"), ExtResource("m22"), ExtResource("m23"), ExtResource("m40"), ExtResource("m44"), ExtResource("m35"), ExtResource("m2"), ExtResource("m18"), ExtResource("m26"), ExtResource("m27"), ExtResource("m25"), ExtResource("m10"), ExtResource("m9"), ExtResource("m13"), ExtResource("m19"), ExtResource("m43"), ExtResource("m4"), ExtResource("m36"), ExtResource("m30"), ExtResource("m3"), ExtResource("m38"), ExtResource("m33"), ExtResource("m46"), ExtResource("m45")])

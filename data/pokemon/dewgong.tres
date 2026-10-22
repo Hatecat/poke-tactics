@@ -1,0 +1,89 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/dewgong.glb" id="1_model"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
+[ext_resource type="Resource" path="res://data/moves/alluringvoice.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/aquajet.tres" id="m1"]
+[ext_resource type="Resource" path="res://data/moves/aquatail.tres" id="m2"]
+[ext_resource type="Resource" path="res://data/moves/aurorabeam.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/avalanche.tres" id="m4"]
+[ext_resource type="Resource" path="res://data/moves/blizzard.tres" id="m5"]
+[ext_resource type="Resource" path="res://data/moves/bodyslam.tres" id="m6"]
+[ext_resource type="Resource" path="res://data/moves/brine.tres" id="m7"]
+[ext_resource type="Resource" path="res://data/moves/bubblebeam.tres" id="m8"]
+[ext_resource type="Resource" path="res://data/moves/captivate.tres" id="m9"]
+[ext_resource type="Resource" path="res://data/moves/charm.tres" id="m10"]
+[ext_resource type="Resource" path="res://data/moves/chillingwater.tres" id="m11"]
+[ext_resource type="Resource" path="res://data/moves/confide.tres" id="m12"]
+[ext_resource type="Resource" path="res://data/moves/dive.tres" id="m13"]
+[ext_resource type="Resource" path="res://data/moves/doubleedge.tres" id="m14"]
+[ext_resource type="Resource" path="res://data/moves/drillrun.tres" id="m15"]
+[ext_resource type="Resource" path="res://data/moves/echoedvoice.tres" id="m16"]
+[ext_resource type="Resource" path="res://data/moves/facade.tres" id="m17"]
+[ext_resource type="Resource" path="res://data/moves/fakeout.tres" id="m18"]
+[ext_resource type="Resource" path="res://data/moves/flipturn.tres" id="m19"]
+[ext_resource type="Resource" path="res://data/moves/frostbreath.tres" id="m20"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m21"]
+[ext_resource type="Resource" path="res://data/moves/gigaimpact.tres" id="m22"]
+[ext_resource type="Resource" path="res://data/moves/growl.tres" id="m23"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m24"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m25"]
+[ext_resource type="Resource" path="res://data/moves/hydropump.tres" id="m26"]
+[ext_resource type="Resource" path="res://data/moves/hyperbeam.tres" id="m27"]
+[ext_resource type="Resource" path="res://data/moves/icebeam.tres" id="m28"]
+[ext_resource type="Resource" path="res://data/moves/iceshard.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/icespinner.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/iciclespear.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/icywind.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/irontail.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/knockoff.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/liquidation.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/megahorn.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/muddywater.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/payday.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/playrough.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m41"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m42"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m43"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m44"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m45"]
+[ext_resource type="Resource" path="res://data/moves/signalbeam.tres" id="m46"]
+[ext_resource type="Resource" path="res://data/moves/skullbash.tres" id="m47"]
+[ext_resource type="Resource" path="res://data/moves/smartstrike.tres" id="m48"]
+[ext_resource type="Resource" path="res://data/moves/strength.tres" id="m49"]
+[ext_resource type="Resource" path="res://data/moves/surf.tres" id="m50"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m51"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m52"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m53"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m54"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m55"]
+[ext_resource type="Resource" path="res://data/moves/tripleaxel.tres" id="m56"]
+[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/waterfall.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/watergun.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/waterpulse.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/weatherball.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/whirlpool.tres" id="m62"]
+
+[resource]
+script = ExtResource("3_script")
+model = ExtResource("1_model")
+types = PackedStringArray("water", "ice")
+id = "dewgong"
+species_name = "Dewgong"
+dex_number = 87
+model_height = 1.4
+base_hp = 90
+base_attack = 70
+base_defense = 80
+base_sp_attack = 70
+base_sp_defense = 95
+base_speed = 70
+size = 2
+move_modifier = -1
+jump = 1
+anim_map = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m35"), ExtResource("m14"), ExtResource("m42"), ExtResource("m2")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m11"), ExtResource("m37"), ExtResource("m57"), ExtResource("m4"), ExtResource("m13"), ExtResource("m47"), ExtResource("m44"), ExtResource("m0"), ExtResource("m40"), ExtResource("m31"), ExtResource("m58"), ExtResource("m33"), ExtResource("m12"), ExtResource("m48"), ExtResource("m45"), ExtResource("m52"), ExtResource("m34"), ExtResource("m42"), ExtResource("m14"), ExtResource("m38"), ExtResource("m39"), ExtResource("m16"), ExtResource("m10"), ExtResource("m29"), ExtResource("m17"), ExtResource("m51"), ExtResource("m21"), ExtResource("m49"), ExtResource("m41"), ExtResource("m22"), ExtResource("m24"), ExtResource("m6"), ExtResource("m23"), ExtResource("m35"), ExtResource("m26"), ExtResource("m60"), ExtResource("m27"), ExtResource("m54"), ExtResource("m36"), ExtResource("m61"), ExtResource("m30"), ExtResource("m59"), ExtResource("m25"), ExtResource("m3"), ExtResource("m8"), ExtResource("m28"), ExtResource("m46"), ExtResource("m43"), ExtResource("m7"), ExtResource("m9"), ExtResource("m18"), ExtResource("m50"), ExtResource("m15"), ExtResource("m53"), ExtResource("m62"), ExtResource("m56"), ExtResource("m55"), ExtResource("m20"), ExtResource("m5"), ExtResource("m32"), ExtResource("m19")])
