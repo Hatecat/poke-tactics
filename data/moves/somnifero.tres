@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_5yrow"]
+
+[resource]
+script = ExtResource("1_5yrow")
+display_name = "Somnífero"
+type = "grass"
+category = 2
+accuracy = 75
+range_max = 3
+area_shape = 1
+area_size = 1
+status = 2
+status_chance = 100
+animation = "fight_d"

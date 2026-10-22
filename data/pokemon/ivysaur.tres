@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/ivysaur.glb" id="1_gbqnm"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_qgy8h"]
+[ext_resource type="Resource" path="res://data/moves/latigo_cepa.tres" id="3_7y8mm"]
+[ext_resource type="Resource" path="res://data/moves/hoja_afilada.tres" id="4_li7qm"]
+[ext_resource type="Resource" path="res://data/moves/polvo_veneno.tres" id="5_odn8r"]
+[ext_resource type="Resource" path="res://data/moves/paralizador.tres" id="6_ar7he"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_lbhov"]
+
+[resource]
+script = ExtResource("7_lbhov")
+species_name = "Ivysaur"
+dex_number = 2
+types = PackedStringArray("grass", "poison")
+model = ExtResource("1_gbqnm")
+model_height = 1.0
+base_hp = 60
+base_attack = 62
+base_defense = 63
+base_sp_attack = 80
+base_sp_defense = 80
+base_speed = 60
+moves = Array[ExtResource("2_qgy8h")]([ExtResource("3_7y8mm"), ExtResource("4_li7qm"), ExtResource("5_odn8r"), ExtResource("6_ar7he")])

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/beedrill.glb" id="1_o7u5o"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_g3c4i"]
+[ext_resource type="Resource" path="res://data/moves/doble_ataque.tres" id="3_e2p6e"]
+[ext_resource type="Resource" path="res://data/moves/pin_misil.tres" id="4_fdq01"]
+[ext_resource type="Resource" path="res://data/moves/picotazo_veneno.tres" id="5_axi35"]
+[ext_resource type="Resource" path="res://data/moves/tijera_x.tres" id="6_0mx1g"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_ic70i"]
+
+[resource]
+script = ExtResource("7_ic70i")
+species_name = "Beedrill"
+dex_number = 15
+types = PackedStringArray("bug", "poison")
+model = ExtResource("1_o7u5o")
+model_height = 1.2
+base_hp = 65
+base_attack = 90
+base_defense = 40
+base_sp_attack = 45
+base_sp_defense = 80
+base_speed = 75
+move_modifier = 1
+jump = 3
+moves = Array[ExtResource("2_g3c4i")]([ExtResource("3_e2p6e"), ExtResource("4_fdq01"), ExtResource("5_axi35"), ExtResource("6_0mx1g")])

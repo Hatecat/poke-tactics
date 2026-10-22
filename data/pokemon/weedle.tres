@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/weedle.glb" id="1_ebyxj"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_ef50m"]
+[ext_resource type="Resource" path="res://data/moves/picotazo_veneno.tres" id="3_fll6o"]
+[ext_resource type="Resource" path="res://data/moves/picadura.tres" id="4_ocrtb"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="5_wtoxu"]
+
+[resource]
+script = ExtResource("5_wtoxu")
+species_name = "Weedle"
+dex_number = 13
+types = PackedStringArray("bug", "poison")
+model = ExtResource("1_ebyxj")
+model_height = 0.6
+base_hp = 40
+base_attack = 35
+base_defense = 30
+base_sp_attack = 20
+base_sp_defense = 20
+moves = Array[ExtResource("2_ef50m")]([ExtResource("3_fll6o"), ExtResource("4_ocrtb")])

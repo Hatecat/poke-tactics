@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_6efye"]
+
+[resource]
+script = ExtResource("1_6efye")
+display_name = "Doble Ataque"
+type = "bug"
+power = 50
+status = 1
+status_chance = 20

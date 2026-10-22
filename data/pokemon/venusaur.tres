@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/venusaur.glb" id="1_3b74j"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_h81td"]
+[ext_resource type="Resource" path="res://data/moves/megaagotar.tres" id="3_5cr7y"]
+[ext_resource type="Resource" path="res://data/moves/bomba_lodo.tres" id="4_p2f0v"]
+[ext_resource type="Resource" path="res://data/moves/somnifero.tres" id="5_hm2u0"]
+[ext_resource type="Resource" path="res://data/moves/terremoto.tres" id="6_wbkrh"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_qhcso"]
+
+[resource]
+script = ExtResource("7_qhcso")
+species_name = "Venusaur"
+dex_number = 3
+types = PackedStringArray("grass", "poison")
+model = ExtResource("1_3b74j")
+model_height = 1.5
+base_hp = 80
+base_attack = 82
+base_defense = 83
+base_sp_attack = 100
+base_sp_defense = 100
+base_speed = 80
+size = 2
+move_modifier = -1
+moves = Array[ExtResource("2_h81td")]([ExtResource("3_5cr7y"), ExtResource("4_p2f0v"), ExtResource("5_hm2u0"), ExtResource("6_wbkrh")])

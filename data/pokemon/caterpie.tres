@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/caterpie.glb" id="1_8wwbl"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_68xy7"]
+[ext_resource type="Resource" path="res://data/moves/placaje.tres" id="3_bqvtf"]
+[ext_resource type="Resource" path="res://data/moves/picadura.tres" id="4_e28w4"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="5_bliy6"]
+
+[resource]
+script = ExtResource("5_bliy6")
+species_name = "Caterpie"
+dex_number = 10
+types = PackedStringArray("bug")
+model = ExtResource("1_8wwbl")
+model_height = 0.6
+base_hp = 45
+base_attack = 30
+base_defense = 35
+base_sp_attack = 20
+base_sp_defense = 20
+base_speed = 45
+moves = Array[ExtResource("2_68xy7")]([ExtResource("3_bqvtf"), ExtResource("4_e28w4")])

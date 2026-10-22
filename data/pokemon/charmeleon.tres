@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/charmeleon.glb" id="1_5b0t6"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_chq05"]
+[ext_resource type="Resource" path="res://data/moves/aranazo.tres" id="3_2lft6"]
+[ext_resource type="Resource" path="res://data/moves/mordisco.tres" id="4_xoe03"]
+[ext_resource type="Resource" path="res://data/moves/ascuas.tres" id="5_c8rpt"]
+[ext_resource type="Resource" path="res://data/moves/lanzallamas.tres" id="6_xjk6t"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_khdle"]
+
+[resource]
+script = ExtResource("7_khdle")
+species_name = "Charmeleon"
+dex_number = 5
+types = PackedStringArray("fire")
+model = ExtResource("1_5b0t6")
+model_height = 1.1
+base_hp = 58
+base_attack = 64
+base_defense = 58
+base_sp_attack = 80
+base_sp_defense = 65
+base_speed = 80
+moves = Array[ExtResource("2_chq05")]([ExtResource("3_2lft6"), ExtResource("4_xoe03"), ExtResource("5_c8rpt"), ExtResource("6_xjk6t")])

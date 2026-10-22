@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/charmander.glb" id="1_u4l1x"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_5uu2i"]
+[ext_resource type="Resource" path="res://data/moves/aranazo.tres" id="3_36lov"]
+[ext_resource type="Resource" path="res://data/moves/ascuas.tres" id="4_10jhc"]
+[ext_resource type="Resource" path="res://data/moves/mordisco.tres" id="5_fgmtb"]
+[ext_resource type="Resource" path="res://data/moves/lanzallamas.tres" id="6_oxe5r"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_1olju"]
+
+[resource]
+script = ExtResource("7_1olju")
+species_name = "Charmander"
+dex_number = 4
+types = PackedStringArray("fire")
+model = ExtResource("1_u4l1x")
+model_height = 0.85
+base_hp = 39
+base_attack = 52
+base_defense = 43
+base_sp_attack = 60
+base_speed = 65
+moves = Array[ExtResource("2_5uu2i")]([ExtResource("3_36lov"), ExtResource("4_10jhc"), ExtResource("5_fgmtb"), ExtResource("6_oxe5r")])

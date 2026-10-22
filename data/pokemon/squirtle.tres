@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/squirtle.glb" id="1_pqftr"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_amckf"]
+[ext_resource type="Resource" path="res://data/moves/placaje.tres" id="3_q36oc"]
+[ext_resource type="Resource" path="res://data/moves/pistola_agua.tres" id="4_ujq1l"]
+[ext_resource type="Resource" path="res://data/moves/mordisco.tres" id="5_o28sn"]
+[ext_resource type="Resource" path="res://data/moves/hidropulso.tres" id="6_1lerx"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_ivbkm"]
+
+[resource]
+script = ExtResource("7_ivbkm")
+species_name = "Squirtle"
+dex_number = 7
+types = PackedStringArray("water")
+model = ExtResource("1_pqftr")
+model_height = 0.8
+base_hp = 44
+base_attack = 48
+base_defense = 65
+base_sp_defense = 64
+base_speed = 43
+moves = Array[ExtResource("2_amckf")]([ExtResource("3_q36oc"), ExtResource("4_ujq1l"), ExtResource("5_o28sn"), ExtResource("6_1lerx")])

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/kakuna.glb" id="1_8ljcn"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_svkc0"]
+[ext_resource type="Resource" path="res://data/moves/picotazo_veneno.tres" id="3_3tget"]
+[ext_resource type="Resource" path="res://data/moves/picadura.tres" id="4_qyuxq"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="5_kqta8"]
+
+[resource]
+script = ExtResource("5_kqta8")
+species_name = "Kakuna"
+dex_number = 14
+types = PackedStringArray("bug", "poison")
+model = ExtResource("1_8ljcn")
+model_height = 0.7
+base_hp = 45
+base_attack = 25
+base_sp_attack = 25
+base_sp_defense = 25
+base_speed = 35
+moves = Array[ExtResource("2_svkc0")]([ExtResource("3_3tget"), ExtResource("4_qyuxq")])

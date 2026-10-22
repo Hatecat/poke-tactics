@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/blastoise.glb" id="1_4lfk5"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_8u3h2"]
+[ext_resource type="Resource" path="res://data/moves/mordisco.tres" id="3_nsfil"]
+[ext_resource type="Resource" path="res://data/moves/hidropulso.tres" id="4_e816i"]
+[ext_resource type="Resource" path="res://data/moves/hidrobomba.tres" id="5_k6u2l"]
+[ext_resource type="Resource" path="res://data/moves/surf.tres" id="6_fq706"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_4mfic"]
+
+[resource]
+script = ExtResource("7_4mfic")
+species_name = "Blastoise"
+dex_number = 9
+types = PackedStringArray("water")
+model = ExtResource("1_4lfk5")
+model_height = 1.6
+base_hp = 79
+base_attack = 83
+base_defense = 100
+base_sp_attack = 85
+base_sp_defense = 105
+base_speed = 78
+size = 2
+move_modifier = -1
+moves = Array[ExtResource("2_8u3h2")]([ExtResource("3_nsfil"), ExtResource("4_e816i"), ExtResource("5_k6u2l"), ExtResource("6_fq706")])

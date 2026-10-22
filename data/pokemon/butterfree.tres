@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/butterfree.glb" id="1_jabeu"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_oyb27"]
+[ext_resource type="Resource" path="res://data/moves/tornado.tres" id="3_e0a2s"]
+[ext_resource type="Resource" path="res://data/moves/confusion.tres" id="4_aaeca"]
+[ext_resource type="Resource" path="res://data/moves/zumbido.tres" id="5_7nt03"]
+[ext_resource type="Resource" path="res://data/moves/somnifero.tres" id="6_7h7u4"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_3hkmf"]
+
+[resource]
+script = ExtResource("7_3hkmf")
+species_name = "Butterfree"
+dex_number = 12
+types = PackedStringArray("bug", "flying")
+model = ExtResource("1_jabeu")
+model_height = 1.1
+base_hp = 60
+base_attack = 45
+base_sp_attack = 90
+base_sp_defense = 80
+base_speed = 70
+move_modifier = 1
+jump = 3
+moves = Array[ExtResource("2_oyb27")]([ExtResource("3_e0a2s"), ExtResource("4_aaeca"), ExtResource("5_7nt03"), ExtResource("6_7h7u4")])

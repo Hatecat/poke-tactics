@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_t37f1"]
+
+[resource]
+script = ExtResource("1_t37f1")
+display_name = "Ascuas"
+type = "fire"
+category = 1
+power = 40
+range_max = 3
+status = 4
+status_chance = 10
+animation = "fight_d"

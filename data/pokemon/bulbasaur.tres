@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/bulbasaur.glb" id="1_o2uvk"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_hxkmc"]
+[ext_resource type="Resource" path="res://data/moves/placaje.tres" id="3_mj1io"]
+[ext_resource type="Resource" path="res://data/moves/latigo_cepa.tres" id="4_dylkh"]
+[ext_resource type="Resource" path="res://data/moves/hoja_afilada.tres" id="5_1m6uw"]
+[ext_resource type="Resource" path="res://data/moves/somnifero.tres" id="6_qhnwy"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_j1fns"]
+
+[resource]
+script = ExtResource("7_j1fns")
+species_name = "Bulbasaur"
+dex_number = 1
+types = PackedStringArray("grass", "poison")
+model = ExtResource("1_o2uvk")
+model_height = 0.8
+base_hp = 45
+base_attack = 49
+base_defense = 49
+base_sp_attack = 65
+base_sp_defense = 65
+base_speed = 45
+moves = Array[ExtResource("2_hxkmc")]([ExtResource("3_mj1io"), ExtResource("4_dylkh"), ExtResource("5_1m6uw"), ExtResource("6_qhnwy")])

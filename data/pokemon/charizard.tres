@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="PokemonData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/pokemon/charizard.glb" id="1_2wwjn"]
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_eyuvw"]
+[ext_resource type="Resource" path="res://data/moves/ataque_ala.tres" id="3_n50dr"]
+[ext_resource type="Resource" path="res://data/moves/lanzallamas.tres" id="4_cnb1y"]
+[ext_resource type="Resource" path="res://data/moves/onda_ignea.tres" id="5_5x124"]
+[ext_resource type="Resource" path="res://data/moves/terremoto.tres" id="6_77igy"]
+[ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="7_60k1l"]
+
+[resource]
+script = ExtResource("7_60k1l")
+species_name = "Charizard"
+dex_number = 6
+types = PackedStringArray("fire", "flying")
+model = ExtResource("1_2wwjn")
+model_height = 1.8
+base_hp = 78
+base_attack = 84
+base_defense = 78
+base_sp_attack = 109
+base_sp_defense = 85
+base_speed = 100
+size = 2
+move_modifier = 1
+jump = 3
+moves = Array[ExtResource("2_eyuvw")]([ExtResource("3_n50dr"), ExtResource("4_cnb1y"), ExtResource("5_5x124"), ExtResource("6_77igy")])
