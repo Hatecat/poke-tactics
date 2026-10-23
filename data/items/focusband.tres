@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/focusband.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "focusband"
+display_name = "Cinta Aguante"
+description = "El Pokémon que la lleva puede resistir un golpe que potencialmente lo dejaría K. O. y se queda con 1 PS."
+category = 1
+effect = "focus_band"
+params = {
+"chance": 0.1
+}
+fling_power = 10
+rarity = 0
+icon = ExtResource("2_icon")

@@ -48,6 +48,8 @@ var _tool_buttons := {}
 
 func _ready() -> void:
 	rng.randomize()
+	Audio.music("editor")
+	Audio.ambience("")
 	_cam = CameraRig.new()
 	add_child(_cam)
 	_board = BoardView.new()
@@ -291,6 +293,7 @@ func _test() -> void:
 	if not _validate():
 		return
 	Game.map = map
+	Game.mode = "quick"
 	Game.testing_map = true
 	Game.roll_enemy_team()
 	get_tree().change_scene_to_file("res://scenes/battle.tscn")

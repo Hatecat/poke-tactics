@@ -3,13 +3,14 @@
 [ext_resource type="PackedScene" path="res://assets/models/pokemon/ditto.glb" id="1_model"]
 [ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]
 [ext_resource type="Script" path="res://scripts/data/pokemon_data.gd" id="3_script"]
-[ext_resource type="Resource" path="res://data/moves/struggle.tres" id="m0"]
+[ext_resource type="Resource" path="res://data/moves/transform.tres" id="m0"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("normal")
 abilities = PackedStringArray("limber", "imposter")
+evolves_to = PackedStringArray()
 id = "ditto"
 species_name = "Ditto"
 dex_number = 132
@@ -25,5 +26,12 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = -1.0
+evolve_level = 0
+stage = 1
+legendary = false
+level_moves = {
+"transform": 1
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m0")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m0")])

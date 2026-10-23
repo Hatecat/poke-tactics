@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 [autoload]
 
 Game="*res://scripts/game.gd"
+Audio="*res://scripts/audio.gd"
 
 [display]
 

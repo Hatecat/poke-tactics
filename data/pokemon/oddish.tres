@@ -72,6 +72,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("grass", "poison")
 abilities = PackedStringArray("chlorophyll", "runaway")
+evolves_to = PackedStringArray("gloom")
 id = "oddish"
 species_name = "Oddish"
 dex_number = 43
@@ -87,5 +88,25 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 21
+stage = 1
+legendary = false
+level_moves = {
+"absorb": 1,
+"growth": 1,
+"acid": 4,
+"sweetscent": 8,
+"megadrain": 12,
+"poisonpowder": 14,
+"stunspore": 16,
+"sleeppowder": 18,
+"gigadrain": 20,
+"toxic": 24,
+"moonblast": 28,
+"grassyterrain": 32,
+"moonlight": 36,
+"petaldance": 40
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m35"), ExtResource("m47"), ExtResource("m54"), ExtResource("m28")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m61"), ExtResource("m0"), ExtResource("m26"), ExtResource("m13"), ExtResource("m27"), ExtResource("m3"), ExtResource("m16"), ExtResource("m45"), ExtResource("m47"), ExtResource("m2"), ExtResource("m10"), ExtResource("m22"), ExtResource("m43"), ExtResource("m62"), ExtResource("m7"), ExtResource("m9"), ExtResource("m59"), ExtResource("m57"), ExtResource("m54"), ExtResource("m35"), ExtResource("m44"), ExtResource("m56"), ExtResource("m23"), ExtResource("m41"), ExtResource("m17"), ExtResource("m12"), ExtResource("m11"), ExtResource("m34"), ExtResource("m29"), ExtResource("m53"), ExtResource("m51"), ExtResource("m6"), ExtResource("m14"), ExtResource("m15"), ExtResource("m52"), ExtResource("m21"), ExtResource("m55"), ExtResource("m18"), ExtResource("m32"), ExtResource("m38"), ExtResource("m19"), ExtResource("m24"), ExtResource("m20"), ExtResource("m39"), ExtResource("m30"), ExtResource("m28"), ExtResource("m33"), ExtResource("m8"), ExtResource("m31"), ExtResource("m49"), ExtResource("m25"), ExtResource("m36"), ExtResource("m37"), ExtResource("m48"), ExtResource("m40"), ExtResource("m42"), ExtResource("m5"), ExtResource("m4"), ExtResource("m46"), ExtResource("m50"), ExtResource("m58"), ExtResource("m60"), ExtResource("m1")])

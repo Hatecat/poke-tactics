@@ -11,6 +11,7 @@ func _ready() -> void:
 	theme = UiKit.theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(UiKit.background())
+	Audio.music("menu")
 
 	var root := VBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)

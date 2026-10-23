@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/passhoberry.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "passhoberry"
+display_name = "Baya Pasio"
+description = "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Agua de un enemigo."
+category = 0
+effect = "resist"
+params = {
+"type": "water"
+}
+fling_power = 10
+rarity = 1
+icon = ExtResource("2_icon")

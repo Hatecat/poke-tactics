@@ -78,19 +78,21 @@
 [ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m72"]
 [ext_resource type="Resource" path="res://data/moves/swift.tres" id="m73"]
 [ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m74"]
-[ext_resource type="Resource" path="res://data/moves/temperflare.tres" id="m75"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m76"]
-[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m77"]
-[ext_resource type="Resource" path="res://data/moves/thunderfang.tres" id="m78"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m79"]
-[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m80"]
-[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m81"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m75"]
+[ext_resource type="Resource" path="res://data/moves/temperflare.tres" id="m76"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m77"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m78"]
+[ext_resource type="Resource" path="res://data/moves/thunderfang.tres" id="m79"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m80"]
+[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m81"]
+[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m82"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("fire")
 abilities = PackedStringArray("intimidate", "flashfire", "justified")
+evolves_to = PackedStringArray()
 id = "arcanine"
 species_name = "Arcanine"
 dex_number = 59
@@ -106,5 +108,27 @@ move_modifier = -1
 jump = 1
 anim_map = {}
 male_ratio = 0.75
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"agility": 1,
+"bite": 1,
+"crunch": 1,
+"ember": 1,
+"extremespeed": 1,
+"firefang": 1,
+"flamewheel": 1,
+"flareblitz": 1,
+"howl": 1,
+"leer": 1,
+"playrough": 1,
+"retaliate": 1,
+"reversal": 1,
+"roar": 1,
+"takedown": 1,
+"flamethrower": 5
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m30"), ExtResource("m9"), ExtResource("m1"), ExtResource("m6")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m9"), ExtResource("m1"), ExtResource("m21"), ExtResource("m66"), ExtResource("m11"), ExtResource("m63"), ExtResource("m20"), ExtResource("m2"), ExtResource("m37"), ExtResource("m44"), ExtResource("m41"), ExtResource("m65"), ExtResource("m40"), ExtResource("m60"), ExtResource("m62"), ExtResource("m48"), ExtResource("m42"), ExtResource("m78"), ExtResource("m25"), ExtResource("m10"), ExtResource("m75"), ExtResource("m64"), ExtResource("m74"), ExtResource("m53"), ExtResource("m16"), ExtResource("m15"), ExtResource("m45"), ExtResource("m17"), ExtResource("m70"), ExtResource("m8"), ExtResource("m46"), ExtResource("m30"), ExtResource("m14"), ExtResource("m23"), ExtResource("m72"), ExtResource("m31"), ExtResource("m81"), ExtResource("m68"), ExtResource("m71"), ExtResource("m51"), ExtResource("m19"), ExtResource("m32"), ExtResource("m26"), ExtResource("m0"), ExtResource("m33"), ExtResource("m34"), ExtResource("m4"), ExtResource("m59"), ExtResource("m38"), ExtResource("m56"), ExtResource("m77"), ExtResource("m28"), ExtResource("m6"), ExtResource("m24"), ExtResource("m13"), ExtResource("m43"), ExtResource("m73"), ExtResource("m3"), ExtResource("m27"), ExtResource("m35"), ExtResource("m36"), ExtResource("m49"), ExtResource("m50"), ExtResource("m18"), ExtResource("m67"), ExtResource("m52"), ExtResource("m54"), ExtResource("m55"), ExtResource("m29"), ExtResource("m57"), ExtResource("m7"), ExtResource("m47"), ExtResource("m69"), ExtResource("m76"), ExtResource("m5"), ExtResource("m58"), ExtResource("m12"), ExtResource("m79"), ExtResource("m61"), ExtResource("m22"), ExtResource("m80"), ExtResource("m39")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m9"), ExtResource("m1"), ExtResource("m21"), ExtResource("m66"), ExtResource("m11"), ExtResource("m63"), ExtResource("m20"), ExtResource("m2"), ExtResource("m37"), ExtResource("m44"), ExtResource("m41"), ExtResource("m65"), ExtResource("m40"), ExtResource("m60"), ExtResource("m62"), ExtResource("m48"), ExtResource("m42"), ExtResource("m79"), ExtResource("m25"), ExtResource("m10"), ExtResource("m76"), ExtResource("m64"), ExtResource("m74"), ExtResource("m53"), ExtResource("m16"), ExtResource("m15"), ExtResource("m45"), ExtResource("m17"), ExtResource("m70"), ExtResource("m8"), ExtResource("m46"), ExtResource("m30"), ExtResource("m14"), ExtResource("m23"), ExtResource("m72"), ExtResource("m31"), ExtResource("m82"), ExtResource("m68"), ExtResource("m71"), ExtResource("m51"), ExtResource("m19"), ExtResource("m32"), ExtResource("m26"), ExtResource("m0"), ExtResource("m33"), ExtResource("m34"), ExtResource("m4"), ExtResource("m59"), ExtResource("m38"), ExtResource("m56"), ExtResource("m78"), ExtResource("m28"), ExtResource("m6"), ExtResource("m24"), ExtResource("m13"), ExtResource("m43"), ExtResource("m73"), ExtResource("m3"), ExtResource("m27"), ExtResource("m35"), ExtResource("m36"), ExtResource("m49"), ExtResource("m50"), ExtResource("m18"), ExtResource("m67"), ExtResource("m52"), ExtResource("m54"), ExtResource("m55"), ExtResource("m29"), ExtResource("m57"), ExtResource("m7"), ExtResource("m47"), ExtResource("m69"), ExtResource("m75"), ExtResource("m77"), ExtResource("m5"), ExtResource("m58"), ExtResource("m12"), ExtResource("m80"), ExtResource("m61"), ExtResource("m22"), ExtResource("m81"), ExtResource("m39")])

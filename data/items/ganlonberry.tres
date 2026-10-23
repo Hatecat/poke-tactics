@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/ganlonberry.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "ganlonberry"
+display_name = "Baya Gonlan"
+description = "Si la lleva un Pokémon, le sube la Defensa en un momento de apuro."
+category = 0
+effect = "pinch"
+params = {
+"stat": "defense"
+}
+fling_power = 10
+rarity = 1
+icon = ExtResource("2_icon")

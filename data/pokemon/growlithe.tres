@@ -84,6 +84,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("fire")
 abilities = PackedStringArray("intimidate", "flashfire", "justified")
+evolves_to = PackedStringArray()
 id = "growlithe"
 species_name = "Growlithe"
 dex_number = 58
@@ -99,5 +100,28 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.75
+evolve_level = 0
+stage = 1
+legendary = false
+level_moves = {
+"ember": 1,
+"leer": 1,
+"howl": 4,
+"bite": 8,
+"flamewheel": 12,
+"agility": 20,
+"firefang": 24,
+"retaliate": 28,
+"crunch": 32,
+"takedown": 36,
+"flamethrower": 40,
+"roar": 44,
+"playrough": 48,
+"reversal": 52,
+"flareblitz": 56
+}
+stone_evolutions = {
+"firestone": "arcanine"
+}
 moves = Array[ExtResource("2_move")]([ExtResource("m29"), ExtResource("m8"), ExtResource("m1"), ExtResource("m47")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m8"), ExtResource("m1"), ExtResource("m20"), ExtResource("m60"), ExtResource("m10"), ExtResource("m19"), ExtResource("m2"), ExtResource("m34"), ExtResource("m39"), ExtResource("m59"), ExtResource("m35"), ExtResource("m55"), ExtResource("m57"), ExtResource("m43"), ExtResource("m36"), ExtResource("m71"), ExtResource("m23"), ExtResource("m9"), ExtResource("m67"), ExtResource("m58"), ExtResource("m66"), ExtResource("m49"), ExtResource("m16"), ExtResource("m14"), ExtResource("m15"), ExtResource("m40"), ExtResource("m17"), ExtResource("m63"), ExtResource("m7"), ExtResource("m41"), ExtResource("m29"), ExtResource("m47"), ExtResource("m13"), ExtResource("m21"), ExtResource("m64"), ExtResource("m30"), ExtResource("m74"), ExtResource("m61"), ExtResource("m46"), ExtResource("m18"), ExtResource("m24"), ExtResource("m0"), ExtResource("m31"), ExtResource("m4"), ExtResource("m54"), ExtResource("m52"), ExtResource("m69"), ExtResource("m27"), ExtResource("m5"), ExtResource("m22"), ExtResource("m12"), ExtResource("m37"), ExtResource("m65"), ExtResource("m3"), ExtResource("m26"), ExtResource("m32"), ExtResource("m25"), ExtResource("m33"), ExtResource("m44"), ExtResource("m45"), ExtResource("m48"), ExtResource("m50"), ExtResource("m51"), ExtResource("m28"), ExtResource("m53"), ExtResource("m70"), ExtResource("m6"), ExtResource("m42"), ExtResource("m38"), ExtResource("m62"), ExtResource("m68"), ExtResource("m11"), ExtResource("m72"), ExtResource("m56"), ExtResource("m73")])

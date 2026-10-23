@@ -58,21 +58,23 @@
 [ext_resource type="Resource" path="res://data/moves/swift.tres" id="m52"]
 [ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m53"]
 [ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m54"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m55"]
-[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m56"]
-[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m57"]
-[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m58"]
-[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m59"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m60"]
-[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m61"]
-[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m62"]
-[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m63"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m55"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m56"]
+[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m62"]
+[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m63"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m64"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("electric", "steel")
 abilities = PackedStringArray("magnetpull", "sturdy", "analytic")
+evolves_to = PackedStringArray("magneton")
 id = "magnemite"
 species_name = "Magnemite"
 dex_number = 81
@@ -88,5 +90,25 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = -1.0
-moves = Array[ExtResource("2_move")]([ExtResource("m47"), ExtResource("m57"), ExtResource("m0"), ExtResource("m16")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m37"), ExtResource("m10"), ExtResource("m26"), ExtResource("m45"), ExtResource("m24"), ExtResource("m9"), ExtResource("m39"), ExtResource("m0"), ExtResource("m16"), ExtResource("m41"), ExtResource("m46"), ExtResource("m5"), ExtResource("m2"), ExtResource("m21"), ExtResource("m33"), ExtResource("m42"), ExtResource("m23"), ExtResource("m54"), ExtResource("m35"), ExtResource("m15"), ExtResource("m29"), ExtResource("m7"), ExtResource("m6"), ExtResource("m30"), ExtResource("m49"), ExtResource("m28"), ExtResource("m63"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m51"), ExtResource("m17"), ExtResource("m32"), ExtResource("m19"), ExtResource("m20"), ExtResource("m18"), ExtResource("m58"), ExtResource("m27"), ExtResource("m4"), ExtResource("m47"), ExtResource("m52"), ExtResource("m8"), ExtResource("m59"), ExtResource("m43"), ExtResource("m25"), ExtResource("m53"), ExtResource("m22"), ExtResource("m31"), ExtResource("m57"), ExtResource("m1"), ExtResource("m3"), ExtResource("m44"), ExtResource("m34"), ExtResource("m36"), ExtResource("m38"), ExtResource("m50"), ExtResource("m48"), ExtResource("m55"), ExtResource("m40"), ExtResource("m56"), ExtResource("m60"), ExtResource("m62"), ExtResource("m61")])
+evolve_level = 30
+stage = 1
+legendary = false
+level_moves = {
+"tackle": 1,
+"thundershock": 1,
+"supersonic": 4,
+"thunderwave": 8,
+"electroball": 12,
+"gyroball": 16,
+"spark": 20,
+"screech": 24,
+"magnetrise": 28,
+"flashcannon": 32,
+"discharge": 36,
+"metalsound": 40,
+"lightscreen": 44,
+"zapcannon": 52
+}
+stone_evolutions = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m47"), ExtResource("m58"), ExtResource("m0"), ExtResource("m16")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m37"), ExtResource("m10"), ExtResource("m26"), ExtResource("m45"), ExtResource("m24"), ExtResource("m9"), ExtResource("m39"), ExtResource("m0"), ExtResource("m16"), ExtResource("m41"), ExtResource("m46"), ExtResource("m5"), ExtResource("m2"), ExtResource("m21"), ExtResource("m33"), ExtResource("m42"), ExtResource("m23"), ExtResource("m54"), ExtResource("m35"), ExtResource("m15"), ExtResource("m29"), ExtResource("m7"), ExtResource("m6"), ExtResource("m30"), ExtResource("m49"), ExtResource("m28"), ExtResource("m64"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m51"), ExtResource("m17"), ExtResource("m32"), ExtResource("m19"), ExtResource("m20"), ExtResource("m18"), ExtResource("m59"), ExtResource("m27"), ExtResource("m4"), ExtResource("m47"), ExtResource("m52"), ExtResource("m8"), ExtResource("m60"), ExtResource("m43"), ExtResource("m25"), ExtResource("m53"), ExtResource("m22"), ExtResource("m31"), ExtResource("m58"), ExtResource("m1"), ExtResource("m3"), ExtResource("m44"), ExtResource("m34"), ExtResource("m36"), ExtResource("m38"), ExtResource("m50"), ExtResource("m48"), ExtResource("m55"), ExtResource("m56"), ExtResource("m40"), ExtResource("m57"), ExtResource("m61"), ExtResource("m63"), ExtResource("m62")])

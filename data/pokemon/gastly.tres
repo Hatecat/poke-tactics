@@ -72,17 +72,19 @@
 [ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m66"]
 [ext_resource type="Resource" path="res://data/moves/thunderpunch.tres" id="m67"]
 [ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m68"]
-[ext_resource type="Resource" path="res://data/moves/trickroom.tres" id="m69"]
-[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m70"]
-[ext_resource type="Resource" path="res://data/moves/venoshock.tres" id="m71"]
-[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m72"]
-[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m73"]
+[ext_resource type="Resource" path="res://data/moves/trick.tres" id="m69"]
+[ext_resource type="Resource" path="res://data/moves/trickroom.tres" id="m70"]
+[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m71"]
+[ext_resource type="Resource" path="res://data/moves/venoshock.tres" id="m72"]
+[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m73"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m74"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("ghost", "poison")
 abilities = PackedStringArray("levitate")
+evolves_to = PackedStringArray("haunter")
 id = "gastly"
 species_name = "Gastly"
 dex_number = 92
@@ -98,5 +100,22 @@ move_modifier = 1
 jump = 3
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 25
+stage = 1
+legendary = false
+level_moves = {
+"confuseray": 1,
+"lick": 1,
+"hypnosis": 4,
+"payback": 12,
+"curse": 20,
+"hex": 24,
+"nightshade": 28,
+"suckerpunch": 32,
+"darkpulse": 36,
+"shadowball": 40,
+"destinybond": 44
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m56"), ExtResource("m53"), ExtResource("m11"), ExtResource("m55")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m28"), ExtResource("m12"), ExtResource("m70"), ExtResource("m2"), ExtResource("m52"), ExtResource("m53"), ExtResource("m55"), ExtResource("m0"), ExtResource("m9"), ExtResource("m49"), ExtResource("m38"), ExtResource("m50"), ExtResource("m71"), ExtResource("m5"), ExtResource("m46"), ExtResource("m51"), ExtResource("m29"), ExtResource("m47"), ExtResource("m11"), ExtResource("m33"), ExtResource("m60"), ExtResource("m73"), ExtResource("m13"), ExtResource("m69"), ExtResource("m14"), ExtResource("m15"), ExtResource("m61"), ExtResource("m18"), ExtResource("m72"), ExtResource("m45"), ExtResource("m39"), ExtResource("m19"), ExtResource("m59"), ExtResource("m22"), ExtResource("m54"), ExtResource("m25"), ExtResource("m1"), ExtResource("m23"), ExtResource("m17"), ExtResource("m64"), ExtResource("m20"), ExtResource("m30"), ExtResource("m7"), ExtResource("m32"), ExtResource("m31"), ExtResource("m10"), ExtResource("m62"), ExtResource("m21"), ExtResource("m4"), ExtResource("m56"), ExtResource("m34"), ExtResource("m24"), ExtResource("m41"), ExtResource("m57"), ExtResource("m42"), ExtResource("m44"), ExtResource("m43"), ExtResource("m8"), ExtResource("m40"), ExtResource("m16"), ExtResource("m26"), ExtResource("m67"), ExtResource("m66"), ExtResource("m6"), ExtResource("m48"), ExtResource("m3"), ExtResource("m58"), ExtResource("m63"), ExtResource("m35"), ExtResource("m65"), ExtResource("m68"), ExtResource("m37"), ExtResource("m36"), ExtResource("m27")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m28"), ExtResource("m12"), ExtResource("m71"), ExtResource("m2"), ExtResource("m52"), ExtResource("m53"), ExtResource("m55"), ExtResource("m0"), ExtResource("m9"), ExtResource("m49"), ExtResource("m38"), ExtResource("m50"), ExtResource("m72"), ExtResource("m5"), ExtResource("m46"), ExtResource("m51"), ExtResource("m29"), ExtResource("m47"), ExtResource("m11"), ExtResource("m33"), ExtResource("m60"), ExtResource("m74"), ExtResource("m13"), ExtResource("m70"), ExtResource("m14"), ExtResource("m15"), ExtResource("m61"), ExtResource("m18"), ExtResource("m73"), ExtResource("m45"), ExtResource("m39"), ExtResource("m19"), ExtResource("m59"), ExtResource("m22"), ExtResource("m54"), ExtResource("m25"), ExtResource("m1"), ExtResource("m23"), ExtResource("m17"), ExtResource("m64"), ExtResource("m20"), ExtResource("m30"), ExtResource("m7"), ExtResource("m32"), ExtResource("m31"), ExtResource("m10"), ExtResource("m62"), ExtResource("m21"), ExtResource("m4"), ExtResource("m56"), ExtResource("m34"), ExtResource("m24"), ExtResource("m41"), ExtResource("m57"), ExtResource("m42"), ExtResource("m44"), ExtResource("m43"), ExtResource("m8"), ExtResource("m40"), ExtResource("m16"), ExtResource("m26"), ExtResource("m67"), ExtResource("m66"), ExtResource("m6"), ExtResource("m48"), ExtResource("m3"), ExtResource("m58"), ExtResource("m63"), ExtResource("m35"), ExtResource("m69"), ExtResource("m65"), ExtResource("m68"), ExtResource("m37"), ExtResource("m36"), ExtResource("m27")])

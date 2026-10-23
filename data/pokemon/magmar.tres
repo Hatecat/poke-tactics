@@ -32,67 +32,70 @@
 [ext_resource type="Resource" path="res://data/moves/flamethrower.tres" id="m26"]
 [ext_resource type="Resource" path="res://data/moves/flamewheel.tres" id="m27"]
 [ext_resource type="Resource" path="res://data/moves/flareblitz.tres" id="m28"]
-[ext_resource type="Resource" path="res://data/moves/focusblast.tres" id="m29"]
-[ext_resource type="Resource" path="res://data/moves/focusenergy.tres" id="m30"]
-[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m31"]
-[ext_resource type="Resource" path="res://data/moves/gigaimpact.tres" id="m32"]
-[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m33"]
-[ext_resource type="Resource" path="res://data/moves/heatcrash.tres" id="m34"]
-[ext_resource type="Resource" path="res://data/moves/heatwave.tres" id="m35"]
-[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m36"]
-[ext_resource type="Resource" path="res://data/moves/hyperbeam.tres" id="m37"]
-[ext_resource type="Resource" path="res://data/moves/incinerate.tres" id="m38"]
-[ext_resource type="Resource" path="res://data/moves/irontail.tres" id="m39"]
-[ext_resource type="Resource" path="res://data/moves/knockoff.tres" id="m40"]
-[ext_resource type="Resource" path="res://data/moves/lavaplume.tres" id="m41"]
-[ext_resource type="Resource" path="res://data/moves/leer.tres" id="m42"]
-[ext_resource type="Resource" path="res://data/moves/lowkick.tres" id="m43"]
-[ext_resource type="Resource" path="res://data/moves/lowsweep.tres" id="m44"]
-[ext_resource type="Resource" path="res://data/moves/megakick.tres" id="m45"]
-[ext_resource type="Resource" path="res://data/moves/megapunch.tres" id="m46"]
-[ext_resource type="Resource" path="res://data/moves/mudslap.tres" id="m47"]
-[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m48"]
-[ext_resource type="Resource" path="res://data/moves/overheat.tres" id="m49"]
-[ext_resource type="Resource" path="res://data/moves/poisonjab.tres" id="m50"]
-[ext_resource type="Resource" path="res://data/moves/poweruppunch.tres" id="m51"]
-[ext_resource type="Resource" path="res://data/moves/protect.tres" id="m52"]
-[ext_resource type="Resource" path="res://data/moves/psychic.tres" id="m53"]
-[ext_resource type="Resource" path="res://data/moves/psywave.tres" id="m54"]
-[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m55"]
-[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m56"]
-[ext_resource type="Resource" path="res://data/moves/return.tres" id="m57"]
-[ext_resource type="Resource" path="res://data/moves/roar.tres" id="m58"]
-[ext_resource type="Resource" path="res://data/moves/rockclimb.tres" id="m59"]
-[ext_resource type="Resource" path="res://data/moves/rocksmash.tres" id="m60"]
-[ext_resource type="Resource" path="res://data/moves/round.tres" id="m61"]
-[ext_resource type="Resource" path="res://data/moves/scaryface.tres" id="m62"]
-[ext_resource type="Resource" path="res://data/moves/scorchingsands.tres" id="m63"]
-[ext_resource type="Resource" path="res://data/moves/screech.tres" id="m64"]
-[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m65"]
-[ext_resource type="Resource" path="res://data/moves/seismictoss.tres" id="m66"]
-[ext_resource type="Resource" path="res://data/moves/skullbash.tres" id="m67"]
-[ext_resource type="Resource" path="res://data/moves/smog.tres" id="m68"]
-[ext_resource type="Resource" path="res://data/moves/smokescreen.tres" id="m69"]
-[ext_resource type="Resource" path="res://data/moves/strength.tres" id="m70"]
-[ext_resource type="Resource" path="res://data/moves/submission.tres" id="m71"]
-[ext_resource type="Resource" path="res://data/moves/substitute.tres" id="m72"]
-[ext_resource type="Resource" path="res://data/moves/sunnyday.tres" id="m73"]
-[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m74"]
-[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m75"]
-[ext_resource type="Resource" path="res://data/moves/taunt.tres" id="m76"]
-[ext_resource type="Resource" path="res://data/moves/temperflare.tres" id="m77"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m78"]
-[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m79"]
-[ext_resource type="Resource" path="res://data/moves/thunderpunch.tres" id="m80"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m81"]
-[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m82"]
-[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m83"]
+[ext_resource type="Resource" path="res://data/moves/fling.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/focusblast.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/focusenergy.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/gigaimpact.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/heatcrash.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/heatwave.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/hyperbeam.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/incinerate.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/irontail.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/knockoff.tres" id="m41"]
+[ext_resource type="Resource" path="res://data/moves/lavaplume.tres" id="m42"]
+[ext_resource type="Resource" path="res://data/moves/leer.tres" id="m43"]
+[ext_resource type="Resource" path="res://data/moves/lowkick.tres" id="m44"]
+[ext_resource type="Resource" path="res://data/moves/lowsweep.tres" id="m45"]
+[ext_resource type="Resource" path="res://data/moves/megakick.tres" id="m46"]
+[ext_resource type="Resource" path="res://data/moves/megapunch.tres" id="m47"]
+[ext_resource type="Resource" path="res://data/moves/mudslap.tres" id="m48"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m49"]
+[ext_resource type="Resource" path="res://data/moves/overheat.tres" id="m50"]
+[ext_resource type="Resource" path="res://data/moves/poisonjab.tres" id="m51"]
+[ext_resource type="Resource" path="res://data/moves/poweruppunch.tres" id="m52"]
+[ext_resource type="Resource" path="res://data/moves/protect.tres" id="m53"]
+[ext_resource type="Resource" path="res://data/moves/psychic.tres" id="m54"]
+[ext_resource type="Resource" path="res://data/moves/psywave.tres" id="m55"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m56"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/roar.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/rockclimb.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/rocksmash.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m62"]
+[ext_resource type="Resource" path="res://data/moves/scaryface.tres" id="m63"]
+[ext_resource type="Resource" path="res://data/moves/scorchingsands.tres" id="m64"]
+[ext_resource type="Resource" path="res://data/moves/screech.tres" id="m65"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/seismictoss.tres" id="m67"]
+[ext_resource type="Resource" path="res://data/moves/skullbash.tres" id="m68"]
+[ext_resource type="Resource" path="res://data/moves/smog.tres" id="m69"]
+[ext_resource type="Resource" path="res://data/moves/smokescreen.tres" id="m70"]
+[ext_resource type="Resource" path="res://data/moves/strength.tres" id="m71"]
+[ext_resource type="Resource" path="res://data/moves/submission.tres" id="m72"]
+[ext_resource type="Resource" path="res://data/moves/substitute.tres" id="m73"]
+[ext_resource type="Resource" path="res://data/moves/sunnyday.tres" id="m74"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m75"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m76"]
+[ext_resource type="Resource" path="res://data/moves/taunt.tres" id="m77"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m78"]
+[ext_resource type="Resource" path="res://data/moves/temperflare.tres" id="m79"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m80"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m81"]
+[ext_resource type="Resource" path="res://data/moves/thunderpunch.tres" id="m82"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m83"]
+[ext_resource type="Resource" path="res://data/moves/uproar.tres" id="m84"]
+[ext_resource type="Resource" path="res://data/moves/willowisp.tres" id="m85"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("fire")
 abilities = PackedStringArray("flamebody", "vitalspirit")
+evolves_to = PackedStringArray()
 id = "magmar"
 species_name = "Magmar"
 dex_number = 126
@@ -108,5 +111,26 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.75
-moves = Array[ExtResource("2_move")]([ExtResource("m49"), ExtResource("m82"), ExtResource("m14"), ExtResource("m21")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m18"), ExtResource("m82"), ExtResource("m9"), ExtResource("m63"), ExtResource("m17"), ExtResource("m1"), ExtResource("m47"), ExtResource("m0"), ExtResource("m67"), ExtResource("m38"), ExtResource("m61"), ExtResource("m62"), ExtResource("m64"), ExtResource("m39"), ExtResource("m7"), ExtResource("m77"), ExtResource("m65"), ExtResource("m3"), ExtResource("m75"), ExtResource("m40"), ExtResource("m56"), ExtResource("m12"), ExtResource("m14"), ExtResource("m13"), ExtResource("m48"), ExtResource("m73"), ExtResource("m4"), ExtResource("m28"), ExtResource("m19"), ExtResource("m74"), ExtResource("m20"), ExtResource("m30"), ExtResource("m31"), ExtResource("m83"), ExtResource("m70"), ExtResource("m55"), ExtResource("m32"), ExtResource("m23"), ExtResource("m15"), ExtResource("m33"), ExtResource("m34"), ExtResource("m2"), ExtResource("m60"), ExtResource("m37"), ExtResource("m41"), ExtResource("m79"), ExtResource("m26"), ExtResource("m21"), ExtResource("m11"), ExtResource("m42"), ExtResource("m45"), ExtResource("m46"), ExtResource("m76"), ExtResource("m6"), ExtResource("m25"), ExtResource("m29"), ExtResource("m35"), ExtResource("m69"), ExtResource("m43"), ExtResource("m24"), ExtResource("m36"), ExtResource("m68"), ExtResource("m52"), ExtResource("m54"), ExtResource("m53"), ExtResource("m44"), ExtResource("m50"), ExtResource("m16"), ExtResource("m22"), ExtResource("m51"), ExtResource("m80"), ExtResource("m8"), ExtResource("m57"), ExtResource("m27"), ExtResource("m58"), ExtResource("m5"), ExtResource("m49"), ExtResource("m71"), ExtResource("m72"), ExtResource("m66"), ExtResource("m10"), ExtResource("m78"), ExtResource("m59"), ExtResource("m81")])
+evolve_level = 0
+stage = 1
+legendary = false
+level_moves = {
+"ember": 1,
+"leer": 1,
+"smog": 1,
+"smokescreen": 1,
+"clearsmog": 12,
+"flamewheel": 16,
+"confuseray": 20,
+"scaryface": 24,
+"firepunch": 28,
+"lavaplume": 34,
+"lowkick": 40,
+"flamethrower": 46,
+"sunnyday": 52,
+"fireblast": 58,
+"hyperbeam": 64
+}
+stone_evolutions = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m50"), ExtResource("m84"), ExtResource("m14"), ExtResource("m21")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m18"), ExtResource("m84"), ExtResource("m9"), ExtResource("m64"), ExtResource("m17"), ExtResource("m1"), ExtResource("m48"), ExtResource("m0"), ExtResource("m68"), ExtResource("m39"), ExtResource("m62"), ExtResource("m63"), ExtResource("m65"), ExtResource("m40"), ExtResource("m7"), ExtResource("m79"), ExtResource("m66"), ExtResource("m3"), ExtResource("m76"), ExtResource("m41"), ExtResource("m57"), ExtResource("m12"), ExtResource("m14"), ExtResource("m13"), ExtResource("m49"), ExtResource("m74"), ExtResource("m4"), ExtResource("m28"), ExtResource("m19"), ExtResource("m75"), ExtResource("m20"), ExtResource("m31"), ExtResource("m32"), ExtResource("m85"), ExtResource("m71"), ExtResource("m56"), ExtResource("m33"), ExtResource("m23"), ExtResource("m15"), ExtResource("m34"), ExtResource("m35"), ExtResource("m2"), ExtResource("m61"), ExtResource("m38"), ExtResource("m42"), ExtResource("m81"), ExtResource("m26"), ExtResource("m29"), ExtResource("m21"), ExtResource("m11"), ExtResource("m43"), ExtResource("m46"), ExtResource("m47"), ExtResource("m77"), ExtResource("m6"), ExtResource("m25"), ExtResource("m30"), ExtResource("m36"), ExtResource("m70"), ExtResource("m44"), ExtResource("m24"), ExtResource("m37"), ExtResource("m69"), ExtResource("m53"), ExtResource("m55"), ExtResource("m54"), ExtResource("m45"), ExtResource("m51"), ExtResource("m16"), ExtResource("m22"), ExtResource("m52"), ExtResource("m82"), ExtResource("m8"), ExtResource("m58"), ExtResource("m27"), ExtResource("m59"), ExtResource("m5"), ExtResource("m50"), ExtResource("m72"), ExtResource("m73"), ExtResource("m67"), ExtResource("m10"), ExtResource("m78"), ExtResource("m80"), ExtResource("m60"), ExtResource("m83")])

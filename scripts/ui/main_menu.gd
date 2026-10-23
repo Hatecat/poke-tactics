@@ -21,6 +21,7 @@ var _team_hint: Label
 var _difficulty_buttons: Array[Button] = []
 var _difficulty_hint: Label
 var _go_button: Button
+var _options_dialog: Control
 var _weather_buttons := {} # Weather.Kind o RANDOM_WEATHER -> Button
 
 
@@ -28,9 +29,11 @@ func _ready() -> void:
 	theme = UiKit.theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(UiKit.background())
+	Audio.music("menu")
+	Audio.ambience("")
 
 	var left := VBoxContainer.new()
-	left.position = Vector2(120, 140)
+	left.position = Vector2(120, 110)
 	left.add_theme_constant_override("separation", 14)
 	add_child(left)
 	var title := UiKit.label("POKÉ TACTICS", 72, UiKit.ACCENT)
@@ -42,9 +45,12 @@ func _ready() -> void:
 	spacer.custom_minimum_size.y = 20
 	left.add_child(spacer)
 	_play_button = _menu_button(left, "Partida rápida", _open_map_dialog)
+	var tower_text := "Torre de Batallas" + ("  (piso %d)" % Game.tower.floor_number if Game.tower and not Game.tower.finished and Game.tower.picks_left == 0 else "")
+	_menu_button(left, tower_text, _go.bind("tower"))
 	_menu_button(left, "Editor de equipo", _go.bind("team_editor"))
 	_menu_button(left, "Editor de escenarios", _go.bind("map_editor"))
 	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
+	_menu_button(left, "Opciones", func() -> void: _options_dialog.visible = true)
 	_menu_button(left, "Salir", func() -> void: get_tree().quit())
 	var team_info := UiKit.label("", 16, Color(1, 1, 1, 0.7))
 	team_info.text = "%s: %s" % [Game.teams[Game.current_team].name, ", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío"]
@@ -67,6 +73,7 @@ func _ready() -> void:
 	add_child(timer)
 
 	_build_map_dialog()
+	_build_options_dialog()
 
 
 func _go(scene: String) -> void:
@@ -234,7 +241,7 @@ func _open_map_dialog() -> void:
 
 
 func _refresh_dialog() -> void:
-	var members: Array = Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name + TeamMember.GENDER_SYMBOLS[m.gender])
+	var members: Array = Game.player_team.map(func(m: TeamMember) -> String: return TeamMember.display(m.data, m.gender))
 	_team_hint.text = ", ".join(members) if not members.is_empty() else "Este equipo está vacío: elige otro o complétalo en el editor."
 	_go_button.disabled = members.is_empty()
 	for i in _difficulty_buttons.size():
@@ -250,6 +257,7 @@ func _refresh_dialog() -> void:
 
 
 func _start_game() -> void:
+	Game.mode = "quick"
 	if _map_select.selected > 0:
 		Game.map = load(_map_paths[_map_select.selected - 1])
 	else:
@@ -260,6 +268,61 @@ func _start_game() -> void:
 	_go("battle")
 
 
+func _build_options_dialog() -> void:
+	_options_dialog = ColorRect.new()
+	(_options_dialog as ColorRect).color = Color(0, 0, 0, 0.6)
+	_options_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_options_dialog.visible = false
+	add_child(_options_dialog)
+	var panel := UiKit.panel()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_options_dialog.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 14)
+	panel.add_child(box)
+	var title := UiKit.label("Opciones", 30, UiKit.ACCENT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 14)
+	grid.add_theme_constant_override("v_separation", 12)
+	box.add_child(grid)
+	for item in [["master", "General"], ["music", "Música"], ["sfx", "Efectos"]]:
+		grid.add_child(UiKit.label(item[1], 18))
+		var slider := HSlider.new()
+		slider.min_value = 0.0
+		slider.max_value = 1.0
+		slider.step = 0.05
+		slider.value = Game.volumes.get(item[0], 0.8)
+		slider.custom_minimum_size = Vector2(320, 28)
+		slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		var pct := UiKit.label("%d%%" % roundi(slider.value * 100), 16)
+		pct.custom_minimum_size.x = 56
+		slider.value_changed.connect(func(v: float) -> void:
+			Game.volumes[item[0]] = v
+			pct.text = "%d%%" % roundi(v * 100)
+			Audio.apply_volumes()
+			if item[0] != "music":
+				Audio.sfx("hit_punch", -4.0))
+		grid.add_child(slider)
+		grid.add_child(pct)
+	grid.add_child(UiKit.label("Velocidad de combate", 18))
+	var speed := Game.speed_slider()
+	speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_child(speed)
+	grid.add_child(Control.new())
+	var close := UiKit.button("Listo", func() -> void:
+		Game.save()
+		_options_dialog.visible = false, 20)
+	box.add_child(close)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and _map_dialog.visible:
+	if event.is_action_pressed("ui_cancel") and _options_dialog.visible:
+		Game.save()
+		_options_dialog.visible = false
+	elif event.is_action_pressed("ui_cancel") and _map_dialog.visible:
 		_map_dialog.visible = false

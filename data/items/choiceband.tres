@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/choiceband.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "choiceband"
+display_name = "Cinta Elección"
+description = "Aumenta la potencia de los ataques físicos del Pokémon que la lleva, pero solo le permite usar un movimiento."
+category = 1
+effect = "choice"
+params = {
+"stat": "attack"
+}
+fling_power = 10
+rarity = 2
+icon = ExtResource("2_icon")

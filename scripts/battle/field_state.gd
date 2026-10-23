@@ -80,7 +80,7 @@ func tick() -> PackedStringArray:
 func grounded(u: Unit) -> bool:
 	if gravity > 0:
 		return true
-	return not ("flying" in u.data.types or u.ability == "levitate" or u.volatiles.has("magnetrise"))
+	return not ("flying" in u.data.types or u.ability == "levitate" or u.volatiles.has("magnetrise") or Items.floats(u))
 
 
 ## Texto corto de lo que hay activo (para el panel de la batalla).

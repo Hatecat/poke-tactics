@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/smoothrock.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "smoothrock"
+display_name = "Roca Suave"
+description = "Prolonga la duración del movimiento Tormenta de Arena que use el Pokémon que la lleva."
+category = 1
+effect = "weather_rock"
+params = {
+"weather": 3
+}
+fling_power = 10
+rarity = 0
+icon = ExtResource("2_icon")

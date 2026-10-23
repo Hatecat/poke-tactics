@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/rockyhelmet.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "rockyhelmet"
+display_name = "Casco Dentado"
+description = "Si el portador es alcanzado por un movimiento de contacto, el agresor también recibe daño."
+category = 1
+effect = "rocky_helmet"
+params = {
+"amount": 0.16666666666666666
+}
+fling_power = 60
+rarity = 1
+icon = ExtResource("2_icon")

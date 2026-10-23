@@ -21,6 +21,9 @@ const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At
 const MAX_CRIT_STAGE := 3
 
 var data: PokemonData
+## Especie original (Transformación cambia `data` y `moves` durante el combate).
+var base_data: PokemonData
+var base_moves: Array[MoveData] = []
 ## Nivel (el jugador siempre 50; el rival según la dificultad).
 var level := LEVEL
 ## Ataques de este Pokémon concreto (los elegidos en el editor de equipo).
@@ -42,6 +45,12 @@ var stage_turns := {}
 ## Usos restantes de cada ataque en este combate.
 var pp := {}
 var ability := ""
+## Objeto equipado, el último que consumió (para Reciclaje) y el ataque al que le ata un objeto Elección.
+var item: ItemData
+var consumed_item: ItemData
+var choice_lock: MoveData
+## Liviano: velocidad ×2 tras perder el objeto.
+var unburdened := false
 ## 0 = sin género, 1 = macho, 2 = hembra.
 var gender := 0
 ## Hacia dónde mira (dirección en el plano XZ); decide el flanqueo.
@@ -74,8 +83,11 @@ var _model_base_scale := Vector3.ONE
 func setup(member: TeamMember, p_team: int, p_level := LEVEL) -> void:
 	level = p_level
 	data = member.data
+	base_data = data
 	moves = member.moves.duplicate()
+	base_moves = moves.duplicate()
 	ability = member.ability
+	item = member.item
 	gender = member.gender
 	for mv in moves:
 		pp[mv] = mv.pp
@@ -150,12 +162,25 @@ func tick_stages() -> PackedStringArray:
 func usable_moves() -> Array[MoveData]:
 	var list: Array[MoveData] = []
 	for mv in moves:
-		# Con Mofa solo puede usar ataques que hacen daño.
-		if pp.get(mv, 0) > 0 and not (volatiles.has("taunt") and mv.category == MoveData.Category.STATUS):
+		# Con Mofa o Chaleco Asalto solo puede usar ataques que hacen daño; un objeto Elección le ata a uno.
+		var no_status := volatiles.has("taunt") or (item != null and item.effect == "assault_vest")
+		if pp.get(mv, 0) > 0 and not (no_status and mv.category == MoveData.Category.STATUS) \
+				and (choice_lock == null or choice_lock == mv):
 			list.append(mv)
 	if list.is_empty():
 		list.append(load(STRUGGLE_PATH))
 	return list
+
+
+## Pierde el objeto (consumido o quitado). `consumed` = se lo comió o lo usó (Reciclaje lo recupera).
+func lose_item(consumed := true) -> void:
+	if item == null:
+		return
+	if consumed:
+		consumed_item = item
+	item = null
+	choice_lock = null
+	unburdened = true
 
 
 func spend_pp(mv: MoveData) -> void:
@@ -173,7 +198,9 @@ func stages_text() -> String:
 
 
 func effective_speed() -> float:
-	var s := stat("speed") * Abilities.speed_mult(self, Combat.weather)
+	var s := stat("speed") * Abilities.speed_mult(self, Combat.weather) * Items.speed_mult(self)
+	if unburdened and ability == "unburden":
+		s *= 2.0
 	if status == MoveData.Status.PARALYSIS and ability != "quickfeet":
 		s *= 0.5
 	if Combat.field and Combat.field.tailwind[team] > 0:
@@ -190,8 +217,13 @@ func move_range() -> int:
 	return maxi(tiles, 1)
 
 
+## ¿Puede desplazarse? Arraigo, estar atrapado o sujetar a otro lo impiden (sí puede atacar).
+func can_move() -> bool:
+	return not (volatiles.has("ingrain") or volatiles.has("wrapped") or volatiles.has("vortex") or volatiles.has("holding"))
+
+
 func display_name() -> String:
-	return "%s%s%s" % [data.species_name, TeamMember.GENDER_SYMBOLS[gender], "" if team == 0 else " (rival)"]
+	return "%s%s" % [TeamMember.display(base_data, gender), "" if team == 0 else " (rival)"]
 
 
 ## ¿Son de sexos opuestos? (los sin género no cuentan).
@@ -219,7 +251,7 @@ const VOLATILE_SHORT := {
 	"nightmare": "Pesadilla", "curse": "Maldito", "perish": "Canto Mortal", "protect": "Protegido",
 	"endure": "Aguante", "substitute": "Sustituto", "ingrain": "Arraigado", "aquaring": "Acua Aro",
 	"destinybond": "Mismo Destino", "charge": "Carga", "magnetrise": "Levitón", "flashfire": "Absorbe Fuego",
-	"attract": "Enamorado",
+	"attract": "Enamorado", "wrapped": "Atrapado", "vortex": "Remolino", "holding": "Sujetando",
 }
 
 
@@ -274,7 +306,8 @@ func take_damage(amount: int) -> void:
 		fainted.emit(self)
 	elif amount > 0:
 		var duration := play("hit")
-		get_tree().create_timer(maxf(duration, 0.3)).timeout.connect(_back_to_idle)
+		if is_inside_tree():
+			get_tree().create_timer(maxf(duration, 0.3)).timeout.connect(_back_to_idle)
 
 
 func _back_to_idle() -> void:
@@ -355,24 +388,40 @@ func refresh_label() -> void:
 	var st := status_text()
 	var boosts := stages_text()
 	var vols := volatiles_text()
-	_label.text = "%s%s\n%d/%d%s%s%s" % [data.species_name, TeamMember.GENDER_SYMBOLS[gender], hp, max_hp, "  " + st if st else "",
+	_label.text = "%s\n%d/%d%s%s%s" % [TeamMember.display(base_data, gender), hp, max_hp, "  " + st if st else "",
 		"\n" + boosts if boosts else "", "\n" + vols if vols else ""]
 
 
+func is_transformed() -> bool:
+	return data != base_data
+
+
+## Transformación: copia el aspecto, tipos, stats (salvo PS), cambios de stats, habilidad y ataques
+## de `t`. Conserva su tamaño en el tablero (el modelo se escala a su huella).
+func transform_into(t: Unit) -> void:
+	var copy: PokemonData = t.data.duplicate()
+	copy.size = data.size
+	copy.model_height = t.data.model_height / t.data.size * data.size
+	var rot := _model.rotation.y
+	_model.queue_free()
+	data = copy
+	stats = t.stats.duplicate()
+	stages = t.stages.duplicate()
+	stage_turns = t.stage_turns.duplicate()
+	ability = t.ability
+	moves = t.moves.duplicate()
+	pp.clear()
+	for mv in moves:
+		pp[mv] = ceili(mv.pp / 2.0)
+	choice_lock = null
+	_load_model()
+	_model.rotation.y = rot
+	_label.position.y = data.model_height + 0.35
+	refresh_label()
+
+
 func _build_visuals() -> void:
-	_model = data.model.instantiate()
-	add_child(_model)
-	var players := _model.find_children("*", "AnimationPlayer", true, false)
-	_anim = players[0] if not players.is_empty() else null
-	# Aplicar la pose de idle antes de medir: en estos modelos las animaciones
-	# compensan una escala enorme del nodo raíz, así que la malla en reposo no sirve.
-	play("idle")
-	if _anim:
-		_anim.advance(0.0)
-	_normalize_model()
-	_model_base_pos = _model.position
-	_model_base_scale = _model.scale
-	play("idle")
+	_load_model()
 
 	_ring = MeshInstance3D.new()
 	var torus := TorusMesh.new()
@@ -443,6 +492,22 @@ func _build_visuals() -> void:
 	shape.position.y = data.model_height * 0.5
 	body.add_child(shape)
 	add_child(body)
+
+
+func _load_model() -> void:
+	_model = data.model.instantiate()
+	add_child(_model)
+	var players := _model.find_children("*", "AnimationPlayer", true, false)
+	_anim = players[0] if not players.is_empty() else null
+	# Aplicar la pose de idle antes de medir: en estos modelos las animaciones
+	# compensan una escala enorme del nodo raíz, así que la malla en reposo no sirve.
+	play("idle")
+	if _anim:
+		_anim.advance(0.0)
+	_normalize_model()
+	_model_base_pos = _model.position
+	_model_base_scale = _model.scale
+	play("idle")
 
 
 func _normalize_model() -> void:

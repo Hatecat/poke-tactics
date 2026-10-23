@@ -27,6 +27,9 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 @export var always_crit := false
 ## Probabilidad de hacer retroceder: retrasa el próximo turno del objetivo.
 @export_range(0, 100) var flinch_chance := 0
+## Golpes por uso: Doble Patada 2-2, Golpes Furia 2-5 (se sortea: 35 %, 35 %, 15 %, 15 %).
+@export var hits_min := 1
+@export var hits_max := 1
 ## Stat del atacante que usa en lugar de Ataque/At. Esp. (p. ej. "defense" en Prensa Metálica).
 @export var attack_stat := ""
 
@@ -75,6 +78,10 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 ## Efecto de campo: zonas (reflect, lightscreen, auroraveil, safeguard, mist, tailwind), trampas
 ## (spikes, toxicspikes, stealthrock), globales (terrenos, trickroom, gravity) o de área (haze, perishsong).
 @export var field_effect := ""
+## Interacción con objetos: steal, knockoff, swap, eatberry, burnberry, fling, recycle.
+@export var item_effect := ""
+## Ataque con lógica propia: "teleport" (salta a una casilla libre) o "transform" (copia al objetivo).
+@export var special := ""
 ## Solo funciona contra el sexo opuesto (Seducción).
 @export var opposite_gender := false
 ## Banderas para las habilidades: contact, punch, sound, powder, bite, pulse, wind, multihit, secondary.

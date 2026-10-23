@@ -31,6 +31,7 @@ func _ready() -> void:
 	theme = UiKit.theme()
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(UiKit.background())
+	Audio.music("menu")
 
 	var root := VBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -210,6 +211,8 @@ func _select_member(m: TeamMember) -> void:
 
 
 func _show(p: PokemonData) -> void:
+	if p != _species:
+		Audio.cry(p, 1.0, -8.0)
 	_species = p
 	_preview.show_pokemon(p)
 	UiKit.clear(_detail)
@@ -217,6 +220,8 @@ func _show(p: PokemonData) -> void:
 	_detail.add_child(UiKit.type_row(p.types))
 	_detail.add_child(_abilities_row(p))
 	_detail.add_child(_gender_row(p))
+	if _member:
+		_detail.add_child(_item_row())
 
 	var stats := UiKit.base_stats(p)
 	var grid := GridContainer.new()
@@ -285,6 +290,35 @@ func _gender_row(p: PokemonData) -> Control:
 		b.disabled = _member == null
 		b.add_theme_color_override("font_color", Color(0.5, 0.75, 1.0) if g == 1 else Color(1.0, 0.55, 0.75))
 		row.add_child(b)
+	return row
+
+
+## Objeto equipado (bayas y equipables; las piedras solo se usan en la Torre).
+func _item_row() -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.add_child(UiKit.label("Objeto:", 15, Color(1, 1, 1, 0.75)))
+	var pick := OptionButton.new()
+	# Algunos sprites son grandes: se limita el icono en el botón y en la lista.
+	pick.add_theme_constant_override("icon_max_width", 24)
+	pick.get_popup().add_theme_constant_override("icon_max_width", 24)
+	pick.add_item("— ninguno —")
+	var items := Items.holdable()
+	for i in items.size():
+		var it := items[i]
+		if it.icon:
+			pick.add_icon_item(it.icon, it.display_name)
+		else:
+			pick.add_item(it.display_name)
+		pick.set_item_tooltip(i + 1, it.description)
+		if _member.item == it:
+			pick.select(i + 1)
+	pick.tooltip_text = _member.item.description if _member.item else ""
+	pick.item_selected.connect(func(i: int) -> void:
+		_member.item = null if i == 0 else items[i - 1]
+		pick.tooltip_text = _member.item.description if _member.item else ""
+		Game.save())
+	row.add_child(pick)
 	return row
 
 
@@ -446,7 +480,7 @@ func _refresh_team() -> void:
 			var m := Game.player_team[i]
 			var row := HBoxContainer.new()
 			var card := _card(m.data, _select_member.bind(m), 260)
-			if m.gender:
+			if m.gender and TeamMember.display(m.data, m.gender) != m.data.species_name:
 				var sym := UiKit.label(TeamMember.GENDER_SYMBOLS[m.gender], 18, Color(0.5, 0.75, 1.0) if m.gender == 1 else Color(1.0, 0.55, 0.75))
 				sym.position = Vector2(232, 6)
 				sym.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -55,22 +55,24 @@
 [ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m49"]
 [ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m50"]
 [ext_resource type="Resource" path="res://data/moves/taunt.tres" id="m51"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m52"]
-[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m53"]
-[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m54"]
-[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m55"]
-[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m56"]
-[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m57"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m58"]
-[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m59"]
-[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m60"]
-[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m52"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m53"]
+[ext_resource type="Resource" path="res://data/moves/thief.tres" id="m54"]
+[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m55"]
+[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m56"]
+[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m62"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("electric")
 abilities = PackedStringArray("soundproof", "static", "aftermath")
+evolves_to = PackedStringArray()
 id = "electrode"
 species_name = "Electrode"
 dex_number = 101
@@ -86,5 +88,27 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = -1.0
-moves = Array[ExtResource("2_move")]([ExtResource("m55"), ExtResource("m6"), ExtResource("m0"), ExtResource("m5")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m12"), ExtResource("m38"), ExtResource("m10"), ExtResource("m42"), ExtResource("m41"), ExtResource("m9"), ExtResource("m34"), ExtResource("m35"), ExtResource("m1"), ExtResource("m36"), ExtResource("m43"), ExtResource("m5"), ExtResource("m3"), ExtResource("m29"), ExtResource("m37"), ExtResource("m50"), ExtResource("m31"), ExtResource("m15"), ExtResource("m7"), ExtResource("m6"), ExtResource("m26"), ExtResource("m25"), ExtResource("m61"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m47"), ExtResource("m17"), ExtResource("m28"), ExtResource("m18"), ExtResource("m19"), ExtResource("m45"), ExtResource("m20"), ExtResource("m22"), ExtResource("m56"), ExtResource("m16"), ExtResource("m53"), ExtResource("m24"), ExtResource("m4"), ExtResource("m48"), ExtResource("m51"), ExtResource("m8"), ExtResource("m57"), ExtResource("m39"), ExtResource("m23"), ExtResource("m49"), ExtResource("m46"), ExtResource("m21"), ExtResource("m27"), ExtResource("m55"), ExtResource("m2"), ExtResource("m40"), ExtResource("m30"), ExtResource("m32"), ExtResource("m33"), ExtResource("m44"), ExtResource("m52"), ExtResource("m54"), ExtResource("m58"), ExtResource("m60"), ExtResource("m59")])
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"charge": 1,
+"eerieimpulse": 1,
+"tackle": 1,
+"thundershock": 1,
+"spark": 9,
+"rollout": 11,
+"screech": 13,
+"chargebeam": 16,
+"swift": 20,
+"electroball": 22,
+"selfdestruct": 26,
+"lightscreen": 29,
+"magnetrise": 36,
+"discharge": 41,
+"explosion": 47,
+"gyroball": 54
+}
+stone_evolutions = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m56"), ExtResource("m6"), ExtResource("m0"), ExtResource("m5")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m12"), ExtResource("m38"), ExtResource("m10"), ExtResource("m42"), ExtResource("m41"), ExtResource("m9"), ExtResource("m34"), ExtResource("m35"), ExtResource("m1"), ExtResource("m36"), ExtResource("m43"), ExtResource("m5"), ExtResource("m3"), ExtResource("m29"), ExtResource("m37"), ExtResource("m50"), ExtResource("m31"), ExtResource("m15"), ExtResource("m7"), ExtResource("m6"), ExtResource("m26"), ExtResource("m25"), ExtResource("m62"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m47"), ExtResource("m17"), ExtResource("m28"), ExtResource("m18"), ExtResource("m19"), ExtResource("m45"), ExtResource("m20"), ExtResource("m22"), ExtResource("m57"), ExtResource("m16"), ExtResource("m54"), ExtResource("m24"), ExtResource("m4"), ExtResource("m48"), ExtResource("m51"), ExtResource("m8"), ExtResource("m58"), ExtResource("m39"), ExtResource("m23"), ExtResource("m49"), ExtResource("m46"), ExtResource("m21"), ExtResource("m27"), ExtResource("m56"), ExtResource("m2"), ExtResource("m40"), ExtResource("m30"), ExtResource("m32"), ExtResource("m33"), ExtResource("m44"), ExtResource("m52"), ExtResource("m53"), ExtResource("m55"), ExtResource("m59"), ExtResource("m61"), ExtResource("m60")])

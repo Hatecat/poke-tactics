@@ -45,6 +45,7 @@ LINE_MOVES = {
 SWOOP_MOVES = {"fly", "bounce", "skyattack", "dive", "dig", "phantomforce", "shadowforce"}
 # Potencia variable en los juegos: se aproxima con un valor fijo.
 DYNAMIC_POWER = {
+    "fling": 30,
     "lowkick": 60, "grassknot": 60, "heavyslam": 60, "heatcrash": 60, "flail": 60, "reversal": 60,
     "return": 80, "frustration": 80, "gyroball": 60, "electroball": 60, "present": 40,
     "magnitude": 70, "punishment": 60, "storedpower": 40, "powertrip": 40, "trumpcard": 60,
@@ -55,11 +56,19 @@ DYNAMIC_POWER = {
 }
 UNSUPPORTED = {
     "counter", "mirrorcoat", "metalburst", "bide", "endeavor", "finalgambit", "superfang",
-    "naturesmadness", "ruination", "fling", "transform", "metronome", "mimic", "mirrormove",
+    "naturesmadness", "ruination", "metronome", "mimic", "mirrormove",
     "sketch", "copycat", "assist", "sleeptalk", "snore", "focuspunch", "belch", "lastresort",
     "dreameater", "futuresight", "doomdesire", "struggle", "splash", "celebrate", "holdhands",
 }
 FIXED_DAMAGE = {"psywave": 50}
+# Ataques con lógica propia en la batalla (MoveData.special): alcance mínimo y máximo.
+# Teletransporte salta a una casilla libre; Transformación copia al Pokémon objetivo.
+SPECIAL_MOVES = {"teleport": (1, 6), "transform": (1, 3)}
+SPECIAL_FLAVOR = {
+    "teleport": "Se teletransporta a una casilla libre, sin importar obstáculos ni desniveles.",
+    "transform": "Se transforma en el Pokémon objetivo: copia su aspecto, tipos, stats (salvo los PS), "
+                 "cambios de stats, habilidad y ataques.",
+}
 # Ataques marcados como no obtenibles en los juegos actuales que sí queremos (clásicos de Kanto).
 ALLOW_NONSTANDARD = {"cut", "burnup"}
 # Clima que fija cada ataque (Weather.Kind: 1 sol, 2 lluvia, 3 arena, 4 granizo).
@@ -73,6 +82,11 @@ TRAP_FIELDS = {"spikes", "toxicspikes", "stealthrock"}
 GLOBAL_FIELDS = {"electricterrain", "grassyterrain", "mistyterrain", "psychicterrain", "trickroom", "gravity"}
 AREA_FIELDS = {"haze", "perishsong"}
 MOVE_FLAGS = ("contact", "punch", "sound", "powder", "bite", "pulse", "wind")
+# Ataques que interactúan con los objetos (ver scripts/battle/items.gd).
+ITEM_MOVES = {
+    "thief": "steal", "covet": "steal", "knockoff": "knockoff", "trick": "swap", "switcheroo": "swap",
+    "bugbite": "eatberry", "pluck": "eatberry", "incinerate": "burnberry", "fling": "fling", "recycle": "recycle",
+}
 # Ataques cuyo efecto depende del clima (ver scripts/battle/weather.gd).
 WEATHER_TAGS = {
     "weatherball": "weather_ball", "thunder": "storm", "hurricane": "storm", "blizzard": "blizzard",
@@ -132,9 +146,9 @@ def convert_move(mid, m, names, flavor):
         "knockback": 0, "drain": 0.0, "heal": 0.0, "recoil": 0.0, "fixed_damage": 0,
         "self_ko": False, "stat_changes": {}, "stat_chance": 100, "self_stat_changes": {},
         "always_hits": m["accuracy"] is True, "attack_stat": "", "hp_cost": 0.0,
-        "crit_stage": max(0, m.get("critRatio", 1) - 1), "always_crit": bool(m.get("willCrit")), "flinch_chance": 0,
+        "hits_min": 1, "hits_max": 1, "crit_stage": max(0, m.get("critRatio", 1) - 1), "always_crit": bool(m.get("willCrit")), "flinch_chance": 0,
         "sets_weather": WEATHER_SETTERS.get(mid, 0), "weather_tag": WEATHER_TAGS.get(mid, ""),
-        "flags": [], "opposite_gender": False, "volatile": "", "volatile_chance": 0, "self_volatile": "", "field_effect": "",
+        "flags": [], "item_effect": ITEM_MOVES.get(mid, ""), "opposite_gender": False, "special": "", "volatile": "", "volatile_chance": 0, "self_volatile": "", "field_effect": "",
         "extra_ct": 0, "pp": max(1, math.ceil(m.get("pp", 5) / PP_DIVISOR)),
         "animation": "fight_d" if cat == 1 else "fight_b",
     }
@@ -153,11 +167,12 @@ def convert_move(mid, m, names, flavor):
             if mid not in DYNAMIC_POWER:
                 return None
             mv["power"] = DYNAMIC_POWER[mid]
+        # Multigolpe: la potencia es la de cada golpe; la batalla sortea cuántos da.
         hits = m.get("multihit")
         if isinstance(hits, list):
-            mv["power"] *= 3 if hits[1] >= 5 else hits[1]
+            mv["hits_min"], mv["hits_max"] = hits[0], hits[1]
         elif isinstance(hits, int):
-            mv["power"] *= hits
+            mv["hits_min"] = mv["hits_max"] = hits
     mv["drain"] = frac(m["drain"]) if m.get("drain") else 0.0
     mv["recoil"] = frac(m["recoil"]) if m.get("recoil") else 0.0
     mv["heal"] = frac(m["heal"]) if m.get("heal") else 0.0
@@ -180,6 +195,10 @@ def convert_move(mid, m, names, flavor):
     vol = m.get("volatileStatus")
     if vol in TARGET_VOLATILES:
         mv["volatile"], mv["volatile_chance"] = vol, 100
+    elif vol == "partiallytrapped":
+        # Atrapar: los de contacto (Constricción, Atadura...) inmovilizan también al que sujeta;
+        # los remolinos (Giro Fuego, Torbellino, Bucle Arena) solo al objetivo.
+        mv["volatile"], mv["volatile_chance"] = ("wrapped" if flags.get("contact") else "vortex"), 100
     elif vol in SELF_VOLATILES:
         mv["self_volatile"] = vol
     elif vol == "stockpile":
@@ -235,6 +254,11 @@ def convert_move(mid, m, names, flavor):
     elif flags.get("charge"):
         mv["extra_ct"] = 30
 
+    if mid in SPECIAL_MOVES:
+        lo, hi = SPECIAL_MOVES[mid]
+        mv.update(special=mid, range_min=lo, range_max=hi, animation="fight_d", flavor=SPECIAL_FLAVOR[mid])
+        return mv
+
     # Alcance y área
     big = mv["power"] >= 90
     fe = mv["field_effect"]
@@ -286,9 +310,11 @@ def convert_move(mid, m, names, flavor):
                         and mv["range_max"] >= 2 and not flags.get("contact") and mid not in SWOOP_MOVES
                         and not flags.get("sound") and not flags.get("powder") and not mv["field_effect"])
 
+    if mid == "recycle":
+        mv.update(range_min=0, range_max=0, targets_self=True)
     if cat == 2 and not (mv["status"] or mv["stat_changes"] or mv["self_stat_changes"] or mv["heal"]
                          or mv["knockback"] or mv["sets_weather"] or mv["volatile"] or mv["self_volatile"]
-                         or mv["field_effect"]):
+                         or mv["field_effect"] or mv["item_effect"]):
         return None
     if cat == 2:
         mv["animation"] = "fight_d"
@@ -360,6 +386,17 @@ def anim_map(clips):
     return result
 
 
+def expected_hits(mv):
+    """Golpes medios (igual que Combat.expected_hits): 2-5 da 3,1 de media."""
+    if mv["hits_max"] <= 1:
+        return 1
+    if mv["id"] == "tripleaxel":
+        return 6
+    if mv["hits_min"] == mv["hits_max"]:
+        return mv["hits_min"]
+    return 3.1
+
+
 def pick_default_moves(mon, learnable):
     """4 ataques razonables: el mejor STAB, cobertura, un ataque de estado útil y relleno."""
     types = [t.lower() for t in mon["types"]]
@@ -368,7 +405,7 @@ def pick_default_moves(mon, learnable):
     def score(mv):
         if mv["category"] == 2:
             return 0
-        power = mv["fixed_damage"] or min(mv["power"], 120)
+        power = mv["fixed_damage"] or min(mv["power"] * expected_hits(mv), 120)
         s = power * mv["accuracy"] / 100.0
         s *= 1.5 if mv["type"] in types else 1.0
         s *= 1.15 if (mv["category"] == 0) == better_physical else 0.85
@@ -424,7 +461,46 @@ def write_abilities(src, mons):
     return len(out)
 
 
-def write_pokemon(pid, mon, default, learnset, anims):
+# Evoluciones por piedra, intercambio o amistad: en la Torre ocurren a este nivel.
+NON_LEVEL_EVOLUTION = 30
+
+
+def evolution_info(pid, mon, mons):
+    """(destinos por nivel, nivel, etapa, legendario, {piedra: destino})."""
+    by_name = {v["name"]: k for k, v in mons.items()}
+    all_targets = [by_name[n] for n in mon.get("evos") or [] if n in by_name]
+    # Las de piedra necesitan la piedra; el resto (nivel, intercambio, amistad) evoluciona por nivel.
+    stones = {mons[t]["evoItem"].lower().replace(" ", ""): t for t in all_targets
+              if mons[t].get("evoType") == "useItem" and mons[t].get("evoItem")}
+    targets = [t for t in all_targets if t not in stones.values()]
+    level = 0
+    if targets:
+        level = min(mons[t].get("evoLevel") or NON_LEVEL_EVOLUTION for t in targets)
+    stage, cur = 1, mon
+    while cur.get("prevo") in by_name:
+        stage += 1
+        cur = mons[by_name[cur["prevo"]]]
+    return targets, level, stage, bool(mon.get("tags")), stones
+
+
+def level_moves(pid, learnsets, converted):
+    """{ataque: nivel} de la generación más reciente con datos de nivel para la especie."""
+    learn = learnsets.get(pid, {}).get("learnset", {})
+    gens = [int(s[0]) for srcs in learn.values() for s in srcs if s[:1].isdigit() and s[1:2] == "L"]
+    if not gens:
+        return {}
+    g = str(max(gens))
+    out = {}
+    for mid, srcs in learn.items():
+        if mid not in converted:
+            continue
+        lv = [int(s[2:]) for s in srcs if s.startswith(g + "L")]
+        if lv:
+            out[mid] = max(1, min(lv))
+    return dict(sorted(out.items(), key=lambda kv: kv[1]))
+
+
+def write_pokemon(pid, mon, default, learnset, anims, evo=None, lv_moves=None):
     moves_ids = {m["id"] for m in default} | {m["id"] for m in learnset}
     ext = ['[ext_resource type="PackedScene" path="res://assets/models/pokemon/%s.glb" id="1_model"]' % pid,
            '[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="2_move"]',
@@ -449,12 +525,16 @@ def write_pokemon(pid, mon, default, learnset, anims):
         "size": size, "move_modifier": 1 if flies else (-1 if weight >= 200 or size >= 2 and weight >= 80 else 0),
         "jump": 3 if flies else 1, "anim_map": anims, "male_ratio": male_ratio,
         "abilities": [ability_id(a) for k, a in sorted(mon["abilities"].items())],
+        "evolves_to": evo[0] if evo else [], "evolve_level": evo[1] if evo else 0,
+        "stage": evo[2] if evo else 1, "legendary": evo[3] if evo else False,
+        "level_moves": lv_moves or {}, "stone_evolutions": evo[4] if evo else {},
     }
     lines = ['[gd_resource type="Resource" script_class="PokemonData" format=3]', "", *ext, "", "[resource]",
              'script = ExtResource("3_script")', 'model = ExtResource("1_model")',
              "types = PackedStringArray(%s)" % ", ".join(json.dumps(t) for t in types)]
     abilities = fields.pop("abilities")
     lines.append("abilities = PackedStringArray(%s)" % ", ".join(json.dumps(a) for a in abilities))
+    lines.append("evolves_to = PackedStringArray(%s)" % ", ".join(json.dumps(a) for a in fields.pop("evolves_to")))
     lines += [f"{k} = {gd_value(v)}" for k, v in fields.items()]
     arr = lambda ms: 'Array[ExtResource("2_move")]([%s])' % ", ".join(f'ExtResource("{ref[m["id"]]}")' for m in ms)
     lines.append("moves = " + arr(default))
@@ -503,7 +583,8 @@ def main():
         default = pick_default_moves(mon, learnable) or [converted["struggle"]]
         if not learnable:
             learnable = [converted["struggle"]]
-        write_pokemon(pid, mon, default, learnable, anim_map(glb_animations(model)))
+        write_pokemon(pid, mon, default, learnable, anim_map(glb_animations(model)),
+                      evolution_info(pid, mon, mons), level_moves(pid, learnsets, converted))
 
     n_abilities = write_abilities(args.src, mons)
     print(f"{len(converted)} ataques, {len(mons) - len(missing_models)} Pokémon, {n_abilities} habilidades")

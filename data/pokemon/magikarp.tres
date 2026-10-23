@@ -13,6 +13,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("water")
 abilities = PackedStringArray("swiftswim", "rattled")
+evolves_to = PackedStringArray("gyarados")
 id = "magikarp"
 species_name = "Magikarp"
 dex_number = 129
@@ -28,5 +29,13 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 20
+stage = 1
+legendary = false
+level_moves = {
+"tackle": 15,
+"flail": 25
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m0"), ExtResource("m3")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m1"), ExtResource("m0"), ExtResource("m2"), ExtResource("m3")])

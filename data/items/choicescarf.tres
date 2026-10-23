@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/choicescarf.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "choicescarf"
+display_name = "Pañuelo Elección"
+description = "Debe llevarlo un Pokémon. Potencia la Velocidad, pero solo permite usar un movimiento."
+category = 1
+effect = "choice"
+params = {
+"stat": "speed"
+}
+fling_power = 10
+rarity = 2
+icon = ExtResource("2_icon")

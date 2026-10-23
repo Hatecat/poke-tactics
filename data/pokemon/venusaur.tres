@@ -96,6 +96,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("grass", "poison")
 abilities = PackedStringArray("overgrow", "chlorophyll")
+evolves_to = PackedStringArray()
 id = "venusaur"
 species_name = "Venusaur"
 dex_number = 3
@@ -111,5 +112,27 @@ move_modifier = -1
 jump = 1
 anim_map = {}
 male_ratio = 0.875
+evolve_level = 0
+stage = 3
+legendary = false
+level_moves = {
+"growl": 1,
+"growth": 1,
+"petalblizzard": 1,
+"petaldance": 1,
+"tackle": 1,
+"vinewhip": 1,
+"leechseed": 9,
+"razorleaf": 12,
+"poisonpowder": 15,
+"sleeppowder": 15,
+"seedbomb": 20,
+"takedown": 25,
+"sweetscent": 30,
+"synthesis": 37,
+"powerwhip": 51,
+"solarbeam": 58
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m47"), ExtResource("m66"), ExtResource("m1"), ExtResource("m38")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m82"), ExtResource("m18"), ExtResource("m1"), ExtResource("m3"), ExtResource("m2"), ExtResource("m86"), ExtResource("m43"), ExtResource("m64"), ExtResource("m66"), ExtResource("m0"), ExtResource("m31"), ExtResource("m60"), ExtResource("m62"), ExtResource("m83"), ExtResource("m9"), ExtResource("m11"), ExtResource("m25"), ExtResource("m75"), ExtResource("m47"), ExtResource("m63"), ExtResource("m78"), ExtResource("m37"), ExtResource("m33"), ExtResource("m55"), ExtResource("m22"), ExtResource("m70"), ExtResource("m14"), ExtResource("m13"), ExtResource("m44"), ExtResource("m39"), ExtResource("m74"), ExtResource("m72"), ExtResource("m17"), ExtResource("m8"), ExtResource("m19"), ExtResource("m45"), ExtResource("m20"), ExtResource("m21"), ExtResource("m73"), ExtResource("m30"), ExtResource("m76"), ExtResource("m24"), ExtResource("m69"), ExtResource("m52"), ExtResource("m26"), ExtResource("m27"), ExtResource("m34"), ExtResource("m4"), ExtResource("m59"), ExtResource("m32"), ExtResource("m28"), ExtResource("m36"), ExtResource("m53"), ExtResource("m41"), ExtResource("m50"), ExtResource("m38"), ExtResource("m84"), ExtResource("m10"), ExtResource("m42"), ExtResource("m85"), ExtResource("m40"), ExtResource("m68"), ExtResource("m77"), ExtResource("m23"), ExtResource("m35"), ExtResource("m49"), ExtResource("m51"), ExtResource("m80"), ExtResource("m48"), ExtResource("m67"), ExtResource("m54"), ExtResource("m56"), ExtResource("m12"), ExtResource("m57"), ExtResource("m7"), ExtResource("m6"), ExtResource("m65"), ExtResource("m71"), ExtResource("m79"), ExtResource("m5"), ExtResource("m16"), ExtResource("m15"), ExtResource("m46"), ExtResource("m58"), ExtResource("m81"), ExtResource("m61"), ExtResource("m29")])

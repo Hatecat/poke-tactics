@@ -67,24 +67,27 @@
 [ext_resource type="Resource" path="res://data/moves/swift.tres" id="m61"]
 [ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m62"]
 [ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m63"]
-[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m64"]
-[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m65"]
-[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m66"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m67"]
-[ext_resource type="Resource" path="res://data/moves/triattack.tres" id="m68"]
-[ext_resource type="Resource" path="res://data/moves/trickroom.tres" id="m69"]
-[ext_resource type="Resource" path="res://data/moves/twister.tres" id="m70"]
-[ext_resource type="Resource" path="res://data/moves/waterfall.tres" id="m71"]
-[ext_resource type="Resource" path="res://data/moves/watergun.tres" id="m72"]
-[ext_resource type="Resource" path="res://data/moves/waterpulse.tres" id="m73"]
-[ext_resource type="Resource" path="res://data/moves/whirlpool.tres" id="m74"]
-[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m75"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m64"]
+[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m65"]
+[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m67"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m68"]
+[ext_resource type="Resource" path="res://data/moves/triattack.tres" id="m69"]
+[ext_resource type="Resource" path="res://data/moves/trick.tres" id="m70"]
+[ext_resource type="Resource" path="res://data/moves/trickroom.tres" id="m71"]
+[ext_resource type="Resource" path="res://data/moves/twister.tres" id="m72"]
+[ext_resource type="Resource" path="res://data/moves/waterfall.tres" id="m73"]
+[ext_resource type="Resource" path="res://data/moves/watergun.tres" id="m74"]
+[ext_resource type="Resource" path="res://data/moves/waterpulse.tres" id="m75"]
+[ext_resource type="Resource" path="res://data/moves/whirlpool.tres" id="m76"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m77"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("water", "psychic")
 abilities = PackedStringArray("illuminate", "naturalcure", "analytic")
+evolves_to = PackedStringArray()
 id = "starmie"
 species_name = "Starmie"
 dex_number = 121
@@ -100,5 +103,27 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = -1.0
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"brine": 1,
+"confuseray": 1,
+"cosmicpower": 1,
+"harden": 1,
+"hydropump": 1,
+"lightscreen": 1,
+"minimize": 1,
+"powergem": 1,
+"psybeam": 1,
+"psychic": 1,
+"rapidspin": 1,
+"recover": 1,
+"surf": 1,
+"swift": 1,
+"tackle": 1,
+"watergun": 1
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m41"), ExtResource("m59"), ExtResource("m0"), ExtResource("m29")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m14"), ExtResource("m2"), ExtResource("m1"), ExtResource("m10"), ExtResource("m11"), ExtResource("m57"), ExtResource("m53"), ExtResource("m71"), ExtResource("m18"), ExtResource("m70"), ExtResource("m6"), ExtResource("m46"), ExtResource("m55"), ExtResource("m63"), ExtResource("m50"), ExtResource("m17"), ExtResource("m13"), ExtResource("m12"), ExtResource("m36"), ExtResource("m75"), ExtResource("m54"), ExtResource("m69"), ExtResource("m16"), ExtResource("m60"), ExtResource("m26"), ExtResource("m20"), ExtResource("m45"), ExtResource("m21"), ExtResource("m24"), ExtResource("m47"), ExtResource("m27"), ExtResource("m25"), ExtResource("m23"), ExtResource("m29"), ExtResource("m73"), ExtResource("m22"), ExtResource("m30"), ExtResource("m38"), ExtResource("m9"), ExtResource("m8"), ExtResource("m61"), ExtResource("m66"), ExtResource("m33"), ExtResource("m37"), ExtResource("m72"), ExtResource("m62"), ExtResource("m28"), ExtResource("m39"), ExtResource("m43"), ExtResource("m42"), ExtResource("m44"), ExtResource("m40"), ExtResource("m41"), ExtResource("m65"), ExtResource("m5"), ExtResource("m7"), ExtResource("m31"), ExtResource("m34"), ExtResource("m56"), ExtResource("m48"), ExtResource("m35"), ExtResource("m49"), ExtResource("m51"), ExtResource("m52"), ExtResource("m4"), ExtResource("m59"), ExtResource("m58"), ExtResource("m74"), ExtResource("m68"), ExtResource("m64"), ExtResource("m67"), ExtResource("m15"), ExtResource("m3"), ExtResource("m32"), ExtResource("m19")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m14"), ExtResource("m2"), ExtResource("m1"), ExtResource("m10"), ExtResource("m11"), ExtResource("m57"), ExtResource("m53"), ExtResource("m73"), ExtResource("m18"), ExtResource("m72"), ExtResource("m6"), ExtResource("m46"), ExtResource("m55"), ExtResource("m63"), ExtResource("m50"), ExtResource("m17"), ExtResource("m13"), ExtResource("m12"), ExtResource("m36"), ExtResource("m77"), ExtResource("m54"), ExtResource("m71"), ExtResource("m16"), ExtResource("m60"), ExtResource("m26"), ExtResource("m20"), ExtResource("m45"), ExtResource("m21"), ExtResource("m24"), ExtResource("m47"), ExtResource("m27"), ExtResource("m25"), ExtResource("m23"), ExtResource("m29"), ExtResource("m75"), ExtResource("m22"), ExtResource("m30"), ExtResource("m38"), ExtResource("m9"), ExtResource("m8"), ExtResource("m61"), ExtResource("m67"), ExtResource("m33"), ExtResource("m37"), ExtResource("m74"), ExtResource("m62"), ExtResource("m28"), ExtResource("m39"), ExtResource("m43"), ExtResource("m42"), ExtResource("m44"), ExtResource("m40"), ExtResource("m41"), ExtResource("m66"), ExtResource("m5"), ExtResource("m7"), ExtResource("m31"), ExtResource("m34"), ExtResource("m56"), ExtResource("m48"), ExtResource("m35"), ExtResource("m49"), ExtResource("m51"), ExtResource("m52"), ExtResource("m4"), ExtResource("m59"), ExtResource("m58"), ExtResource("m64"), ExtResource("m76"), ExtResource("m69"), ExtResource("m70"), ExtResource("m65"), ExtResource("m68"), ExtResource("m15"), ExtResource("m3"), ExtResource("m32"), ExtResource("m19")])

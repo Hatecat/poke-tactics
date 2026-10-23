@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/everstone.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "everstone"
+display_name = "Piedra Eterna"
+description = "El Pokémon que lleva esta piedra mágica no evoluciona."
+category = 1
+effect = "everstone"
+params = {}
+fling_power = 30
+rarity = 0
+icon = ExtResource("2_icon")

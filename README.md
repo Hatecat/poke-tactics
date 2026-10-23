@@ -94,15 +94,30 @@ tope de ±6 y la misma duración que el resto.
 Hacen ×1,5 e ignoran las bajadas de ataque y las subidas de defensa. **Retroceso:** el objetivo pierde
 `FLINCH_DELAY` (30) de CT, así que su próximo turno llega más tarde.
 
+**Multigolpe** (20 ataques): cada golpe es real, con su daño, su número y su posibilidad de crítico. Doble Patada o
+Huesomerang dan siempre 2; Golpes Furia, Pin Misil, Semilla Ráfaga… de 2 a 5 (35/35/15/15 %; con Encadenado,
+siempre 5); Triple Axel da 3 de potencia 20, 40 y 60. La precisión se tira una vez; Banda Focus y Robustez solo
+aguantan el primero, Casco Dentado y las habilidades de contacto se activan en cada golpe y el ataque se corta si
+el objetivo cae. La IA y la previsión cuentan el daño medio / el rango de golpes.
+
 **PP:** cada ataque tiene los PP de los juegos / 5 usos por combate (`PP_DIVISOR` en `build_data.py`); sin PP solo
 queda Forcejeo. **Mejoras de stats:** tope ±6 y duran 3 turnos propios (`STAGE_TURNS` en `unit.gd`).
+
+**Ataques especiales** (`special` en MoveData): **Teletransporte** salta a cualquier casilla libre a 6 o menos,
+ignorando obstáculos y desniveles (la IA lo usa para huir cuando está herida). **Transformación** (alcance 3)
+copia al objetivo: modelo, tipos, stats salvo los PS, cambios de stats, habilidad y ataques (con la mitad de PP);
+conserva su tamaño en el tablero y su nombre. La habilidad **Impostor** lo hace sola en su primer turno con el rival
+más cercano. Si capturas un Ditto transformado, sigue siendo Ditto.
 
 ## Estados volátiles
 
 Confusión (2-5 turnos; 1/3 de herirse y perder el turno), Drenadoras, Bostezo, Mofa (solo ataques de daño),
 Pesadilla, Maldición, Canto Mortal, Protección/Detección (hasta su próximo turno; falla más si se repite),
 Aguante, Sustituto (absorbe golpes y bloquea los de estado), Arraigo (cura 1/16 pero no puede moverse ni ser
-empujado), Acua Aro, Mismo Destino, Carga y Levitón. Lógica en `scripts/battle/effects.gd`.
+empujado), Acua Aro, Mismo Destino, Carga y Levitón. **Atrapar**: Constricción, Atadura, Tenaza y Acoso
+inmovilizan 2 turnos al objetivo (1/8 de PS por turno) y también a quien lo sujeta; se suelta si se separan
+(empujón, Teletransporte) o uno cae. Giro Fuego, Torbellino y Bucle Arena solo inmovilizan al objetivo. Los
+Fantasma no pueden ser atrapados. Lógica en `scripts/battle/effects.gd`.
 
 ## Efectos de campo
 
@@ -156,6 +171,75 @@ jugar al empezar una partida rápida. Constantes en `game.gd` y al principio de 
 
 ♂/♀/sin género según la proporción real de cada especie (se elige en el editor; los rivales al azar).
 Atracción (50 % de no poder atacar cada turno, 5 turnos), Seducción, Gran Encanto y Rivalidad.
+
+## Torre de Batallas
+
+Draft de 4 Pokémon (en cada ronda, 1 de 6 básicos al azar) a nivel 5. Cada piso es un combate contra rivales
+de nivel parecido al de tu equipo (evolucionados si les toca):
+
+- **Salvajes** (2 de cada 3 pisos): se pueden capturar; un legendario cada 10 pisos (piso x5, o x4).
+- **Entrenadores** (pisos múltiplos de 3): clase al azar con su tipo (Cazabichos, Nadador/a, Pescador,
+  Ornitólogo, Pokémaníaco, Montañero, Karateka, Médium, Científico, Supernecio, Esquiadora, Domadragón…) y un
+  nombre al azar. No se pueden capturar sus Pokémon; dan el doble de dinero y +50 % de experiencia.
+- **Líderes** (cada 10 pisos): Brock, Misty, Teniente Surge, Erika, Koga, Sabrina, Blaine y Giovanni, luego el
+  Alto Mando (Lorelei, Bruno, Agatha, Lance) y el Campeón Azul; después, revancha desde el principio. Llevan su
+  equipo clásico (completado con su tipo), +2 niveles, el as +4 y objetos; combaten en el gimnasio. Dan el triple
+  de dinero, un objeto raro y su medalla.
+
+Clases, nombres y líderes en `scripts/data/trainers.gd`. Los básicos muy fuertes (Snorlax, Lapras, Scyther…) solo salen como rivales en pisos
+altos (suma de stats base ≤ 400 + 10 × piso) y un entrenador no repite especie.
+
+Al volver de cada piso, una ventana de **novedades** destaca dinero, medallas, capturas, objetos, evoluciones,
+subidas de nivel y ataques nuevos.
+Empiezas con 5 Poké Balls y ganas 1 por piso: lanzar una es tu acción del turno (alcance 4, captura mejor si el
+rival está herido y dormido/congelado; al apuntar se ve el alcance). Si acierta, el Pokémon se convierte en una
+Poké Ball que se agita hasta 3 veces; si escapa, reaparece entre humo. Entre pisos el equipo se cura y gana experiencia (nivel del rival × 10
+por cada derrotado o capturado), sube de nivel, aprende ataques (de sus listas por nivel) y evoluciona (las de
+piedra/intercambio/amistad, a nivel 30). Puedes cambiar miembros por capturados (máx. 6 en el equipo) y elegir
+4 ataques de los aprendidos. La subida se guarda y se puede continuar; se guarda el récord de pisos.
+Lógica en `scripts/tower_run.gd`, pantalla en `scripts/ui/tower.gd`.
+
+## Objetos
+
+89 objetos (`tools/build_items.py` → `data/items/`, sprites de PokeAPI en `assets/items/`), lógica en
+`scripts/battle/items.gd` (pasivos) y `effects.gd` (los que se consumen o reaccionan):
+
+- **Bayas** (se consumen): Aranja, Zidra, curativas de estado y Ziuela, Zanama (PP), las de PS bajos (+1 a un stat)
+  y las 18 que reducen a la mitad un golpe supereficaz de su tipo.
+- **Equipables**: Restos, Lodo Negro, Banda/Cinta Focus, Vidasfera, Cinta/Gafas/Pañuelo Elección (te atan al primer
+  ataque), Cinta Experto, Cinta Fuerte, Gafas Especiales, los 18 potenciadores de tipo, Periscopio, Garra Rápida
+  (+30 CT a veces), Roca del Rey, Campana Concha, Casco Dentado, Mineral Evolutivo, Chaleco Asalto, Refleluz,
+  Polvo Brillo, Lupa, Raíz Grande, Hierbas Blanca/Mental, Toxisfera, Llamasfera, Globo Helio, Botas Gruesas,
+  rocas de clima y Piedra Eterna.
+- **Piedras** (Fuego, Agua, Trueno, Hoja, Lunar): en la Torre, las evoluciones por piedra necesitan la piedra.
+- **Ataques**: Ladrón/Antojo, Desarme, Truco/Trapicheo, Picadura/Picoteo, Calcinación, Lanzamiento, Reciclaje.
+- **Habilidades**: Recogida, Gula, Cosecha, Liviano, Nerviosismo, Viscosidad.
+
+En Partida rápida se elige en el editor de equipo; en la Torre hay mochila (35 % de recibir un objeto por piso,
+uno poco común o raro garantizado cada 5, Recogida al 20 %) y los salvajes a veces llevan bayas.
+
+**Dinero y tienda (Torre)**: empiezas con 500 ₽ y cada piso da 150 + 25 × piso + 5 × nivel de los rivales. En la
+gestión, el botón *Tienda* ofrece Poké Balls (200 ₽) y 6 objetos al azar que cambian cada piso (200/500/1200 ₽
+según rareza, piedras 1500 ₽).
+
+## Velocidad de combate
+
+En Opciones (menú principal) y en la Pausa (Esc): de 20 % a 200 % (200 % es la velocidad normal). Escala todo el
+combate (animaciones, esperas, partículas) con `Engine.time_scale`; los menús y el movimiento manual de la cámara
+van siempre a velocidad normal. Se guarda en `save.cfg`.
+
+## Sonido
+
+Autoload `Audio` (`scripts/audio.gd`): buses Música / Efectos / Ambiente, volúmenes en *Opciones* del menú.
+
+| | Origen |
+|---|---|
+| Efectos (golpes por tipo, pasos por suelo, rayos, interfaz, fanfarrias) | Paquetes de [Kenney](https://kenney.nl) (CC0), seleccionados con `tools/import_sfx.py` |
+| Música (menú, combate, cueva, gimnasio, editor) y ambientes (lluvia, viento, granizo) | Compuestos por código con `tools/make_audio.py` (numpy + ffmpeg) |
+| Gritos | Sintetizados en `audio.gd`: uno propio por especie (grave si es grande), siempre el mismo |
+
+Para cambiar la música: edita las llamadas a `song(...)` (tonalidad, escala, acordes, tempo, semilla) en
+`make_audio.py` y vuelve a ejecutarlo.
 
 ## Balance de velocidad
 

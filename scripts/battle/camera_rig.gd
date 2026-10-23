@@ -37,7 +37,9 @@ func focus(target: Vector3, follow := -1.0) -> void:
 
 func rotate_view(dir: int) -> void:
 	_yaw += dir * rotation_step
-	create_tween().tween_property(self, "rotation_degrees:y", _yaw, 0.3).set_trans(Tween.TRANS_SINE)
+	var tw := create_tween()
+	tw.set_speed_scale(1.0 / maxf(Engine.time_scale, 0.01))
+	tw.tween_property(self, "rotation_degrees:y", _yaw, 0.3).set_trans(Tween.TRANS_SINE)
 
 
 func zoom(delta: float) -> void:
@@ -95,7 +97,9 @@ func _process(delta: float) -> void:
 		return
 	var right := global_transform.basis.x
 	var fwd := Vector3(global_transform.basis.z.x, 0.0, global_transform.basis.z.z).normalized()
-	position += (right * dir.x + fwd * dir.y).normalized() * PAN_SPEED * delta * camera.size / 12.0
+	# El desplazamiento manual no se frena con la velocidad de combate.
+	var real_delta := delta / maxf(Engine.time_scale, 0.01)
+	position += (right * dir.x + fwd * dir.y).normalized() * PAN_SPEED * real_delta * camera.size / 12.0
 
 
 ## Configura el entorno (cielo y luz) del bioma bajo `parent`.

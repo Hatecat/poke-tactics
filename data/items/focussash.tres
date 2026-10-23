@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/focussash.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "focussash"
+display_name = "Banda Aguante"
+description = "Si el Pokémon que la lleva tiene los PS al máximo, puede resistir un golpe que lo dejaría K. O. y se queda con 1 PS."
+category = 1
+effect = "focus_sash"
+params = {}
+fling_power = 10
+rarity = 1
+icon = ExtResource("2_icon")

@@ -30,6 +30,17 @@ var roster: Array[PokemonData] = []
 var teams: Array[TeamSlot] = []
 var current_team := 0
 var difficulty := Difficulty.NORMAL
+## Modo de la batalla en curso: "quick" (Partida rápida) o "tower" (Torre de Batallas).
+var mode := "quick"
+## Partida de la Torre en curso (null = ninguna) y récord de pisos.
+var tower: TowerRun
+var tower_best := 0
+## Volúmenes de 0 a 1 (los aplica el autoload Audio).
+var volumes := {"master": 0.8, "music": 0.6, "sfx": 0.8}
+## Velocidad de los combates en %: 200 es la velocidad normal del juego; se puede bajar hasta 20.
+const BATTLE_SPEED_MIN := 20
+const BATTLE_SPEED_MAX := 200
+var battle_speed := BATTLE_SPEED_MAX
 ## Equipo con el que se juega (el seleccionado).
 var player_team: Array[TeamMember]:
 	get:
@@ -138,12 +149,46 @@ func save_map(data: MapData) -> String:
 	return path if ResourceSaver.save(data, path) == OK else ""
 
 
+## Escala de tiempo del motor durante los combates (200 % = 1,0).
+func battle_time_scale() -> float:
+	return float(battle_speed) / BATTLE_SPEED_MAX
+
+
+## Deslizador de velocidad de combate (para Opciones y Pausa). `on_change` se llama con el nuevo valor.
+func speed_slider(on_change := Callable()) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	var slider := HSlider.new()
+	slider.min_value = BATTLE_SPEED_MIN
+	slider.max_value = BATTLE_SPEED_MAX
+	slider.step = 10
+	slider.value = battle_speed
+	slider.custom_minimum_size = Vector2(260, 26)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var pct := Label.new()
+	pct.text = "%d%%" % battle_speed
+	pct.custom_minimum_size.x = 56
+	slider.value_changed.connect(func(v: float) -> void:
+		battle_speed = int(v)
+		pct.text = "%d%%" % battle_speed
+		if on_change.is_valid():
+			on_change.call(battle_speed))
+	row.add_child(slider)
+	row.add_child(pct)
+	return row
+
+
 func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("teams", "list", teams.map(func(t: TeamSlot) -> Dictionary:
 		return {"name": t.name, "members": t.members.map(func(m: TeamMember) -> Dictionary: return m.to_dict())}))
 	cfg.set_value("teams", "current", current_team)
 	cfg.set_value("options", "difficulty", difficulty)
+	cfg.set_value("options", "volumes", volumes)
+	cfg.set_value("options", "battle_speed", battle_speed)
+	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
+	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("options", "topology", topology)
 	cfg.set_value("options", "biome", biome)
 	cfg.set_value("options", "weather", weather)
@@ -178,6 +223,12 @@ func _load_save() -> void:
 			teams.append(slot)
 		current_team = clampi(cfg.get_value("teams", "current", 0), 0, teams.size() - 1)
 		difficulty = cfg.get_value("options", "difficulty", Difficulty.NORMAL)
+		volumes.merge(cfg.get_value("options", "volumes", {}), true)
+		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
+		tower_best = cfg.get_value("tower", "best", 0)
+		var run: Dictionary = cfg.get_value("tower", "run", {})
+		if not run.is_empty():
+			tower = TowerRun.from_dict(run)
 	if teams.is_empty():
 		var slot := TeamSlot.new()
 		slot.name = "Equipo 1"

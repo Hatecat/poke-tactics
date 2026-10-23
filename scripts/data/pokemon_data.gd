@@ -39,6 +39,19 @@ extends Resource
 ## Todos los ataques que puede aprender.
 @export var learnset: Array[MoveData] = []
 
+@export_group("Evolución y niveles (Torre de Batallas)")
+## Especies a las que evoluciona (ids). Si hay varias (Eevee), se elige una al azar.
+@export var evolves_to: PackedStringArray = []
+## Nivel al que evoluciona (las de piedra, intercambio o amistad usan 30).
+@export var evolve_level := 0
+## 1 = básico, 2 = primera evolución, 3 = segunda.
+@export var stage := 1
+@export var legendary := false
+## Evoluciones con piedra: {id de la piedra: id de la especie}.
+@export var stone_evolutions := {}
+## Ataques que aprende subiendo de nivel: {id: nivel}.
+@export var level_moves := {}
+
 @export_group("Animaciones")
 ## Clip a usar para cada acción cuando el modelo los nombra distinto,
 ## p. ej. {"hit": "dizzy"}. Claves: idle, walk, fight_b, fight_d, hit, ko.

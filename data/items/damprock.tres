@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/damprock.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "damprock"
+display_name = "Roca Lluvia"
+description = "Prolonga la duración del movimiento Danza Lluvia que use el Pokémon que la lleva."
+category = 1
+effect = "weather_rock"
+params = {
+"weather": 2
+}
+fling_power = 60
+rarity = 0
+icon = ExtResource("2_icon")

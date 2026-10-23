@@ -22,60 +22,62 @@
 [ext_resource type="Resource" path="res://data/moves/energyball.tres" id="m16"]
 [ext_resource type="Resource" path="res://data/moves/facade.tres" id="m17"]
 [ext_resource type="Resource" path="res://data/moves/flash.tres" id="m18"]
-[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m19"]
-[ext_resource type="Resource" path="res://data/moves/gigadrain.tres" id="m20"]
-[ext_resource type="Resource" path="res://data/moves/gigaimpact.tres" id="m21"]
-[ext_resource type="Resource" path="res://data/moves/grassknot.tres" id="m22"]
-[ext_resource type="Resource" path="res://data/moves/grassyglide.tres" id="m23"]
-[ext_resource type="Resource" path="res://data/moves/grassyterrain.tres" id="m24"]
-[ext_resource type="Resource" path="res://data/moves/growth.tres" id="m25"]
-[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m26"]
-[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m27"]
-[ext_resource type="Resource" path="res://data/moves/hyperbeam.tres" id="m28"]
-[ext_resource type="Resource" path="res://data/moves/infestation.tres" id="m29"]
-[ext_resource type="Resource" path="res://data/moves/leafstorm.tres" id="m30"]
-[ext_resource type="Resource" path="res://data/moves/magicalleaf.tres" id="m31"]
-[ext_resource type="Resource" path="res://data/moves/megadrain.tres" id="m32"]
-[ext_resource type="Resource" path="res://data/moves/moonblast.tres" id="m33"]
-[ext_resource type="Resource" path="res://data/moves/moonlight.tres" id="m34"]
-[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m35"]
-[ext_resource type="Resource" path="res://data/moves/petalblizzard.tres" id="m36"]
-[ext_resource type="Resource" path="res://data/moves/petaldance.tres" id="m37"]
-[ext_resource type="Resource" path="res://data/moves/poisonpowder.tres" id="m38"]
-[ext_resource type="Resource" path="res://data/moves/pollenpuff.tres" id="m39"]
-[ext_resource type="Resource" path="res://data/moves/protect.tres" id="m40"]
-[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m41"]
-[ext_resource type="Resource" path="res://data/moves/reflect.tres" id="m42"]
-[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m43"]
-[ext_resource type="Resource" path="res://data/moves/return.tres" id="m44"]
-[ext_resource type="Resource" path="res://data/moves/round.tres" id="m45"]
-[ext_resource type="Resource" path="res://data/moves/safeguard.tres" id="m46"]
-[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m47"]
-[ext_resource type="Resource" path="res://data/moves/seedbomb.tres" id="m48"]
-[ext_resource type="Resource" path="res://data/moves/sleeppowder.tres" id="m49"]
-[ext_resource type="Resource" path="res://data/moves/sludgebomb.tres" id="m50"]
-[ext_resource type="Resource" path="res://data/moves/sludgewave.tres" id="m51"]
-[ext_resource type="Resource" path="res://data/moves/solarbeam.tres" id="m52"]
-[ext_resource type="Resource" path="res://data/moves/solarblade.tres" id="m53"]
-[ext_resource type="Resource" path="res://data/moves/stunspore.tres" id="m54"]
-[ext_resource type="Resource" path="res://data/moves/substitute.tres" id="m55"]
-[ext_resource type="Resource" path="res://data/moves/sunnyday.tres" id="m56"]
-[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m57"]
-[ext_resource type="Resource" path="res://data/moves/sweetscent.tres" id="m58"]
-[ext_resource type="Resource" path="res://data/moves/swordsdance.tres" id="m59"]
-[ext_resource type="Resource" path="res://data/moves/synthesis.tres" id="m60"]
-[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m61"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m62"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m63"]
-[ext_resource type="Resource" path="res://data/moves/trailblaze.tres" id="m64"]
-[ext_resource type="Resource" path="res://data/moves/venoshock.tres" id="m65"]
-[ext_resource type="Resource" path="res://data/moves/weatherball.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/fling.tres" id="m19"]
+[ext_resource type="Resource" path="res://data/moves/frustration.tres" id="m20"]
+[ext_resource type="Resource" path="res://data/moves/gigadrain.tres" id="m21"]
+[ext_resource type="Resource" path="res://data/moves/gigaimpact.tres" id="m22"]
+[ext_resource type="Resource" path="res://data/moves/grassknot.tres" id="m23"]
+[ext_resource type="Resource" path="res://data/moves/grassyglide.tres" id="m24"]
+[ext_resource type="Resource" path="res://data/moves/grassyterrain.tres" id="m25"]
+[ext_resource type="Resource" path="res://data/moves/growth.tres" id="m26"]
+[ext_resource type="Resource" path="res://data/moves/headbutt.tres" id="m27"]
+[ext_resource type="Resource" path="res://data/moves/hiddenpower.tres" id="m28"]
+[ext_resource type="Resource" path="res://data/moves/hyperbeam.tres" id="m29"]
+[ext_resource type="Resource" path="res://data/moves/infestation.tres" id="m30"]
+[ext_resource type="Resource" path="res://data/moves/leafstorm.tres" id="m31"]
+[ext_resource type="Resource" path="res://data/moves/magicalleaf.tres" id="m32"]
+[ext_resource type="Resource" path="res://data/moves/megadrain.tres" id="m33"]
+[ext_resource type="Resource" path="res://data/moves/moonblast.tres" id="m34"]
+[ext_resource type="Resource" path="res://data/moves/moonlight.tres" id="m35"]
+[ext_resource type="Resource" path="res://data/moves/naturalgift.tres" id="m36"]
+[ext_resource type="Resource" path="res://data/moves/petalblizzard.tres" id="m37"]
+[ext_resource type="Resource" path="res://data/moves/petaldance.tres" id="m38"]
+[ext_resource type="Resource" path="res://data/moves/poisonpowder.tres" id="m39"]
+[ext_resource type="Resource" path="res://data/moves/pollenpuff.tres" id="m40"]
+[ext_resource type="Resource" path="res://data/moves/protect.tres" id="m41"]
+[ext_resource type="Resource" path="res://data/moves/rage.tres" id="m42"]
+[ext_resource type="Resource" path="res://data/moves/reflect.tres" id="m43"]
+[ext_resource type="Resource" path="res://data/moves/rest.tres" id="m44"]
+[ext_resource type="Resource" path="res://data/moves/return.tres" id="m45"]
+[ext_resource type="Resource" path="res://data/moves/round.tres" id="m46"]
+[ext_resource type="Resource" path="res://data/moves/safeguard.tres" id="m47"]
+[ext_resource type="Resource" path="res://data/moves/secretpower.tres" id="m48"]
+[ext_resource type="Resource" path="res://data/moves/seedbomb.tres" id="m49"]
+[ext_resource type="Resource" path="res://data/moves/sleeppowder.tres" id="m50"]
+[ext_resource type="Resource" path="res://data/moves/sludgebomb.tres" id="m51"]
+[ext_resource type="Resource" path="res://data/moves/sludgewave.tres" id="m52"]
+[ext_resource type="Resource" path="res://data/moves/solarbeam.tres" id="m53"]
+[ext_resource type="Resource" path="res://data/moves/solarblade.tres" id="m54"]
+[ext_resource type="Resource" path="res://data/moves/stunspore.tres" id="m55"]
+[ext_resource type="Resource" path="res://data/moves/substitute.tres" id="m56"]
+[ext_resource type="Resource" path="res://data/moves/sunnyday.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/swagger.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/sweetscent.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/swordsdance.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/synthesis.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m62"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m63"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m64"]
+[ext_resource type="Resource" path="res://data/moves/trailblaze.tres" id="m65"]
+[ext_resource type="Resource" path="res://data/moves/venoshock.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/weatherball.tres" id="m67"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("grass", "poison")
 abilities = PackedStringArray("chlorophyll", "effectspore")
+evolves_to = PackedStringArray()
 id = "vileplume"
 species_name = "Vileplume"
 dex_number = 45
@@ -91,5 +93,26 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.5
-moves = Array[ExtResource("2_move")]([ExtResource("m37"), ExtResource("m51"), ExtResource("m59"), ExtResource("m30")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m64"), ExtResource("m0"), ExtResource("m29"), ExtResource("m15"), ExtResource("m3"), ExtResource("m39"), ExtResource("m48"), ExtResource("m50"), ExtResource("m2"), ExtResource("m11"), ExtResource("m24"), ExtResource("m45"), ExtResource("m65"), ExtResource("m8"), ExtResource("m10"), ExtResource("m53"), ExtResource("m59"), ExtResource("m37"), ExtResource("m47"), ExtResource("m61"), ExtResource("m25"), ExtResource("m43"), ExtResource("m18"), ExtResource("m13"), ExtResource("m12"), ExtResource("m35"), ExtResource("m58"), ExtResource("m56"), ExtResource("m7"), ExtResource("m16"), ExtResource("m17"), ExtResource("m57"), ExtResource("m23"), ExtResource("m60"), ExtResource("m19"), ExtResource("m33"), ExtResource("m41"), ExtResource("m20"), ExtResource("m21"), ExtResource("m26"), ExtResource("m4"), ExtResource("m22"), ExtResource("m28"), ExtResource("m31"), ExtResource("m30"), ExtResource("m34"), ExtResource("m9"), ExtResource("m32"), ExtResource("m66"), ExtResource("m51"), ExtResource("m54"), ExtResource("m27"), ExtResource("m38"), ExtResource("m40"), ExtResource("m14"), ExtResource("m52"), ExtResource("m42"), ExtResource("m44"), ExtResource("m6"), ExtResource("m5"), ExtResource("m49"), ExtResource("m55"), ExtResource("m62"), ExtResource("m36"), ExtResource("m63"), ExtResource("m46"), ExtResource("m1")])
+evolve_level = 0
+stage = 3
+legendary = false
+level_moves = {
+"absorb": 1,
+"acid": 1,
+"gigadrain": 1,
+"grassyterrain": 1,
+"growth": 1,
+"megadrain": 1,
+"moonblast": 1,
+"moonlight": 1,
+"petalblizzard": 1,
+"petaldance": 1,
+"poisonpowder": 1,
+"sleeppowder": 1,
+"stunspore": 1,
+"sweetscent": 1,
+"toxic": 1
+}
+stone_evolutions = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m38"), ExtResource("m52"), ExtResource("m60"), ExtResource("m31")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m65"), ExtResource("m0"), ExtResource("m30"), ExtResource("m15"), ExtResource("m3"), ExtResource("m40"), ExtResource("m49"), ExtResource("m51"), ExtResource("m2"), ExtResource("m11"), ExtResource("m25"), ExtResource("m46"), ExtResource("m66"), ExtResource("m8"), ExtResource("m10"), ExtResource("m54"), ExtResource("m60"), ExtResource("m38"), ExtResource("m48"), ExtResource("m62"), ExtResource("m26"), ExtResource("m44"), ExtResource("m18"), ExtResource("m13"), ExtResource("m12"), ExtResource("m36"), ExtResource("m59"), ExtResource("m57"), ExtResource("m7"), ExtResource("m16"), ExtResource("m17"), ExtResource("m58"), ExtResource("m24"), ExtResource("m61"), ExtResource("m20"), ExtResource("m34"), ExtResource("m42"), ExtResource("m21"), ExtResource("m22"), ExtResource("m27"), ExtResource("m4"), ExtResource("m23"), ExtResource("m29"), ExtResource("m32"), ExtResource("m19"), ExtResource("m31"), ExtResource("m35"), ExtResource("m9"), ExtResource("m33"), ExtResource("m67"), ExtResource("m52"), ExtResource("m55"), ExtResource("m28"), ExtResource("m39"), ExtResource("m41"), ExtResource("m14"), ExtResource("m53"), ExtResource("m43"), ExtResource("m45"), ExtResource("m6"), ExtResource("m5"), ExtResource("m50"), ExtResource("m56"), ExtResource("m63"), ExtResource("m37"), ExtResource("m64"), ExtResource("m47"), ExtResource("m1")])

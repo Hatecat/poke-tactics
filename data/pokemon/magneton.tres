@@ -60,22 +60,24 @@
 [ext_resource type="Resource" path="res://data/moves/swift.tres" id="m54"]
 [ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m55"]
 [ext_resource type="Resource" path="res://data/moves/takedown.tres" id="m56"]
-[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m57"]
-[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m58"]
-[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m59"]
-[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m60"]
-[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m61"]
-[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m62"]
-[ext_resource type="Resource" path="res://data/moves/triattack.tres" id="m63"]
-[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m64"]
-[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m65"]
-[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/teleport.tres" id="m57"]
+[ext_resource type="Resource" path="res://data/moves/terablast.tres" id="m58"]
+[ext_resource type="Resource" path="res://data/moves/thunder.tres" id="m59"]
+[ext_resource type="Resource" path="res://data/moves/thunderbolt.tres" id="m60"]
+[ext_resource type="Resource" path="res://data/moves/thundershock.tres" id="m61"]
+[ext_resource type="Resource" path="res://data/moves/thunderwave.tres" id="m62"]
+[ext_resource type="Resource" path="res://data/moves/toxic.tres" id="m63"]
+[ext_resource type="Resource" path="res://data/moves/triattack.tres" id="m64"]
+[ext_resource type="Resource" path="res://data/moves/voltswitch.tres" id="m65"]
+[ext_resource type="Resource" path="res://data/moves/wildcharge.tres" id="m66"]
+[ext_resource type="Resource" path="res://data/moves/zapcannon.tres" id="m67"]
 
 [resource]
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("electric", "steel")
 abilities = PackedStringArray("magnetpull", "sturdy", "analytic")
+evolves_to = PackedStringArray()
 id = "magneton"
 species_name = "Magneton"
 dex_number = 82
@@ -91,5 +93,27 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = -1.0
-moves = Array[ExtResource("2_move")]([ExtResource("m49"), ExtResource("m59"), ExtResource("m0"), ExtResource("m16")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m39"), ExtResource("m10"), ExtResource("m28"), ExtResource("m47"), ExtResource("m26"), ExtResource("m9"), ExtResource("m41"), ExtResource("m0"), ExtResource("m16"), ExtResource("m43"), ExtResource("m48"), ExtResource("m5"), ExtResource("m2"), ExtResource("m22"), ExtResource("m35"), ExtResource("m44"), ExtResource("m25"), ExtResource("m56"), ExtResource("m37"), ExtResource("m15"), ExtResource("m31"), ExtResource("m7"), ExtResource("m6"), ExtResource("m32"), ExtResource("m51"), ExtResource("m30"), ExtResource("m66"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m53"), ExtResource("m17"), ExtResource("m34"), ExtResource("m18"), ExtResource("m20"), ExtResource("m21"), ExtResource("m19"), ExtResource("m24"), ExtResource("m60"), ExtResource("m29"), ExtResource("m4"), ExtResource("m49"), ExtResource("m54"), ExtResource("m8"), ExtResource("m61"), ExtResource("m45"), ExtResource("m27"), ExtResource("m55"), ExtResource("m23"), ExtResource("m33"), ExtResource("m59"), ExtResource("m1"), ExtResource("m3"), ExtResource("m46"), ExtResource("m36"), ExtResource("m38"), ExtResource("m40"), ExtResource("m52"), ExtResource("m50"), ExtResource("m57"), ExtResource("m42"), ExtResource("m63"), ExtResource("m58"), ExtResource("m62"), ExtResource("m65"), ExtResource("m64")])
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"electricterrain": 1,
+"supersonic": 1,
+"tackle": 1,
+"thundershock": 1,
+"thunderwave": 1,
+"triattack": 1,
+"electroball": 12,
+"gyroball": 16,
+"spark": 20,
+"screech": 24,
+"magnetrise": 28,
+"flashcannon": 34,
+"discharge": 40,
+"metalsound": 46,
+"lightscreen": 52,
+"zapcannon": 64
+}
+stone_evolutions = {}
+moves = Array[ExtResource("2_move")]([ExtResource("m49"), ExtResource("m60"), ExtResource("m0"), ExtResource("m16")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m39"), ExtResource("m10"), ExtResource("m28"), ExtResource("m47"), ExtResource("m26"), ExtResource("m9"), ExtResource("m41"), ExtResource("m0"), ExtResource("m16"), ExtResource("m43"), ExtResource("m48"), ExtResource("m5"), ExtResource("m2"), ExtResource("m22"), ExtResource("m35"), ExtResource("m44"), ExtResource("m25"), ExtResource("m56"), ExtResource("m37"), ExtResource("m15"), ExtResource("m31"), ExtResource("m7"), ExtResource("m6"), ExtResource("m32"), ExtResource("m51"), ExtResource("m30"), ExtResource("m67"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m53"), ExtResource("m17"), ExtResource("m34"), ExtResource("m18"), ExtResource("m20"), ExtResource("m21"), ExtResource("m19"), ExtResource("m24"), ExtResource("m61"), ExtResource("m29"), ExtResource("m4"), ExtResource("m49"), ExtResource("m54"), ExtResource("m8"), ExtResource("m62"), ExtResource("m45"), ExtResource("m27"), ExtResource("m55"), ExtResource("m23"), ExtResource("m33"), ExtResource("m60"), ExtResource("m1"), ExtResource("m3"), ExtResource("m46"), ExtResource("m36"), ExtResource("m38"), ExtResource("m40"), ExtResource("m52"), ExtResource("m50"), ExtResource("m57"), ExtResource("m58"), ExtResource("m42"), ExtResource("m64"), ExtResource("m59"), ExtResource("m63"), ExtResource("m66"), ExtResource("m65")])

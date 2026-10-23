@@ -89,6 +89,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("bug", "flying")
 abilities = PackedStringArray("swarm", "technician", "steadfast")
+evolves_to = PackedStringArray()
 id = "scyther"
 species_name = "Scyther"
 dex_number = 123
@@ -104,5 +105,24 @@ move_modifier = 1
 jump = 3
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 0
+stage = 1
+legendary = false
+level_moves = {
+"leer": 1,
+"quickattack": 1,
+"furycutter": 4,
+"falseswipe": 8,
+"wingattack": 12,
+"doubleteam": 16,
+"doublehit": 20,
+"slash": 24,
+"focusenergy": 28,
+"agility": 32,
+"airslash": 36,
+"xscissor": 40,
+"swordsdance": 44
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m19"), ExtResource("m2"), ExtResource("m37")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m12"), ExtResource("m75"), ExtResource("m0"), ExtResource("m2"), ExtResource("m23"), ExtResource("m3"), ExtResource("m22"), ExtResource("m63"), ExtResource("m26"), ExtResource("m78"), ExtResource("m46"), ExtResource("m6"), ExtResource("m42"), ExtResource("m5"), ExtResource("m61"), ExtResource("m55"), ExtResource("m57"), ExtResource("m13"), ExtResource("m16"), ExtResource("m29"), ExtResource("m62"), ExtResource("m69"), ExtResource("m48"), ExtResource("m58"), ExtResource("m7"), ExtResource("m71"), ExtResource("m34"), ExtResource("m50"), ExtResource("m17"), ExtResource("m18"), ExtResource("m21"), ExtResource("m19"), ExtResource("m20"), ExtResource("m39"), ExtResource("m66"), ExtResource("m64"), ExtResource("m24"), ExtResource("m25"), ExtResource("m67"), ExtResource("m27"), ExtResource("m28"), ExtResource("m47"), ExtResource("m30"), ExtResource("m8"), ExtResource("m1"), ExtResource("m31"), ExtResource("m60"), ExtResource("m53"), ExtResource("m33"), ExtResource("m76"), ExtResource("m52"), ExtResource("m73"), ExtResource("m15"), ExtResource("m35"), ExtResource("m68"), ExtResource("m77"), ExtResource("m36"), ExtResource("m45"), ExtResource("m9"), ExtResource("m37"), ExtResource("m32"), ExtResource("m43"), ExtResource("m44"), ExtResource("m54"), ExtResource("m51"), ExtResource("m11"), ExtResource("m38"), ExtResource("m65"), ExtResource("m4"), ExtResource("m40"), ExtResource("m72"), ExtResource("m79"), ExtResource("m74"), ExtResource("m56"), ExtResource("m14"), ExtResource("m41"), ExtResource("m70"), ExtResource("m49"), ExtResource("m59"), ExtResource("m10")])

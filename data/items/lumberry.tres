@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/lumberry.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "lumberry"
+display_name = "Baya Ziuela"
+description = "Los Pokémon pueden llevarla o usarla para recuperarse de problemas de estado."
+category = 0
+effect = "cure"
+params = {
+"status": "all"
+}
+fling_power = 10
+rarity = 1
+icon = ExtResource("2_icon")

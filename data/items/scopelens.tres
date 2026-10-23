@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/scopelens.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "scopelens"
+display_name = "Periscopio"
+description = "Su lente aumenta la probabilidad que tiene el Pokémon que lo lleva de conseguir un golpe crítico."
+category = 1
+effect = "crit"
+params = {
+"stages": 1
+}
+fling_power = 30
+rarity = 1
+icon = ExtResource("2_icon")

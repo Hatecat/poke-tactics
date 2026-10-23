@@ -96,6 +96,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("poison")
 abilities = PackedStringArray("intimidate", "shedskin", "unnerve")
+evolves_to = PackedStringArray()
 id = "arbok"
 species_name = "Arbok"
 dex_number = 24
@@ -111,5 +112,29 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"bite": 1,
+"crunch": 1,
+"firefang": 1,
+"icefang": 1,
+"leer": 1,
+"poisonsting": 1,
+"thunderfang": 1,
+"wrap": 1,
+"glare": 12,
+"screech": 17,
+"acid": 20,
+"spitup": 27,
+"stockpile": 27,
+"acidspray": 32,
+"sludgebomb": 39,
+"haze": 51,
+"coil": 56,
+"gunkshot": 63
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m28"), ExtResource("m17"), ExtResource("m27"), ExtResource("m46")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m84"), ExtResource("m34"), ExtResource("m2"), ExtResource("m21"), ExtResource("m68"), ExtResource("m4"), ExtResource("m65"), ExtResource("m3"), ExtResource("m55"), ExtResource("m43"), ExtResource("m41"), ExtResource("m62"), ExtResource("m66"), ExtResource("m1"), ExtResource("m64"), ExtResource("m57"), ExtResource("m59"), ExtResource("m85"), ExtResource("m60"), ExtResource("m38"), ExtResource("m19"), ExtResource("m35"), ExtResource("m48"), ExtResource("m33"), ExtResource("m81"), ExtResource("m23"), ExtResource("m12"), ExtResource("m86"), ExtResource("m52"), ExtResource("m61"), ExtResource("m77"), ExtResource("m37"), ExtResource("m36"), ExtResource("m53"), ExtResource("m27"), ExtResource("m42"), ExtResource("m18"), ExtResource("m17"), ExtResource("m44"), ExtResource("m75"), ExtResource("m11"), ExtResource("m69"), ExtResource("m16"), ExtResource("m22"), ExtResource("m76"), ExtResource("m24"), ExtResource("m72"), ExtResource("m51"), ExtResource("m25"), ExtResource("m26"), ExtResource("m8"), ExtResource("m74"), ExtResource("m30"), ExtResource("m6"), ExtResource("m80"), ExtResource("m63"), ExtResource("m32"), ExtResource("m79"), ExtResource("m28"), ExtResource("m14"), ExtResource("m39"), ExtResource("m40"), ExtResource("m5"), ExtResource("m29"), ExtResource("m67"), ExtResource("m71"), ExtResource("m47"), ExtResource("m31"), ExtResource("m49"), ExtResource("m50"), ExtResource("m15"), ExtResource("m46"), ExtResource("m83"), ExtResource("m70"), ExtResource("m54"), ExtResource("m58"), ExtResource("m10"), ExtResource("m73"), ExtResource("m78"), ExtResource("m9"), ExtResource("m20"), ExtResource("m13"), ExtResource("m56"), ExtResource("m82"), ExtResource("m7"), ExtResource("m45"), ExtResource("m0")])

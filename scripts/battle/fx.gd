@@ -130,6 +130,69 @@ static func beam(parent: Node3D, from: Vector3, to: Vector3, type: String) -> vo
 		burst(parent, from.lerp(to, float(i + 1) / steps), type, 0.25)
 
 
+## Poké Ball de primitivas (mitad roja, mitad blanca, banda negra y botón).
+static func pokeball(parent: Node3D) -> Node3D:
+	var root := Node3D.new()
+	parent.add_child(root)
+	var r := 0.17
+	var top := SphereMesh.new()
+	top.radius = r
+	top.height = r
+	top.is_hemisphere = true
+	var bottom := top.duplicate()
+	var red := MeshInstance3D.new()
+	red.mesh = top
+	red.material_override = _solid(Color(0.85, 0.12, 0.12))
+	root.add_child(red)
+	var white := MeshInstance3D.new()
+	white.mesh = bottom
+	white.rotation.x = PI
+	white.material_override = _solid(Color(0.96, 0.96, 0.96))
+	root.add_child(white)
+	var band := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = r * 1.01
+	cyl.bottom_radius = r * 1.01
+	cyl.height = 0.03
+	band.mesh = cyl
+	band.material_override = _solid(Color(0.08, 0.08, 0.08))
+	root.add_child(band)
+	var button := MeshInstance3D.new()
+	var dot := CylinderMesh.new()
+	dot.top_radius = 0.05
+	dot.bottom_radius = 0.05
+	dot.height = 0.03
+	button.mesh = dot
+	button.rotation.x = PI * 0.5
+	button.position = Vector3(0, 0, r * 0.97)
+	button.material_override = _solid(Color(0.95, 0.95, 0.95))
+	root.add_child(button)
+	return root
+
+
+## Nube de humo (al escaparse de la Poké Ball).
+static func smoke(parent: Node3D, pos: Vector3) -> void:
+	var parts := _particles(Color(0.85, 0.85, 0.85, 0.9), Color(0.6, 0.6, 0.6), false, 0.35)
+	parts.amount = 30
+	parts.lifetime = 0.9
+	parts.spread = 180.0
+	parts.initial_velocity_min = 0.6
+	parts.initial_velocity_max = 1.4
+	parts.gravity = Vector3(0, 0.8, 0)
+	parts.damping_min = 1.5
+	parts.damping_max = 2.5
+	parts.scale_amount_min = 0.8
+	parts.scale_amount_max = 1.8
+	_spawn(parent, parts, pos + Vector3.UP * 0.2)
+
+
+static func _solid(color: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.roughness = 0.35
+	return m
+
+
 ## Aura que sube (o baja) alrededor de un Pokémon: estados, cambios de stats, curación.
 static func aura(parent: Node3D, pos: Vector3, color: Color, height: float, rising := true) -> void:
 	var parts := _particles(color, color.lightened(0.5), true, 0.1)

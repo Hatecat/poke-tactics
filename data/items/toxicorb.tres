@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/item_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/items/toxicorb.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = "toxicorb"
+display_name = "Toxisfera"
+description = "Extraña esfera que envenena gravemente al Pokémon que la lleva en combate."
+category = 1
+effect = "status_orb"
+params = {
+"status": "psn"
+}
+fling_power = 30
+rarity = 1
+icon = ExtResource("2_icon")

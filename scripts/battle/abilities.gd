@@ -7,9 +7,10 @@ const DATA_PATH := "res://data/abilities.json"
 ## Habilidades con efecto en el tablero. El resto se muestran como "sin efecto (todavía)".
 const IMPLEMENTED: PackedStringArray = [
 	"adaptability", "aftermath", "angerpoint", "battlearmor", "bigpecks", "blaze", "chlorophyll",
-	"clearbody", "cloudnine", "cutecharm", "rivalry", "competitive", "compoundeyes", "damp", "defiant", "download", "drought",
+	"clearbody", "cloudnine", "cutecharm", "rivalry", "pickup", "gluttony", "harvest", "unburden",
+	"unnerve", "stickyhold", "competitive", "compoundeyes", "damp", "defiant", "download", "drought",
 	"dryskin", "earlybird", "effectspore", "filter", "flamebody", "flashfire", "friendguard", "guts",
-	"healer", "hustle", "hydration", "hypercutter", "icebody", "immunity", "infiltrator", "innerfocus",
+	"healer", "hustle", "hydration", "hypercutter", "icebody", "immunity", "imposter", "infiltrator", "innerfocus",
 	"insomnia", "intimidate", "ironfist", "justified", "keeneye", "leafguard", "levitate", "lightningrod",
 	"limber", "liquidooze", "magicguard", "magmaarmor", "marvelscale", "moldbreaker", "moxie",
 	"multiscale", "naturalcure", "noguard", "oblivious", "overcoat", "overgrow", "owntempo",
@@ -89,9 +90,6 @@ static func attack_mult(att: Unit, move: MoveData, type: String, physical: bool,
 		"sniper":
 			if crit:
 				m *= 1.5
-		"skilllink":
-			if "multihit" in move.flags:
-				m *= 5.0 / 3.0
 	if type == "fire" and att.volatiles.has("flashfire"):
 		m *= 1.5
 	if type == "electric" and att.volatiles.has("charge"):

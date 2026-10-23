@@ -83,6 +83,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("normal")
 abilities = PackedStringArray("runaway", "guts", "hustle")
+evolves_to = PackedStringArray()
 id = "raticate"
 species_name = "Raticate"
 dex_number = 20
@@ -98,5 +99,24 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.5
+evolve_level = 0
+stage = 2
+legendary = false
+level_moves = {
+"focusenergy": 1,
+"quickattack": 1,
+"scaryface": 1,
+"swordsdance": 1,
+"tackle": 1,
+"tailwhip": 1,
+"bite": 10,
+"pursuit": 13,
+"hyperfang": 16,
+"assurance": 19,
+"crunch": 24,
+"suckerpunch": 29,
+"doubleedge": 39
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m15"), ExtResource("m71"), ExtResource("m72"), ExtResource("m49")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m59"), ExtResource("m17"), ExtResource("m68"), ExtResource("m9"), ExtResource("m36"), ExtResource("m1"), ExtResource("m72"), ExtResource("m31"), ExtResource("m47"), ExtResource("m0"), ExtResource("m49"), ExtResource("m73"), ExtResource("m44"), ExtResource("m45"), ExtResource("m30"), ExtResource("m8"), ExtResource("m12"), ExtResource("m57"), ExtResource("m38"), ExtResource("m46"), ExtResource("m60"), ExtResource("m39"), ExtResource("m16"), ExtResource("m15"), ExtResource("m32"), ExtResource("m54"), ExtResource("m14"), ExtResource("m18"), ExtResource("m55"), ExtResource("m19"), ExtResource("m20"), ExtResource("m51"), ExtResource("m37"), ExtResource("m22"), ExtResource("m53"), ExtResource("m24"), ExtResource("m4"), ExtResource("m63"), ExtResource("m43"), ExtResource("m21"), ExtResource("m23"), ExtResource("m27"), ExtResource("m26"), ExtResource("m69"), ExtResource("m62"), ExtResource("m11"), ExtResource("m56"), ExtResource("m61"), ExtResource("m2"), ExtResource("m66"), ExtResource("m48"), ExtResource("m50"), ExtResource("m35"), ExtResource("m33"), ExtResource("m70"), ExtResource("m58"), ExtResource("m25"), ExtResource("m34"), ExtResource("m65"), ExtResource("m5"), ExtResource("m7"), ExtResource("m28"), ExtResource("m40"), ExtResource("m41"), ExtResource("m13"), ExtResource("m42"), ExtResource("m6"), ExtResource("m52"), ExtResource("m10"), ExtResource("m64"), ExtResource("m67"), ExtResource("m3"), ExtResource("m29"), ExtResource("m71")])

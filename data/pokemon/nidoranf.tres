@@ -79,6 +79,7 @@ script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("poison")
 abilities = PackedStringArray("poisonpoint", "rivalry", "hustle")
+evolves_to = PackedStringArray("nidorina")
 id = "nidoranf"
 species_name = "Nidoran♀"
 dex_number = 29
@@ -94,5 +95,23 @@ move_modifier = 0
 jump = 1
 anim_map = {}
 male_ratio = 0.0
+evolve_level = 16
+stage = 1
+legendary = false
+level_moves = {
+"growl": 1,
+"poisonsting": 1,
+"scratch": 5,
+"tailwhip": 10,
+"furyswipes": 15,
+"toxicspikes": 20,
+"doublekick": 25,
+"bite": 30,
+"toxic": 40,
+"flatter": 45,
+"crunch": 50,
+"earthpower": 55
+}
+stone_evolutions = {}
 moves = Array[ExtResource("2_move")]([ExtResource("m16"), ExtResource("m36"), ExtResource("m30"), ExtResource("m53")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m30"), ExtResource("m61"), ExtResource("m21"), ExtResource("m48"), ExtResource("m1"), ExtResource("m33"), ExtResource("m53"), ExtResource("m52"), ExtResource("m23"), ExtResource("m47"), ExtResource("m68"), ExtResource("m32"), ExtResource("m38"), ExtResource("m35"), ExtResource("m9"), ExtResource("m12"), ExtResource("m42"), ExtResource("m49"), ExtResource("m62"), ExtResource("m44"), ExtResource("m14"), ExtResource("m18"), ExtResource("m16"), ExtResource("m17"), ExtResource("m34"), ExtResource("m57"), ExtResource("m20"), ExtResource("m7"), ExtResource("m15"), ExtResource("m22"), ExtResource("m59"), ExtResource("m24"), ExtResource("m25"), ExtResource("m54"), ExtResource("m41"), ExtResource("m50"), ExtResource("m0"), ExtResource("m56"), ExtResource("m28"), ExtResource("m5"), ExtResource("m46"), ExtResource("m26"), ExtResource("m27"), ExtResource("m8"), ExtResource("m69"), ExtResource("m63"), ExtResource("m11"), ExtResource("m3"), ExtResource("m51"), ExtResource("m2"), ExtResource("m40"), ExtResource("m37"), ExtResource("m60"), ExtResource("m29"), ExtResource("m39"), ExtResource("m36"), ExtResource("m67"), ExtResource("m65"), ExtResource("m31"), ExtResource("m43"), ExtResource("m45"), ExtResource("m13"), ExtResource("m6"), ExtResource("m58"), ExtResource("m55"), ExtResource("m19"), ExtResource("m10"), ExtResource("m64"), ExtResource("m66"), ExtResource("m4")])

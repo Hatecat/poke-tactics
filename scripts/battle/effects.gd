@@ -11,6 +11,8 @@ const INTIMIDATE_RANGE := 2
 const HEALER_CHANCE := 0.3
 const SHED_SKIN_CHANCE := 0.3
 const ATTRACT_TURNS := 5
+## Turnos propios que dura Constricción o un remolino (Giro Fuego, Torbellino...).
+const BIND_TURNS := 2
 
 # --- Tablero ---
 ## Daño por cada nivel de altura a favor (+) o en contra (-), con topes.
@@ -164,6 +166,7 @@ func _terrain_boosts(type: String) -> bool:
 
 ## Volátiles, habilidades y terreno al empezar el turno de `u`. Devuelve false si pierde el turno.
 func start_of_turn(u: Unit) -> bool:
+	check_binds()
 	for key in ["protect", "endure", "destinybond"]:
 		u.volatiles.erase(key)
 	if not u.volatiles.has("protect_used"):
@@ -171,6 +174,9 @@ func start_of_turn(u: Unit) -> bool:
 	u.volatiles.erase("protect_used")
 
 	await _abilities_start(u)
+	if not u.is_alive():
+		return false
+	await _items_start(u)
 	if not u.is_alive():
 		return false
 
@@ -194,6 +200,17 @@ func start_of_turn(u: Unit) -> bool:
 			await b._wait(0.35)
 		elif u.status != MoveData.Status.SLEEP:
 			u.volatiles.erase("nightmare")
+	# Atrapado (Constricción...) o en un remolino (Giro Fuego...): pierde 1/8 por turno mientras dure.
+	for key in ["wrapped", "vortex"]:
+		if u.is_alive() and u.volatiles.has(key):
+			if u.volatiles[key].turns <= 0:
+				release_bind(u, key)
+			else:
+				u.volatiles[key].turns -= 1
+				if Abilities.takes_indirect(u):
+					var text := "%s sufre dentro del remolino." if key == "vortex" else "%s sufre al estar atrapado."
+					_hurt(u, maxi(1, u.max_hp / 8), text % u.display_name(), Color(0.9, 0.6, 0.4))
+					await b._wait(0.35)
 	for key in ["ingrain", "aquaring"]:
 		if u.is_alive() and u.volatiles.has(key):
 			b._heal(u, maxi(1, u.max_hp / 16))
@@ -267,6 +284,12 @@ func _abilities_start(u: Unit) -> void:
 		if foe:
 			var key := "attack" if foe.stat("defense") < foe.stat("sp_defense") else "sp_attack"
 			_boost(u, {key: 1}, "Descarga")
+	if u.ability == "imposter" and not u.volatiles.has("ability_used") and not u.is_transformed():
+		u.volatiles["ability_used"] = {}
+		var foe := _nearest_foe(u)
+		if foe:
+			b._log("¡Impostor de %s!" % u.display_name())
+			await b._transform(u, foe)
 	if u.ability == "intimidate":
 		for foe: Unit in b.units:
 			if foe.team != u.team and foe.is_alive() and not u.intimidated.has(foe) \
@@ -297,6 +320,105 @@ func _abilities_start(u: Unit) -> void:
 		await b._wait(0.3)
 
 
+func _items_start(u: Unit) -> void:
+	match Items.effect(u):
+		"leftovers":
+			if u.hp < u.max_hp:
+				b._log("Los Restos curan a %s." % u.display_name())
+				b._heal(u, maxi(1, u.max_hp / 16))
+		"black_sludge":
+			if "poison" in u.data.types:
+				if u.hp < u.max_hp:
+					b._heal(u, maxi(1, u.max_hp / 16))
+			elif Abilities.takes_indirect(u):
+				_hurt(u, maxi(1, u.max_hp / 8), "El Lodo Negro daña a %s." % u.display_name(), Color(0.4, 0.3, 0.4))
+				await b._wait(0.3)
+		"status_orb":
+			var st: int = MoveData.Status.POISON if Items.param(u, "status") == "psn" else MoveData.Status.BURN
+			if u.status == MoveData.Status.NONE and can_status(null, u, st) == "":
+				b._log("¡%s se activó!" % u.item.display_name)
+				set_status(null, u, st)
+	# Cosecha: recupera la baya que se comió (siempre con sol, 50 % si no).
+	if u.ability == "harvest" and u.item == null and u.consumed_item and u.consumed_item.category == ItemData.Category.BERRY \
+			and (Combat.weather == Weather.Kind.SUN or b.rng.randf() < 0.5):
+		u.item = u.consumed_item
+		u.consumed_item = null
+		b._log("¡%s recogió una %s gracias a Cosecha!" % [u.display_name(), u.item.display_name])
+	check_berries(u)
+
+
+# --- Bayas y objetos que reaccionan ---------------------------------------------------
+
+## ¿Puede comerse su baya? (Nerviosismo de un rival a 3 casillas o menos lo impide).
+func can_eat(u: Unit) -> bool:
+	if u.item == null or u.item.category != ItemData.Category.BERRY:
+		return false
+	for foe: Unit in b.units:
+		if foe.team != u.team and foe.is_alive() and foe.ability == "unnerve" and b.grid.distance_to_set(foe.footprint, u.cell) <= 3:
+			return false
+	return true
+
+
+## Comprueba si su baya debe activarse (PS bajos, estados, sin PP).
+func check_berries(u: Unit) -> void:
+	if not u.is_alive() or not can_eat(u):
+		return
+	var it := u.item
+	var low: float = it.params.get("threshold", 0.5)
+	match it.effect:
+		"heal_flat", "heal_frac":
+			if u.hp <= u.max_hp * low and u.hp < u.max_hp:
+				var amount: int = it.params.amount if it.effect == "heal_flat" else int(u.max_hp * it.params.amount)
+				_eat(u)
+				b._heal(u, maxi(1, amount))
+		"cure":
+			var which: String = it.params.status
+			var has_status: bool = u.status != MoveData.Status.NONE and (which == "all" or STATUS_CODES.get(which, -1) == u.status)
+			var confused: bool = u.volatiles.has("confusion") and which in ["all", "confusion"]
+			if has_status or confused:
+				_eat(u)
+				if has_status:
+					u.status = MoveData.Status.NONE
+					u.status_turns = 0
+				if confused:
+					u.volatiles.erase("confusion")
+				u.refresh_label()
+				b._log("%s se recuperó." % u.display_name())
+		"pinch":
+			var threshold := 0.5 if u.ability == "gluttony" else 0.25
+			if u.hp <= u.max_hp * threshold:
+				_eat(u)
+				_boost(u, {it.params.stat: 1}, it.display_name)
+		"pp":
+			for mv in u.moves:
+				if u.pp.get(mv, 1) <= 0:
+					_eat(u)
+					u.pp[mv] = it.params.amount
+					b._log("%s recuperó PP de %s." % [u.display_name(), mv.display_name])
+					break
+
+
+const STATUS_CODES := {"par": MoveData.Status.PARALYSIS, "slp": MoveData.Status.SLEEP, "psn": MoveData.Status.POISON,
+	"brn": MoveData.Status.BURN, "frz": MoveData.Status.FREEZE}
+
+
+func _eat(u: Unit) -> void:
+	b._log("¡%s se comió su %s!" % [u.display_name(), u.item.display_name])
+	b._popup(u, u.item.display_name, Color(0.6, 1.0, 0.6))
+	Audio.sfx("heal", -8.0, 1.2)
+	u.lose_item(true)
+	u.refresh_label()
+
+
+## Bayas que reducen un golpe supereficaz de su tipo (se consumen). Devuelve el multiplicador.
+func resist_berry(att: Unit, t: Unit, type: String, eff: float) -> float:
+	if Items.effect(t) == "resist" and t.item.params.type == type and (eff > 1.0 or type == "normal") and can_eat(t):
+		b._log("¡La %s de %s debilitó el ataque!" % [t.item.display_name, t.display_name()])
+		t.lose_item(true)
+		return 0.5
+	return 1.0
+
+
 func _nearest_foe(u: Unit) -> Unit:
 	var best: Unit = null
 	var best_d := 1 << 30
@@ -318,6 +440,7 @@ func _hurt(u: Unit, dmg: int, text: String, color: Color) -> void:
 func _boost(u: Unit, changes: Dictionary, source: String) -> void:
 	var text := u.apply_stages(changes)
 	if text:
+		Audio.sfx("buff" if changes.values()[0] > 0 else "debuff", -6.0)
 		b._log("%s (%s): %s." % [u.display_name(), source, text])
 		var up: bool = changes.values()[0] > 0
 		Fx.aura(b, u.position, Fx.BUFF_COLOR if up else Fx.DEBUFF_COLOR, u.data.model_height, up)
@@ -343,12 +466,14 @@ func can_status(att: Unit, t: Unit, status: int) -> String:
 
 
 func set_status(att: Unit, t: Unit, status: int) -> void:
+	Audio.sfx("status", -6.0)
 	t.status = status
 	t.status_turns = b.rng.randi_range(1, 3) if status == MoveData.Status.SLEEP else 0
 	if status == MoveData.Status.SLEEP and t.ability == "earlybird":
 		t.status_turns = t.status_turns / 2
 	t.refresh_label()
 	b._log("¡%s está %s!" % [t.display_name(), Combat.STATUS_NAMES[status]])
+	check_berries(t)
 	# Sincronía devuelve veneno, quemadura o parálisis a quien se lo causó.
 	if att and att != t and t.ability == "synchronize" and status in [MoveData.Status.POISON, MoveData.Status.BURN, MoveData.Status.PARALYSIS] \
 			and can_status(t, att, status) == "":
@@ -372,6 +497,7 @@ func drop_stats(att: Unit, t: Unit, changes: Dictionary) -> void:
 		return
 	var text := t.apply_stages(allowed)
 	if text:
+		Audio.sfx("buff" if allowed.values()[0] > 0 else "debuff", -6.0)
 		b._log("%s: %s." % [t.display_name(), text])
 		var up: bool = allowed.values()[0] > 0
 		Fx.aura(b, t.position, Fx.BUFF_COLOR if up else Fx.DEBUFF_COLOR, t.data.model_height, up)
@@ -379,6 +505,13 @@ func drop_stats(att: Unit, t: Unit, changes: Dictionary) -> void:
 			var reaction := Abilities.on_stat_dropped(t)
 			if not reaction.is_empty():
 				_boost(t, reaction, Abilities.display_name(t.ability))
+		if not up and Items.effect(t) == "white_herb":
+			for key: String in t.stages.keys():
+				if t.stages[key] < 0:
+					t.stages[key] = 0
+			b._log("¡La Hierba Blanca de %s restauró sus stats!" % t.display_name())
+			t.lose_item(true)
+			t.refresh_label()
 
 
 ## Aplica un volátil del ataque al objetivo. Devuelve true si lo aplicó.
@@ -406,6 +539,24 @@ func apply_volatile(att: Unit, t: Unit, vol: String) -> bool:
 		"curse":
 			t.volatiles[vol] = {}
 			b._log("¡%s ha sido maldecido!" % t.display_name())
+		"wrapped", "vortex":
+			if t.volatiles.has("wrapped") or t.volatiles.has("vortex"):
+				return false
+			if "ghost" in t.data.types:
+				b._log("%s es de tipo Fantasma: no se le puede atrapar." % t.display_name())
+				return false
+			t.volatiles[vol] = {"turns": BIND_TURNS, "by": att}
+			if vol == "wrapped":
+				# Quien sujeta tampoco se mueve (y solo puede sujetar a uno).
+				if att.volatiles.has("holding"):
+					var prev: Unit = att.volatiles.holding.target
+					if prev and prev.volatiles.has("wrapped"):
+						release_bind(prev, "wrapped")
+				att.volatiles["holding"] = {"target": t}
+				att.refresh_label()
+				b._log("¡%s atrapa a %s! Ninguno de los dos puede moverse." % [att.display_name(), t.display_name()])
+			else:
+				b._log("¡%s queda atrapado en el remolino y no puede moverse!" % t.display_name())
 		"attract":
 			if not att.opposite_gender(t):
 				return false
@@ -417,7 +568,48 @@ func apply_volatile(att: Unit, t: Unit, vol: String) -> bool:
 			b._log("¡%s está %s!" % [t.display_name(), "confuso" if vol == "confusion" else Unit.VOLATILE_SHORT[vol].to_lower()])
 	t.refresh_label()
 	Fx.aura(b, t.position, Color(0.8, 0.6, 1.0), t.data.model_height)
+	if vol in ["taunt", "attract"] and Items.effect(t) == "mental_herb":
+		t.volatiles.erase(vol)
+		b._log("¡La Hierba Mental de %s lo libera!" % t.display_name())
+		t.lose_item(true)
+		t.refresh_label()
+	check_berries(t)
 	return true
+
+
+## Libera a `t` de Constricción o del remolino (y a quien lo sujetaba).
+func release_bind(t: Unit, key: String) -> void:
+	var by: Unit = t.volatiles[key].get("by")
+	t.volatiles.erase(key)
+	if t.is_alive():
+		b._log("¡%s se liberó!" % t.display_name())
+		t.refresh_label()
+	if key == "wrapped" and by and by.volatiles.has("holding") and by.volatiles.holding.target == t:
+		by.volatiles.erase("holding")
+		by.refresh_label()
+
+
+## Rompe las ataduras que ya no tienen sentido: el que sujeta cayó o ya no está pegado
+## (empujado, teletransportado...), o el atrapado cayó.
+func check_binds() -> void:
+	for u: Unit in b.units:
+		if u.volatiles.has("wrapped"):
+			var by: Unit = u.volatiles.wrapped.get("by")
+			var touching := false
+			if by and by.is_alive():
+				for c in u.footprint:
+					if b.grid.distance_to_set(by.footprint, c) <= 1:
+						touching = true
+						break
+			if not u.is_alive() or not touching:
+				release_bind(u, "wrapped")
+	for u: Unit in b.units:
+		if u.volatiles.has("holding"):
+			var t: Unit = u.volatiles.holding.get("target")
+			if not u.is_alive() or t == null or not t.is_alive() or not t.volatiles.has("wrapped"):
+				u.volatiles.erase("holding")
+				if u.is_alive():
+					u.refresh_label()
 
 
 ## Volátiles sobre el propio usuario (Protección, Sustituto...). Devuelve false si falla.
@@ -432,6 +624,7 @@ func apply_self_volatile(u: Unit, vol: String) -> bool:
 				b._log("¡Pero falló!")
 				return false
 			u.volatiles[vol] = {}
+			Audio.sfx("protect", -4.0)
 			b._log("¡%s se %s!" % [u.display_name(), "protege" if vol == "protect" else "prepara para aguantar"])
 		"substitute":
 			var cost := u.max_hp / 4
@@ -483,12 +676,25 @@ func absorb_damage(att: Unit, t: Unit, dmg: int) -> int:
 		if Abilities.defender_has(att, t, "sturdy") and t.hp == t.max_hp:
 			b._log("¡%s resistió gracias a Robustez!" % t.display_name())
 			return t.hp - 1
+		if Items.effect(t) == "focus_sash" and t.hp == t.max_hp:
+			b._log("¡%s resistió gracias a su Banda Focus!" % t.display_name())
+			t.lose_item(true)
+			return t.hp - 1
+		if Items.effect(t) == "focus_band" and b.rng.randf() < Items.param(t, "chance", 0.1):
+			b._log("¡%s resistió gracias a su Cinta Focus!" % t.display_name())
+			return t.hp - 1
 	return dmg
 
 
 ## Después de un golpe que hizo daño: habilidades de contacto, reacciones y KO.
 func after_hit(att: Unit, t: Unit, move: MoveData, crit: bool) -> void:
 	var physical := move.category == MoveData.Category.PHYSICAL
+	if Items.effect(t) == "air_balloon":
+		b._log("¡El Globo Helio de %s explotó!" % t.display_name())
+		t.lose_item(false)
+	if "contact" in move.flags and Items.effect(t) == "rocky_helmet" and att.is_alive() and att != t and Abilities.takes_indirect(att):
+		_hurt(att, maxi(1, int(att.max_hp * Items.param(t, "amount", 1.0 / 6.0))), "¡El Casco Dentado de %s hiere a %s!" % [t.display_name(), att.display_name()], Color(0.7, 0.7, 0.7))
+	check_berries(t)
 	if not t.is_alive():
 		if Abilities.has(att, "moxie"):
 			_boost(att, {"attack": 1}, "Autoestima")
@@ -522,6 +728,8 @@ func flinch_chance(att: Unit, t: Unit, move: MoveData) -> int:
 	var chance := move.flinch_chance
 	if chance == 0 and Abilities.has(att, "stench"):
 		chance = 10
+	if chance == 0 and move.power > 0:
+		chance = Items.flinch_bonus(att)
 	chance = Abilities.secondary_chance(att, t, chance)
 	return 0 if Abilities.blocks_volatile(att, t, "flinch") else chance
 
@@ -541,7 +749,7 @@ func apply_field(user: Unit, move: MoveData, area: Array[Vector2i]) -> void:
 				for n in b.grid.cells_in_range(c, 0, FieldState.ZONE_RADIUS):
 					cells[n] = true
 			field.zones = field.zones.filter(func(z: Dictionary) -> bool: return not (z.kind == fe and z.team == user.team))
-			field.zones.append({"kind": fe, "team": user.team, "cells": cells, "turns": FieldState.ZONE_ROUNDS * alive})
+			field.zones.append({"kind": fe, "team": user.team, "cells": cells, "turns": Items.zone_rounds(user, FieldState.ZONE_ROUNDS) * alive})
 			b._log("¡%s protege la zona de %s!" % [FieldState.NAMES[fe], user.display_name()])
 		"tailwind":
 			field.tailwind[user.team] = FieldState.TAILWIND_ROUNDS * alive
@@ -558,6 +766,7 @@ func apply_field(user: Unit, move: MoveData, area: Array[Vector2i]) -> void:
 					"stealthrock": trap.rocks = true
 				field.traps[c] = trap
 			b._log("¡%s esparció %s por el terreno!" % [user.display_name(), move.display_name])
+			Audio.sfx("trap", -4.0)
 		"electricterrain", "grassyterrain", "mistyterrain", "psychicterrain":
 			field.terrain = fe
 			field.terrain_turns = FieldState.GLOBAL_ROUNDS * alive
@@ -591,8 +800,9 @@ func enter_cells(u: Unit, cells: Array[Vector2i]) -> void:
 	# Los voladores esquivan las Púas, pero no la Trampa Rocas.
 	for c in cells:
 		var trap: Dictionary = field.traps.get(c, {})
-		if trap.is_empty() or trap.team == u.team or not u.is_alive():
+		if trap.is_empty() or trap.team == u.team or not u.is_alive() or Items.ignores_traps(u):
 			continue
+		Audio.sfx("trap", -4.0)
 		if trap.rocks and Abilities.takes_indirect(u):
 			var eff := TypeChart.effectiveness("rock", u.data.types)
 			_hurt(u, maxi(1, int(u.max_hp / 8.0 * eff)), "¡Las piedras puntiagudas dañan a %s!" % u.display_name(), Color(0.7, 0.6, 0.5))

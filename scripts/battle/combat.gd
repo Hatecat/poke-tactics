@@ -114,6 +114,24 @@ static var field: FieldState
 
 
 ## Tipo real del ataque con el clima actual (Meteorobola cambia).
+## Probabilidad de 2, 3, 4 y 5 golpes en los ataques de 2-5 golpes.
+const HIT_WEIGHTS := [0.35, 0.35, 0.15, 0.15]
+
+
+## Golpes medios de un ataque (para la IA y las previsiones). Triple Axel sube 20/40/60: cuenta como 6.
+static func expected_hits(attacker: Unit, move: MoveData) -> float:
+	if move.hits_max <= 1:
+		return 1.0
+	if move.id == "tripleaxel":
+		return 6.0
+	if move.hits_min == move.hits_max or (attacker and attacker.ability == "skilllink"):
+		return float(move.hits_max)
+	var total := 0.0
+	for i in HIT_WEIGHTS.size():
+		total += (2 + i) * HIT_WEIGHTS[i]
+	return total
+
+
 static func move_type(move: MoveData) -> String:
 	return Weather.move_type(weather, move)
 
@@ -131,7 +149,7 @@ static func crit_chance(attacker: Unit, move: MoveData, defender: Unit = null) -
 		return 0.0
 	if move.always_crit:
 		return 1.0
-	var stage := clampi(move.crit_stage + attacker.stages.get("crit", 0) + Abilities.crit_bonus(attacker), 0, CRIT_CHANCES.size() - 1)
+	var stage := clampi(move.crit_stage + attacker.stages.get("crit", 0) + Abilities.crit_bonus(attacker) + Items.crit_bonus(attacker), 0, CRIT_CHANCES.size() - 1)
 	return CRIT_CHANCES[stage]
 
 
@@ -161,7 +179,8 @@ static func damage(attacker: Unit, defender: Unit, move: MoveData, roll: float, 
 	var base := floorf((2.0 * attacker.level / 5.0 + 2.0) * power * atk / def / 50.0) + 2.0
 	var stab := Abilities.stab(attacker) if type in attacker.data.types else 1.0
 	var mods := Abilities.attack_mult(attacker, move, type, physical, crit, weather) \
-		* Abilities.defense_mult(attacker, defender, type, physical, eff) * situational
+		* Abilities.defense_mult(attacker, defender, type, physical, eff) * situational \
+		* Items.attack_mult(attacker, move, type, physical, eff) * Items.defense_mult(defender, physical)
 	return maxi(1, int(base * stab * eff * roll * (CRIT_MULT if crit else 1.0) * mods))
 
 
@@ -194,6 +213,8 @@ const VOLATILE_DESC := {
 	"endure": "Aguanta con 1 PS hasta su próximo turno",
 	"substitute": "Paga 1/4 de PS: un sustituto recibe los golpes y bloquea los de estado",
 	"ingrain": "Arraigo: recupera 1/16 por turno, pero ya no puede moverse ni ser empujado",
+	"wrapped": "Atrapa al objetivo 2 turnos (pierde 1/8 de PS por turno). Mientras, ninguno de los dos puede moverse; se suelta si se separan o uno cae",
+	"vortex": "Remolino: el objetivo no puede moverse durante 2 turnos y pierde 1/8 de PS por turno",
 	"aquaring": "Recupera 1/16 de PS por turno",
 	"destinybond": "Si lo debilitan antes de su próximo turno, el atacante cae con él",
 	"charge": "Su próximo ataque eléctrico hace el doble",
@@ -237,6 +258,9 @@ static func describe(move: MoveData) -> String:
 		lines.append("Daño fijo %d · Precisión %d" % [move.fixed_damage, move.accuracy])
 	elif move.power > 0:
 		lines.append("Potencia %d · Precisión %d" % [move.power, move.accuracy])
+	if move.hits_max > 1:
+		var hits_text := "%d golpes" % move.hits_max if move.hits_min == move.hits_max else "%d-%d golpes (Encadenado: siempre %d)" % [move.hits_min, move.hits_max, move.hits_max]
+		lines.append(hits_text + (" · potencia 20, 40 y 60" if move.id == "tripleaxel" else ""))
 	else:
 		lines.append("Precisión %d" % move.accuracy)
 	if move.targets_self:
@@ -251,6 +275,10 @@ static func describe(move: MoveData) -> String:
 			lines.append("Proyectil: choca con lo primero que encuentre")
 		elif move.area_shape == MoveData.AreaShape.LINE:
 			lines.append("Rayo: atraviesa Pokémon, no obstáculos")
+	if move.special == "teleport":
+		lines.append("Salta a una casilla libre (ignora obstáculos y desniveles)")
+	elif move.special == "transform":
+		lines.append("Copia al objetivo: tipos, stats salvo PS, habilidad y ataques (con la mitad de PP)")
 	if move.status != MoveData.Status.NONE:
 		lines.append("%d%% de dejar %s" % [move.status_chance, STATUS_NAMES[move.status]])
 	if move.volatile:

@@ -52,6 +52,10 @@ func _init() -> void:
 
 
 func show_pokemon(data: PokemonData) -> void:
+	# Si el panel aún no está en pantalla, se carga en cuanto entre.
+	if not is_inside_tree():
+		ready.connect(show_pokemon.bind(data), CONNECT_ONE_SHOT)
+		return
 	if _unit:
 		_unit.queue_free()
 		_unit = null
