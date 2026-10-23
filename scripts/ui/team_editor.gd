@@ -243,7 +243,10 @@ func _show(p: PokemonData) -> void:
 		grid.add_child(bar)
 		grid.add_child(UiKit.label(str(stats[i]), 15))
 	var tiles := clampi(2 + roundi(p.base_speed / 45.0), 2, 6) + p.move_modifier
-	_detail.add_child(UiKit.label("Movimiento %d · Salto %d · Tamaño %d" % [tiles, p.jump, p.size], 15, UiKit.ACCENT))
+	var swim := ""
+	if "water" in p.types:
+		swim = " (%d nadando)" % ((tiles - mini(p.move_modifier, 0)) * 2)
+	_detail.add_child(UiKit.label("Movimiento %d%s · Salto %d · Tamaño %d" % [tiles, swim, p.jump, p.size], 15, UiKit.ACCENT))
 
 	var profile := TypeChart.defensive_profile(p.types)
 	for group in [["Débil a", [4.0, 2.0]], ["Resiste", [0.5, 0.25]], ["Inmune a", [0.0]]]:

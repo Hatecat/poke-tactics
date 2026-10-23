@@ -58,16 +58,17 @@ UNSUPPORTED = {
     "counter", "mirrorcoat", "metalburst", "bide", "endeavor", "finalgambit", "superfang",
     "naturesmadness", "ruination", "metronome", "mimic", "mirrormove",
     "sketch", "copycat", "assist", "sleeptalk", "snore", "focuspunch", "belch", "lastresort",
-    "dreameater", "futuresight", "doomdesire", "struggle", "splash", "celebrate", "holdhands",
+    "dreameater", "futuresight", "doomdesire", "struggle", "celebrate", "holdhands",
 }
 FIXED_DAMAGE = {"psywave": 50}
 # Ataques con lógica propia en la batalla (MoveData.special): alcance mínimo y máximo.
 # Teletransporte salta a una casilla libre; Transformación copia al Pokémon objetivo.
-SPECIAL_MOVES = {"teleport": (1, 6), "transform": (1, 3)}
+SPECIAL_MOVES = {"teleport": (1, 6), "transform": (1, 3), "splash": (0, 0)}
 SPECIAL_FLAVOR = {
     "teleport": "Se teletransporta a una casilla libre, sin importar obstáculos ni desniveles.",
     "transform": "Se transforma en el Pokémon objetivo: copia su aspecto, tipos, stats (salvo los PS), "
                  "cambios de stats, habilidad y ataques.",
+    "splash": "Salta y salpica sin ningún efecto. Así es Magikarp.",
 }
 # Ataques marcados como no obtenibles en los juegos actuales que sí queremos (clásicos de Kanto).
 ALLOW_NONSTANDARD = {"cut", "burnup"}
@@ -256,7 +257,8 @@ def convert_move(mid, m, names, flavor):
 
     if mid in SPECIAL_MOVES:
         lo, hi = SPECIAL_MOVES[mid]
-        mv.update(special=mid, range_min=lo, range_max=hi, animation="fight_d", flavor=SPECIAL_FLAVOR[mid])
+        mv.update(special=mid, range_min=lo, range_max=hi, animation="fight_d", flavor=SPECIAL_FLAVOR[mid],
+                  targets_self=hi == 0)
         return mv
 
     # Alcance y área

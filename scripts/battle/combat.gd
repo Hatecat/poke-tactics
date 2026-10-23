@@ -275,7 +275,9 @@ static func describe(move: MoveData) -> String:
 			lines.append("Proyectil: choca con lo primero que encuentre")
 		elif move.area_shape == MoveData.AreaShape.LINE:
 			lines.append("Rayo: atraviesa Pokémon, no obstáculos")
-	if move.special == "teleport":
+	if move.special == "splash":
+		lines.append("No hace nada")
+	elif move.special == "teleport":
 		lines.append("Salta a una casilla libre (ignora obstáculos y desniveles)")
 	elif move.special == "transform":
 		lines.append("Copia al objetivo: tipos, stats salvo PS, habilidad y ataques (con la mitad de PP)")

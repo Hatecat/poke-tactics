@@ -80,7 +80,8 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 @export var field_effect := ""
 ## Interacción con objetos: steal, knockoff, swap, eatberry, burnberry, fling, recycle.
 @export var item_effect := ""
-## Ataque con lógica propia: "teleport" (salta a una casilla libre) o "transform" (copia al objetivo).
+## Ataque con lógica propia: "teleport" (salta a una casilla libre), "transform" (copia al objetivo)
+## o "splash" (no hace nada).
 @export var special := ""
 ## Solo funciona contra el sexo opuesto (Seducción).
 @export var opposite_gender := false

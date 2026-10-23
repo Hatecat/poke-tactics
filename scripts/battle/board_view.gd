@@ -83,8 +83,21 @@ func highlight(cells: Array[Vector2i], color: Color) -> void:
 	for c in cells:
 		var overlay: MeshInstance3D = _overlays.get(c)
 		if overlay:
-			overlay.material_override = _overlay_material(color)
+			overlay.material_override = _overlay_material(_contrast(c, color))
 			overlay.visible = true
+
+
+## Los resaltados azules (movimiento, despliegue) no se distinguen sobre el agua ni el hielo:
+## ahí se usa un tono claro (agua) u oscuro (hielo y nieve) que contraste.
+func _contrast(c: Vector2i, color: Color) -> Color:
+	if not (color.b > color.r + 0.3 and color.b >= color.g):
+		return color
+	match grid.tiles.get(c, Biome.Tile.GRASS):
+		Biome.Tile.WATER:
+			return Color(0.85, 1.0, 1.0, maxf(color.a, 0.6))
+		Biome.Tile.ICE, Biome.Tile.SNOW:
+			return Color(0.1, 0.3, 0.95, maxf(color.a, 0.6))
+	return color
 
 
 func _build_cell(c: Vector2i) -> void:

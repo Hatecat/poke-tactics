@@ -218,6 +218,7 @@ func _refresh_weather_label() -> void:
 			if effects.field.tailwind[team] > 0:
 				extra += "\n[font_size=14]Viento Afín (%s)[/font_size]" % ("tuyo" if team == 0 else "rival")
 	_weather_label.text = "%s %s%s%s" % [Weather.ICONS[weather], shown, left, extra]
+	_weather_label.tooltip_text = Weather.effects_text(Combat.weather)
 
 
 func _reset_environment() -> void:
@@ -572,6 +573,8 @@ func _begin_pick_move() -> void:
 	if state == State.BUSY or state == State.GAME_OVER or moved or not active.can_move():
 		return
 	state = State.PICK_MOVE
+	_throwing = false
+	_preview_label.text = ""
 	_compute_reach(active)
 	_board.clear_highlights()
 	_board.highlight(_destinations, COLOR_MOVE)
@@ -582,6 +585,9 @@ func _begin_pick_target(move: MoveData) -> void:
 	if state == State.BUSY or state == State.GAME_OVER or acted:
 		return
 	state = State.PICK_TARGET
+	# Si venía de apuntar una Poké Ball, deja de lanzarla.
+	_throwing = false
+	_preview_label.text = ""
 	selected_move = move
 	_targets = _move_targets(active, move, active.footprint)
 	_board.clear_highlights()
@@ -778,12 +784,15 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 
 # --- Movimiento --------------------------------------------------------------
 
-## Casillas alcanzables. El agua cuesta 2 de movimiento salvo a los que nadan o vuelan.
+## Casillas alcanzables. El agua cuesta el doble salvo a los que nadan o vuelan, y los de tipo Agua
+## nadan el doble de rápido (sin penalización por peso). El coste es la fracción del movimiento gastada.
 func _compute_reach(u: Unit) -> void:
 	_reach = {u.cell: u.cell}
-	var cost := {u.cell: 0}
+	var cost := {u.cell: 0.0}
 	var frontier: Array[Vector2i] = [u.cell]
 	var swims := effects.swims(u)
+	var land_step := 1.0 / u.move_range()
+	var swim_step := 1.0 / u.swim_range() if u.swim_range() > 0 else land_step
 	while not frontier.is_empty():
 		frontier.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return cost[a] < cost[b])
 		var c: Vector2i = frontier.pop_front()
@@ -797,11 +806,13 @@ func _compute_reach(u: Unit) -> void:
 			# Se puede atravesar a los aliados, pero no a los rivales.
 			if _others_at(u, n_cells).any(func(o: Unit) -> bool: return o.team != u.team):
 				continue
-			var step := 1
-			if not swims and n_cells.any(func(x: Vector2i) -> bool: return grid.tiles.get(x, 0) == Biome.Tile.WATER):
-				step = 2
-			var total: int = cost[c] + step
-			if total > u.move_range() or total >= cost.get(n, 1 << 30):
+			var step := land_step
+			if n_cells.all(func(x: Vector2i) -> bool: return grid.tiles.get(x, 0) == Biome.Tile.WATER):
+				step = swim_step if swims else land_step * 2.0
+			elif not swims and n_cells.any(func(x: Vector2i) -> bool: return grid.tiles.get(x, 0) == Biome.Tile.WATER):
+				step = land_step * 2.0
+			var total: float = cost[c] + step
+			if total > 1.0 + 0.001 or total >= cost.get(n, INF) - 0.001:
 				continue
 			cost[n] = total
 			_reach[n] = c
@@ -810,6 +821,10 @@ func _compute_reach(u: Unit) -> void:
 	for c: Vector2i in _reach:
 		if c != u.cell and _can_stand(u, c):
 			_destinations.append(c)
+
+
+func _move_text(u: Unit) -> String:
+	return "%d (%d nadando)" % [u.move_range(), u.swim_range()] if u.swim_range() > 0 else str(u.move_range())
 
 
 func _path_to(c: Vector2i) -> Array[Vector2i]:
@@ -1052,6 +1067,8 @@ func _move_targets(u: Unit, move: MoveData, origin: Array[Vector2i]) -> Array[Ve
 
 
 func _special_preview(move: MoveData, c: Vector2i) -> String:
+	if move.special == "splash":
+		return "No pasará nada."
 	if move.special == "transform":
 		var t := _unit_at(c)
 		return "Se transformará en %s: tipos, stats, habilidad y ataques." % TeamMember.display(t.data, t.gender) if t else ""
@@ -1060,6 +1077,14 @@ func _special_preview(move: MoveData, c: Vector2i) -> String:
 
 func _special_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	match move.special:
+		"splash":
+			var base := user.position
+			var tw := create_tween()
+			for i in 2:
+				tw.tween_property(user, "position:y", base.y + 0.45, 0.16).set_ease(Tween.EASE_OUT)
+				tw.tween_property(user, "position:y", base.y, 0.16).set_ease(Tween.EASE_IN)
+			await tw.finished
+			_log("¡Pero no pasó nada!")
 		"teleport":
 			var color := TypeChart.color(move.type)
 			Fx.aura(self, user.position, color, user.data.model_height)
@@ -1990,6 +2015,7 @@ func _throw_ball(target: Vector2i) -> void:
 	_caught.append(member)
 	t.hp = 0
 	t.refresh_label()
+	t.hide_overlays()
 
 
 func _go_to_menu() -> void:
@@ -2100,11 +2126,11 @@ func _refresh_info(u: Unit) -> void:
 			boosts.append("[color=#%s]%s %+d[/color] (%d t.)" % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
 				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
 	var vols := u.volatiles_text()
-	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
+	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
 		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), u.item.display_name if u.item else "—", u.hp, u.max_hp,
 		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
-		u.stats.speed, int(u.ct), u.move_range(), u.data.jump, u.data.size,
+		u.stats.speed, int(u.ct), _move_text(u), u.data.jump, u.data.size,
 		("Mejoras: " + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",
 		", ".join(weak) if not weak.is_empty() else "—",
 	]

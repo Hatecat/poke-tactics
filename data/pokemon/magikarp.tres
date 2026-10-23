@@ -6,7 +6,8 @@
 [ext_resource type="Resource" path="res://data/moves/bounce.tres" id="m0"]
 [ext_resource type="Resource" path="res://data/moves/flail.tres" id="m1"]
 [ext_resource type="Resource" path="res://data/moves/hydropump.tres" id="m2"]
-[ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/splash.tres" id="m3"]
+[ext_resource type="Resource" path="res://data/moves/tackle.tres" id="m4"]
 
 [resource]
 script = ExtResource("3_script")
@@ -33,9 +34,10 @@ evolve_level = 20
 stage = 1
 legendary = false
 level_moves = {
+"splash": 1,
 "tackle": 15,
 "flail": 25
 }
 stone_evolutions = {}
-moves = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m0"), ExtResource("m3")])
-learnset = Array[ExtResource("2_move")]([ExtResource("m1"), ExtResource("m0"), ExtResource("m2"), ExtResource("m3")])
+moves = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m3"), ExtResource("m0")])
+learnset = Array[ExtResource("2_move")]([ExtResource("m1"), ExtResource("m0"), ExtResource("m2"), ExtResource("m4"), ExtResource("m3")])

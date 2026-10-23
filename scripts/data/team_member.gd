@@ -93,6 +93,14 @@ static func wild(p_data: PokemonData, p_level: int, rng: RandomNumberGenerator) 
 	var last: Array[MoveData] = []
 	for mv in m.known.slice(maxi(0, m.known.size() - MAX_MOVES)):
 		last.append(mv)
+	if last.is_empty() and not p_data.level_moves.is_empty():
+		# Ninguno a su nivel: el primero que aprendería.
+		var first_id: String = p_data.level_moves.keys()[0]
+		for id: String in p_data.level_moves:
+			if p_data.level_moves[id] < p_data.level_moves[first_id]:
+				first_id = id
+		if ResourceLoader.exists(MOVES_DIR + first_id + ".tres"):
+			last.append(load(MOVES_DIR + first_id + ".tres"))
 	m.moves = last if not last.is_empty() else p_data.moves.slice(0, 1)
 	if not p_data.abilities.is_empty():
 		m.ability = p_data.abilities[rng.randi_range(0, p_data.abilities.size() - 1)]

@@ -138,7 +138,7 @@ func tile_info(c: Vector2i) -> String:
 		parts.append("%s ×1,2 desde aquí" % Combat.TYPE_NAMES[TILE_AFFINITY[tile]])
 	match tile:
 		Biome.Tile.WATER:
-			parts.append("moverse cuesta 2 (salvo Agua/voladores) · Roca/Acero/Tierra no pueden entrar · Fuego ×0,8")
+			parts.append("cuesta el doble (no a voladores) · tipo Agua nada al doble y sin penalización por peso · Roca/Acero/Tierra no pueden entrar · Fuego ×0,8")
 		Biome.Tile.SAND:
 			parts.append("Tierra/Roca/Acero esquivan más")
 		Biome.Tile.ICE:

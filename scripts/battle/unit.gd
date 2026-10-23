@@ -210,11 +210,22 @@ func effective_speed() -> float:
 
 ## Casillas por turno: 2 + velocidad base / 45 (redondeado), entre 2 y 6.
 ## Shuckle 2 · Bulbasaur/Scizor 3 · Pikachu 4 · Jolteon 5 · Ninjask 6.
-func move_range() -> int:
+## `in_water`: los de tipo Agua no sufren la penalización por peso mientras nadan.
+func move_range(in_water := false) -> int:
 	var tiles := clampi(2 + roundi(data.base_speed / 45.0), 2, 6) + data.move_modifier
+	if in_water and data.move_modifier < 0:
+		tiles -= data.move_modifier
+	# Granizo: a los voladores les cuesta avanzar (salvo Hielo o habilidades que lo ignoran).
+	if not Abilities.weather_immune(self, Combat.weather):
+		tiles -= Weather.move_penalty(Combat.weather, data.types)
 	if status == MoveData.Status.PARALYSIS:
 		tiles -= 1
 	return maxi(tiles, 1)
+
+
+## Casillas por turno nadando (solo tipo Agua): el doble y sin penalización por peso.
+func swim_range() -> int:
+	return move_range(true) * 2 if "water" in data.types else 0
 
 
 ## ¿Puede desplazarse? Arraigo, estar atrapado o sujetar a otro lo impiden (sí puede atacar).
@@ -302,12 +313,25 @@ func take_damage(amount: int) -> void:
 	hp = clampi(hp - amount, 0, max_hp)
 	refresh_label()
 	if hp == 0:
-		play("ko")
+		var ko_time := play("ko")
+		# Fuera del tablero: sin anillo, nombre ni colisión (no tapa los clics) y el modelo se desvanece.
+		hide_overlays()
+		_fade_out(clampf(ko_time, 0.6, 1.4))
 		fainted.emit(self)
 	elif amount > 0:
 		var duration := play("hit")
 		if is_inside_tree():
 			get_tree().create_timer(maxf(duration, 0.3)).timeout.connect(_back_to_idle)
+
+
+func _fade_out(delay: float) -> void:
+	if not is_inside_tree():
+		_model.visible = false
+		return
+	var tw := create_tween()
+	tw.tween_interval(delay)
+	tw.tween_property(_model, "scale", _model.scale * 0.05, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void: _model.visible = false)
 
 
 func _back_to_idle() -> void:

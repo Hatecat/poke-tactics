@@ -103,6 +103,28 @@ static func self_stages(kind: Kind, move: MoveData) -> Dictionary:
 	return move.self_stat_changes
 
 
+## Casillas de movimiento que pierde un Pokémon: con granizo, los de tipo Volador (salvo los de tipo
+## Hielo); los que el granizo no afecta por habilidad se comprueban en Unit.move_range.
+static func move_penalty(kind: Kind, types: PackedStringArray) -> int:
+	if kind == Kind.HAIL and "flying" in types and "ice" not in types:
+		return 1
+	return 0
+
+
+## Resumen de efectos del clima (tooltip del indicador de clima en combate).
+static func effects_text(kind: Kind) -> String:
+	match kind:
+		Kind.SUN:
+			return "Fuego ×1,5 · Agua ×0,5 · Rayo Solar sin carga · no se puede congelar"
+		Kind.RAIN:
+			return "Agua ×1,5 · Fuego ×0,5 · Trueno y Vendaval no fallan"
+		Kind.SAND:
+			return "Daña 1/16 por turno (salvo Roca, Tierra y Acero) · Roca: Def. Esp. ×1,5"
+		Kind.HAIL:
+			return "Daña 1/16 por turno (salvo Hielo) · Hielo: Defensa ×1,5 · Ventisca no falla\nLos de tipo Volador pierden 1 casilla de movimiento (salvo Hielo)"
+	return "Sin efectos"
+
+
 ## Daño al empezar el turno (arena y granizo), como fracción de los PS máximos.
 static func chip_fraction(kind: Kind, types: PackedStringArray) -> float:
 	if kind == Kind.SAND and not Array(types).any(func(t: String) -> bool: return t in SAND_IMMUNE):

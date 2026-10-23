@@ -80,7 +80,7 @@ bloquean el paso; los suelos aún no tienen efectos.
 | ☀ Sol | Fuego ×1,5 · Agua ×0,5 · Rayo Solar sin carga · Trueno/Vendaval 50 % · nadie se congela · Desarrollo doble |
 | ☂ Lluvia | Agua ×1,5 · Fuego ×0,5 · Trueno/Vendaval no fallan · Rayo Solar a la mitad |
 | ≋ Arena | 1/16 de daño por turno salvo Roca/Tierra/Acero · Def. Esp. de Roca ×1,5 |
-| ❄ Granizo | 1/16 de daño por turno salvo Hielo · Defensa de Hielo ×1,5 · Ventisca no falla |
+| ❄ Granizo | 1/16 de daño por turno salvo Hielo · Defensa de Hielo ×1,5 · Ventisca no falla · los Voladores (no Hielo) pierden 1 casilla de movimiento |
 
 Meteorobola cambia de tipo y dobla su potencia; Fotosíntesis, Luz Lunar y Sol Matinal curan 2/3 con sol y 1/4 con
 otros climas. Danza Lluvia, Día Soleado, Tormenta de Arena, Granizo y Paisaje Nevado cambian el clima durante
@@ -107,7 +107,8 @@ queda Forcejeo. **Mejoras de stats:** tope ±6 y duran 3 turnos propios (`STAGE_
 ignorando obstáculos y desniveles (la IA lo usa para huir cuando está herida). **Transformación** (alcance 3)
 copia al objetivo: modelo, tipos, stats salvo los PS, cambios de stats, habilidad y ataques (con la mitad de PP);
 conserva su tamaño en el tablero y su nombre. La habilidad **Impostor** lo hace sola en su primer turno con el rival
-más cercano. Si capturas un Ditto transformado, sigue siendo Ditto.
+más cercano. Si capturas un Ditto transformado, sigue siendo Ditto. **Salpicadura** no hace nada (Magikarp solo sabe eso hasta el nivel 15,
+cuando aprende Placaje). Si un Pokémon no tiene ningún ataque a su nivel, aprende el primero de su lista.
 
 ## Estados volátiles
 
@@ -146,7 +147,7 @@ Lógica en `scripts/battle/abilities.gd`.
 | Altura | ±10 % de daño por nivel de diferencia (tope +30 % / −20 %). Los ataques a distancia ganan +1 de alcance por cada 2 niveles por encima del objetivo; atacar 2+ niveles hacia arriba resta 10 % de precisión |
 | Orientación | Al terminar su turno, el jugador elige hacia dónde mira (clic en una casilla; Enter/Esc lo deja igual). La IA mira al rival más cercano |
 | Flanqueo | De lado: +10 % de daño y de precisión; por la espalda: +25 % |
-| Agua | Moverse cuesta 2 salvo a tipo Agua, voladores y levitadores; Fuego ×0,8 al atacar desde el agua |
+| Agua | Moverse cuesta 2 salvo a tipo Agua, voladores y levitadores; el tipo Agua **nada al doble** y sin la penalización por peso (Lapras: 2 en tierra, 6 nadando); Fuego ×0,8 al atacar desde el agua |
 | Afinidad | Atacar desde hierba (Planta), agua (Agua), arena/tierra (Tierra), roca/cueva (Roca) o nieve/hielo (Hielo): ×1,2 a ese tipo |
 | Arena | Tierra/Roca/Acero son más difíciles de golpear (−15 % de precisión) |
 | Hielo | Los empujones deslizan una casilla más |
@@ -177,7 +178,8 @@ Atracción (50 % de no poder atacar cada turno, 5 turnos), Seducción, Gran Enca
 Draft de 4 Pokémon (en cada ronda, 1 de 6 básicos al azar) a nivel 5. Cada piso es un combate contra rivales
 de nivel parecido al de tu equipo (evolucionados si les toca):
 
-- **Salvajes** (2 de cada 3 pisos): se pueden capturar; un legendario cada 10 pisos (piso x5, o x4).
+- **Salvajes** (2 de cada 3 pisos): se pueden capturar; un legendario cada 10 pisos desde el 25 (piso x5, o x4
+  si el x5 es de entrenador), con el mismo tope de stats que los básicos (Mewtwo, desde el 35).
 - **Entrenadores** (pisos múltiplos de 3): clase al azar con su tipo (Cazabichos, Nadador/a, Pescador,
   Ornitólogo, Pokémaníaco, Montañero, Karateka, Médium, Científico, Supernecio, Esquiadora, Domadragón…) y un
   nombre al azar. No se pueden capturar sus Pokémon; dan el doble de dinero y +50 % de experiencia.

@@ -33,6 +33,8 @@ const EXP_PER_ENEMY_LEVEL := 10
 const STONE_WILD_LEVEL := 30
 ## Un legendario salvaje cada 10 pisos (en el piso x5, o el x4 si el x5 es de entrenador).
 const LEGENDARY_EVERY := 10
+## Antes de este piso no aparecen legendarios (el primero, en el 25).
+const LEGENDARY_FIRST_FLOOR := 25
 ## Cada estos pisos, un entrenador (2 pisos de salvajes y 1 de entrenador); cada 10, el líder de turno.
 const TRAINER_EVERY := 3
 const LEADER_EVERY := 10
@@ -132,6 +134,8 @@ static func floor_kind(n: int) -> String:
 
 
 static func legendary_floor(n: int) -> bool:
+	if n < LEGENDARY_FIRST_FLOOR - 1:
+		return false
 	var r := n % LEGENDARY_EVERY
 	return floor_kind(n) == "wild" and (r == 5 or (r == 4 and floor_kind(n + 1) != "wild"))
 
@@ -174,7 +178,12 @@ func prepare_floor() -> void:
 					wild.item = _random_item(0, true)
 				enemies.append(wild)
 			if legendary_floor(floor_number):
-				var legends := Game.roster.filter(func(p: PokemonData) -> bool: return p.legendary)
+				# Mismo tope de stats que los básicos: los aves antes que Mew, y Mewtwo el último.
+				var all_legends := Game.roster.filter(func(p: PokemonData) -> bool: return p.legendary)
+				var legends := all_legends.filter(func(p: PokemonData) -> bool: return _base_total(p) <= _base_total_cap())
+				if legends.is_empty() and not all_legends.is_empty():
+					all_legends.sort_custom(func(a: PokemonData, b: PokemonData) -> bool: return _base_total(a) < _base_total(b))
+					legends = [all_legends[0]]
 				if not legends.is_empty():
 					enemies.append(TeamMember.wild(legends[rng.randi_range(0, legends.size() - 1)], level + 3, rng))
 	weather = Weather.roll(biome, rng)
@@ -228,11 +237,17 @@ func _typed_species(types: Array, count: int) -> Array[PokemonData]:
 	return out
 
 
+static func _base_total(p: PokemonData) -> int:
+	return p.base_hp + p.base_attack + p.base_defense + p.base_sp_attack + p.base_sp_defense + p.base_speed
+
+
+func _base_total_cap() -> int:
+	return BASE_TOTAL_CAP + floor_number * BASE_TOTAL_PER_FLOOR
+
+
 ## Básicos que pueden salir como rivales en este piso (los muy fuertes, más arriba).
 func _floor_pool() -> Array[PokemonData]:
-	var cap := BASE_TOTAL_CAP + floor_number * BASE_TOTAL_PER_FLOOR
-	var pool := basics().filter(func(p: PokemonData) -> bool:
-		return p.base_hp + p.base_attack + p.base_defense + p.base_sp_attack + p.base_sp_defense + p.base_speed <= cap)
+	var pool := basics().filter(func(p: PokemonData) -> bool: return _base_total(p) <= _base_total_cap())
 	return pool if pool.size() >= DRAFT_CHOICES else basics()
 
 
