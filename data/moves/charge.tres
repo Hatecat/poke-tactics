@@ -39,6 +39,7 @@ flinch_chance = 0
 sets_weather = 0
 weather_tag = ""
 flags = PackedStringArray()
+opposite_gender = false
 volatile = ""
 volatile_chance = 0
 self_volatile = "charge"

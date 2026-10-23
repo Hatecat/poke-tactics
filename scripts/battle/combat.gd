@@ -38,11 +38,17 @@ static func target_cells(grid: BoardGrid, move: MoveData, origin: Array[Vector2i
 	if move.targets_self:
 		return origin.duplicate()
 	if move.area_shape != MoveData.AreaShape.LINE:
+		# Los ataques a distancia llegan más lejos desde lo alto (+1 por cada 2 niveles).
+		var ranged := move.range_max >= 2
+		var origin_h := grid.footprint_height(origin)
+		var reach := move.range_max + (MAX_HEIGHT_RANGE_BONUS if ranged else 0)
 		for o in origin:
-			for c in grid.cells_in_range(o, 0, move.range_max):
+			for c in grid.cells_in_range(o, 0, reach):
 				if c in result or (move.range_min > 0 and c in origin):
 					continue
-				if grid.distance_to_set(origin, c) >= move.range_min:
+				var d := grid.distance_to_set(origin, c)
+				var bonus := clampi((origin_h - grid.get_height(c)) / 2, 0, MAX_HEIGHT_RANGE_BONUS) if ranged else 0
+				if d >= move.range_min and d <= move.range_max + bonus:
 					result.append(c)
 		return result
 	for o in origin:
@@ -115,6 +121,7 @@ static func move_type(move: MoveData) -> String:
 ## Probabilidad de crítico por índice (6.ª generación en adelante): 1/24, 1/8, 1/2, siempre.
 const CRIT_CHANCES: Array[float] = [1.0 / 24.0, 1.0 / 8.0, 0.5, 1.0]
 const CRIT_MULT := 1.5
+const MAX_HEIGHT_RANGE_BONUS := 2
 
 
 static func crit_chance(attacker: Unit, move: MoveData, defender: Unit = null) -> float:
@@ -151,7 +158,7 @@ static func damage(attacker: Unit, defender: Unit, move: MoveData, roll: float, 
 	if physical and attacker.status == MoveData.Status.BURN and attacker.ability != "guts":
 		atk *= 0.5
 	var power := move.power * Weather.power_mult(weather, move)
-	var base := floorf((2.0 * Unit.LEVEL / 5.0 + 2.0) * power * atk / def / 50.0) + 2.0
+	var base := floorf((2.0 * attacker.level / 5.0 + 2.0) * power * atk / def / 50.0) + 2.0
 	var stab := Abilities.stab(attacker) if type in attacker.data.types else 1.0
 	var mods := Abilities.attack_mult(attacker, move, type, physical, crit, weather) \
 		* Abilities.defense_mult(attacker, defender, type, physical, eff) * situational
@@ -181,6 +188,7 @@ const VOLATILE_DESC := {
 	"yawn": "Bostezo: se dormirá al turno siguiente",
 	"taunt": "Mofa: solo podrá usar ataques de daño (3 turnos)",
 	"nightmare": "Pesadilla: 1/4 de PS por turno mientras duerma",
+	"attract": "Enamora al sexo opuesto: 50% de no poder atacar cada turno (5 turnos)",
 	"curse": "Fantasma: paga 1/2 de PS y maldice (1/4 por turno). Otros: Atq/Def +1, Vel -1",
 	"protect": "Bloquea todos los ataques hasta su próximo turno (falla más si se repite)",
 	"endure": "Aguanta con 1 PS hasta su próximo turno",
@@ -255,6 +263,8 @@ static func describe(move: MoveData) -> String:
 	var weather_note := Weather.describe(move)
 	if weather_note:
 		lines.append(weather_note)
+	if move.opposite_gender:
+		lines.append("Solo contra el sexo opuesto")
 	if move.always_crit:
 		lines.append("Siempre es crítico")
 	elif move.crit_stage > 0:

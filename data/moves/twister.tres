@@ -37,6 +37,7 @@ flinch_chance = 20
 sets_weather = 0
 weather_tag = ""
 flags = PackedStringArray("wind", "secondary")
+opposite_gender = false
 volatile = ""
 volatile_chance = 0
 self_volatile = ""

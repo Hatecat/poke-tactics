@@ -1,7 +1,7 @@
 extends Node3D
 ## Controlador de la batalla: monta el tablero, gestiona turnos, input, IA y UI.
 
-enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, GAME_OVER }
+enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, FACING, GAME_OVER }
 
 ## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
@@ -14,6 +14,10 @@ const STEP_TIME := 0.22
 const TURN_PREVIEW := 8
 ## Puntos que la IA resta a los ataques sobre sí misma (equivale al CT de actuar).
 const SELF_MOVE_COST := 12.0
+## Fácil: probabilidad de elegir una acción aceptable al azar en vez de la mejor.
+const EASY_MISTAKE := 0.35
+## Difícil: cuánto pesa el daño que podría recibir en el destino.
+const HARD_DANGER_WEIGHT := 0.35
 ## Valor aproximado para la IA de dejar a un rival con cada estado volátil.
 const VOLATILE_VALUE := {"confusion": 18.0, "leechseed": 16.0, "yawn": 14.0, "taunt": 8.0, "nightmare": 12.0, "curse": 22.0}
 ## Filas de despliegue de cada equipo en tableros aleatorios (jugador abajo, rival arriba).
@@ -69,6 +73,7 @@ var _banner_box: VBoxContainer
 var _turn_flash: Label
 var _deploy_box: VBoxContainer
 var _preview_label: RichTextLabel
+var _tile_label: RichTextLabel
 
 
 func _ready() -> void:
@@ -205,7 +210,7 @@ func _zone_center(team: int) -> Vector2i:
 func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> void:
 	var u := Unit.new()
 	_units_root.add_child(u)
-	u.setup(member, team)
+	u.setup(member, team, Unit.LEVEL if team == 0 else Game.DIFFICULTY_LEVELS[Game.difficulty])
 	var allowed := _in_zone.bind(team) if in_zone else func(c: Vector2i) -> bool: return true
 	_place(u, _find_free_anchor(u, near, allowed))
 	u.position = grid.footprint_center(u.footprint)
@@ -306,8 +311,11 @@ func _fits(u: Unit, anchor: Vector2i) -> bool:
 	var cells := grid.footprint(anchor, u.data.size)
 	var lo := 99
 	var hi := 0
+	var no_water := effects != null and effects.water_blocked(u)
 	for c in cells:
 		if not grid.is_inside(c) or grid.is_blocked(c):
+			return false
+		if no_water and grid.tiles.get(c, 0) == Biome.Tile.WATER:
 			return false
 		lo = mini(lo, grid.get_height(c))
 		hi = maxi(hi, grid.get_height(c))
@@ -367,6 +375,7 @@ func _next_turn() -> void:
 	else:
 		_set_actions_enabled(false)
 		await _run_ai(active)
+		_ai_face(active)
 		_end_turn()
 
 
@@ -438,9 +447,36 @@ func _after_action() -> void:
 		return
 	_refresh_turn_order()
 	if moved and acted:
-		_end_turn()
+		_choose_facing()
 	else:
 		_show_menu()
+
+
+## Último paso del turno del jugador: elegir hacia dónde mira (decide los flanqueos).
+func _choose_facing() -> void:
+	state = State.FACING
+	_set_actions_enabled(false)
+	_board.clear_highlights()
+	_board.highlight(active.footprint, COLOR_ACTIVE)
+	var around: Array[Vector2i] = []
+	for c in active.footprint:
+		for n in grid.neighbors(c):
+			if n not in active.footprint and n not in around:
+				around.append(n)
+	_board.highlight(around, COLOR_MOVE)
+	_hint_label.text = "¿Hacia dónde mira %s? Clic en una casilla · Enter: dejarlo así" % active.data.species_name
+
+
+func _face_cell(u: Unit, c: Vector2i) -> void:
+	var dir := grid.direction_towards(u.cell, c)
+	u.face_towards(grid.to_world(grid.step(u.cell, dir)) + (u.position - grid.to_world(u.cell)))
+
+
+## La IA mira hacia el rival más cercano.
+func _ai_face(u: Unit) -> void:
+	var foe := effects._nearest_foe(u)
+	if foe and u.is_alive():
+		_face_cell(u, foe.cell)
 
 
 func _check_game_over() -> bool:
@@ -491,6 +527,9 @@ func _begin_pick_target(move: MoveData) -> void:
 
 func _on_cell_clicked(c: Vector2i) -> void:
 	match state:
+		State.FACING:
+			_face_cell(active, c)
+			_end_turn()
 		State.DEPLOY:
 			_deploy_click(c)
 		State.PICK_MOVE:
@@ -517,7 +556,10 @@ func _on_hover(c: Vector2i) -> void:
 	var hovered := _unit_at(c)
 	_refresh_info(hovered if hovered else (active if active else _deploy_selected))
 	_preview_label.text = ""
+	_tile_label.text = effects.tile_info(c)
 	match state:
+		State.FACING:
+			_face_cell(active, c)
 		State.DEPLOY:
 			_refresh_deploy()
 		State.PICK_MOVE:
@@ -539,6 +581,9 @@ func _on_hover(c: Vector2i) -> void:
 
 
 func _cancel() -> void:
+	if state == State.FACING:
+		_end_turn()
+		return
 	if state == State.PICK_MOVE or state == State.PICK_TARGET:
 		_preview_label.text = ""
 		_show_menu()
@@ -573,7 +618,7 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 	var lines := PackedStringArray()
 	for t in _others_at(active, area):
 		var who := "[color=#%s]%s[/color]" % [Unit.TEAM_COLORS[t.team].lightened(0.4).to_html(false), t.display_name()]
-		var chance := Combat.hit_chance(active, t, move)
+		var chance := _hit_chance(active, t, move)
 		if t.volatiles.has("protect"):
 			lines.append("%s: [color=#99ccff]está protegido[/color]" % who)
 			continue
@@ -605,6 +650,12 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 			acc += " · crít. %d%%" % roundi(crit_p * 100)
 		if move.flinch_chance > 0:
 			acc += " · retroceso %d%%" % move.flinch_chance
+		var side := effects.flank(active, t)
+		if side > 0:
+			acc += " · [color=#ffcc66]%s[/color]" % Effects.FLANK_NAMES[side]
+		var dh := effects.height_diff(active, t)
+		if dh != 0:
+			acc += " · %s" % ("desde arriba" if dh > 0 else "desde abajo")
 		lines.append("%s: %s · %d-%d de daño (PS %d)%s%s%s" % [who, tag, lo, hi, t.hp, acc, ko, ally])
 	if move.targets_self:
 		var parts := PackedStringArray()
@@ -630,16 +681,17 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 
 # --- Movimiento --------------------------------------------------------------
 
+## Casillas alcanzables. El agua cuesta 2 de movimiento salvo a los que nadan o vuelan.
 func _compute_reach(u: Unit) -> void:
 	_reach = {u.cell: u.cell}
-	var dist := {u.cell: 0}
+	var cost := {u.cell: 0}
 	var frontier: Array[Vector2i] = [u.cell]
+	var swims := effects.swims(u)
 	while not frontier.is_empty():
+		frontier.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return cost[a] < cost[b])
 		var c: Vector2i = frontier.pop_front()
-		if dist[c] >= u.move_range():
-			continue
 		for n in grid.neighbors(c):
-			if dist.has(n) or not _fits(u, n):
+			if not _fits(u, n):
 				continue
 			var n_cells := grid.footprint(n, u.data.size)
 			var dh := grid.footprint_height(n_cells) - grid.footprint_height(grid.footprint(c, u.data.size))
@@ -648,7 +700,13 @@ func _compute_reach(u: Unit) -> void:
 			# Se puede atravesar a los aliados, pero no a los rivales.
 			if _others_at(u, n_cells).any(func(o: Unit) -> bool: return o.team != u.team):
 				continue
-			dist[n] = dist[c] + 1
+			var step := 1
+			if not swims and n_cells.any(func(x: Vector2i) -> bool: return grid.tiles.get(x, 0) == Biome.Tile.WATER):
+				step = 2
+			var total: int = cost[c] + step
+			if total > u.move_range() or total >= cost.get(n, 1 << 30):
+				continue
+			cost[n] = total
 			_reach[n] = c
 			frontier.append(n)
 	_destinations.clear()
@@ -752,7 +810,7 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 		if absorbed:
 			await _ability_absorb(t, absorbed)
 			continue
-		if t != user and rng.randi_range(1, 100) > Combat.hit_chance(user, t, move):
+		if t != user and rng.randi_range(1, 100) > _hit_chance(user, t, move):
 			_popup(t, "Falló", Color.WHITE)
 			_log("¡%s esquivó el ataque!" % t.display_name())
 			continue
@@ -803,7 +861,10 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 			if not effects.apply_volatile(user, t, move.volatile) and move.category == MoveData.Category.STATUS:
 				_log("No tiene efecto en %s." % t.display_name())
 		if t.is_alive() and t != user and not move.stat_changes.is_empty() and rng.randi_range(1, 100) <= chance_of.call(move.stat_chance):
-			effects.drop_stats(user, t, move.stat_changes)
+			if move.opposite_gender and not user.opposite_gender(t):
+				_log("No afecta a %s (mismo sexo o sin género)." % t.display_name())
+			else:
+				effects.drop_stats(user, t, move.stat_changes)
 		if t.is_alive() and t != user and move.knockback > 0:
 			await _knockback(user, t, move.knockback)
 	if targets.is_empty() and not move.field_effect:
@@ -863,6 +924,14 @@ func _ability_absorb(t: Unit, kind: String) -> void:
 			effects.drop_stats(t, t, {"sp_attack": 1})
 
 
+## Precisión con los modificadores de posición (flanqueo, altura, arena).
+func _hit_chance(att: Unit, def: Unit, move: MoveData) -> int:
+	var base := Combat.hit_chance(att, def, move)
+	if base >= 100:
+		return 100
+	return clampi(roundi(base * effects.accuracy_mult(att, def)), 1, 100)
+
+
 ## Daño con los modificadores que dependen de la posición (pantallas, terreno...).
 func _damage(att: Unit, def: Unit, move: MoveData, roll: float, crit := false) -> int:
 	return Combat.damage(att, def, move, roll, crit, effects.situational(att, def, move, crit))
@@ -915,6 +984,9 @@ func _knockback(src: Unit, t: Unit, cells: int) -> void:
 		return
 	var dir := grid.direction_towards(src.cell, t.cell)
 	var dest := t.cell
+	# Sobre hielo resbala una casilla más.
+	if t.footprint.any(func(x: Vector2i) -> bool: return grid.tiles.get(x, 0) == Biome.Tile.ICE):
+		cells += 1
 	for i in cells:
 		var nxt := grid.step(dest, dir)
 		var nxt_cells := grid.footprint(nxt, t.data.size)
@@ -945,16 +1017,36 @@ func _run_ai(u: Unit) -> void:
 	var best_dest := u.cell
 	var best_move: MoveData = null
 	var best_target := Vector2i.ZERO
+	var moves: Array[MoveData] = u.usable_moves() if u.can_attack() else []
+	var candidates: Array = []
+	# Para valorar altura y flanqueo, se coloca un momento en cada destino posible.
+	var home := u.cell
+	var home_pos := u.position
 	for dest in options:
 		var at := grid.footprint(dest, u.data.size)
-		for move in u.usable_moves():
+		_place(u, dest)
+		u.position = grid.footprint_center(at)
+		var danger := _danger_at(u) if Game.difficulty == Game.Difficulty.HARD else 0.0
+		for move in moves:
 			for target in Combat.target_cells(grid, move, at):
 				var score := _score_action(u, at, move, target)
+				if Game.difficulty == Game.Difficulty.HARD:
+					score -= danger
+				if score > 0.0 and Game.difficulty == Game.Difficulty.EASY:
+					candidates.append([dest, move, target])
 				if score > best_score:
 					best_score = score
 					best_dest = dest
 					best_move = move
 					best_target = target
+	_place(u, home)
+	u.position = home_pos
+	# Fácil: a veces elige otra acción aceptable al azar.
+	if Game.difficulty == Game.Difficulty.EASY and not candidates.is_empty() and rng.randf() < EASY_MISTAKE:
+		var pick: Array = candidates[rng.randi_range(0, candidates.size() - 1)]
+		best_dest = pick[0]
+		best_move = pick[1]
+		best_target = pick[2]
 	if best_move == null:
 		best_dest = _closest_to_enemy(u, options)
 	if best_dest != u.cell:
@@ -963,6 +1055,25 @@ func _run_ai(u: Unit) -> void:
 	if best_move:
 		await _use_move(u, best_move, best_target)
 		acted = true
+
+
+## Difícil: cuánto peligro corre `u` en su posición actual (rivales que pueden alcanzarlo
+## en su próximo turno, con más peso si llegarían por la espalda).
+func _danger_at(u: Unit) -> float:
+	var danger := 0.0
+	for foe in units:
+		if foe.team == u.team or not foe.is_alive():
+			continue
+		var reach := foe.move_range()
+		for mv in foe.usable_moves():
+			reach = maxi(reach, foe.move_range() + mv.range_max)
+		if grid.distance_to_set(u.footprint, foe.cell) > reach:
+			continue
+		var hit := 0.0
+		for mv in foe.usable_moves():
+			hit = maxf(hit, _damage(foe, u, mv, 0.925))
+		danger += minf(hit, u.hp) * HARD_DANGER_WEIGHT
+	return danger
 
 
 func _score_action(u: Unit, from: Array[Vector2i], move: MoveData, target: Vector2i) -> float:
@@ -1001,11 +1112,11 @@ func _score_action(u: Unit, from: Array[Vector2i], move: MoveData, target: Vecto
 		if t.volatiles.has("protect") or Abilities.absorb(u, t, move, Combat.move_type(move)):
 			score -= 5.0 * sign
 			continue
-		var chance := Combat.hit_chance(u, t, move) / 100.0
+		var chance := _hit_chance(u, t, move) / 100.0
 		var dmg := _damage(u, t, move, 0.925) * chance * (1.0 + (Combat.CRIT_MULT - 1.0) * Combat.crit_chance(u, move, t))
 		var value := minf(dmg, t.hp)
 		if dmg >= t.hp:
-			value += 50.0
+			value += 80.0 if Game.difficulty == Game.Difficulty.HARD else 50.0
 		if move.status != MoveData.Status.NONE and effects.can_status(u, t, move.status) == "":
 			value += 25.0 * move.status_chance / 100.0 * chance
 		if move.volatile and not t.volatiles.has(move.volatile):
@@ -1217,7 +1328,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_ESCAPE:
-				_cancel()
+				if state == State.FACING:
+					_end_turn()
+				else:
+					_cancel()
+			KEY_ENTER, KEY_KP_ENTER:
+				if state == State.FACING:
+					_end_turn()
 			KEY_R:
 				if state == State.GAME_OVER:
 					_start_battle()
@@ -1251,7 +1368,7 @@ func _build_ui() -> void:
 	_move_button = _button("Mover", _begin_pick_move)
 	_actions_box.add_child(_move_button)
 	_wait_button = _button("Terminar turno", func() -> void:
-		if state == State.MENU: _end_turn())
+		if state == State.MENU: _choose_facing())
 
 	_deploy_box = VBoxContainer.new()
 	_deploy_box.add_theme_constant_override("separation", 8)
@@ -1315,6 +1432,21 @@ func _build_ui() -> void:
 	_preview_label.add_theme_font_size_override("normal_font_size", 18)
 	_preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_preview_label)
+
+	_tile_label = RichTextLabel.new()
+	_tile_label.bbcode_enabled = true
+	_tile_label.fit_content = true
+	_tile_label.scroll_active = false
+	_tile_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_tile_label.offset_left = -760
+	_tile_label.offset_right = -16
+	_tile_label.offset_top = -96
+	_tile_label.offset_bottom = -44
+	_tile_label.add_theme_font_size_override("normal_font_size", 14)
+	_tile_label.add_theme_constant_override("outline_size", 5)
+	_tile_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_tile_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_tile_label)
 
 	_hint_label = Label.new()
 	_hint_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
@@ -1434,7 +1566,7 @@ func _set_actions_enabled(enabled: bool) -> void:
 		_rebuild_attack_buttons(active)
 	_move_button.disabled = not enabled or moved or (active != null and active.volatiles.has("ingrain"))
 	for b in _attack_buttons:
-		b.disabled = not enabled or acted or b.get_meta("no_pp", false)
+		b.disabled = not enabled or acted or b.get_meta("no_pp", false) or (active != null and not active.can_attack())
 	_wait_button.disabled = not enabled
 	if not enabled:
 		_hint_label.text = "" if state == State.GAME_OVER else "Turno rival..." if active and active.team == 1 else ""
@@ -1459,7 +1591,7 @@ func _refresh_info(u: Unit) -> void:
 				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
 	var vols := u.volatiles_text()
 	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
-		u.display_name(), Unit.LEVEL, " / ".join(types), Abilities.display_name(u.ability), u.hp, u.max_hp,
+		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), u.hp, u.max_hp,
 		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
 		u.stats.speed, int(u.ct), u.move_range(), u.data.jump, u.data.size,

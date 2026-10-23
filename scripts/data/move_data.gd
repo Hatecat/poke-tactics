@@ -75,6 +75,8 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 ## Efecto de campo: zonas (reflect, lightscreen, auroraveil, safeguard, mist, tailwind), trampas
 ## (spikes, toxicspikes, stealthrock), globales (terrenos, trickroom, gravity) o de área (haze, perishsong).
 @export var field_effect := ""
+## Solo funciona contra el sexo opuesto (Seducción).
+@export var opposite_gender := false
 ## Banderas para las habilidades: contact, punch, sound, powder, bite, pulse, wind, multihit, secondary.
 @export var flags: PackedStringArray = []
 

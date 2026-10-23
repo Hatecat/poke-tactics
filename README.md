@@ -124,6 +124,39 @@ Robustez, Muro Mágico, Rompemoldes, Ignorante, Indefenso, etc. Las que dependen
 (Recogida, Gula, Gran Encanto, Rastro, Regeneración…) se muestran como «sin efecto en el tablero».
 Lógica en `scripts/battle/abilities.gd`.
 
+## El tablero como táctica
+
+| | Efecto |
+|---|---|
+| Altura | ±10 % de daño por nivel de diferencia (tope +30 % / −20 %). Los ataques a distancia ganan +1 de alcance por cada 2 niveles por encima del objetivo; atacar 2+ niveles hacia arriba resta 10 % de precisión |
+| Orientación | Al terminar su turno, el jugador elige hacia dónde mira (clic en una casilla; Enter/Esc lo deja igual). La IA mira al rival más cercano |
+| Flanqueo | De lado: +10 % de daño y de precisión; por la espalda: +25 % |
+| Agua | Moverse cuesta 2 salvo a tipo Agua, voladores y levitadores; Fuego ×0,8 al atacar desde el agua |
+| Afinidad | Atacar desde hierba (Planta), agua (Agua), arena/tierra (Tierra), roca/cueva (Roca) o nieve/hielo (Hielo): ×1,2 a ese tipo |
+| Arena | Tierra/Roca/Acero son más difíciles de golpear (−15 % de precisión) |
+| Hielo | Los empujones deslizan una casilla más |
+
+Al pasar el ratón por una casilla se ve qué hace. Constantes en `scripts/battle/effects.gd`.
+
+**Agua y tipos pesados:** Roca, Acero y Tierra no pueden entrar en el agua (ni moviéndose, ni desplegándose,
+ni empujados), salvo que también sean Agua/Volador o floten (Levitación, Levitón).
+
+## Dificultad y equipos
+
+| | Rivales | IA |
+|---|---|---|
+| Fácil | nivel 45 | 35 % de las veces elige una acción aceptable al azar |
+| Normal | nivel 50 | la mejor acción según daño, estados, campo, altura y flanqueo |
+| Difícil | nivel 55 | además evita destinos donde varios rivales pueden castigarla y prioriza rematar |
+
+Tus Pokémon son siempre nivel 50. Se pueden guardar hasta 6 equipos (pestañas en el editor) y elegir con cuál
+jugar al empezar una partida rápida. Constantes en `game.gd` y al principio de `battle.gd`.
+
+## Géneros
+
+♂/♀/sin género según la proporción real de cada especie (se elige en el editor; los rivales al azar).
+Atracción (50 % de no poder atacar cada turno, 5 turnos), Seducción, Gran Encanto y Rivalidad.
+
 ## Balance de velocidad
 
 La carga de CT es `10 * velocidad^0.4`: el Pokémon más rápido actúa unas 2,2 veces por cada turno del más lento.

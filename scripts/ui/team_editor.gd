@@ -14,6 +14,9 @@ var _roster_grid: GridContainer
 var _roster_search: LineEdit
 var _team_box: VBoxContainer
 var _team_title: Label
+var _team_tabs: HFlowContainer
+var _team_name: LineEdit
+var _delete_team: Button
 var _add_button: Button
 var _moves_box: VBoxContainer
 var _learn_box: VBoxContainer
@@ -109,6 +112,23 @@ func _ready() -> void:
 	var team_col := VBoxContainer.new()
 	team_col.add_theme_constant_override("separation", 8)
 	team_panel.add_child(team_col)
+	_team_tabs = HFlowContainer.new()
+	_team_tabs.add_theme_constant_override("h_separation", 4)
+	_team_tabs.add_theme_constant_override("v_separation", 4)
+	team_col.add_child(_team_tabs)
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", 6)
+	team_col.add_child(name_row)
+	_team_name = LineEdit.new()
+	_team_name.placeholder_text = "Nombre del equipo"
+	_team_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_team_name.text_submitted.connect(func(_t: String) -> void: _rename_team())
+	_team_name.focus_exited.connect(_rename_team)
+	name_row.add_child(_team_name)
+	_delete_team = UiKit.button("Borrar", _confirm_delete_team)
+	_delete_team.tooltip_text = "Borrar este equipo"
+	name_row.add_child(_delete_team)
+	team_col.add_child(HSeparator.new())
 	_team_title = UiKit.label("", 20)
 	team_col.add_child(_team_title)
 	_team_box = VBoxContainer.new()
@@ -196,6 +216,7 @@ func _show(p: PokemonData) -> void:
 	_detail.add_child(UiKit.label("#%03d %s" % [p.dex_number, p.species_name], 28))
 	_detail.add_child(UiKit.type_row(p.types))
 	_detail.add_child(_abilities_row(p))
+	_detail.add_child(_gender_row(p))
 
 	var stats := UiKit.base_stats(p)
 	var grid := GridContainer.new()
@@ -239,6 +260,32 @@ func _show(p: PokemonData) -> void:
 
 	_refresh_moves()
 	_refresh_add_button()
+
+
+## Género: botones si el miembro puede ser macho o hembra; texto en otro caso.
+func _gender_row(p: PokemonData) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.add_child(UiKit.label("Género:", 15, Color(1, 1, 1, 0.75)))
+	var options := TeamMember.genders_for(p)
+	if options == [0]:
+		row.add_child(UiKit.label("sin género", 15))
+		return row
+	if p.male_ratio > 0.0 and p.male_ratio < 1.0:
+		row.add_child(UiKit.label("(%d%% ♂ / %d%% ♀)" % [roundi(p.male_ratio * 100), roundi((1.0 - p.male_ratio) * 100)], 13, Color(1, 1, 1, 0.5)))
+	for g in options:
+		var b := UiKit.button(TeamMember.GENDER_SYMBOLS[g], func() -> void:
+			if _member:
+				_member.gender = g
+				Game.save()
+				_show(_member.data)
+				_refresh_team(), 18)
+		b.toggle_mode = true
+		b.button_pressed = _member != null and _member.gender == g
+		b.disabled = _member == null
+		b.add_theme_color_override("font_color", Color(0.5, 0.75, 1.0) if g == 1 else Color(1.0, 0.55, 0.75))
+		row.add_child(b)
+	return row
 
 
 ## Habilidad: selector si es un miembro del equipo; lista si es una especie del roster.
@@ -343,14 +390,68 @@ func _add_selected() -> void:
 		_select_member(Game.player_team.back())
 
 
+## Pestañas de equipos (hasta Game.MAX_TEAMS) y botón para crear uno nuevo.
+func _refresh_team_tabs() -> void:
+	UiKit.clear(_team_tabs)
+	for i in Game.teams.size():
+		var b := UiKit.button(Game.teams[i].name, _switch_team.bind(i), 14)
+		b.toggle_mode = true
+		b.button_pressed = i == Game.current_team
+		_team_tabs.add_child(b)
+	if Game.teams.size() < Game.MAX_TEAMS:
+		var add := UiKit.button("+ Nuevo", func() -> void:
+			_switch_team(Game.add_team()), 14)
+		_team_tabs.add_child(add)
+	_team_name.text = Game.teams[Game.current_team].name
+	_delete_team.disabled = Game.teams.size() <= 1
+
+
+func _switch_team(index: int) -> void:
+	if index < 0:
+		return
+	Game.select_team(index)
+	_refresh_team()
+	if not Game.player_team.is_empty():
+		_select_member(Game.player_team[0])
+	elif _species:
+		_select_species(_species)
+
+
+func _rename_team() -> void:
+	var new_name := _team_name.text.strip_edges()
+	if new_name and new_name != Game.teams[Game.current_team].name:
+		Game.teams[Game.current_team].name = new_name
+		Game.save()
+		_refresh_team_tabs()
+
+
+## Borrar pide confirmación con un segundo clic.
+func _confirm_delete_team() -> void:
+	if _delete_team.text != "¿Seguro?":
+		_delete_team.text = "¿Seguro?"
+		get_tree().create_timer(2.5).timeout.connect(func() -> void:
+			if is_instance_valid(_delete_team): _delete_team.text = "Borrar")
+		return
+	_delete_team.text = "Borrar"
+	Game.remove_team(Game.current_team)
+	_switch_team(Game.current_team)
+
+
 func _refresh_team() -> void:
+	_refresh_team_tabs()
 	UiKit.clear(_team_box)
 	_team_title.text = "Tu equipo (%d/%d)" % [Game.player_team.size(), Game.MAX_TEAM]
 	for i in Game.MAX_TEAM:
 		if i < Game.player_team.size():
 			var m := Game.player_team[i]
 			var row := HBoxContainer.new()
-			row.add_child(_card(m.data, _select_member.bind(m), 260))
+			var card := _card(m.data, _select_member.bind(m), 260)
+			if m.gender:
+				var sym := UiKit.label(TeamMember.GENDER_SYMBOLS[m.gender], 18, Color(0.5, 0.75, 1.0) if m.gender == 1 else Color(1.0, 0.55, 0.75))
+				sym.position = Vector2(232, 6)
+				sym.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				card.add_child(sym)
+			row.add_child(card)
 			var remove := UiKit.button("✕", func() -> void:
 				Game.remove_from_team(i)
 				if _member == m:

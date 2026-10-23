@@ -16,6 +16,11 @@ var _map_select: OptionButton
 var _map_paths := PackedStringArray()
 var _random_options: Control
 var _selected_biome := RANDOM_BIOME
+var _team_select: OptionButton
+var _team_hint: Label
+var _difficulty_buttons: Array[Button] = []
+var _difficulty_hint: Label
+var _go_button: Button
 var _weather_buttons := {} # Weather.Kind o RANDOM_WEATHER -> Button
 
 
@@ -42,7 +47,7 @@ func _ready() -> void:
 	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
 	_menu_button(left, "Salir", func() -> void: get_tree().quit())
 	var team_info := UiKit.label("", 16, Color(1, 1, 1, 0.7))
-	team_info.text = "Tu equipo: " + (", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío")
+	team_info.text = "%s: %s" % [Game.teams[Game.current_team].name, ", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío"]
 	left.add_child(team_info)
 
 	_preview = PokemonPreview.new()
@@ -106,8 +111,43 @@ func _build_map_dialog() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
+	var team_row := HBoxContainer.new()
+	team_row.add_theme_constant_override("separation", 8)
+	var team_caption := UiKit.label("Tu equipo:", 18)
+	team_caption.custom_minimum_size.x = 110
+	team_row.add_child(team_caption)
+	_team_select = OptionButton.new()
+	_team_select.custom_minimum_size.x = 380
+	_team_select.item_selected.connect(func(i: int) -> void:
+		Game.select_team(i)
+		_refresh_dialog())
+	team_row.add_child(_team_select)
+	box.add_child(team_row)
+	_team_hint = UiKit.label("", 14, Color(1, 1, 1, 0.6))
+	box.add_child(_team_hint)
+
+	var diff_row := HBoxContainer.new()
+	diff_row.add_theme_constant_override("separation", 8)
+	var diff_caption := UiKit.label("Dificultad:", 18)
+	diff_caption.custom_minimum_size.x = 110
+	diff_row.add_child(diff_caption)
+	for i in Game.DIFFICULTY_NAMES.size():
+		var b := UiKit.button(Game.DIFFICULTY_NAMES[i], func() -> void:
+			Game.difficulty = i
+			_refresh_dialog(), 18)
+		b.toggle_mode = true
+		b.custom_minimum_size = Vector2(150, 42)
+		diff_row.add_child(b)
+		_difficulty_buttons.append(b)
+	box.add_child(diff_row)
+	_difficulty_hint = UiKit.label("", 14, Color(1, 1, 1, 0.6))
+	box.add_child(_difficulty_hint)
+	box.add_child(HSeparator.new())
+
 	var map_row := HBoxContainer.new()
-	map_row.add_child(UiKit.label("Escenario:  ", 18))
+	var map_caption := UiKit.label("Escenario:", 18)
+	map_caption.custom_minimum_size.x = 110
+	map_row.add_child(map_caption)
 	_map_select = OptionButton.new()
 	_map_select.custom_minimum_size.x = 380
 	_map_select.item_selected.connect(func(_i: int) -> void: _refresh_dialog())
@@ -170,15 +210,19 @@ func _build_map_dialog() -> void:
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_child(actions)
 	actions.add_child(UiKit.button("Cancelar", func() -> void: _map_dialog.visible = false))
-	var go := UiKit.button("¡A combatir!", _start_game, 22)
-	go.custom_minimum_size.x = 260
-	actions.add_child(go)
+	_go_button = UiKit.button("¡A combatir!", _start_game, 22)
+	_go_button.custom_minimum_size.x = 260
+	actions.add_child(_go_button)
 
 
 func _open_map_dialog() -> void:
-	if Game.player_team.is_empty():
+	if Game.teams.all(func(t) -> bool: return t.members.is_empty()):
 		_play_button.text = "Partida rápida (¡arma tu equipo!)"
 		return
+	_team_select.clear()
+	for t in Game.teams:
+		_team_select.add_item("%s  (%d Pokémon)" % [t.name, t.members.size()])
+	_team_select.select(Game.current_team)
 	_map_select.clear()
 	_map_select.add_item("Generado al azar")
 	_map_paths = Game.list_maps()
@@ -190,6 +234,12 @@ func _open_map_dialog() -> void:
 
 
 func _refresh_dialog() -> void:
+	var members: Array = Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name + TeamMember.GENDER_SYMBOLS[m.gender])
+	_team_hint.text = ", ".join(members) if not members.is_empty() else "Este equipo está vacío: elige otro o complétalo en el editor."
+	_go_button.disabled = members.is_empty()
+	for i in _difficulty_buttons.size():
+		_difficulty_buttons[i].button_pressed = i == Game.difficulty
+	_difficulty_hint.text = Game.DIFFICULTY_DESC[Game.difficulty]
 	_random_options.modulate.a = 1.0 if _map_select.selected <= 0 else 0.35
 	for b in _topology_buttons:
 		b.button_pressed = _topology_buttons.find(b) == Game.topology

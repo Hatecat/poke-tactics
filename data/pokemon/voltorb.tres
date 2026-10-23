@@ -80,5 +80,6 @@ size = 1
 move_modifier = 0
 jump = 1
 anim_map = {}
+male_ratio = -1.0
 moves = Array[ExtResource("2_move")]([ExtResource("m50"), ExtResource("m6"), ExtResource("m0"), ExtResource("m5")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m12"), ExtResource("m35"), ExtResource("m10"), ExtResource("m38"), ExtResource("m9"), ExtResource("m32"), ExtResource("m1"), ExtResource("m33"), ExtResource("m39"), ExtResource("m5"), ExtResource("m3"), ExtResource("m27"), ExtResource("m34"), ExtResource("m45"), ExtResource("m29"), ExtResource("m15"), ExtResource("m7"), ExtResource("m6"), ExtResource("m24"), ExtResource("m23"), ExtResource("m56"), ExtResource("m11"), ExtResource("m13"), ExtResource("m14"), ExtResource("m42"), ExtResource("m17"), ExtResource("m26"), ExtResource("m18"), ExtResource("m41"), ExtResource("m19"), ExtResource("m51"), ExtResource("m16"), ExtResource("m48"), ExtResource("m22"), ExtResource("m4"), ExtResource("m43"), ExtResource("m46"), ExtResource("m8"), ExtResource("m52"), ExtResource("m36"), ExtResource("m21"), ExtResource("m44"), ExtResource("m20"), ExtResource("m25"), ExtResource("m50"), ExtResource("m2"), ExtResource("m37"), ExtResource("m28"), ExtResource("m30"), ExtResource("m31"), ExtResource("m40"), ExtResource("m47"), ExtResource("m49"), ExtResource("m53"), ExtResource("m55"), ExtResource("m54")])

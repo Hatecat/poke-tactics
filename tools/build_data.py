@@ -65,7 +65,7 @@ ALLOW_NONSTANDARD = {"cut", "burnup"}
 # Clima que fija cada ataque (Weather.Kind: 1 sol, 2 lluvia, 3 arena, 4 granizo).
 WEATHER_SETTERS = {"sunnyday": 1, "raindance": 2, "sandstorm": 3, "hail": 4, "snowscape": 4}
 # Estados volátiles que el juego sabe aplicar al objetivo / al propio usuario.
-TARGET_VOLATILES = {"confusion", "leechseed", "yawn", "taunt", "nightmare", "curse"}
+TARGET_VOLATILES = {"confusion", "leechseed", "yawn", "taunt", "nightmare", "curse", "attract"}
 SELF_VOLATILES = {"protect", "endure", "substitute", "ingrain", "aquaring", "destinybond", "charge", "magnetrise"}
 # Efectos de campo: zonas alrededor del usuario, trampas en casillas y efectos globales.
 ZONE_FIELDS = {"reflect", "lightscreen", "auroraveil", "safeguard", "mist", "tailwind"}
@@ -134,7 +134,7 @@ def convert_move(mid, m, names, flavor):
         "always_hits": m["accuracy"] is True, "attack_stat": "", "hp_cost": 0.0,
         "crit_stage": max(0, m.get("critRatio", 1) - 1), "always_crit": bool(m.get("willCrit")), "flinch_chance": 0,
         "sets_weather": WEATHER_SETTERS.get(mid, 0), "weather_tag": WEATHER_TAGS.get(mid, ""),
-        "flags": [], "volatile": "", "volatile_chance": 0, "self_volatile": "", "field_effect": "",
+        "flags": [], "opposite_gender": False, "volatile": "", "volatile_chance": 0, "self_volatile": "", "field_effect": "",
         "extra_ct": 0, "pp": max(1, math.ceil(m.get("pp", 5) / PP_DIVISOR)),
         "animation": "fight_d" if cat == 1 else "fight_b",
     }
@@ -190,6 +190,8 @@ def convert_move(mid, m, names, flavor):
     field = m.get("sideCondition") or m.get("terrain") or m.get("pseudoWeather") or (mid if mid in AREA_FIELDS else "")
     if field in ZONE_FIELDS | TRAP_FIELDS | GLOBAL_FIELDS | AREA_FIELDS:
         mv["field_effect"] = field
+    if mid == "captivate":
+        mv["opposite_gender"] = True
     if mid == "curse":
         # Sin ser Fantasma: mejora sus stats; siendo Fantasma, maldice al objetivo (lo decide la batalla).
         mv["self_stat_changes"] = {"attack": 1, "defense": 1, "speed": -1}
@@ -435,6 +437,9 @@ def write_pokemon(pid, mon, default, learnset, anims):
     types = [t.lower() for t in mon["types"]]
     height, weight = mon["heightm"], mon["weightkg"]
     flies = "flying" in types or "Levitate" in mon["abilities"].values()
+    # Proporción de machos (-1 = sin género).
+    gender = mon.get("gender")
+    male_ratio = -1.0 if gender == "N" else (1.0 if gender == "M" else (0.0 if gender == "F" else mon.get("genderRatio", {}).get("M", 0.5)))
     size = 3 if height >= 5.0 else (2 if height >= 1.6 or weight >= 150 else 1)
     fields = {
         "id": pid, "species_name": SPECIES_NAMES.get(pid, mon["name"]), "dex_number": mon["num"],
@@ -442,7 +447,7 @@ def write_pokemon(pid, mon, default, learnset, anims):
         "base_hp": st["hp"], "base_attack": st["atk"], "base_defense": st["def"],
         "base_sp_attack": st["spa"], "base_sp_defense": st["spd"], "base_speed": st["spe"],
         "size": size, "move_modifier": 1 if flies else (-1 if weight >= 200 or size >= 2 and weight >= 80 else 0),
-        "jump": 3 if flies else 1, "anim_map": anims,
+        "jump": 3 if flies else 1, "anim_map": anims, "male_ratio": male_ratio,
         "abilities": [ability_id(a) for k, a in sorted(mon["abilities"].items())],
     }
     lines = ['[gd_resource type="Resource" script_class="PokemonData" format=3]', "", *ext, "", "[resource]",

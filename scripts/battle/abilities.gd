@@ -7,7 +7,7 @@ const DATA_PATH := "res://data/abilities.json"
 ## Habilidades con efecto en el tablero. El resto se muestran como "sin efecto (todavía)".
 const IMPLEMENTED: PackedStringArray = [
 	"adaptability", "aftermath", "angerpoint", "battlearmor", "bigpecks", "blaze", "chlorophyll",
-	"clearbody", "cloudnine", "competitive", "compoundeyes", "damp", "defiant", "download", "drought",
+	"clearbody", "cloudnine", "cutecharm", "rivalry", "competitive", "compoundeyes", "damp", "defiant", "download", "drought",
 	"dryskin", "earlybird", "effectspore", "filter", "flamebody", "flashfire", "friendguard", "guts",
 	"healer", "hustle", "hydration", "hypercutter", "icebody", "immunity", "infiltrator", "innerfocus",
 	"insomnia", "intimidate", "ironfist", "justified", "keeneye", "leafguard", "levitate", "lightningrod",

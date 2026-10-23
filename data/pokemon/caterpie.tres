@@ -27,5 +27,6 @@ size = 1
 move_modifier = 0
 jump = 1
 anim_map = {}
+male_ratio = 0.5
 moves = Array[ExtResource("2_move")]([ExtResource("m0"), ExtResource("m3"), ExtResource("m2"), ExtResource("m1")])
 learnset = Array[ExtResource("2_move")]([ExtResource("m2"), ExtResource("m1"), ExtResource("m0"), ExtResource("m3")])

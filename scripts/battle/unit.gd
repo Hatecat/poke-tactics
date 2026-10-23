@@ -21,6 +21,8 @@ const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At
 const MAX_CRIT_STAGE := 3
 
 var data: PokemonData
+## Nivel (el jugador siempre 50; el rival según la dificultad).
+var level := LEVEL
 ## Ataques de este Pokémon concreto (los elegidos en el editor de equipo).
 var moves: Array[MoveData] = []
 var team := 0
@@ -40,6 +42,10 @@ var stage_turns := {}
 ## Usos restantes de cada ataque en este combate.
 var pp := {}
 var ability := ""
+## 0 = sin género, 1 = macho, 2 = hembra.
+var gender := 0
+## Hacia dónde mira (dirección en el plano XZ); decide el flanqueo.
+var facing := Vector2(0, 1)
 ## Estados volátiles activos: nombre -> datos (turnos restantes, quién lo causó...).
 ## confusion, leechseed, yawn, taunt, nightmare, curse, perish, protect, endure, substitute,
 ## ingrain, aquaring, destinybond, charge, magnetrise, flashfire.
@@ -55,6 +61,8 @@ var _label: Label3D
 var _ring: MeshInstance3D
 var _ring_mat: StandardMaterial3D
 var _marker: MeshInstance3D
+## Flechita sobre el anillo que indica hacia dónde mira.
+var _facing_arrow: Node3D
 var _active := false
 var _time := 0.0
 # Animación procedural para modelos sin clips: "", "idle" o "walk".
@@ -63,14 +71,16 @@ var _model_base_pos := Vector3.ZERO
 var _model_base_scale := Vector3.ONE
 
 
-func setup(member: TeamMember, p_team: int) -> void:
+func setup(member: TeamMember, p_team: int, p_level := LEVEL) -> void:
+	level = p_level
 	data = member.data
 	moves = member.moves.duplicate()
 	ability = member.ability
+	gender = member.gender
 	for mv in moves:
 		pp[mv] = mv.pp
 	team = p_team
-	max_hp = int((2 * data.base_hp + 31) * LEVEL / 100.0) + LEVEL + 10
+	max_hp = int((2 * data.base_hp + 31) * level / 100.0) + level + 10
 	hp = max_hp
 	stats = {
 		"attack": _stat(data.base_attack),
@@ -84,7 +94,7 @@ func setup(member: TeamMember, p_team: int) -> void:
 
 
 func _stat(base: int) -> int:
-	return int((2 * base + 31) * LEVEL / 100.0) + 5
+	return int((2 * base + 31) * level / 100.0) + 5
 
 
 func is_alive() -> bool:
@@ -181,7 +191,17 @@ func move_range() -> int:
 
 
 func display_name() -> String:
-	return "%s%s" % [data.species_name, "" if team == 0 else " (rival)"]
+	return "%s%s%s" % [data.species_name, TeamMember.GENDER_SYMBOLS[gender], "" if team == 0 else " (rival)"]
+
+
+## ¿Son de sexos opuestos? (los sin género no cuentan).
+func opposite_gender(other: Unit) -> bool:
+	return gender != 0 and other.gender != 0 and gender != other.gender
+
+
+## ¿Puede atacar este turno? (Atracción puede impedirlo).
+func can_attack() -> bool:
+	return not (volatiles.has("attract") and volatiles.attract.get("blocked", false))
 
 
 func status_text() -> String:
@@ -199,6 +219,7 @@ const VOLATILE_SHORT := {
 	"nightmare": "Pesadilla", "curse": "Maldito", "perish": "Canto Mortal", "protect": "Protegido",
 	"endure": "Aguante", "substitute": "Sustituto", "ingrain": "Arraigado", "aquaring": "Acua Aro",
 	"destinybond": "Mismo Destino", "charge": "Carga", "magnetrise": "Levitón", "flashfire": "Absorbe Fuego",
+	"attract": "Enamorado",
 }
 
 
@@ -215,6 +236,7 @@ func volatiles_text() -> String:
 ## Solo el modelo, sin anillo, nombre ni colisión (para vistas previas).
 func hide_overlays() -> void:
 	_ring.visible = false
+	_facing_arrow.visible = false
 	_label.visible = false
 	for body in find_children("*", "StaticBody3D", false, false):
 		body.queue_free()
@@ -269,6 +291,9 @@ func face_towards(world_target: Vector3) -> void:
 	var d := world_target - global_position
 	if Vector2(d.x, d.z).length() > 0.01:
 		_model.rotation.y = atan2(d.x, d.z)
+		facing = Vector2(d.x, d.z).normalized()
+		if _facing_arrow:
+			_facing_arrow.rotation.y = _model.rotation.y
 
 
 ## Reproduce la animación de la acción `key` (idle, walk, fight_b, fight_d, hit, ko).
@@ -330,7 +355,7 @@ func refresh_label() -> void:
 	var st := status_text()
 	var boosts := stages_text()
 	var vols := volatiles_text()
-	_label.text = "%s\n%d/%d%s%s%s" % [data.species_name, hp, max_hp, "  " + st if st else "",
+	_label.text = "%s%s\n%d/%d%s%s%s" % [data.species_name, TeamMember.GENDER_SYMBOLS[gender], hp, max_hp, "  " + st if st else "",
 		"\n" + boosts if boosts else "", "\n" + vols if vols else ""]
 
 
@@ -379,6 +404,22 @@ func _build_visuals() -> void:
 	_marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_marker)
 	set_active(false)
+
+	_facing_arrow = Node3D.new()
+	add_child(_facing_arrow)
+	var arrow := MeshInstance3D.new()
+	var tri := CylinderMesh.new()
+	tri.top_radius = 0.0
+	tri.bottom_radius = 0.11
+	tri.height = 0.2
+	tri.radial_segments = 3
+	arrow.mesh = tri
+	arrow.rotation.x = PI * 0.5
+	arrow.position = Vector3(0, 0.04, 0.42 * RING_SCALE[data.size])
+	arrow.scale = Vector3(1, 1, 0.35)
+	arrow.material_override = _ring_mat
+	arrow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_facing_arrow.add_child(arrow)
 
 	_label = Label3D.new()
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED

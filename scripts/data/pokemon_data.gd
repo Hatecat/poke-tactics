@@ -11,6 +11,8 @@ extends Resource
 ## Altura en metros a la que se escala el modelo dentro del tablero.
 @export var model_height := 0.9
 
+## Proporción de machos (0-1); -1 = sin género.
+@export var male_ratio := 0.5
 ## Habilidades posibles (ids de data/abilities.json); la última suele ser la oculta.
 @export var abilities: PackedStringArray = []
 

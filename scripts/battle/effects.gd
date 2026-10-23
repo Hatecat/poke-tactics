@@ -10,6 +10,26 @@ const VOLATILE_TURNS := {"confusion": [2, 5], "taunt": [3, 3], "magnetrise": [5,
 const INTIMIDATE_RANGE := 2
 const HEALER_CHANCE := 0.3
 const SHED_SKIN_CHANCE := 0.3
+const ATTRACT_TURNS := 5
+
+# --- Tablero ---
+## Daño por cada nivel de altura a favor (+) o en contra (-), con topes.
+const HEIGHT_STEP := 0.1
+const HEIGHT_MAX := 0.3
+const HEIGHT_MIN := -0.2
+## Frente, lado, espalda: multiplicador de daño y de precisión.
+const FLANK_DAMAGE: Array[float] = [1.0, 1.1, 1.25]
+const FLANK_ACCURACY: Array[float] = [1.0, 1.1, 1.25]
+const FLANK_NAMES := ["de frente", "por el flanco", "por la espalda"]
+## Atacar desde una casilla afín potencia ese tipo.
+const TILE_AFFINITY := {
+	Biome.Tile.GRASS: "grass", Biome.Tile.WATER: "water", Biome.Tile.SAND: "ground", Biome.Tile.DIRT: "ground",
+	Biome.Tile.ROCK: "rock", Biome.Tile.CAVE: "rock", Biome.Tile.SNOW: "ice", Biome.Tile.ICE: "ice",
+}
+const AFFINITY_MULT := 1.2
+const WATER_FIRE_MULT := 0.8
+const SAND_EVASION := 0.85
+const SAND_DWELLERS: PackedStringArray = ["ground", "rock", "steel"]
 
 var b # la batalla (scripts/battle/battle.gd)
 var field := FieldState.new()
@@ -35,11 +55,21 @@ func effective_weather(kind: int) -> int:
 
 # --- Modificadores situacionales de daño --------------------------------------------
 
-## Pantallas, terreno y Compiescolta: dependen de dónde está cada uno.
+## Pantallas, terreno, altura, flanqueo, casilla y Compiescolta: dependen de dónde está cada uno.
 func situational(att: Unit, def: Unit, move: MoveData, crit: bool) -> float:
 	var m := 1.0
 	var physical := move.category == MoveData.Category.PHYSICAL
 	var type := Combat.move_type(move)
+	if att != def:
+		m *= 1.0 + clampf(height_diff(att, def) * HEIGHT_STEP, HEIGHT_MIN, HEIGHT_MAX)
+		m *= FLANK_DAMAGE[flank(att, def)]
+	var tile: int = b.grid.tiles.get(att.cell, -1)
+	if TILE_AFFINITY.get(tile, "") == type:
+		m *= AFFINITY_MULT
+	if tile == Biome.Tile.WATER and type == "fire":
+		m *= WATER_FIRE_MULT
+	if Abilities.has(att, "rivalry") and att.gender != 0 and def.gender != 0:
+		m *= 1.25 if att.gender == def.gender else 0.75
 	if not crit and not Abilities.has(att, "infiltrator") and att.team != def.team:
 		var screen := "reflect" if physical else "lightscreen"
 		if field.zone_at(screen, def.team, def.footprint) or field.zone_at("auroraveil", def.team, def.footprint):
@@ -57,6 +87,73 @@ func situational(att: Unit, def: Unit, move: MoveData, crit: bool) -> float:
 			m *= 0.75
 			break
 	return m
+
+
+## Niveles de altura del atacante sobre el defensor (negativo si está más bajo).
+func height_diff(att: Unit, def: Unit) -> int:
+	return b.grid.footprint_height(att.footprint) - b.grid.footprint_height(def.footprint)
+
+
+## 0 = de frente, 1 = por el flanco, 2 = por la espalda (según hacia dónde mira el defensor).
+func flank(att: Unit, def: Unit) -> int:
+	var d := Vector2(att.position.x - def.position.x, att.position.z - def.position.z)
+	if d.length() < 0.01:
+		return 0
+	var dot := d.normalized().dot(def.facing)
+	return 0 if dot > 0.5 else (2 if dot < -0.5 else 1)
+
+
+## Precisión según la posición: flanqueo, atacar hacia arriba y Pokémon de tierra en la arena.
+func accuracy_mult(att: Unit, def: Unit) -> float:
+	if att == def:
+		return 1.0
+	var m := FLANK_ACCURACY[flank(att, def)]
+	if height_diff(att, def) <= -2:
+		m *= 0.9
+	if b.grid.tiles.get(def.cell, -1) == Biome.Tile.SAND and Array(def.data.types).any(func(t: String) -> bool: return t in SAND_DWELLERS):
+		m *= SAND_EVASION
+	return m
+
+
+## Roca, Acero y Tierra no pueden pisar el agua (salvo si también son Agua/Volador o flotan).
+func water_blocked(u: Unit) -> bool:
+	var types := Array(u.data.types)
+	if "water" in types or not field.grounded(u):
+		return false
+	return types.any(func(t: String) -> bool: return t in ["rock", "steel", "ground"])
+
+
+## ¿Se mueve por el agua sin coste extra?
+func swims(u: Unit) -> bool:
+	return "water" in u.data.types or not field.grounded(u)
+
+
+## Texto con lo que hace una casilla (para la información al pasar el ratón).
+func tile_info(c: Vector2i) -> String:
+	var tile: int = b.grid.tiles.get(c, Biome.Tile.GRASS)
+	var parts := PackedStringArray(["%s · altura %d" % [Biome.TILE_NAMES[tile], b.grid.get_height(c)]])
+	if TILE_AFFINITY.has(tile):
+		parts.append("%s ×1,2 desde aquí" % Combat.TYPE_NAMES[TILE_AFFINITY[tile]])
+	match tile:
+		Biome.Tile.WATER:
+			parts.append("moverse cuesta 2 (salvo Agua/voladores) · Roca/Acero/Tierra no pueden entrar · Fuego ×0,8")
+		Biome.Tile.SAND:
+			parts.append("Tierra/Roca/Acero esquivan más")
+		Biome.Tile.ICE:
+			parts.append("los empujones deslizan 1 casilla más")
+	var trap: Dictionary = field.traps.get(c, {})
+	if not trap.is_empty():
+		var t := PackedStringArray()
+		if trap.spikes:
+			t.append("Púas x%d" % trap.spikes)
+		if trap.toxic:
+			t.append("Púas Tóxicas")
+		if trap.rocks:
+			t.append("Trampa Rocas")
+		parts.append("[color=#ffaa66]%s (%s)[/color]" % [", ".join(t), "tuyas" if trap.team == 0 else "rivales"])
+	if b.grid.is_blocked(c):
+		parts.append("obstáculo")
+	return " · ".join(parts)
 
 
 func _terrain_boosts(type: String) -> bool:
@@ -104,6 +201,19 @@ func start_of_turn(u: Unit) -> bool:
 		b._heal(u, maxi(1, u.max_hp / 16))
 	if not u.is_alive():
 		return false
+
+	# Atracción: 50 % de no poder atacar este turno (sí puede moverse).
+	if u.volatiles.has("attract"):
+		var by: Unit = u.volatiles.attract.by
+		u.volatiles.attract.turns -= 1
+		if by == null or not by.is_alive() or u.volatiles.attract.turns <= 0:
+			u.volatiles.erase("attract")
+			b._log("%s ya no está enamorado." % u.display_name())
+		else:
+			u.volatiles.attract.blocked = b.rng.randf() < 0.5
+			if u.volatiles.attract.blocked:
+				b._popup(u, "♥", Color(1.0, 0.5, 0.7))
+				b._log("¡%s está enamorado de %s y no puede atacar!" % [u.display_name(), by.display_name()])
 
 	# Contadores.
 	if u.volatiles.has("perish"):
@@ -296,6 +406,11 @@ func apply_volatile(att: Unit, t: Unit, vol: String) -> bool:
 		"curse":
 			t.volatiles[vol] = {}
 			b._log("¡%s ha sido maldecido!" % t.display_name())
+		"attract":
+			if not att.opposite_gender(t):
+				return false
+			t.volatiles[vol] = {"by": att, "turns": ATTRACT_TURNS, "blocked": false}
+			b._log("¡%s se ha enamorado de %s!" % [t.display_name(), att.display_name()])
 		_:
 			var turns: Array = VOLATILE_TURNS.get(vol, [3, 3])
 			t.volatiles[vol] = {"turns": b.rng.randi_range(turns[0], turns[1])}
@@ -393,6 +508,9 @@ func after_hit(att: Unit, t: Unit, move: MoveData, crit: bool) -> void:
 		if st != MoveData.Status.NONE and can_status(t, att, st) == "":
 			b._log("¡%s de %s!" % [Abilities.display_name(t.ability), t.display_name()])
 			set_status(t, att, st)
+		if t.ability == "cutecharm" and t.opposite_gender(att) and b.rng.randf() < 0.3 and not att.volatiles.has("attract"):
+			b._log("¡Gran Encanto de %s!" % t.display_name())
+			apply_volatile(t, att, "attract")
 		var st2 := Abilities.contact_status(att, b.rng) if att.ability == "poisontouch" else MoveData.Status.NONE
 		if st2 != MoveData.Status.NONE and can_status(att, t, st2) == "":
 			b._log("¡Toque Tóxico de %s!" % att.display_name())

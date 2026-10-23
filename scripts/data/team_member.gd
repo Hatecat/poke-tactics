@@ -9,6 +9,21 @@ var data: PokemonData
 var moves: Array[MoveData] = []
 ## Habilidad elegida (id de data/abilities.json).
 var ability := ""
+## 0 = sin género, 1 = macho, 2 = hembra.
+var gender := 0
+
+const GENDER_SYMBOLS := ["", "♂", "♀"]
+
+
+## Géneros posibles de la especie.
+static func genders_for(p_data: PokemonData) -> Array[int]:
+	if p_data.male_ratio < 0.0:
+		return [0]
+	if p_data.male_ratio >= 1.0:
+		return [1]
+	if p_data.male_ratio <= 0.0:
+		return [2]
+	return [1, 2]
 
 
 static func create(p_data: PokemonData, p_moves: Array[MoveData] = []) -> TeamMember:
@@ -16,6 +31,7 @@ static func create(p_data: PokemonData, p_moves: Array[MoveData] = []) -> TeamMe
 	m.data = p_data
 	m.moves = p_moves.duplicate() if not p_moves.is_empty() else p_data.moves.duplicate()
 	m.ability = p_data.abilities[0] if not p_data.abilities.is_empty() else ""
+	m.gender = 0 if p_data.male_ratio < 0.0 else (1 if p_data.male_ratio >= 0.5 else 2)
 	return m
 
 
@@ -37,6 +53,8 @@ static func random(p_data: PokemonData, rng: RandomNumberGenerator) -> TeamMembe
 	var m := create(p_data, chosen)
 	if not p_data.abilities.is_empty():
 		m.ability = p_data.abilities[rng.randi_range(0, p_data.abilities.size() - 1)]
+	if p_data.male_ratio >= 0.0:
+		m.gender = 1 if rng.randf() < p_data.male_ratio else 2
 	return m
 
 
@@ -49,7 +67,7 @@ static func _shuffle(arr: Array, rng: RandomNumberGenerator) -> void:
 
 
 func to_dict() -> Dictionary:
-	return {"species": data.id, "moves": moves.map(func(mv: MoveData) -> String: return mv.id), "ability": ability}
+	return {"species": data.id, "moves": moves.map(func(mv: MoveData) -> String: return mv.id), "ability": ability, "gender": gender}
 
 
 ## `species_lookup` recibe un id y devuelve el PokemonData (o null).
@@ -66,4 +84,7 @@ static func from_dict(d: Dictionary, species_lookup: Callable) -> TeamMember:
 	var ab: String = d.get("ability", "")
 	if ab in p.abilities:
 		m.ability = ab
+	var g: int = d.get("gender", m.gender)
+	if g in genders_for(p):
+		m.gender = g
 	return m
