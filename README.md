@@ -12,7 +12,7 @@ tools/export_demo.sh                                                          # 
 ```
 
 **Flujo:** Menú principal → *Editor de equipo* (hasta 6 Pokémon con 4 ataques cada uno, se guarda solo) →
-*Jugar* (escenario guardado, o tablero + campo al azar) → despliegue en tu zona azul → combate contra un rival
+*Partida rápida* (escenario guardado, o tablero + campo + clima, cada uno elegible o al azar) → despliegue en tu zona azul → combate contra un rival
 aleatorio (Pokémon y ataques) del mismo tamaño. *Editor de escenarios* crea mapas para el futuro modo historia.
 *Tabla de tipos* muestra las 18×18 efectividades.
 
@@ -72,6 +72,57 @@ Si retocas un `.tres` a mano, ten en cuenta que volver a ejecutar `build_data.py
 Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva y Gimnasio. Cada uno genera alturas, suelos y obstáculos
 (árboles, rocas, cactus, columnas, cristales) al azar, garantizando un camino entre las dos zonas. Los obstáculos
 bloquean el paso; los suelos aún no tienen efectos.
+
+## Clima
+
+| Clima | Efectos |
+|---|---|
+| ☀ Sol | Fuego ×1,5 · Agua ×0,5 · Rayo Solar sin carga · Trueno/Vendaval 50 % · nadie se congela · Desarrollo doble |
+| ☂ Lluvia | Agua ×1,5 · Fuego ×0,5 · Trueno/Vendaval no fallan · Rayo Solar a la mitad |
+| ≋ Arena | 1/16 de daño por turno salvo Roca/Tierra/Acero · Def. Esp. de Roca ×1,5 |
+| ❄ Granizo | 1/16 de daño por turno salvo Hielo · Defensa de Hielo ×1,5 · Ventisca no falla |
+
+Meteorobola cambia de tipo y dobla su potencia; Fotosíntesis, Luz Lunar y Sol Matinal curan 2/3 con sol y 1/4 con
+otros climas. Danza Lluvia, Día Soleado, Tormenta de Arena, Granizo y Paisaje Nevado cambian el clima durante
+4 rondas; después vuelve el clima de fondo del combate (el de la partida rápida o el del escenario).
+Las reglas están en `scripts/battle/weather.gd`.
+
+**Precisión y evasión** también son stats mejorables (Ataque Arena, Doble Equipo, Reducción…), con el mismo
+tope de ±6 y la misma duración que el resto.
+
+**Críticos:** 1/24 de base; +1 índice (ataques de crítico alto) 1/8; +2 (Foco Energía) 1/2; +3, siempre.
+Hacen ×1,5 e ignoran las bajadas de ataque y las subidas de defensa. **Retroceso:** el objetivo pierde
+`FLINCH_DELAY` (30) de CT, así que su próximo turno llega más tarde.
+
+**PP:** cada ataque tiene los PP de los juegos / 5 usos por combate (`PP_DIVISOR` en `build_data.py`); sin PP solo
+queda Forcejeo. **Mejoras de stats:** tope ±6 y duran 3 turnos propios (`STAGE_TURNS` en `unit.gd`).
+
+## Estados volátiles
+
+Confusión (2-5 turnos; 1/3 de herirse y perder el turno), Drenadoras, Bostezo, Mofa (solo ataques de daño),
+Pesadilla, Maldición, Canto Mortal, Protección/Detección (hasta su próximo turno; falla más si se repite),
+Aguante, Sustituto (absorbe golpes y bloquea los de estado), Arraigo (cura 1/16 pero no puede moverse ni ser
+empujado), Acua Aro, Mismo Destino, Carga y Levitón. Lógica en `scripts/battle/effects.gd`.
+
+## Efectos de campo
+
+| Tipo | Ataques | En el tablero |
+|---|---|---|
+| Zonas (radio 2 alrededor de quien lo usa, 5 rondas) | Reflejo, Pantalla de Luz, Velo Aurora, Velo Sagrado, Neblina | protegen a los aliados que estén dentro |
+| Trampas en casillas | Púas (x3), Púas Tóxicas, Trampa Rocas | dañan/envenenan a los rivales que las pisen (los voladores esquivan las púas) |
+| Globales (5 rondas) | Campos Eléctrico/Hierba/Niebla/Psíquico, Espacio Raro, Gravedad | solo afectan a quien toca el suelo; Espacio Raro invierte la velocidad |
+| Equipo | Viento Afín | velocidad ×2 a todo el equipo (4 rondas) |
+| Área | Niebla, Canto Mortal | resetea los stats / todos caen en 3 turnos |
+
+## Habilidades
+
+Cada Pokémon tiene las de su especie (se elige en el editor de equipo; los rivales al azar). 93 de las 114 tienen
+efecto: potenciadores (Mar Llamas, Agallas, Experto, Adaptable, Francotirador…), inmunidades (Levitación,
+Absorbe Agua/Fuego/Elec., Pararrayos, Insonorizar…), contacto (Elec. Estática, Punto Tóxico, Cuerpo Llama…),
+clima (Nado Rápido, Clorofila, Cura Lluvia, Aclimatación…), Intimidación (rivales a 2 casillas, una vez cada uno),
+Robustez, Muro Mágico, Rompemoldes, Ignorante, Indefenso, etc. Las que dependen de objetos, género o cambios
+(Recogida, Gula, Gran Encanto, Rastro, Regeneración…) se muestran como «sin efecto en el tablero».
+Lógica en `scripts/battle/abilities.gd`.
 
 ## Balance de velocidad
 

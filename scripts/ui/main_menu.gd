@@ -1,8 +1,9 @@
 extends Control
-## Menú principal: jugar (eligiendo tablero, campo o escenario), editores y tabla de tipos.
+## Menú principal: partida rápida (tablero, campo, clima o escenario), editores y tabla de tipos.
 
 const SHOWCASE_TIME := 3.5
 const RANDOM_BIOME := -1
+const RANDOM_WEATHER := -1
 
 var _preview: PokemonPreview
 var _preview_name: Label
@@ -15,6 +16,7 @@ var _map_select: OptionButton
 var _map_paths := PackedStringArray()
 var _random_options: Control
 var _selected_biome := RANDOM_BIOME
+var _weather_buttons := {} # Weather.Kind o RANDOM_WEATHER -> Button
 
 
 func _ready() -> void:
@@ -34,7 +36,7 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 20
 	left.add_child(spacer)
-	_play_button = _menu_button(left, "Jugar", _open_map_dialog)
+	_play_button = _menu_button(left, "Partida rápida", _open_map_dialog)
 	_menu_button(left, "Editor de equipo", _go.bind("team_editor"))
 	_menu_button(left, "Editor de escenarios", _go.bind("map_editor"))
 	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
@@ -100,7 +102,7 @@ func _build_map_dialog() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	var title := UiKit.label("Nueva partida", 30, UiKit.ACCENT)
+	var title := UiKit.label("Partida rápida", 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
@@ -146,6 +148,22 @@ func _build_map_dialog() -> void:
 		biome_grid.add_child(b)
 		_biome_buttons[item[0]] = b
 
+	_random_options.add_child(UiKit.label("Clima", 18, Color(1, 1, 1, 0.75)))
+	var weather_row := HBoxContainer.new()
+	weather_row.add_theme_constant_override("separation", 8)
+	_random_options.add_child(weather_row)
+	var weathers: Array = [[RANDOM_WEATHER, "🎲 Aleatorio"]]
+	for kind: int in Weather.NAMES:
+		weathers.append([kind, "%s %s" % [Weather.ICONS[kind], Weather.NAMES[kind].split(" ")[0] if kind != Weather.Kind.SAND else "Arena"]])
+	for item in weathers:
+		var b := UiKit.button(item[1], func() -> void:
+			Game.weather = item[0]
+			_refresh_dialog(), 16)
+		b.toggle_mode = true
+		b.custom_minimum_size = Vector2(92, 40)
+		weather_row.add_child(b)
+		_weather_buttons[item[0]] = b
+
 	box.add_child(UiKit.label("El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo.", 14, Color(1, 1, 1, 0.6)))
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 12)
@@ -159,14 +177,14 @@ func _build_map_dialog() -> void:
 
 func _open_map_dialog() -> void:
 	if Game.player_team.is_empty():
-		_play_button.text = "Jugar (¡arma tu equipo primero!)"
+		_play_button.text = "Partida rápida (¡arma tu equipo!)"
 		return
 	_map_select.clear()
 	_map_select.add_item("Generado al azar")
 	_map_paths = Game.list_maps()
 	for path in _map_paths:
 		var m: MapData = load(path)
-		_map_select.add_item("%s  (%s)" % [m.map_name, Biome.NAMES[m.biome]])
+		_map_select.add_item("%s  (%s, %s)" % [m.map_name, Biome.NAMES[m.biome], Weather.NAMES[m.weather]])
 	_refresh_dialog()
 	_map_dialog.visible = true
 
@@ -177,6 +195,8 @@ func _refresh_dialog() -> void:
 		b.button_pressed = _topology_buttons.find(b) == Game.topology
 	for kind: int in _biome_buttons:
 		_biome_buttons[kind].button_pressed = kind == _selected_biome
+	for kind: int in _weather_buttons:
+		_weather_buttons[kind].button_pressed = kind == Game.weather
 
 
 func _start_game() -> void:

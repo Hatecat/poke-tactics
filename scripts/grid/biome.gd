@@ -14,7 +14,7 @@ const NAMES := {
 }
 const ICONS := {
 	Kind.MEADOW: "🌼", Kind.FOREST: "🌲", Kind.MOUNTAIN: "⛰", Kind.DESERT: "🌵",
-	Kind.LAKE: "🌊", Kind.SNOW: "❄", Kind.CAVE: "🪨", Kind.GYM: "🏟",
+	Kind.LAKE: "🌊", Kind.SNOW: "❄", Kind.CAVE: "🪨", Kind.GYM: "★",
 }
 const TILE_NAMES := {
 	Tile.GRASS: "Hierba", Tile.DIRT: "Tierra", Tile.SAND: "Arena", Tile.ROCK: "Roca", Tile.WATER: "Agua",

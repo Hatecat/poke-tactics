@@ -13,8 +13,12 @@ const RING_SCALE := [1.0, 1.0, 2.1, 2.9]
 const STAGE_TURNS := 3
 const MAX_STAGE := 6
 const STRUGGLE_PATH := "res://data/moves/struggle.tres"
-const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_defense": "DfE", "speed": "Vel"}
-const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.", "speed": "Velocidad"}
+const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_defense": "DfE", "speed": "Vel",
+	"accuracy": "Pre", "evasion": "Eva", "crit": "Crít"}
+const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.",
+	"speed": "Velocidad", "accuracy": "Precisión", "evasion": "Evasión", "crit": "Índice crítico"}
+## El índice de crítico va de 0 a 3 (no se puede bajar).
+const MAX_CRIT_STAGE := 3
 
 var data: PokemonData
 ## Ataques de este Pokémon concreto (los elegidos en el editor de equipo).
@@ -35,6 +39,15 @@ var stages := {}
 var stage_turns := {}
 ## Usos restantes de cada ataque en este combate.
 var pp := {}
+var ability := ""
+## Estados volátiles activos: nombre -> datos (turnos restantes, quién lo causó...).
+## confusion, leechseed, yawn, taunt, nightmare, curse, perish, protect, endure, substitute,
+## ingrain, aquaring, destinybond, charge, magnetrise, flashfire.
+var volatiles := {}
+## Usos seguidos de Protección/Aguante (cada uno reduce la probabilidad de éxito).
+var protect_streak := 0
+## Rivales a los que ya intimidó (Intimidación actúa una vez por rival).
+var intimidated := {}
 
 var _model: Node3D
 var _anim: AnimationPlayer
@@ -53,6 +66,7 @@ var _model_base_scale := Vector3.ONE
 func setup(member: TeamMember, p_team: int) -> void:
 	data = member.data
 	moves = member.moves.duplicate()
+	ability = member.ability
 	for mv in moves:
 		pp[mv] = mv.pp
 	team = p_team
@@ -78,8 +92,11 @@ func is_alive() -> bool:
 
 
 ## Stat con sus mejoras aplicadas: ×(2+n)/2 si sube, ×2/(2+n) si baja.
-func stat(stat_name: String) -> float:
+## Un crítico ignora las bajadas del atacante (`ignore = 1`) y las subidas del defensor (`ignore = -1`).
+func stat(stat_name: String, ignore := 0) -> float:
 	var n: int = stages.get(stat_name, 0)
+	if ignore == 2 or (ignore == 1 and n < 0) or (ignore == -1 and n > 0):
+		n = 0
 	var mult := (2.0 + n) / 2.0 if n >= 0 else 2.0 / (2.0 - n)
 	return stats[stat_name] * mult
 
@@ -89,7 +106,9 @@ func apply_stages(changes: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for key: String in changes:
 		var before: int = stages.get(key, 0)
-		var after := clampi(before + int(changes[key]), -MAX_STAGE, MAX_STAGE)
+		var lo := 0 if key == "crit" else -MAX_STAGE
+		var hi := MAX_CRIT_STAGE if key == "crit" else MAX_STAGE
+		var after := clampi(before + int(changes[key]), lo, hi)
 		stages[key] = after
 		stage_turns[key] = STAGE_TURNS
 		if after == before:
@@ -121,7 +140,8 @@ func tick_stages() -> PackedStringArray:
 func usable_moves() -> Array[MoveData]:
 	var list: Array[MoveData] = []
 	for mv in moves:
-		if pp.get(mv, 0) > 0:
+		# Con Mofa solo puede usar ataques que hacen daño.
+		if pp.get(mv, 0) > 0 and not (volatiles.has("taunt") and mv.category == MoveData.Category.STATUS):
 			list.append(mv)
 	if list.is_empty():
 		list.append(load(STRUGGLE_PATH))
@@ -143,9 +163,11 @@ func stages_text() -> String:
 
 
 func effective_speed() -> float:
-	var s := stat("speed")
-	if status == MoveData.Status.PARALYSIS:
+	var s := stat("speed") * Abilities.speed_mult(self, Combat.weather)
+	if status == MoveData.Status.PARALYSIS and ability != "quickfeet":
 		s *= 0.5
+	if Combat.field and Combat.field.tailwind[team] > 0:
+		s *= 2.0
 	return s
 
 
@@ -170,6 +192,24 @@ func status_text() -> String:
 		MoveData.Status.BURN: return "QUE"
 		MoveData.Status.FREEZE: return "CON"
 	return ""
+
+
+const VOLATILE_SHORT := {
+	"confusion": "Confuso", "leechseed": "Drenadoras", "yawn": "Somnoliento", "taunt": "Mofa",
+	"nightmare": "Pesadilla", "curse": "Maldito", "perish": "Canto Mortal", "protect": "Protegido",
+	"endure": "Aguante", "substitute": "Sustituto", "ingrain": "Arraigado", "aquaring": "Acua Aro",
+	"destinybond": "Mismo Destino", "charge": "Carga", "magnetrise": "Levitón", "flashfire": "Absorbe Fuego",
+}
+
+
+func volatiles_text() -> String:
+	var parts := PackedStringArray()
+	for key: String in volatiles:
+		var label: String = VOLATILE_SHORT.get(key, key)
+		if key == "perish":
+			label += " %d" % volatiles[key].turns
+		parts.append(label)
+	return ", ".join(parts)
 
 
 ## Solo el modelo, sin anillo, nombre ni colisión (para vistas previas).
@@ -289,7 +329,9 @@ func _reset_procedural() -> void:
 func refresh_label() -> void:
 	var st := status_text()
 	var boosts := stages_text()
-	_label.text = "%s\n%d/%d%s%s" % [data.species_name, hp, max_hp, "  " + st if st else "", "\n" + boosts if boosts else ""]
+	var vols := volatiles_text()
+	_label.text = "%s\n%d/%d%s%s%s" % [data.species_name, hp, max_hp, "  " + st if st else "",
+		"\n" + boosts if boosts else "", "\n" + vols if vols else ""]
 
 
 func _build_visuals() -> void:

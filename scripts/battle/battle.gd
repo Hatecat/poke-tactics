@@ -12,6 +12,10 @@ const COLOR_AREA := Color(1.0, 0.2, 0.15, 0.65)
 const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.55)
 const STEP_TIME := 0.22
 const TURN_PREVIEW := 8
+## Puntos que la IA resta a los ataques sobre sí misma (equivale al CT de actuar).
+const SELF_MOVE_COST := 12.0
+## Valor aproximado para la IA de dejar a un rival con cada estado volátil.
+const VOLATILE_VALUE := {"confusion": 18.0, "leechseed": 16.0, "yawn": 14.0, "taunt": 8.0, "nightmare": 12.0, "curse": 22.0}
 ## Filas de despliegue de cada equipo en tableros aleatorios (jugador abajo, rival arriba).
 const DEPLOY_ROWS := 4
 const COLOR_DEPLOY := Color(0.3, 0.6, 1.0, 0.3)
@@ -37,7 +41,15 @@ var _destinations: Array[Vector2i] = []
 var _targets: Array[Vector2i] = []
 var _deploy_selected: Unit
 var _zones: Array[Dictionary] = [{}, {}] # equipo -> {celda: true}
+## Clima de fondo del combate y clima actual (un ataque puede cambiarlo unos turnos).
+var base_weather := Weather.Kind.CLEAR
+var weather := Weather.Kind.CLEAR
+var _weather_turns := 0
+var _weather_fx: WeatherFx
+var _weather_label: RichTextLabel
 var _extra_ct := 0.0
+## Estados volátiles, efectos de campo y habilidades (scripts/battle/effects.gd).
+var effects: Effects
 
 var _board: BoardView
 var _units_root: Node3D
@@ -69,6 +81,9 @@ func _ready() -> void:
 	_cam_rig = CameraRig.new()
 	add_child(_cam_rig)
 	_camera = _cam_rig.camera
+	_weather_fx = WeatherFx.new()
+	_weather_fx.follow = _cam_rig
+	add_child(_weather_fx)
 	_build_ui()
 	_board = BoardView.new()
 	add_child(_board)
@@ -84,6 +99,7 @@ func _start_battle() -> void:
 		u.queue_free()
 	units.clear()
 	active = null
+	effects = Effects.new(self)
 	var map := Game.map
 	var zones: Array = []
 	if map:
@@ -103,6 +119,14 @@ func _start_battle() -> void:
 			_zones[team][c] = true
 	_reset_environment()
 	_board.build(grid)
+	if map:
+		base_weather = map.weather
+	elif Game.weather >= 0:
+		base_weather = Game.weather
+	else:
+		base_weather = Weather.roll(grid.biome, rng)
+	_set_weather(base_weather, 0)
+	effects.refresh_visuals()
 
 	var p_anchor := _zone_center(0)
 	for i in player_team.size():
@@ -119,8 +143,39 @@ func _start_battle() -> void:
 	_banner_box.visible = false
 	_log_label.clear()
 	var where: String = map.map_name if map else Biome.NAMES[grid.biome]
-	_log("%s · tablero %s. Coloca a tu equipo en la zona azul." % [where, "cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal"])
+	_log("%s · tablero %s · %s %s. Coloca a tu equipo en la zona azul." % [where,
+		"cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal",
+		Weather.ICONS[weather], Weather.NAMES[weather]])
 	_begin_deploy()
+
+
+## Cambia el clima. `turns` = turnos (de cualquier Pokémon) que dura; 0 = permanente.
+func _set_weather(kind: Weather.Kind, turns: int) -> void:
+	weather = kind
+	Combat.weather = effects.effective_weather(kind) if effects else kind
+	_weather_turns = turns
+	_weather_fx.apply(kind, self)
+	_refresh_weather_label()
+
+
+func _refresh_weather_label() -> void:
+	if _weather_label == null:
+		return
+	var left := ""
+	if _weather_turns > 0:
+		var alive := maxi(1, units.filter(func(u: Unit) -> bool: return u.is_alive()).size())
+		left = "  [color=#aaaaaa](~%d rondas)[/color]" % ceili(float(_weather_turns) / alive)
+	var shown: String = Weather.NAMES[weather] if Combat.weather == weather else "%s (anulado)" % Weather.NAMES[weather]
+	var extra := ""
+	if effects:
+		var alive := maxi(1, units.filter(func(u: Unit) -> bool: return u.is_alive()).size())
+		var summary := effects.field.summary(alive)
+		if summary:
+			extra = "\n[font_size=14]%s[/font_size]" % summary
+		for team in 2:
+			if effects.field.tailwind[team] > 0:
+				extra += "\n[font_size=14]Viento Afín (%s)[/font_size]" % ("tuyo" if team == 0 else "rival")
+	_weather_label.text = "%s %s%s%s" % [Weather.ICONS[weather], shown, left, extra]
 
 
 func _reset_environment() -> void:
@@ -281,6 +336,17 @@ func _next_turn() -> void:
 		previous.set_active(false)
 	active = turns.advance(units)
 	active.set_active(true)
+	if _weather_turns > 0:
+		_weather_turns -= 1
+		if _weather_turns == 0:
+			_log("El %s terminó." % Weather.NAMES[weather].to_lower())
+			_set_weather(base_weather, 0)
+		_refresh_weather_label()
+	var ended := effects.field.tick()
+	if not ended.is_empty():
+		_log("Terminó: %s." % ", ".join(ended))
+		effects.refresh_visuals()
+	Combat.weather = effects.effective_weather(weather)
 	moved = false
 	acted = false
 	_extra_ct = 0.0
@@ -309,8 +375,23 @@ func _start_of_turn(u: Unit) -> bool:
 	var expired := u.tick_stages()
 	if not expired.is_empty():
 		_log("Los cambios de %s de %s se disiparon." % [", ".join(expired), u.display_name()])
+	if not await effects.start_of_turn(u):
+		return false
+	var chip := Weather.chip_fraction(Combat.weather, u.data.types)
+	if Abilities.weather_immune(u, Combat.weather) or not Abilities.takes_indirect(u):
+		chip = 0.0
+	if chip > 0.0:
+		var dmg := maxi(1, int(u.max_hp * chip))
+		u.take_damage(dmg)
+		_popup(u, str(dmg), Color(0.85, 0.75, 0.55))
+		_log("%s sufre por el %s." % [u.display_name(), Weather.NAMES[weather].to_lower()])
+		await _wait(0.4)
+		if not u.is_alive():
+			return false
 	match u.status:
 		MoveData.Status.POISON, MoveData.Status.BURN:
+			if not Abilities.takes_indirect(u):
+				return true
 			var frac := 8 if u.status == MoveData.Status.POISON else 16
 			var dmg := maxi(1, u.max_hp / frac)
 			u.take_damage(dmg)
@@ -388,7 +469,7 @@ func _show_menu() -> void:
 
 
 func _begin_pick_move() -> void:
-	if state == State.BUSY or state == State.GAME_OVER or moved:
+	if state == State.BUSY or state == State.GAME_OVER or moved or active.volatiles.has("ingrain"):
 		return
 	state = State.PICK_MOVE
 	_compute_reach(active)
@@ -492,28 +573,55 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 	var lines := PackedStringArray()
 	for t in _others_at(active, area):
 		var who := "[color=#%s]%s[/color]" % [Unit.TEAM_COLORS[t.team].lightened(0.4).to_html(false), t.display_name()]
-		if move.power <= 0 and move.fixed_damage <= 0:
-			if not move.stat_changes.is_empty():
-				lines.append("%s: %s (%d%% de acierto)" % [who, Combat._stages_text(move.stat_changes), move.accuracy])
-				continue
-			var ok := Combat.can_receive_status(t, move.status)
-			lines.append("%s: %s" % [who, "%d%% de acierto" % move.accuracy if ok else "[color=#999999]no tendrá efecto[/color]"])
+		var chance := Combat.hit_chance(active, t, move)
+		if t.volatiles.has("protect"):
+			lines.append("%s: [color=#99ccff]está protegido[/color]" % who)
 			continue
-		var eff := TypeChart.effectiveness(move.type, t.data.types)
-		var lo := Combat.damage(active, t, move, 0.85)
-		var hi := Combat.damage(active, t, move, 1.0)
+		var absorbed := Abilities.absorb(active, t, move, Combat.move_type(move))
+		if absorbed:
+			lines.append("%s: [color=#999999]su %s lo anula[/color]" % [who, Abilities.display_name(t.ability)])
+			continue
+		if move.power <= 0 and move.fixed_damage <= 0:
+			if move.volatile and not (move.volatile == "curse" and "ghost" not in active.data.types):
+				lines.append("%s: %s (%d%% de acierto)" % [who, Unit.VOLATILE_SHORT.get(move.volatile, move.volatile), chance])
+				continue
+			if not move.stat_changes.is_empty():
+				lines.append("%s: %s (%d%% de acierto)" % [who, Combat._stages_text(move.stat_changes), chance])
+				continue
+			var why := effects.can_status(active, t, move.status) if move.status else ""
+			lines.append("%s: %s" % [who, "%d%% de acierto" % chance if why == "" else "[color=#999999]%s[/color]" % why])
+			continue
+		var eff := Abilities.effectiveness(active, Combat.move_type(move), t.data.types)
+		var lo := _damage(active, t, move, 0.85)
+		var hi := _damage(active, t, move, 1.0)
 		var tag := "[color=#888888]sin efecto[/color]" if eff == 0.0 else \
 			("[color=#7ee07e]×%s muy eficaz[/color]" % ("4" if eff >= 4.0 else "2") if eff > 1.0 else \
 			("[color=#e08a7e]×%s poco eficaz[/color]" % ("¼" if eff <= 0.25 else "½") if eff < 1.0 else "×1"))
 		var ko := "  [color=#ffcc44]¡puede debilitarlo![/color]" if hi >= t.hp else ""
 		var ally := "  [color=#ff7070](¡aliado!)[/color]" if t.team == active.team else ""
-		lines.append("%s: %s · %d-%d de daño (PS %d)%s%s" % [who, tag, lo, hi, t.hp, ko, ally])
+		var acc := "" if chance >= 100 else " · %d%%" % chance
+		var crit_p := Combat.crit_chance(active, move, t)
+		if crit_p > 0.05:
+			acc += " · crít. %d%%" % roundi(crit_p * 100)
+		if move.flinch_chance > 0:
+			acc += " · retroceso %d%%" % move.flinch_chance
+		lines.append("%s: %s · %d-%d de daño (PS %d)%s%s%s" % [who, tag, lo, hi, t.hp, acc, ko, ally])
 	if move.targets_self:
 		var parts := PackedStringArray()
-		if move.heal > 0.0:
-			parts.append("recupera %d PS" % mini(int(active.max_hp * move.heal), active.max_hp - active.hp))
-		if not move.self_stat_changes.is_empty():
-			parts.append(Combat._stages_text(move.self_stat_changes))
+		var heal := Weather.heal_fraction(weather, move)
+		if heal > 0.0:
+			parts.append("recupera %d PS" % mini(int(active.max_hp * heal), active.max_hp - active.hp))
+		var stages := Weather.self_stages(weather, move)
+		if not stages.is_empty():
+			parts.append(Combat._stages_text(stages))
+		if move.hp_cost > 0.0:
+			parts.append("pierde %d PS" % int(active.max_hp * move.hp_cost))
+		if move.sets_weather:
+			parts.append("el clima pasa a %s" % Weather.NAMES[move.sets_weather])
+		if move.self_volatile:
+			parts.append(Unit.VOLATILE_SHORT.get(move.self_volatile, move.self_volatile))
+		if move.field_effect:
+			parts.append(FieldState.NAMES.get(move.field_effect, move.display_name))
 		return "%s: %s" % [active.display_name(), ", ".join(parts)]
 	if lines.is_empty():
 		return "[color=#aaaaaa]Nadie en el área[/color]"
@@ -573,24 +681,46 @@ func _move_unit(u: Unit, path: Array[Vector2i]) -> void:
 			tw.tween_property(u, "position", to, STEP_TIME)
 		_focus_camera(to)
 		await tw.finished
-	_place(u, path.back())
+		# Trampas: se activan al pisar cada casilla del camino.
+		_place(u, c)
+		effects.enter_cells(u, u.footprint)
+		if not u.is_alive():
+			return
 	u.play("idle")
 
 
 # --- Ataques -----------------------------------------------------------------
 
 func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
+	# Maldición sin ser Fantasma: mejora sus propios stats en vez de maldecir.
+	var self_curse := move.volatile == "curse" and "ghost" not in user.data.types
 	var res := _resolve(user, user.footprint, move, target)
 	var area: Array[Vector2i] = res.area
-	if not move.targets_self:
+	if not move.targets_self and not self_curse:
 		user.face_towards(grid.to_world(target))
 	_log("%s usó [b]%s[/b]." % [user.display_name(), move.display_name])
 	_board.clear_highlights()
 	_board.highlight(area, COLOR_AREA)
 	var anim_len := user.play(move.animation)
 	await _wait(clampf(anim_len * 0.4, 0.25, 0.6))
-	_extra_ct += move.extra_ct
+	_extra_ct += Weather.extra_ct(Combat.weather, move)
 	user.spend_pp(move)
+	var hp_cost := move.hp_cost if not (move.volatile == "curse" and not self_curse) else 0.5
+	if hp_cost > 0.0:
+		var cost := int(user.max_hp * hp_cost)
+		if user.hp <= cost:
+			_log("¡Pero %s no tiene PS suficientes!" % user.display_name())
+			await _end_move(user)
+			return
+		user.take_damage(cost)
+		_popup(user, str(cost), Color(1.0, 0.6, 0.4))
+	if move.self_ko and units.any(func(u: Unit) -> bool: return u.is_alive() and u.ability == "damp"):
+		_log("¡Humedad impide %s!" % move.display_name)
+		await _end_move(user)
+		return
+	if move.self_volatile and not effects.apply_self_volatile(user, move.self_volatile):
+		await _end_move(user)
+		return
 	await _play_move_fx(user, move, res)
 	if res.blocker == "obstacle":
 		_log("¡El ataque chocó contra un obstáculo!")
@@ -599,21 +729,40 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 		if who:
 			_log("¡%s se interpuso en la trayectoria!" % who.display_name())
 
+	var type := Combat.move_type(move)
 	var dealt := 0
 	var targets: Array[Unit] = [user]
-	if not move.targets_self:
+	if not move.targets_self and not self_curse:
 		targets = _others_at(user, area)
-	var hit_anything := false
+	if move.field_effect in ["haze", "perishsong"]:
+		targets.clear()
+	if targets.any(func(t: Unit) -> bool: return t.team != user.team and t.ability == "pressure"):
+		user.spend_pp(move)
 	# Un Pokémon grande recibe el golpe una sola vez aunque el área cubra varias de sus celdas.
 	for t in targets:
-		hit_anything = true
-		if t != user and rng.randi_range(1, 100) > move.accuracy:
+		var block := effects.blocks_move(user, t, move)
+		if block == "protect":
+			_popup(t, "¡Protegido!", Color(0.6, 0.9, 1.0))
+			_log("¡%s se protegió!" % t.display_name())
+			continue
+		if block == "substitute":
+			_log("¡El sustituto de %s lo bloqueó!" % t.display_name())
+			continue
+		var absorbed := Abilities.absorb(user, t, move, type)
+		if absorbed:
+			await _ability_absorb(t, absorbed)
+			continue
+		if t != user and rng.randi_range(1, 100) > Combat.hit_chance(user, t, move):
 			_popup(t, "Falló", Color.WHITE)
 			_log("¡%s esquivó el ataque!" % t.display_name())
 			continue
-		if move.power > 0 or move.fixed_damage > 0:
-			var dmg := Combat.damage(user, t, move, rng.randf_range(0.85, 1.0))
-			var eff := TypeChart.effectiveness(move.type, t.data.types)
+		var damaging := move.power > 0 or move.fixed_damage > 0
+		if damaging:
+			var crit := rng.randf() < Combat.crit_chance(user, move, t)
+			var dmg := _damage(user, t, move, rng.randf_range(0.85, 1.0), crit)
+			var eff := Abilities.effectiveness(user, type, t.data.types)
+			if crit and dmg > 0:
+				_log("¡Golpe crítico!")
 			if eff == 0.0:
 				_log("No afecta a %s..." % t.display_name())
 			elif eff > 1.0 and move.fixed_damage == 0:
@@ -623,51 +772,100 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 			else:
 				_log("%s recibe %d de daño." % [t.display_name(), dmg])
 			if dmg > 0:
-				t.take_damage(dmg)
-				dealt += dmg
-				_popup(t, str(dmg), Color(1.0, 0.95, 0.4))
-				_shake(t)
-		if t.is_alive() and move.status != MoveData.Status.NONE and rng.randi_range(1, 100) <= move.status_chance:
-			if Combat.can_receive_status(t, move.status):
+				var real := effects.absorb_damage(user, t, dmg)
+				if real > 0:
+					t.take_damage(real)
+					dealt += real
+					if crit:
+						_popup(t, "¡%d!" % real, Color(1.0, 0.45, 0.2), 1.5)
+					else:
+						_popup(t, str(real), Color(1.0, 0.95, 0.4))
+					_shake(t)
+					var flinch := effects.flinch_chance(user, t, move)
+					if t.is_alive() and t != user and flinch > 0 and rng.randi_range(1, 100) <= flinch:
+						t.ct -= TurnManager.FLINCH_DELAY
+						_log("¡%s retrocedió! Su turno se retrasa." % t.display_name())
+						_popup(t, "¡Retrocede!", Color(0.8, 0.85, 1.0))
+						if t.ability == "steadfast":
+							effects.drop_stats(t, t, {"speed": 1})
+				effects.after_hit(user, t, move, crit)
+			if type == "electric":
+				user.volatiles.erase("charge")
+		var chance_of := func(c: int) -> int: return Abilities.secondary_chance(user, t, c) if damaging else c
+		if t.is_alive() and move.status != MoveData.Status.NONE and rng.randi_range(1, 100) <= chance_of.call(move.status_chance):
+			var why := effects.can_status(user, t, move.status)
+			if why == "":
 				Fx.aura(self, t.position, TypeChart.color(move.type), t.data.model_height)
-				t.status = move.status
-				t.status_turns = rng.randi_range(1, 3) if move.status == MoveData.Status.SLEEP else 0
-				t.refresh_label()
-				_log("¡%s está %s!" % [t.display_name(), Combat.STATUS_NAMES[move.status]])
+				effects.set_status(user, t, move.status)
 			elif move.category == MoveData.Category.STATUS:
+				_log("No tiene efecto en %s: %s." % [t.display_name(), why])
+		if t.is_alive() and move.volatile and not self_curse and rng.randi_range(1, 100) <= chance_of.call(move.volatile_chance):
+			if not effects.apply_volatile(user, t, move.volatile) and move.category == MoveData.Category.STATUS:
 				_log("No tiene efecto en %s." % t.display_name())
-		if t.is_alive() and t != user and not move.stat_changes.is_empty() and rng.randi_range(1, 100) <= move.stat_chance:
-			var changed := t.apply_stages(move.stat_changes)
-			if changed:
-				_log("%s: %s." % [t.display_name(), changed])
-				Fx.aura(self, t.position, Fx.DEBUFF_COLOR if move.stat_changes.values()[0] < 0 else Fx.BUFF_COLOR, t.data.model_height, move.stat_changes.values()[0] > 0)
+		if t.is_alive() and t != user and not move.stat_changes.is_empty() and rng.randi_range(1, 100) <= chance_of.call(move.stat_chance):
+			effects.drop_stats(user, t, move.stat_changes)
 		if t.is_alive() and t != user and move.knockback > 0:
 			await _knockback(user, t, move.knockback)
-	if not hit_anything:
+	if targets.is_empty() and not move.field_effect:
 		_log("...pero no había nadie.")
 
 	# Efectos sobre el propio usuario.
 	if move.drain > 0.0 and dealt > 0:
-		_heal(user, maxi(1, int(dealt * move.drain)))
-	if move.heal > 0.0:
-		_heal(user, maxi(1, int(user.max_hp * move.heal)))
-	if not move.self_stat_changes.is_empty() and (dealt > 0 or move.category == MoveData.Category.STATUS):
-		var changed := user.apply_stages(move.self_stat_changes)
-		if changed:
-			_log("%s: %s." % [user.display_name(), changed])
-			var up: bool = move.self_stat_changes.values()[0] > 0
-			Fx.aura(self, user.position, Fx.BUFF_COLOR if up else Fx.DEBUFF_COLOR, user.data.model_height, up)
-	if move.recoil > 0.0 and dealt > 0:
+		var drained := maxi(1, int(dealt * move.drain))
+		if targets.any(func(t: Unit) -> bool: return t.ability == "liquidooze"):
+			effects._hurt(user, drained, "¡%s absorbió Viscosecreción!" % user.display_name(), Color(0.7, 0.4, 0.9))
+		else:
+			_heal(user, drained)
+	var heal := Weather.heal_fraction(Combat.weather, move)
+	if heal > 0.0:
+		_heal(user, maxi(1, int(user.max_hp * heal)))
+	var self_stages := Weather.self_stages(Combat.weather, move)
+	if not self_stages.is_empty() and (dealt > 0 or move.category == MoveData.Category.STATUS) \
+			and (move.volatile != "curse" or self_curse) and user.is_alive():
+		effects.drop_stats(user, user, self_stages)
+	if move.recoil > 0.0 and dealt > 0 and user.ability != "rockhead" and Abilities.takes_indirect(user):
 		var recoil := maxi(1, int(dealt * move.recoil))
-		_log("%s sufre %d de daño por el retroceso." % [user.display_name(), recoil])
-		user.take_damage(recoil)
-		_popup(user, str(recoil), Color(1.0, 0.6, 0.4))
+		effects._hurt(user, recoil, "%s sufre %d de daño por el retroceso." % [user.display_name(), recoil], Color(1.0, 0.6, 0.4))
 	if move.self_ko and user.is_alive():
 		user.take_damage(user.hp)
+	if move.sets_weather:
+		var alive := units.filter(func(u: Unit) -> bool: return u.is_alive()).size()
+		_set_weather(move.sets_weather, Weather.MOVE_ROUNDS * alive)
+		_log("¡El clima cambió: %s %s!" % [Weather.ICONS[weather], Weather.NAMES[weather]])
+	if move.field_effect:
+		effects.apply_field(user, move, area)
+	await _end_move(user)
+
+
+func _end_move(user: Unit) -> void:
 	await _wait(0.6)
 	if user.is_alive():
 		user.play("idle")
 	_board.clear_highlights()
+
+
+## Habilidades que absorben un ataque (Levitación, Absorbe Agua, Pararrayos...).
+func _ability_absorb(t: Unit, kind: String) -> void:
+	var name := Abilities.display_name(t.ability)
+	match kind:
+		"immune":
+			_popup(t, name, Color(0.8, 0.9, 1.0))
+			_log("¡%s de %s lo hace inmune!" % [name, t.display_name()])
+		"heal":
+			_log("¡%s de %s absorbe el ataque!" % [name, t.display_name()])
+			_heal(t, maxi(1, t.max_hp / 4))
+		"flashfire":
+			t.volatiles["flashfire"] = {}
+			t.refresh_label()
+			_log("¡%s de %s potencia sus ataques de fuego!" % [name, t.display_name()])
+		"spa_up":
+			_log("¡%s de %s atrae el ataque!" % [name, t.display_name()])
+			effects.drop_stats(t, t, {"sp_attack": 1})
+
+
+## Daño con los modificadores que dependen de la posición (pantallas, terreno...).
+func _damage(att: Unit, def: Unit, move: MoveData, roll: float, crit := false) -> int:
+	return Combat.damage(att, def, move, roll, crit, effects.situational(att, def, move, crit))
 
 
 ## Partículas del ataque: proyectil o rayo hasta el impacto y explosión en el área.
@@ -681,13 +879,13 @@ func _play_move_fx(user: Unit, move: MoveData, res: Dictionary) -> void:
 		var path: Array[Vector2i] = res.path
 		for c in path:
 			points.append(_aim_point(c))
-		await Fx.projectile(self, points, move.type).finished
+		await Fx.projectile(self, points, Combat.move_type(move)).finished
 	elif move.area_shape == MoveData.AreaShape.LINE and not area.is_empty():
-		Fx.beam(self, start, _aim_point(area.back()), move.type)
+		Fx.beam(self, start, _aim_point(area.back()), Combat.move_type(move))
 		await _wait(0.2)
 	var strength := 1.0 if area.size() <= 1 else 0.45
 	for c in area:
-		Fx.burst(self, _aim_point(c), move.type, strength)
+		Fx.burst(self, _aim_point(c), Combat.move_type(move), strength)
 	if move.category == MoveData.Category.STATUS:
 		return
 	await _wait(0.1)
@@ -712,6 +910,9 @@ func _heal(u: Unit, amount: int) -> void:
 
 
 func _knockback(src: Unit, t: Unit, cells: int) -> void:
+	if t.volatiles.has("ingrain"):
+		_log("¡%s está arraigado y no se mueve!" % t.display_name())
+		return
 	var dir := grid.direction_towards(src.cell, t.cell)
 	var dest := t.cell
 	for i in cells:
@@ -726,6 +927,7 @@ func _knockback(src: Unit, t: Unit, cells: int) -> void:
 	var tw := create_tween()
 	tw.tween_property(t, "position", grid.footprint_center(t.footprint), 0.2).set_ease(Tween.EASE_OUT)
 	await tw.finished
+	effects.enter_cells(t, t.footprint)
 
 
 # --- IA ----------------------------------------------------------------------
@@ -735,6 +937,8 @@ func _knockback(src: Unit, t: Unit, cells: int) -> void:
 func _run_ai(u: Unit) -> void:
 	await _wait(0.4)
 	_compute_reach(u)
+	if u.volatiles.has("ingrain"):
+		_destinations.clear()
 	var options: Array[Vector2i] = _destinations.duplicate()
 	options.append(u.cell)
 	var best_score := 0.0
@@ -766,27 +970,138 @@ func _score_action(u: Unit, from: Array[Vector2i], move: MoveData, target: Vecto
 	if move.targets_self:
 		# Curarse vale más cuanto más herido. Mejorar stats solo compensa cerca del rival
 		# (las mejoras duran pocos turnos) y si aún no lo hizo mucho.
-		score += move.heal * (u.max_hp - u.hp) * 0.8
+		score += Weather.heal_fraction(weather, move) * (u.max_hp - u.hp) * 0.8
 		var near := 1.0 if _distance_to_foe(u, from) <= u.move_range() + 2 else 0.15
-		for key: String in move.self_stat_changes:
-			score += maxf(0.0, 12.0 - 4.0 * u.stages.get(key, 0)) * move.self_stat_changes[key] * near
-		return score
+		var stages := Weather.self_stages(weather, move)
+		for key: String in stages:
+			if key == "crit":
+				# Vale el daño extra esperado de sus próximos golpes (+0,5 × la subida de probabilidad).
+				var now := clampi(u.stages.get("crit", 0), 0, 3)
+				var after := clampi(now + int(stages[key]), 0, 3)
+				score += (Combat.CRIT_CHANCES[after] - Combat.CRIT_CHANCES[now]) * 0.5 * _best_damage(u) * 1.5 * near
+			else:
+				score += maxf(0.0, 12.0 - 4.0 * u.stages.get(key, 0)) * stages[key] * near
+		if move.hp_cost > 0.0:
+			score -= u.max_hp * move.hp_cost * 0.5 if u.hp > u.max_hp * move.hp_cost else 999.0
+		if move.sets_weather and move.sets_weather != weather:
+			score += _weather_value(u.team, move.sets_weather) - _weather_value(u.team, weather)
+		score += _self_effect_value(u, from, move) * near
+		# Actuar cuesta CT extra frente a solo moverse: solo compensa si el efecto vale la pena.
+		return score - SELF_MOVE_COST
 	if move.self_ko:
 		score -= u.hp
 	var area: Array[Vector2i] = _resolve(u, from, move, target).area
+	if move.field_effect:
+		score += _field_value(u, move, area)
+	if move.volatile == "curse" and "ghost" not in u.data.types:
+		return -1.0
 	for t in _others_at(u, area):
 		# Dañar a un aliado resta (un poco más de lo que sumaría dañar a un rival).
 		var sign := 1.0 if t.team != u.team else -1.2
-		var dmg := Combat.damage(u, t, move, 0.925) * move.accuracy / 100.0
+		if t.volatiles.has("protect") or Abilities.absorb(u, t, move, Combat.move_type(move)):
+			score -= 5.0 * sign
+			continue
+		var chance := Combat.hit_chance(u, t, move) / 100.0
+		var dmg := _damage(u, t, move, 0.925) * chance * (1.0 + (Combat.CRIT_MULT - 1.0) * Combat.crit_chance(u, move, t))
 		var value := minf(dmg, t.hp)
 		if dmg >= t.hp:
 			value += 50.0
-		if move.status != MoveData.Status.NONE and Combat.can_receive_status(t, move.status):
-			value += 25.0 * move.status_chance / 100.0 * move.accuracy / 100.0
+		if move.status != MoveData.Status.NONE and effects.can_status(u, t, move.status) == "":
+			value += 25.0 * move.status_chance / 100.0 * chance
+		if move.volatile and not t.volatiles.has(move.volatile):
+			value += VOLATILE_VALUE.get(move.volatile, 10.0) * move.volatile_chance / 100.0 * chance
 		for key: String in move.stat_changes:
-			value += -6.0 * move.stat_changes[key] * move.stat_chance / 100.0 * move.accuracy / 100.0
+			value += -6.0 * move.stat_changes[key] * move.stat_chance / 100.0 * chance
+		value += 8.0 * move.flinch_chance / 100.0 * chance
 		score += sign * value
 	return score
+
+
+## Valor para la IA de los efectos sobre uno mismo (Protección, Sustituto, Arraigo...).
+func _self_effect_value(u: Unit, from: Array[Vector2i], move: MoveData) -> float:
+	var hurt := 1.0 - float(u.hp) / u.max_hp
+	var close := _distance_to_foe(u, from) <= 3
+	match move.self_volatile:
+		"protect": return 14.0 if close and u.protect_streak == 0 and hurt > 0.4 else -5.0
+		"endure": return 12.0 if close and u.protect_streak == 0 and u.hp < u.max_hp / 4 else -5.0
+		"substitute": return 18.0 if not u.volatiles.has("substitute") and hurt < 0.4 else -5.0
+		"ingrain", "aquaring": return 6.0 + hurt * 20.0 if not u.volatiles.has(move.self_volatile) else -5.0
+		"destinybond": return 20.0 if close and hurt > 0.7 else -5.0
+		"charge":
+			return 10.0 if u.moves.any(func(m: MoveData) -> bool: return m.type == "electric" and m.power > 0) else -5.0
+		"magnetrise": return 4.0 if not u.volatiles.has("magnetrise") else -5.0
+	return 0.0
+
+
+## Valor para la IA de un efecto de campo según cuántos aliados/rivales afecta.
+func _field_value(u: Unit, move: MoveData, area: Array[Vector2i]) -> float:
+	var allies := units.filter(func(o: Unit) -> bool: return o.is_alive() and o.team == u.team)
+	var foes := units.filter(func(o: Unit) -> bool: return o.is_alive() and o.team != u.team)
+	match move.field_effect:
+		"reflect", "lightscreen", "auroraveil", "safeguard", "mist":
+			if effects.field.zone_at(move.field_effect, u.team, u.footprint):
+				return -10.0
+			return 8.0 * allies.filter(func(o: Unit) -> bool: return grid.distance_to_set(u.footprint, o.cell) <= FieldState.ZONE_RADIUS).size()
+		"tailwind":
+			return -10.0 if effects.field.tailwind[u.team] > 0 else 6.0 * allies.size()
+		"spikes", "toxicspikes", "stealthrock":
+			var near := foes.filter(func(o: Unit) -> bool: return grid.distance_to_set(area, o.cell) <= 3).size()
+			return 6.0 * near
+		"trickroom":
+			var mine := 0.0
+			for o: Unit in allies:
+				mine += o.effective_speed()
+			var theirs := 0.0
+			for o: Unit in foes:
+				theirs += o.effective_speed()
+			var slower := mine / maxi(1, allies.size()) < theirs / maxi(1, foes.size())
+			return (15.0 if slower else -15.0) * (1.0 if effects.field.trick_room == 0 else -1.0)
+		"electricterrain", "grassyterrain", "psychicterrain":
+			if effects.field.terrain == move.field_effect:
+				return -10.0
+			var type: String = FieldState.TERRAIN_TYPES[move.field_effect]
+			var value := 0.0
+			for o: Unit in allies + foes:
+				var count := o.moves.filter(func(m: MoveData) -> bool: return m.type == type and m.power > 0).size()
+				value += count * (5.0 if o.team == u.team else -5.0)
+			return value
+		"mistyterrain":
+			return -10.0 if effects.field.terrain == move.field_effect else 4.0
+		"gravity":
+			return 2.0
+		"haze":
+			var value := 0.0
+			for o: Unit in _others_at(u, area) + [u]:
+				for key: String in o.stages:
+					value += o.stages[key] * (4.0 if o.team != u.team else -4.0)
+			return value
+	return 0.0
+
+
+## Cuánto le conviene un clima a un equipo: potencia de los ataques de sus Pokémon
+## (y de los rivales, en contra) y daño de arena/granizo.
+func _weather_value(team: int, kind: Weather.Kind) -> float:
+	var value := 0.0
+	for u in units:
+		if not u.is_alive():
+			continue
+		var sign := 1.0 if u.team == team else -1.0
+		for mv in u.moves:
+			if mv.power > 0:
+				value += sign * (Weather.power_mult(kind, mv) - 1.0) * 10.0
+		value -= sign * Weather.chip_fraction(kind, u.data.types) * 120.0
+	return value
+
+
+## Daño medio del mejor ataque de `u` contra un rival vivo cualquiera (referencia para la IA).
+func _best_damage(u: Unit) -> float:
+	var best := 0.0
+	for foe in units:
+		if foe.team != u.team and foe.is_alive():
+			for mv in u.usable_moves():
+				best = maxf(best, _damage(u, foe, mv, 0.925))
+			break
+	return best
 
 
 func _distance_to_foe(u: Unit, from: Array[Vector2i]) -> int:
@@ -834,14 +1149,14 @@ func _focus_camera(target: Vector3) -> void:
 	_cam_rig.focus(target)
 
 
-func _popup(u: Unit, text: String, color: Color) -> void:
+func _popup(u: Unit, text: String, color: Color, size := 1.0) -> void:
 	var label := Label3D.new()
 	label.text = text
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.fixed_size = true
 	label.pixel_size = 0.0015
-	label.font_size = 36
+	label.font_size = int(36 * size)
 	label.outline_size = 10
 	label.modulate = color
 	label.position = u.position + Vector3.UP * (u.data.model_height + 0.1)
@@ -958,6 +1273,13 @@ func _build_ui() -> void:
 	right.offset_right = -16
 	var right_box := VBoxContainer.new()
 	right.add_child(right_box)
+	_weather_label = RichTextLabel.new()
+	_weather_label.bbcode_enabled = true
+	_weather_label.fit_content = true
+	_weather_label.scroll_active = false
+	_weather_label.custom_minimum_size.x = 196
+	right_box.add_child(_weather_label)
+	right_box.add_child(HSeparator.new())
 	var title := Label.new()
 	title.text = "Orden si terminas ahora"
 	right_box.add_child(title)
@@ -1088,12 +1410,13 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 	for move in list:
 		var left: int = u.pp.get(move, move.pp)
 		var pp_text := "" if move.id == "struggle" else "   PP %d/%d" % [left, move.pp]
-		var b := _button("%s  [%s]%s" % [move.display_name, Combat.TYPE_NAMES.get(move.type, move.type), pp_text],
+		var shown_type := Combat.move_type(move)
+		var b := _button("%s  [%s]%s" % [move.display_name, Combat.TYPE_NAMES.get(shown_type, shown_type), pp_text],
 			_begin_pick_target.bind(move))
 		b.set_meta("no_pp", left <= 0)
 		var accent := StyleBoxFlat.new()
 		accent.bg_color = Color(0.18, 0.22, 0.3)
-		accent.border_color = TypeChart.color(move.type)
+		accent.border_color = TypeChart.color(shown_type)
 		accent.border_width_left = 6
 		accent.set_corner_radius_all(6)
 		accent.content_margin_left = 14
@@ -1109,7 +1432,7 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 func _set_actions_enabled(enabled: bool) -> void:
 	if enabled and active:
 		_rebuild_attack_buttons(active)
-	_move_button.disabled = not enabled or moved
+	_move_button.disabled = not enabled or moved or (active != null and active.volatiles.has("ingrain"))
 	for b in _attack_buttons:
 		b.disabled = not enabled or acted or b.get_meta("no_pp", false)
 	_wait_button.disabled = not enabled
@@ -1134,9 +1457,10 @@ func _refresh_info(u: Unit) -> void:
 		if u.stages[key] != 0:
 			boosts.append("[color=#%s]%s %+d[/color] (%d t.)" % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
 				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
-	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\nPS %d/%d%s\nAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
-		u.display_name(), Unit.LEVEL, " / ".join(types), u.hp, u.max_hp,
-		("  (" + st + ")") if st else "",
+	var vols := u.volatiles_text()
+	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %d · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
+		u.display_name(), Unit.LEVEL, " / ".join(types), Abilities.display_name(u.ability), u.hp, u.max_hp,
+		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
 		u.stats.speed, int(u.ct), u.move_range(), u.data.jump, u.data.size,
 		("Mejoras: " + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",

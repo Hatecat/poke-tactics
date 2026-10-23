@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="MoveData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/move_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "sunnyday"
+display_name = "Día Soleado"
+flavor = "Hace que se intensifique el efecto del sol durante cinco turnos, lo que potencia los movimientos de tipo Fuego y debilita los de tipo Agua."
+type = "fire"
+category = 2
+power = 0
+accuracy = 100
+range_min = 0
+range_max = 0
+area_shape = 0
+area_size = 0
+projectile = false
+targets_self = true
+status = 0
+status_chance = 0
+knockback = 0
+drain = 0.0
+heal = 0.0
+recoil = 0.0
+fixed_damage = 0
+self_ko = false
+stat_changes = {}
+stat_chance = 100
+self_stat_changes = {}
+always_hits = true
+attack_stat = ""
+hp_cost = 0.0
+crit_stage = 0
+always_crit = false
+flinch_chance = 0
+sets_weather = 1
+weather_tag = ""
+flags = PackedStringArray()
+volatile = ""
+volatile_chance = 0
+self_volatile = ""
+field_effect = ""
+extra_ct = 0
+pp = 1
+animation = "fight_d"

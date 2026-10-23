@@ -26,7 +26,8 @@ OUT_MOVES = PROJECT / "data/moves"
 OUT_POKEMON = PROJECT / "data/pokemon"
 
 SPANISH = 7
-STAT_KEYS = {"atk": "attack", "def": "defense", "spa": "sp_attack", "spd": "sp_defense", "spe": "speed"}
+STAT_KEYS = {"atk": "attack", "def": "defense", "spa": "sp_attack", "spd": "sp_defense", "spe": "speed",
+             "accuracy": "accuracy", "evasion": "evasion"}
 STATUS = {"psn": 1, "tox": 1, "slp": 2, "par": 3, "brn": 4, "frz": 5}
 CATEGORY = {"Physical": 0, "Special": 1, "Status": 2}
 SINGLE, CIRCLE, CROSS, LINE = range(4)
@@ -59,6 +60,25 @@ UNSUPPORTED = {
     "dreameater", "futuresight", "doomdesire", "struggle", "splash", "celebrate", "holdhands",
 }
 FIXED_DAMAGE = {"psywave": 50}
+# Ataques marcados como no obtenibles en los juegos actuales que sí queremos (clásicos de Kanto).
+ALLOW_NONSTANDARD = {"cut", "burnup"}
+# Clima que fija cada ataque (Weather.Kind: 1 sol, 2 lluvia, 3 arena, 4 granizo).
+WEATHER_SETTERS = {"sunnyday": 1, "raindance": 2, "sandstorm": 3, "hail": 4, "snowscape": 4}
+# Estados volátiles que el juego sabe aplicar al objetivo / al propio usuario.
+TARGET_VOLATILES = {"confusion", "leechseed", "yawn", "taunt", "nightmare", "curse"}
+SELF_VOLATILES = {"protect", "endure", "substitute", "ingrain", "aquaring", "destinybond", "charge", "magnetrise"}
+# Efectos de campo: zonas alrededor del usuario, trampas en casillas y efectos globales.
+ZONE_FIELDS = {"reflect", "lightscreen", "auroraveil", "safeguard", "mist", "tailwind"}
+TRAP_FIELDS = {"spikes", "toxicspikes", "stealthrock"}
+GLOBAL_FIELDS = {"electricterrain", "grassyterrain", "mistyterrain", "psychicterrain", "trickroom", "gravity"}
+AREA_FIELDS = {"haze", "perishsong"}
+MOVE_FLAGS = ("contact", "punch", "sound", "powder", "bite", "pulse", "wind")
+# Ataques cuyo efecto depende del clima (ver scripts/battle/weather.gd).
+WEATHER_TAGS = {
+    "weatherball": "weather_ball", "thunder": "storm", "hurricane": "storm", "blizzard": "blizzard",
+    "solarbeam": "solar", "solarblade": "solar", "synthesis": "solar_heal", "moonlight": "solar_heal",
+    "morningsun": "solar_heal", "growth": "growth",
+}
 SOUND_STATUS_AREA = 2
 # Un combate táctico dura muchos menos turnos que uno de los juegos: PP reales / 5.
 PP_DIVISOR = 5
@@ -98,7 +118,7 @@ def convert_move(mid, m, names, flavor):
     """Devuelve un dict con los campos de MoveData, o None si el ataque no se puede representar."""
     if mid in UNSUPPORTED or m.get("ohko") or m.get("isZ") or m.get("isMax"):
         return None
-    if m.get("isNonstandard") in ("CAP", "LGPE", "Custom", "Unobtainable", "Gigantamax"):
+    if m.get("isNonstandard") in ("CAP", "LGPE", "Custom", "Unobtainable", "Gigantamax") and mid not in ALLOW_NONSTANDARD:
         return None
     cat = CATEGORY[m["category"]]
     target = m["target"]
@@ -111,6 +131,10 @@ def convert_move(mid, m, names, flavor):
         "projectile": False, "targets_self": False, "status": 0, "status_chance": 0,
         "knockback": 0, "drain": 0.0, "heal": 0.0, "recoil": 0.0, "fixed_damage": 0,
         "self_ko": False, "stat_changes": {}, "stat_chance": 100, "self_stat_changes": {},
+        "always_hits": m["accuracy"] is True, "attack_stat": "", "hp_cost": 0.0,
+        "crit_stage": max(0, m.get("critRatio", 1) - 1), "always_crit": bool(m.get("willCrit")), "flinch_chance": 0,
+        "sets_weather": WEATHER_SETTERS.get(mid, 0), "weather_tag": WEATHER_TAGS.get(mid, ""),
+        "flags": [], "volatile": "", "volatile_chance": 0, "self_volatile": "", "field_effect": "",
         "extra_ct": 0, "pp": max(1, math.ceil(m.get("pp", 5) / PP_DIVISOR)),
         "animation": "fight_d" if cat == 1 else "fight_b",
     }
@@ -139,7 +163,36 @@ def convert_move(mid, m, names, flavor):
     mv["heal"] = frac(m["heal"]) if m.get("heal") else 0.0
     if mid == "rest":
         mv["heal"], mv["extra_ct"] = 1.0, 100
+    if mv["weather_tag"] == "solar_heal":
+        mv["heal"] = 0.5
+    if m.get("overrideOffensiveStat") == "def":
+        mv["attack_stat"] = "defense"
     mv["self_ko"] = m.get("selfdestruct") == "always"
+
+    # Banderas que usan las habilidades (Puño Férreo, Insonorizar, Mandíbula Fuerte...).
+    mv["flags"] = [f for f in MOVE_FLAGS if flags.get(f)]
+    if m.get("multihit"):
+        mv["flags"].append("multihit")
+    if secondaries(m) or (m.get("self", {}).get("boosts") and cat != 2):
+        mv["flags"].append("secondary")
+
+    # Estados volátiles y efectos de campo
+    vol = m.get("volatileStatus")
+    if vol in TARGET_VOLATILES:
+        mv["volatile"], mv["volatile_chance"] = vol, 100
+    elif vol in SELF_VOLATILES:
+        mv["self_volatile"] = vol
+    elif vol == "stockpile":
+        mv["self_stat_changes"] = {"defense": 1, "sp_defense": 1}
+    for sec in secondaries(m):
+        if sec.get("volatileStatus") == "confusion":
+            mv["volatile"], mv["volatile_chance"] = "confusion", sec.get("chance", 100)
+    field = m.get("sideCondition") or m.get("terrain") or m.get("pseudoWeather") or (mid if mid in AREA_FIELDS else "")
+    if field in ZONE_FIELDS | TRAP_FIELDS | GLOBAL_FIELDS | AREA_FIELDS:
+        mv["field_effect"] = field
+    if mid == "curse":
+        # Sin ser Fantasma: mejora sus stats; siendo Fantasma, maldice al objetivo (lo decide la batalla).
+        mv["self_stat_changes"] = {"attack": 1, "defense": 1, "speed": -1}
 
     # Estados y stats
     if m.get("status") in STATUS:
@@ -147,6 +200,8 @@ def convert_move(mid, m, names, flavor):
     for sec in secondaries(m):
         if sec.get("status") in STATUS and not mv["status"]:
             mv["status"], mv["status_chance"] = STATUS[sec["status"]], sec.get("chance", 100)
+        if sec.get("volatileStatus") == "flinch":
+            mv["flinch_chance"] = sec.get("chance", 100)
         if sec.get("boosts"):
             mv["stat_changes"] = {STAT_KEYS[k]: v for k, v in sec["boosts"].items() if k in STAT_KEYS}
             mv["stat_chance"] = sec.get("chance", 100)
@@ -155,6 +210,12 @@ def convert_move(mid, m, names, flavor):
     if m.get("self", {}).get("boosts"):
         mv["self_stat_changes"] = {STAT_KEYS[k]: v for k, v in m["self"]["boosts"].items() if k in STAT_KEYS}
     self_target = target in ("self", "allySide", "allies", "adjacentAllyOrSelf", "allyTeam", "adjacentAlly")
+    if mid == "bellydrum":
+        mv["self_stat_changes"], mv["hp_cost"] = {"attack": 6}, 0.5
+    if mid == "defog":
+        mv["stat_changes"] = {"evasion": -1}
+    if mid == "focusenergy":
+        mv["self_stat_changes"] = {"crit": 2}
     if m.get("boosts"):
         boosts = {STAT_KEYS[k]: v for k, v in m["boosts"].items() if k in STAT_KEYS}
         if self_target:
@@ -174,7 +235,14 @@ def convert_move(mid, m, names, flavor):
 
     # Alcance y área
     big = mv["power"] >= 90
-    if self_target:
+    fe = mv["field_effect"]
+    if mv["sets_weather"] or mv["self_volatile"] or fe in ZONE_FIELDS | GLOBAL_FIELDS:
+        mv.update(range_min=0, range_max=0, targets_self=True)
+    elif fe in TRAP_FIELDS:
+        mv.update(range_min=1, range_max=4, area_shape=CIRCLE, area_size=1)
+    elif fe in AREA_FIELDS:
+        mv.update(range_min=0, range_max=0, area_shape=CIRCLE, area_size=2)
+    elif self_target:
         if not (mv["heal"] or mv["self_stat_changes"]):
             return None
         mv.update(range_min=0, range_max=0, targets_self=True)
@@ -214,9 +282,11 @@ def convert_move(mid, m, names, flavor):
     # Proyectil: sale disparado en línea recta y choca con el primer obstáculo o Pokémon.
     mv["projectile"] = (not mv["targets_self"] and mv["area_shape"] != LINE and mv["range_min"] >= 1
                         and mv["range_max"] >= 2 and not flags.get("contact") and mid not in SWOOP_MOVES
-                        and not flags.get("sound") and not flags.get("powder"))
+                        and not flags.get("sound") and not flags.get("powder") and not mv["field_effect"])
 
-    if cat == 2 and not (mv["status"] or mv["stat_changes"] or mv["self_stat_changes"] or mv["heal"] or mv["knockback"]):
+    if cat == 2 and not (mv["status"] or mv["stat_changes"] or mv["self_stat_changes"] or mv["heal"]
+                         or mv["knockback"] or mv["sets_weather"] or mv["volatile"] or mv["self_volatile"]
+                         or mv["field_effect"]):
         return None
     if cat == 2:
         mv["animation"] = "fight_d"
@@ -230,6 +300,8 @@ def gd_value(v):
         return repr(v)
     if isinstance(v, int):
         return str(v)
+    if isinstance(v, list):
+        return "PackedStringArray(%s)" % ", ".join(json.dumps(x, ensure_ascii=False) for x in v)
     if isinstance(v, dict):
         if not v:
             return "{}"
@@ -322,6 +394,34 @@ def pick_default_moves(mon, learnable):
     return chosen[:4]
 
 
+def ability_id(name):
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+def write_abilities(src, mons):
+    """data/abilities.json: {id: {"name", "desc"}} con textos en español de PokeAPI."""
+    ids = {}
+    for row in load_csv(src / "abilities.csv"):
+        ids[int(row["id"])] = row["identifier"].replace("-", "")
+    names, desc, best = {}, {}, {}
+    for row in load_csv(src / "ability_names.csv"):
+        if int(row["local_language_id"]) == SPANISH and int(row["ability_id"]) in ids:
+            names[ids[int(row["ability_id"])]] = row["name"]
+    for row in load_csv(src / "ability_flavor_text.csv"):
+        aid = int(row["ability_id"])
+        if int(row["language_id"]) == SPANISH and aid in ids and int(row["version_group_id"]) >= best.get(aid, -1):
+            best[aid] = int(row["version_group_id"])
+            desc[ids[aid]] = " ".join(row["flavor_text"].split())
+    out = {}
+    for mon in mons.values():
+        for name in mon["abilities"].values():
+            aid = ability_id(name)
+            out[aid] = {"name": names.get(aid, name), "desc": desc.get(aid, "")}
+    path = PROJECT / "data/abilities.json"
+    path.write_text(json.dumps(dict(sorted(out.items())), ensure_ascii=False, indent=1), encoding="utf-8")
+    return len(out)
+
+
 def write_pokemon(pid, mon, default, learnset, anims):
     moves_ids = {m["id"] for m in default} | {m["id"] for m in learnset}
     ext = ['[ext_resource type="PackedScene" path="res://assets/models/pokemon/%s.glb" id="1_model"]' % pid,
@@ -343,10 +443,13 @@ def write_pokemon(pid, mon, default, learnset, anims):
         "base_sp_attack": st["spa"], "base_sp_defense": st["spd"], "base_speed": st["spe"],
         "size": size, "move_modifier": 1 if flies else (-1 if weight >= 200 or size >= 2 and weight >= 80 else 0),
         "jump": 3 if flies else 1, "anim_map": anims,
+        "abilities": [ability_id(a) for k, a in sorted(mon["abilities"].items())],
     }
     lines = ['[gd_resource type="Resource" script_class="PokemonData" format=3]', "", *ext, "", "[resource]",
              'script = ExtResource("3_script")', 'model = ExtResource("1_model")',
              "types = PackedStringArray(%s)" % ", ".join(json.dumps(t) for t in types)]
+    abilities = fields.pop("abilities")
+    lines.append("abilities = PackedStringArray(%s)" % ", ".join(json.dumps(a) for a in abilities))
     lines += [f"{k} = {gd_value(v)}" for k, v in fields.items()]
     arr = lambda ms: 'Array[ExtResource("2_move")]([%s])' % ", ".join(f'ExtResource("{ref[m["id"]]}")' for m in ms)
     lines.append("moves = " + arr(default))
@@ -397,7 +500,8 @@ def main():
             learnable = [converted["struggle"]]
         write_pokemon(pid, mon, default, learnable, anim_map(glb_animations(model)))
 
-    print(f"{len(converted)} ataques, {len(mons) - len(missing_models)} Pokémon")
+    n_abilities = write_abilities(args.src, mons)
+    print(f"{len(converted)} ataques, {len(mons) - len(missing_models)} Pokémon, {n_abilities} habilidades")
     if missing_models:
         print("Sin modelo (omitidos):", ", ".join(missing_models), file=sys.stderr)
 

@@ -195,6 +195,7 @@ func _show(p: PokemonData) -> void:
 	UiKit.clear(_detail)
 	_detail.add_child(UiKit.label("#%03d %s" % [p.dex_number, p.species_name], 28))
 	_detail.add_child(UiKit.type_row(p.types))
+	_detail.add_child(_abilities_row(p))
 
 	var stats := UiKit.base_stats(p)
 	var grid := GridContainer.new()
@@ -238,6 +239,34 @@ func _show(p: PokemonData) -> void:
 
 	_refresh_moves()
 	_refresh_add_button()
+
+
+## Habilidad: selector si es un miembro del equipo; lista si es una especie del roster.
+func _abilities_row(p: PokemonData) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.add_child(UiKit.label("Habilidad:", 15, Color(1, 1, 1, 0.75)))
+	if _member:
+		var pick := OptionButton.new()
+		for i in p.abilities.size():
+			var id := p.abilities[i]
+			pick.add_item(Abilities.display_name(id) + ("  (oculta)" if i == p.abilities.size() - 1 and p.abilities.size() > 1 else ""))
+			pick.set_item_tooltip(i, Abilities.describe(id))
+			if id == _member.ability:
+				pick.select(i)
+		pick.item_selected.connect(func(i: int) -> void:
+			_member.ability = p.abilities[i]
+			pick.tooltip_text = Abilities.describe(_member.ability)
+			Game.save())
+		pick.tooltip_text = Abilities.describe(_member.ability)
+		row.add_child(pick)
+	else:
+		for id in p.abilities:
+			var l := UiKit.label(Abilities.display_name(id), 15, UiKit.ACCENT if id in Abilities.IMPLEMENTED else Color(1, 1, 1, 0.5))
+			l.tooltip_text = Abilities.describe(id)
+			l.mouse_filter = Control.MOUSE_FILTER_PASS
+			row.add_child(l)
+	return row
 
 
 func _refresh_moves() -> void:

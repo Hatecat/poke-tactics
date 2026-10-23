@@ -15,6 +15,8 @@ var player_team: Array[TeamMember] = []
 var enemy_team: Array[TeamMember] = []
 var topology := BoardGrid.Topology.SQUARE
 var biome := Biome.Kind.MEADOW
+## Clima de la partida rápida (-1 = aleatorio según el campo).
+var weather := -1
 ## Escenario fijo para la próxima batalla (null = generar uno aleatorio).
 var map: MapData
 ## Escenario abierto en el editor (se conserva al ir a probarlo y volver).
@@ -94,6 +96,7 @@ func save() -> void:
 	cfg.set_value("team", "members", player_team.map(func(m: TeamMember) -> Dictionary: return m.to_dict()))
 	cfg.set_value("options", "topology", topology)
 	cfg.set_value("options", "biome", biome)
+	cfg.set_value("options", "weather", weather)
 	cfg.save(SAVE_PATH)
 
 
@@ -111,6 +114,7 @@ func _load_save() -> void:
 				player_team.append(TeamMember.create(p))
 		topology = cfg.get_value("options", "topology", BoardGrid.Topology.SQUARE)
 		biome = cfg.get_value("options", "biome", Biome.Kind.MEADOW)
+		weather = cfg.get_value("options", "weather", -1)
 	if player_team.is_empty():
 		for id in ["bulbasaur", "charmander", "squirtle"]:
 			var p := find_species(id)

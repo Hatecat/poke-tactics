@@ -11,6 +11,8 @@ var _cells := {} # Vector2i -> Node3D con todo lo de esa casilla
 var _overlays := {} # Vector2i -> MeshInstance3D
 var _mats := {} # Color -> StandardMaterial3D
 var _overlay_mats := {} # Color -> StandardMaterial3D
+var _marks_root: Node3D
+var _traps_root: Node3D
 
 
 func build(p_grid: BoardGrid) -> void:
@@ -21,6 +23,48 @@ func build(p_grid: BoardGrid) -> void:
 	_overlays.clear()
 	for c in grid.all_cells():
 		_build_cell(c)
+	_marks_root = Node3D.new()
+	add_child(_marks_root)
+	_traps_root = Node3D.new()
+	add_child(_traps_root)
+
+
+## Capa persistente de casillas teñidas (zonas, terreno): {id: [celdas, color]}.
+func set_marks(marks: Dictionary) -> void:
+	for child in _marks_root.get_children():
+		child.queue_free()
+	for id: String in marks:
+		var cells: Array = marks[id][0]
+		var color: Color = marks[id][1]
+		for c: Vector2i in cells:
+			var top := grid.to_world(c)
+			var m := MeshInstance3D.new()
+			m.mesh = _tile_mesh(0.01, 0.02)
+			m.position = Vector3(top.x, top.y + 0.006, top.z)
+			m.material_override = _overlay_material(color)
+			m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			_marks_root.add_child(m)
+
+
+## Trampas en el suelo: {celda: {"spikes", "toxic", "rocks"}}.
+func set_traps(traps: Dictionary) -> void:
+	for child in _traps_root.get_children():
+		child.queue_free()
+	for c: Vector2i in traps:
+		var t: Dictionary = traps[c]
+		var node := Node3D.new()
+		node.position = grid.to_world(c)
+		_traps_root.add_child(node)
+		var spots := [Vector3(-0.2, 0, -0.15), Vector3(0.2, 0, -0.1), Vector3(0, 0, 0.2)]
+		for i in t.spikes:
+			_part(node, _cyl(0.0, 0.07, 0.22, 6), spots[i] + Vector3.UP * 0.11, Color(0.75, 0.75, 0.78))
+		for i in t.toxic:
+			_part(node, _cyl(0.0, 0.07, 0.22, 6), spots[2 - i] * 0.6 + Vector3.UP * 0.11, Color(0.65, 0.3, 0.8))
+		if t.rocks:
+			for i in 2:
+				var rock := _part(node, BoxMesh.new(), Vector3(-0.15 + i * 0.3, 0.55 + i * 0.1, 0), Color(0.55, 0.48, 0.4))
+				rock.scale = Vector3.ONE * 0.16
+				rock.rotation = Vector3(0.5, 0.8 * i, 0.3)
 
 
 ## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).

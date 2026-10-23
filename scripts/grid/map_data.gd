@@ -6,6 +6,8 @@ extends Resource
 @export var map_name := "Nuevo escenario"
 @export var topology := BoardGrid.Topology.SQUARE
 @export var biome := Biome.Kind.MEADOW
+## Clima de fondo del escenario.
+@export var weather := Weather.Kind.CLEAR
 @export var width := 20
 @export var height := 20
 @export var heights := PackedInt32Array()

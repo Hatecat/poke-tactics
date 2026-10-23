@@ -19,6 +19,16 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 @export var category := Category.PHYSICAL
 @export var power := 0
 @export_range(0, 100) var accuracy := 100
+## No puede fallar (ignora precisión y evasión).
+@export var always_hits := false
+## Índice de crítico extra (1 = "alta probabilidad de crítico").
+@export_range(0, 3) var crit_stage := 0
+## Siempre es crítico (Llovizna Helada, Llave Corsé).
+@export var always_crit := false
+## Probabilidad de hacer retroceder: retrasa el próximo turno del objetivo.
+@export_range(0, 100) var flinch_chance := 0
+## Stat del atacante que usa en lugar de Ataque/At. Esp. (p. ej. "defense" en Prensa Metálica).
+@export var attack_stat := ""
 
 @export_group("Alcance")
 @export var range_min := 1
@@ -46,11 +56,33 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 @export var fixed_damage := 0
 ## El usuario se debilita al usarlo (Explosión).
 @export var self_ko := false
-## Cambios de stats al objetivo, p. ej. {"attack": -1}. Claves: attack, defense, sp_attack, sp_defense, speed.
+## Fracción de los PS máximos que paga el usuario (Tambor).
+@export_range(0.0, 1.0) var hp_cost := 0.0
+## Cambios de stats al objetivo, p. ej. {"attack": -1}. Claves: attack, defense, sp_attack,
+## sp_defense, speed, accuracy, evasion y crit (índice de crítico, 0-3).
 @export var stat_changes := {}
 @export_range(0, 100) var stat_chance := 100
 ## Cambios de stats al propio usuario (Danza Espada, A Bocajarro...).
 @export var self_stat_changes := {}
+
+@export_group("Estados volátiles y campo")
+## Estado volátil que provoca en el objetivo: confusion, leechseed, yawn, taunt, nightmare, curse.
+@export var volatile := ""
+@export_range(0, 100) var volatile_chance := 0
+## Estado volátil sobre el propio usuario: protect, endure, substitute, ingrain, aquaring,
+## destinybond, charge, magnetrise.
+@export var self_volatile := ""
+## Efecto de campo: zonas (reflect, lightscreen, auroraveil, safeguard, mist, tailwind), trampas
+## (spikes, toxicspikes, stealthrock), globales (terrenos, trickroom, gravity) o de área (haze, perishsong).
+@export var field_effect := ""
+## Banderas para las habilidades: contact, punch, sound, powder, bite, pulse, wind, multihit, secondary.
+@export var flags: PackedStringArray = []
+
+@export_group("Clima")
+## Clima que provoca (Weather.Kind; 0 = ninguno).
+@export var sets_weather := 0
+## Cómo le afecta el clima: "weather_ball", "storm", "blizzard", "solar", "solar_heal", "growth".
+@export var weather_tag := ""
 
 @export_group("Turno")
 ## Usos por combate (los PP de los juegos divididos entre 5).

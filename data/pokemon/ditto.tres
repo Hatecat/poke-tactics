@@ -9,6 +9,7 @@
 script = ExtResource("3_script")
 model = ExtResource("1_model")
 types = PackedStringArray("normal")
+abilities = PackedStringArray("limber", "imposter")
 id = "ditto"
 species_name = "Ditto"
 dex_number = 132

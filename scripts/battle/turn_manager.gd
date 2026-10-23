@@ -16,9 +16,14 @@ const SPEED_SCALE := 10.0
 const COST_FULL := 100.0
 const COST_PARTIAL := 90.0
 const COST_WAIT := 80.0
+## CT que pierde un Pokémon al retroceder: su próximo turno llega más tarde.
+const FLINCH_DELAY := 30.0
 
 
 static func charge_rate(speed: float) -> float:
+	# Espacio Raro invierte el orden: los lentos cargan más rápido (10000/vel conserva la escala).
+	if Combat.field and Combat.field.trick_room > 0:
+		speed = 10000.0 / maxf(speed, 1.0)
 	return SPEED_SCALE * pow(maxf(speed, 1.0), SPEED_EXPONENT)
 
 

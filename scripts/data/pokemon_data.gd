@@ -11,6 +11,9 @@ extends Resource
 ## Altura en metros a la que se escala el modelo dentro del tablero.
 @export var model_height := 0.9
 
+## Habilidades posibles (ids de data/abilities.json); la última suele ser la oculta.
+@export var abilities: PackedStringArray = []
+
 @export_group("Stats base")
 @export var base_hp := 50
 @export var base_attack := 50

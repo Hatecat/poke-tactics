@@ -30,6 +30,19 @@ stat_chance = 100
 self_stat_changes = {
 "speed": 1
 }
+always_hits = false
+attack_stat = ""
+hp_cost = 0.0
+crit_stage = 0
+always_crit = false
+flinch_chance = 0
+sets_weather = 0
+weather_tag = ""
+flags = PackedStringArray("contact", "secondary")
+volatile = ""
+volatile_chance = 0
+self_volatile = ""
+field_effect = ""
 extra_ct = 0
 pp = 8
 animation = "fight_b"

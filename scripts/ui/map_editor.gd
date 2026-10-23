@@ -34,6 +34,7 @@ var _width: SpinBox
 var _height: SpinBox
 var _topology: OptionButton
 var _biome: OptionButton
+var _weather: OptionButton
 var _tile_pick: OptionButton
 var _prop_pick: OptionButton
 var _enemy_pick: OptionButton
@@ -95,6 +96,7 @@ func _open(m: MapData) -> void:
 	_height.set_value_no_signal(m.height)
 	_topology.select(m.topology)
 	_biome.select(m.biome)
+	_weather.select(m.weather)
 	for n in ["WorldEnvironment", "Sun"]:
 		var old := get_node_or_null(n)
 		if old:
@@ -113,6 +115,7 @@ func _open(m: MapData) -> void:
 func _commit() -> void:
 	map.map_name = _name_edit.text.strip_edges() if _name_edit.text.strip_edges() else "Sin nombre"
 	map.store_grid(grid)
+	map.weather = _weather.selected
 
 
 func _rebuild_enemies() -> void:
@@ -352,6 +355,10 @@ func _build_ui() -> void:
 	for kind: int in Biome.NAMES:
 		_biome.add_item("%s %s" % [Biome.ICONS[kind], Biome.NAMES[kind]])
 	col.add_child(_biome)
+	_weather = OptionButton.new()
+	for kind: int in Weather.NAMES:
+		_weather.add_item("%s %s" % [Weather.ICONS[kind], Weather.NAMES[kind]])
+	col.add_child(_weather)
 	var gen_row := HBoxContainer.new()
 	gen_row.add_theme_constant_override("separation", 6)
 	col.add_child(gen_row)
