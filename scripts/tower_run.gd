@@ -26,7 +26,27 @@ const MONEY_PER_ENEMY_LEVEL := 5
 const SHOP_SIZE := 6
 const PRICES := [200, 500, 1200]
 const STONE_PRICE := 1500
-const BALL_PRICE := 200
+## Tipos de Ball: nombre, precio, multiplicador de captura (0 = captura segura), piso tras el cual se venden
+## siempre (0 = nunca: solo en el lote al azar) y probabilidad de salir en el lote al azar de cada piso.
+const BALL_KINDS := ["poke", "great", "ultra", "master"]
+const BALLS := {
+	"poke": {"name": "Poké Ball", "price": 200, "mult": 1.0, "unlock": 0, "shop_chance": 0.0,
+		"desc": "Para capturar Pokémon salvajes durante el combate.",
+		"icon": preload("res://assets/items/pokeball.png"), "color": Color(0.85, 0.12, 0.12)},
+	"great": {"name": "Super Ball", "price": 600, "mult": 1.5, "unlock": 20, "shop_chance": 0.4,
+		"desc": "Captura mejor que la Poké Ball (×1,5).",
+		"icon": preload("res://assets/items/greatball.png"), "color": Color(0.15, 0.4, 0.9)},
+	"ultra": {"name": "Ultra Ball", "price": 1200, "mult": 2.0, "unlock": 40, "shop_chance": 0.25,
+		"desc": "Captura mucho mejor que la Poké Ball (×2).",
+		"icon": preload("res://assets/items/ultraball.png"), "color": Color(0.12, 0.12, 0.12)},
+	"master": {"name": "Master Ball", "price": 5000, "mult": 0.0, "unlock": -1, "shop_chance": 0.05,
+		"desc": "Captura cualquier Pokémon salvaje sin fallar, incluso legendarios.",
+		"icon": preload("res://assets/items/masterball.png"), "color": Color(0.5, 0.2, 0.7)},
+}
+## Prefijo de las Balls en la lista de la tienda (junto a los ids de objetos).
+const SHOP_BALL_PREFIX := "ball:"
+## Captura base: con el rival a tope de vida es un tercio de esto; casi debilitado, casi todo.
+const CATCH_BASE := 0.6
 ## Experiencia por rival derrotado o capturado: su nivel × esto (para cada miembro del equipo).
 const EXP_PER_ENEMY_LEVEL := 10
 ## Los salvajes de especies que evolucionan con piedra aparecen evolucionados desde este nivel.
@@ -55,7 +75,8 @@ const TRAINER_BERRY_CHANCE := 0.3
 const DIFFICULTY_LEVEL_OFFSET := [-2, 0, 2]
 
 var floor_number := 1
-var balls := START_BALLS
+## Balls por tipo (ver BALL_KINDS).
+var balls := {"poke": START_BALLS}
 var party: Array[TeamMember] = []
 var box: Array[TeamMember] = []
 var topology := BoardGrid.Topology.SQUARE
@@ -314,8 +335,8 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 				news.append({"kind": "evolve", "text": e})
 			elif "aprend" in e:
 				news.append({"kind": "move", "text": e})
-	balls += BALLS_PER_WIN
-	last_report.append("Recibes %d Poké Ball. Tienes %d." % [BALLS_PER_WIN, balls])
+	balls.poke = balls.get("poke", 0) + BALLS_PER_WIN
+	last_report.append("Recibes %d Poké Ball. Tienes %d." % [BALLS_PER_WIN, balls.poke])
 	var earned := MONEY_BASE + MONEY_PER_FLOOR * floor_number
 	for lv in beaten:
 		earned += lv * MONEY_PER_ENEMY_LEVEL
@@ -346,9 +367,13 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	roll_shop()
 
 
-## Nueva tienda: SHOP_SIZE objetos al azar (sin repetir; las piedras son menos frecuentes).
+## Nueva tienda: a veces Super, Ultra o Master Ball (si aún no se venden siempre), y objetos al azar hasta
+## SHOP_SIZE (sin repetir; las piedras son menos frecuentes).
 func roll_shop() -> void:
 	shop.clear()
+	for kind: String in BALL_KINDS:
+		if not ball_always_sold(kind) and rng.randf() < BALLS[kind].shop_chance:
+			shop.append(SHOP_BALL_PREFIX + kind)
 	var pool := Items.all().duplicate()
 	while shop.size() < SHOP_SIZE and not pool.is_empty():
 		var it: ItemData = pool.pop_at(rng.randi_range(0, pool.size() - 1))
@@ -370,12 +395,33 @@ func buy(it: ItemData) -> bool:
 	return true
 
 
-func buy_ball() -> bool:
-	if money < BALL_PRICE:
+## La Poké Ball se vende siempre; la Super Ball tras el piso 20 y la Ultra Ball tras el 40.
+func ball_always_sold(kind: String) -> bool:
+	var unlock: int = BALLS[kind].unlock
+	return unlock == 0 or (unlock > 0 and floor_number > unlock)
+
+
+## Compra una Ball: las que se venden siempre, sin límite; las del lote del piso, una vez.
+func buy_ball(kind: String) -> bool:
+	var lot := shop.find(SHOP_BALL_PREFIX + kind)
+	if money < BALLS[kind].price or (not ball_always_sold(kind) and lot < 0):
 		return false
-	money -= BALL_PRICE
-	balls += 1
+	money -= BALLS[kind].price
+	if not ball_always_sold(kind):
+		shop.remove_at(lot)
+	balls[kind] = balls.get(kind, 0) + 1
 	return true
+
+
+func ball_count(kind: String) -> int:
+	return balls.get(kind, 0)
+
+
+func total_balls() -> int:
+	var n := 0
+	for kind in balls:
+		n += balls[kind]
+	return n
 
 
 func add_item(it: ItemData, count := 1) -> void:
@@ -431,8 +477,12 @@ func _random_item(rarity: int, berries_only := false) -> ItemData:
 	return pool[rng.randi_range(0, pool.size() - 1)] if not pool.is_empty() else null
 
 
-## Posibilidad de captura (0-1): mejor con el rival herido y dormido/congelado; los legendarios cuestan más.
-static func catch_chance(u: Unit) -> float:
+## Posibilidad de captura (0-1): mejor con el rival herido y dormido/congelado, y con mejores Balls;
+## los legendarios cuestan más. La Master Ball no falla.
+static func catch_chance(u: Unit, kind := "poke") -> float:
+	var mult: float = BALLS[kind].mult
+	if mult <= 0.0:
+		return 1.0
 	var hp_factor := 1.0 - (2.0 / 3.0) * float(u.hp) / u.max_hp
 	var status := 1.0
 	if u.status in [MoveData.Status.SLEEP, MoveData.Status.FREEZE]:
@@ -440,7 +490,7 @@ static func catch_chance(u: Unit) -> float:
 	elif u.status != MoveData.Status.NONE:
 		status = 1.5
 	var legendary := 0.25 if u.data.legendary else 1.0
-	return clampf(hp_factor * status * legendary * 0.45, 0.03, 0.95)
+	return clampf(hp_factor * status * legendary * mult * CATCH_BASE, 0.05, 0.95)
 
 
 func to_dict() -> Dictionary:
@@ -456,7 +506,9 @@ func to_dict() -> Dictionary:
 static func from_dict(d: Dictionary) -> TowerRun:
 	var run := TowerRun.new()
 	run.floor_number = d.get("floor", 1)
-	run.balls = d.get("balls", START_BALLS)
+	var saved_balls = d.get("balls", START_BALLS)
+	# Partidas antiguas guardaban solo el número de Poké Balls.
+	run.balls = saved_balls if saved_balls is Dictionary else {"poke": int(saved_balls)}
 	run.topology = d.get("topology", BoardGrid.Topology.SQUARE)
 	run.difficulty = d.get("difficulty", 1)
 	run.picks_left = d.get("picks_left", 0)

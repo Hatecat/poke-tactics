@@ -84,8 +84,9 @@ var _tile_label: RichTextLabel
 var _pause: PauseMenu
 var _banner_buttons: HBoxContainer
 var _action_separators: Array[Control] = []
-## Torre: Poké Balls lanzadas en este combate y Pokémon capturados.
-var _balls_used := 0
+## Torre: Balls lanzadas en este combate ({tipo: cantidad}), la que se está apuntando y Pokémon capturados.
+var _balls_used := {}
+var _ball_kind := "poke"
 var _caught: Array[TeamMember] = []
 var _throwing := false
 var _ball_reach: Array[Vector2i] = []
@@ -668,7 +669,8 @@ func _on_hover(c: Vector2i) -> void:
 				var t := _unit_at(c)
 				if t:
 					_board.highlight(t.footprint, COLOR_AREA)
-					_preview_label.text = "%s: %d%% de captura · Poké Balls: %d" % [t.display_name(), roundi(TowerRun.catch_chance(t) * 100), _balls_left()]
+					_preview_label.text = "%s: %d%% de captura · %s: %d" % [t.display_name(), roundi(TowerRun.catch_chance(t, _ball_kind) * 100),
+						TowerRun.BALLS[_ball_kind].name, _balls_left(_ball_kind)]
 			elif c in _targets:
 				var res := _resolve(active, active.footprint, selected_move, c)
 				var area: Array[Vector2i] = res.area
@@ -1911,7 +1913,8 @@ func _finish_tower(victory: bool) -> void:
 	for u in units:
 		if u.team == 1 and not u.is_alive():
 			beaten.append(u.level)
-	Game.tower.balls -= _balls_used
+	for kind: String in _balls_used:
+		Game.tower.balls[kind] = Game.tower.ball_count(kind) - _balls_used[kind]
 	# Lo que pasó con los objetos en combate se queda: bayas comidas, objetos robados o quitados.
 	for u in units:
 		if u.team == 0 and u.has_meta("member"):
@@ -1929,15 +1932,16 @@ func _trainer_battle() -> bool:
 	return _tower() and not Game.tower.trainer.is_empty()
 
 
-func _balls_left() -> int:
-	return Game.tower.balls - _balls_used if _tower() else 0
+func _balls_left(kind: String) -> int:
+	return Game.tower.ball_count(kind) - _balls_used.get(kind, 0) if _tower() else 0
 
 
-func _begin_pick_ball() -> void:
-	if state == State.BUSY or state == State.GAME_OVER or acted or _balls_left() <= 0 or _trainer_battle():
+func _begin_pick_ball(kind: String) -> void:
+	if state == State.BUSY or state == State.GAME_OVER or acted or _balls_left(kind) <= 0 or _trainer_battle():
 		return
 	state = State.PICK_TARGET
 	_throwing = true
+	_ball_kind = kind
 	selected_move = null
 	_targets.clear()
 	for foe in units:
@@ -1954,12 +1958,14 @@ func _begin_pick_ball() -> void:
 	_board.clear_highlights()
 	_board.highlight(_ball_reach, COLOR_BALL_RANGE)
 	_board.highlight(_targets, COLOR_RANGE)
-	_hint_label.text = "Poké Ball: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)" % BALL_RANGE
+	_hint_label.text = "%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)" % [TowerRun.BALLS[kind].name, BALL_RANGE]
 
 
 func _throw_ball(target: Vector2i) -> void:
-	_balls_used += 1
-	_log("¡%s lanza una Poké Ball!" % active.display_name())
+	var kind := _ball_kind
+	var ball_name: String = TowerRun.BALLS[kind].name
+	_balls_used[kind] = _balls_used.get(kind, 0) + 1
+	_log("¡%s lanza una %s!" % [active.display_name(), ball_name])
 	var origin := active.footprint
 	var hit := Combat.trace(grid, origin, target, func(c: Vector2i) -> Unit:
 		var o := _unit_at(c)
@@ -1973,16 +1979,16 @@ func _throw_ball(target: Vector2i) -> void:
 	await ball.finished
 	var t := _unit_at(hit.cell)
 	if hit.blocker == "obstacle" or t == null or t.team != 1:
-		_log("La Poké Ball no llegó a ningún Pokémon salvaje...")
+		_log("La %s no llegó a ningún Pokémon salvaje..." % ball_name)
 		Audio.sfx("ui_error", -6.0)
 		return
-	var chance := TowerRun.catch_chance(t)
+	var chance := TowerRun.catch_chance(t, kind)
 	# El Pokémon entra en la bola: se encoge y en su lugar queda la Poké Ball en el suelo.
 	var shrink := create_tween()
 	shrink.tween_property(t, "scale", Vector3.ONE * 0.01, 0.25)
 	await shrink.finished
 	t.visible = false
-	var pokeball := Fx.pokeball(self)
+	var pokeball := Fx.pokeball(self, TowerRun.BALLS[kind].color)
 	pokeball.global_position = grid.footprint_center(t.footprint) + Vector3.UP * 0.12
 	Audio.sfx("ui_place", -4.0)
 	await _wait(0.4)
@@ -2006,7 +2012,7 @@ func _throw_ball(target: Vector2i) -> void:
 		var grow := create_tween()
 		grow.tween_property(t, "scale", Vector3.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		_popup(t, "¡Se escapó!", Color(1.0, 0.6, 0.5))
-		_log("¡%s se escapó de la Poké Ball!" % t.display_name())
+		_log("¡%s se escapó de la %s!" % [t.display_name(), ball_name])
 		Audio.sfx("ui_error", -6.0)
 		Audio.cry(t.data, 1.1, -8.0)
 		return
@@ -2091,11 +2097,16 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		_attack_buttons.append(b)
 	if _tower() and not _trainer_battle():
 		_add_action_separator()
-		var ball := _button("Poké Ball  (%d)" % _balls_left(), _begin_pick_ball)
-		ball.set_meta("no_pp", _balls_left() <= 0)
-		ball.tooltip_text = "Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido)."
-		_actions_box.add_child(ball)
-		_attack_buttons.append(ball)
+		for kind: String in TowerRun.BALL_KINDS:
+			if kind != "poke" and _balls_left(kind) <= 0:
+				continue
+			var ball := _button("%s  (%d)" % [TowerRun.BALLS[kind].name, _balls_left(kind)], _begin_pick_ball.bind(kind))
+			ball.icon = TowerRun.BALLS[kind].icon
+			ball.add_theme_constant_override("icon_max_width", 24)
+			ball.set_meta("no_pp", _balls_left(kind) <= 0)
+			ball.tooltip_text = "Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s" % TowerRun.BALLS[kind].desc
+			_actions_box.add_child(ball)
+			_attack_buttons.append(ball)
 	_add_action_separator()
 	_actions_box.add_child(_wait_button)
 

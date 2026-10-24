@@ -9,8 +9,7 @@ var _selected: TeamMember
 var _preview: PokemonPreview
 var _topology := BoardGrid.Topology.SQUARE
 var _difficulty := 1
-var _shop_open := false
-var _shop_overlay: Control
+var _news_overlay: Control
 
 
 func _ready() -> void:
@@ -44,9 +43,9 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	UiKit.clear(_content)
-	if _shop_overlay:
-		_shop_overlay.queue_free()
-		_shop_overlay = null
+	if _news_overlay:
+		_news_overlay.queue_free()
+		_news_overlay = null
 	_preview = null
 	if _run == null:
 		_show_start()
@@ -172,16 +171,12 @@ func _show_hub() -> void:
 	header.add_theme_constant_override("separation", 24)
 	col.add_child(header)
 	header.add_child(UiKit.label("Piso %d" % _run.floor_number, 28, UiKit.ACCENT))
-	header.add_child(UiKit.label("Poké Balls: %d" % _run.balls, 20))
+	header.add_child(_ball_counts())
 	var badges := UiKit.label("Medallas: %d" % _run.badges.size(), 20, Color(1.0, 0.85, 0.4))
 	badges.tooltip_text = "\n".join(_run.badges) if not _run.badges.is_empty() else "Vence a los líderes de gimnasio (cada 10 pisos)."
 	badges.mouse_filter = Control.MOUSE_FILTER_PASS
 	header.add_child(badges)
 	header.add_child(UiKit.label("%d ₽" % _run.money, 20, UiKit.ACCENT))
-	var shop_button := UiKit.button("Tienda", func() -> void:
-		_shop_open = true
-		_refresh(), 18)
-	header.add_child(shop_button)
 	header.add_child(UiKit.label("Récord: piso %d" % Game.tower_best, 18, Color(1, 1, 1, 0.7)))
 	header.add_child(UiKit.label("Dificultad: %s" % Game.DIFFICULTY_NAMES[_run.difficulty], 18, Color(1, 1, 1, 0.7)))
 
@@ -218,6 +213,8 @@ func _show_hub() -> void:
 	for m in _run.box:
 		box_col.add_child(_member_card(m, false))
 
+	columns.add_child(_build_shop())
+
 	# Ficha del seleccionado
 	var detail := UiKit.panel()
 	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -242,7 +239,9 @@ func _show_hub() -> void:
 	report_col.add_child(text)
 	report_col.add_child(HSeparator.new())
 	report_col.add_child(UiKit.label("Mochila", 20))
-	report_col.add_child(UiKit.label("Clic: equipar a %s (o usar la piedra)." % TeamMember.display(_selected.data, _selected.gender), 13, Color(1, 1, 1, 0.55)))
+	var bag_hint := UiKit.label("Clic: equipar a %s (o usar la piedra)." % TeamMember.display(_selected.data, _selected.gender), 13, Color(1, 1, 1, 0.55))
+	bag_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	report_col.add_child(bag_hint)
 	var bag_scroll := ScrollContainer.new()
 	bag_scroll.custom_minimum_size.y = 220
 	bag_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -250,7 +249,10 @@ func _show_hub() -> void:
 	var bag := VBoxContainer.new()
 	bag_scroll.add_child(bag)
 	if _run.bag.is_empty():
-		bag.add_child(UiKit.label("Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda.", 14, Color(1, 1, 1, 0.5)))
+		var empty := UiKit.label("Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda.", 14, Color(1, 1, 1, 0.5))
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty.custom_minimum_size.x = 320
+		bag.add_child(empty)
 	for id: String in _run.bag:
 		var it := Items.find(id)
 		if it == null:
@@ -270,9 +272,7 @@ func _show_hub() -> void:
 	var go := UiKit.button("¡Subir al piso %d!" % _run.floor_number, _next_floor, 22)
 	go.custom_minimum_size = Vector2(320, 54)
 	actions.add_child(go)
-	if _shop_open:
-		_build_shop()
-	elif not _run.news.is_empty():
+	if not _run.news.is_empty():
 		_build_news()
 
 
@@ -290,7 +290,7 @@ func _build_news() -> void:
 	overlay.color = Color(0, 0, 0, 0.65)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(overlay)
-	_shop_overlay = overlay
+	_news_overlay = overlay
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(center)
@@ -384,74 +384,101 @@ func _news_row(n: Dictionary) -> Control:
 
 
 ## Tienda: Poké Balls siempre, más los objetos al azar del piso (cada uno se compra una vez).
-func _build_shop() -> void:
-	var overlay := ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.6)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(overlay)
-	_shop_overlay = overlay
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(center)
+func _build_shop() -> Control:
 	var panel := UiKit.panel()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.11, 0.13, 0.18)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(16)
-	panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
+	panel.custom_minimum_size.x = 360
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	panel.add_child(col)
+	col.add_child(UiKit.label("Tienda", 20))
+	col.add_child(UiKit.label("Tienes %d ₽ · los objetos cambian en cada piso." % _run.money, 13, Color(1, 1, 1, 0.6)))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col.add_child(scroll)
 	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 8)
-	panel.add_child(box)
-	box.add_child(UiKit.label("Tienda  ·  tienes %d ₽" % _run.money, 26, UiKit.ACCENT))
-	box.add_child(UiKit.label("Los objetos cambian en cada piso.", 14, Color(1, 1, 1, 0.6)))
-	box.add_child(_shop_row(null, "Poké Ball", "Para capturar Pokémon salvajes durante el combate. Tienes %d." % _run.balls, TowerRun.BALL_PRICE, func() -> void:
-		if _run.buy_ball():
-			Audio.sfx("ui_confirm", -4.0)
-			Game.save()
-		_refresh()))
+	scroll.add_child(box)
+	for kind: String in TowerRun.BALL_KINDS:
+		if _run.ball_always_sold(kind):
+			box.add_child(_ball_row(kind))
 	box.add_child(HSeparator.new())
 	if _run.shop.is_empty():
-		box.add_child(UiKit.label("No queda nada más a la venta en este piso.", 15, Color(1, 1, 1, 0.5)))
+		box.add_child(UiKit.label("No queda nada más a la venta en este piso.", 14, Color(1, 1, 1, 0.5)))
 	for id in _run.shop:
+		if id.begins_with(TowerRun.SHOP_BALL_PREFIX):
+			box.add_child(_ball_row(id.trim_prefix(TowerRun.SHOP_BALL_PREFIX)))
+			continue
 		var it := Items.find(id)
 		if it == null:
 			continue
-		box.add_child(_shop_row(it, it.display_name, it.description, TowerRun.price(it), func() -> void:
+		box.add_child(_shop_row(it.icon, it.display_name, it.description, TowerRun.price(it), func() -> void:
 			if _run.buy(it):
 				Audio.sfx("ui_confirm", -4.0)
 				Game.save()
 			_refresh()))
-	var close := UiKit.button("Cerrar", func() -> void:
-		_shop_open = false
-		_refresh(), 18)
-	box.add_child(close)
+	return panel
 
 
-func _shop_row(it: ItemData, title: String, desc: String, cost: int, buy: Callable) -> Control:
+func _ball_row(kind: String) -> Control:
+	var ball: Dictionary = TowerRun.BALLS[kind]
+	return _shop_row(ball.icon, ball.name, "%s Tienes %d." % [ball.desc, _run.ball_count(kind)], ball.price, func() -> void:
+		if _run.buy_ball(kind):
+			Audio.sfx("ui_confirm", -4.0)
+			Game.save()
+		_refresh())
+
+
+## Balls que tienes: icono y cantidad de cada tipo (la Poké Ball siempre, las demás si tienes alguna).
+func _ball_counts() -> Control:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
+	row.add_theme_constant_override("separation", 6)
+	for kind: String in TowerRun.BALL_KINDS:
+		if kind != "poke" and _run.ball_count(kind) == 0:
+			continue
+		var ball: Dictionary = TowerRun.BALLS[kind]
+		var icon := TextureRect.new()
+		icon.texture = ball.icon
+		icon.custom_minimum_size = Vector2(30, 30)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.tooltip_text = ball.name
+		row.add_child(icon)
+		var count := UiKit.label("%d " % _run.ball_count(kind), 20)
+		count.tooltip_text = ball.name
+		count.mouse_filter = Control.MOUSE_FILTER_PASS
+		row.add_child(count)
+	return row
+
+
+func _shop_row(texture: Texture2D, title: String, desc: String, cost: int, buy: Callable) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
 	var icon := TextureRect.new()
-	icon.texture = it.icon if it else null
+	icon.texture = texture
 	icon.custom_minimum_size = Vector2(30, 30)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	row.add_child(icon)
 	var text := VBoxContainer.new()
-	text.custom_minimum_size.x = 460
-	text.add_child(UiKit.label(title, 17))
-	var d := UiKit.label(desc, 13, Color(1, 1, 1, 0.6))
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text.add_child(UiKit.label(title, 16))
+	var d := UiKit.label(desc, 12, Color(1, 1, 1, 0.6))
 	d.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	d.custom_minimum_size.x = 460
 	text.add_child(d)
 	row.add_child(text)
-	var price := UiKit.label("%d ₽" % cost, 17, UiKit.ACCENT)
-	price.custom_minimum_size.x = 80
-	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	row.add_child(price)
-	var b := UiKit.button("Comprar", buy, 15)
+	var buy_col := VBoxContainer.new()
+	buy_col.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	var price := UiKit.label("%d ₽" % cost, 16, UiKit.ACCENT)
+	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	buy_col.add_child(price)
+	var b := UiKit.button("Comprar", buy, 14)
 	b.disabled = _run.money < cost
-	row.add_child(b)
+	buy_col.add_child(b)
+	row.add_child(buy_col)
 	return row
 
 

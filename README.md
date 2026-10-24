@@ -194,7 +194,9 @@ altos (suma de stats base ≤ 400 + 10 × piso) y un entrenador no repite especi
 Al volver de cada piso, una ventana de **novedades** destaca dinero, medallas, capturas, objetos, evoluciones,
 subidas de nivel y ataques nuevos.
 Empiezas con 5 Poké Balls y ganas 1 por piso: lanzar una es tu acción del turno (alcance 4, captura mejor si el
-rival está herido y dormido/congelado; al apuntar se ve el alcance). Si acierta, el Pokémon se convierte en una
+rival está herido y dormido/congelado; al apuntar se ve el alcance). Captura: 0,6 × (1 − ⅔ × vida restante) ×
+estado (×2 dormido/congelado, ×1,5 otro) × Ball (Super ×1,5, Ultra ×2; la Master Ball no falla), entre 5 % y 95 %
+(los legendarios, ×0,25). Si acierta, el Pokémon se convierte en una
 Poké Ball que se agita hasta 3 veces; si escapa, reaparece entre humo. Entre pisos el equipo se cura y gana experiencia (nivel del rival × 10
 por cada derrotado o capturado), sube de nivel, aprende ataques (de sus listas por nivel) y evoluciona (las de
 piedra/intercambio/amistad, a nivel 30). Puedes cambiar miembros por capturados (máx. 6 en el equipo) y elegir
@@ -221,8 +223,10 @@ En Partida rápida se elige en el editor de equipo; en la Torre hay mochila (35 
 uno poco común o raro garantizado cada 5, Recogida al 20 %) y los salvajes a veces llevan bayas.
 
 **Dinero y tienda (Torre)**: empiezas con 500 ₽ y cada piso da 150 + 25 × piso + 5 × nivel de los rivales. En la
-gestión, el botón *Tienda* ofrece Poké Balls (200 ₽) y 6 objetos al azar que cambian cada piso (200/500/1200 ₽
-según rareza, piedras 1500 ₽).
+gestión, el recuadro *Tienda* (junto al equipo) vende siempre Poké Balls (200 ₽), Super Balls (600 ₽) tras el
+piso 20 y Ultra Balls (1200 ₽) tras el 40. Cada piso añade un lote al azar que se compra una vez: a veces Super
+(40 %), Ultra (25 %) o Master Ball (5 %, 5000 ₽) si aún no se venden siempre, y 6 objetos (200/500/1200 ₽ según
+rareza, piedras 1500 ₽).
 
 ## Velocidad de combate
 

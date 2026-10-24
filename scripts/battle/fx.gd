@@ -130,8 +130,8 @@ static func beam(parent: Node3D, from: Vector3, to: Vector3, type: String) -> vo
 		burst(parent, from.lerp(to, float(i + 1) / steps), type, 0.25)
 
 
-## Poké Ball de primitivas (mitad roja, mitad blanca, banda negra y botón).
-static func pokeball(parent: Node3D) -> Node3D:
+## Poké Ball de primitivas (mitad de color, mitad blanca, banda negra y botón).
+static func pokeball(parent: Node3D, color := Color(0.85, 0.12, 0.12)) -> Node3D:
 	var root := Node3D.new()
 	parent.add_child(root)
 	var r := 0.17
@@ -142,7 +142,7 @@ static func pokeball(parent: Node3D) -> Node3D:
 	var bottom := top.duplicate()
 	var red := MeshInstance3D.new()
 	red.mesh = top
-	red.material_override = _solid(Color(0.85, 0.12, 0.12))
+	red.material_override = _solid(color)
 	root.add_child(red)
 	var white := MeshInstance3D.new()
 	white.mesh = bottom
