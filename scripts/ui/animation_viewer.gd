@@ -12,6 +12,8 @@ const NO_CLIP := Color(1, 1, 1, 0.45)
 
 var _species: PokemonData
 var _moves: Array[MoveData] = []
+## Pokémon por los que se navega con las flechas (el roster del editor).
+var _roster: Array[PokemonData] = []
 var _preview: PokemonPreview
 var _title: Label
 var _status: Label
@@ -48,8 +50,15 @@ func _ready() -> void:
 	var left := VBoxContainer.new()
 	left.add_theme_constant_override("separation", 8)
 	columns.add_child(left)
+	var title_row := HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 8)
+	left.add_child(title_row)
+	title_row.add_child(UiKit.button("‹", _step.bind(-1), 22))
 	_title = UiKit.label("", 26, UiKit.ACCENT)
-	left.add_child(_title)
+	_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_row.add_child(_title)
+	title_row.add_child(UiKit.button("›", _step.bind(1), 22))
 	_preview = PokemonPreview.new()
 	_preview.interactive = true
 	_preview.custom_minimum_size = Vector2(520, 520)
@@ -63,7 +72,7 @@ func _ready() -> void:
 	view_row.add_child(UiKit.button("Espalda", _preview.turn_to.bind(180.0), 15))
 	var spin := UiKit.button("Girar", func() -> void: _preview.spin = not _preview.spin, 15)
 	view_row.add_child(spin)
-	left.add_child(UiKit.label("Arrastra el modelo para girarlo.", 13, Color(1, 1, 1, 0.5)))
+	left.add_child(UiKit.label("Arrastra el modelo para girarlo. ← → cambian de Pokémon.", 13, Color(1, 1, 1, 0.5)))
 	_status = UiKit.label("", 15)
 	left.add_child(_status)
 
@@ -112,9 +121,12 @@ func theme_get_panel() -> StyleBox:
 	return UiKit.theme().get_stylebox("panel", "PanelContainer")
 
 
-func open(species: PokemonData, moves: Array[MoveData]) -> void:
+## moves: los ataques que se muestran como "Sus ataques"; roster: Pokémon entre los que navegar.
+func open(species: PokemonData, moves: Array[MoveData], roster: Array[PokemonData] = []) -> void:
 	_species = species
 	_moves = moves
+	if not roster.is_empty():
+		_roster = roster
 	visible = true
 	_title.text = "#%03d %s — animaciones" % [species.dex_number, species.species_name]
 	_preview.spin = false
@@ -131,9 +143,25 @@ func close() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
 		close()
-		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_left") and not _search.has_focus():
+		_step(-1)
+	elif event.is_action_pressed("ui_right") and not _search.has_focus():
+		_step(1)
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
+
+## Pasa al Pokémon anterior (-1) o siguiente (+1) del roster, con sus ataques por defecto.
+func _step(delta: int) -> void:
+	if _roster.is_empty():
+		return
+	var i := wrapi(_roster.find(_species) + delta, 0, _roster.size())
+	open(_roster[i], _roster[i].moves)
 
 
 func _refresh() -> void:

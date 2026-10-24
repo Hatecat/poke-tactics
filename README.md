@@ -297,3 +297,11 @@ blender --background art/blender/charmander.blend --python tools/blender/export_
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
 sin animar no se exportan, así que esas siguen usando la animación procedural: puedes ir de a poco.
+
+Ajustes que no se deducen del esqueleto:
+- `PROPS` en `setup_animations.py`: accesorios sueltos que se cuelgan de un hueso al importar (las cucharas de
+  Alakazam en sus manos, la cría de Kangaskhan en la bolsa).
+- `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan y se doblan los brazos, piernas más
+  cerradas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
+- Las llamas de los rips (`FireCore` / `FireSten`, Rapidash y Magmar) traen máscaras en gris: `Unit` las cambia
+  en el juego por un material de fuego.

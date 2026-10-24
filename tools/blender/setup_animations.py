@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 import bpy
+from mathutils import Matrix, Vector
 
 PROJECT = Path(__file__).resolve().parents[2]
 # Acción -> (fotogramas, bucle). Los nombres coinciden con las claves del juego.
@@ -56,7 +57,81 @@ def import_model(name):
     for obj in [o for o in bpy.data.objects if o.name.startswith("Icosphere") and o.type == "MESH"]:
         bpy.data.objects.remove(obj)
     bake_import_pose(armature)
+    attach_props(armature, name)
     return armature
+
+
+# Accesorios: huesos raíz sueltos que en los juegos coloca una animación propia (en el rip quedan tirados
+# en el suelo o flotando delante). Huesos raíz del accesorio -> (hueso que lo lleva, cómo se coloca).
+PROPS = {
+    "alakazam": {("LFeelerA",): ("LHand", "grip"), ("RFeelerA",): ("RHand", "grip")},
+    "kangaskhan": {("HipsB", "SpineB"): ("Hips", "pouch")},  # la cría: piernas y torso
+}
+
+
+def attach_props(armature, name):
+    """Mueve cada accesorio (malla y huesos) a su sitio y lo cuelga del hueso que lo lleva, para que
+    siga sus animaciones: la cuchara de Alakazam en el puño, de pie; la cría de Kangaskhan en la bolsa."""
+    props = PROPS.get(name)
+    if not props:
+        return
+    meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.find_armature() == armature]
+
+    def verts(bones):
+        """(objeto, vértice, posición en el espacio de la armadura) de los vértices de esos huesos."""
+        to_arm = armature.matrix_world.inverted()
+        out = []
+        for o in meshes:
+            groups = {g.index: g.name for g in o.vertex_groups}
+            m = to_arm @ o.matrix_world
+            out += [(o, v, m @ v.co) for v in o.data.vertices
+                    if v.groups and groups.get(max(v.groups, key=lambda g: g.weight).group) in bones]
+        return out
+
+    moves = {}
+    for prop, (holder, how) in props.items():
+        bones = set(prop)
+        for root in prop:
+            bones |= {b.name for b in armature.data.bones[root].children_recursive}
+        pts = [p for _, _, p in verts(bones)]
+        if how == "grip":
+            # Eje largo del accesorio; el extremo más ancho (la cabeza de la cuchara) queda arriba.
+            mn = Vector([min(p[i] for p in pts) for i in range(3)])
+            mx = Vector([max(p[i] for p in pts) for i in range(3)])
+            k = max(range(3), key=lambda i: mx[i] - mn[i])
+            span = mx[k] - mn[k]
+
+            def width(lo, hi):
+                sel = [p for p in pts if lo <= p[k] <= hi]
+                return max((p - sel[0]).length for p in sel) if sel else 0.0
+            axis = Vector((0, 0, 0))
+            axis[k] = 1 if width(mx[k] - span * 0.3, mx[k]) > width(mn[k], mn[k] + span * 0.3) else -1
+            grip = (mn + mx) / 2 - axis * span * 0.3  # en el mango, a un tercio del extremo
+            hand = verts({holder})
+            center = sum((p for _, _, p in hand), Vector()) / len(hand)
+            rot = axis.rotation_difference(Vector((0, -0.4, 1)).normalized()).to_matrix().to_4x4()
+            moves[prop] = Matrix.Translation(center) @ rot @ Matrix.Translation(-grip)
+        else:  # pouch: delante de la tripa, medio metida en ella
+            body = [p for _, _, p in verts({holder})]
+            front = min(p.y for p in body)
+            back = max(p.y for p in pts)
+            depth = back - min(p.y for p in pts)
+            moves[prop] = Matrix.Translation((0, front + depth * 0.45 - back, 0))
+        for o, v, p in verts(bones):
+            v.co = (armature.matrix_world.inverted() @ o.matrix_world).inverted() @ moves[prop] @ p
+
+    bpy.context.view_layer.objects.active = armature
+    with bpy.context.temp_override(object=armature, active_object=armature, selected_objects=[armature]):
+        bpy.ops.object.mode_set(mode="EDIT")
+        eb = armature.data.edit_bones
+        for prop, (holder, _) in props.items():
+            for root in prop:
+                for b in [eb[root]] + list(eb[root].children_recursive):
+                    b.transform(moves[prop])
+                eb[root].parent = eb[holder]
+                eb[root].use_connect = False
+        bpy.ops.object.mode_set(mode="OBJECT")
+    print("Accesorios colocados:", ", ".join(f"{'+'.join(p)} en {h}" for p, (h, _) in props.items()))
 
 
 def bake_import_pose(armature):

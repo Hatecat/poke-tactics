@@ -155,7 +155,7 @@ func _ready() -> void:
 
 func _open_viewer() -> void:
 	if _species:
-		_viewer.open(_species, _member.moves if _member else _species.moves)
+		_viewer.open(_species, _member.moves if _member else _species.moves, Game.roster)
 
 
 func _build_learnset_box(parent: Control) -> void:
@@ -203,6 +203,8 @@ func _card(p: PokemonData, callback: Callable, width: float) -> Button:
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
 	box.add_child(UiKit.type_row(p.types, true))
+	if p.size > 1:
+		b.tooltip_text = "◆ Pokémon grande: ocupa %d×%d casillas" % [p.size, p.size]
 	return b
 
 
@@ -461,9 +463,6 @@ func _switch_team(index: int) -> void:
 	if index < 0:
 		return
 	Game.select_team(index)
-	_viewer = AnimationViewer.new()
-	add_child(_viewer)
-
 	_refresh_team()
 	if not Game.player_team.is_empty():
 		_select_member(Game.player_team[0])

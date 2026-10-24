@@ -548,6 +548,7 @@ func _build_visuals() -> void:
 func _load_model() -> void:
 	_model = data.model.instantiate()
 	add_child(_model)
+	_fix_fire_materials()
 	var players := _model.find_children("*", "AnimationPlayer", true, false)
 	_anim = players[0] if not players.is_empty() else null
 	# Aplicar la pose de idle antes de medir: en estos modelos las animaciones
@@ -559,6 +560,25 @@ func _load_model() -> void:
 	_model_base_pos = _model.position
 	_model_base_scale = _model.scale
 	play("idle")
+
+
+## Las llamas de los rips (Rapidash, Magmar: FireCore / FireSten) traen máscaras en gris que en los
+## juegos colorea un shader propio; con el material normal se ven negras. Se cambian por fuego aditivo.
+func _fix_fire_materials() -> void:
+	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
+		for i in m.mesh.get_surface_count():
+			var mat := m.get_active_material(i) as BaseMaterial3D
+			if mat == null or not (mat.resource_name.begins_with("FireCore") or mat.resource_name.begins_with("FireSten")):
+				continue
+			var fire := StandardMaterial3D.new()
+			fire.albedo_texture = mat.albedo_texture
+			fire.albedo_color = Color(1.0, 0.85, 0.35) if mat.resource_name.begins_with("FireCore") else Color(1.0, 0.45, 0.1)
+			fire.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			fire.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+			fire.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			fire.cull_mode = BaseMaterial3D.CULL_DISABLED
+			fire.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+			m.set_surface_override_material(i, fire)
 
 
 func _normalize_model() -> void:

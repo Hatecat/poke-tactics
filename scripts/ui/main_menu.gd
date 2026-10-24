@@ -22,6 +22,7 @@ var _difficulty_buttons: Array[Button] = []
 var _difficulty_hint: Label
 var _go_button: Button
 var _options_dialog: Control
+var _about_dialog: Control
 var _weather_buttons := {} # Weather.Kind o RANDOM_WEATHER -> Button
 
 
@@ -51,6 +52,7 @@ func _ready() -> void:
 	_menu_button(left, "Editor de escenarios", _go.bind("map_editor"))
 	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
 	_menu_button(left, "Opciones", func() -> void: _options_dialog.visible = true)
+	_menu_button(left, "Acerca de", func() -> void: _about_dialog.visible = true)
 	_menu_button(left, "Salir", func() -> void: get_tree().quit())
 	var team_info := UiKit.label("", 16, Color(1, 1, 1, 0.7))
 	team_info.text = "%s: %s" % [Game.teams[Game.current_team].name, ", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío"]
@@ -74,6 +76,7 @@ func _ready() -> void:
 
 	_build_map_dialog()
 	_build_options_dialog()
+	_build_about_dialog()
 
 
 func _go(scene: String) -> void:
@@ -320,8 +323,61 @@ func _build_options_dialog() -> void:
 	box.add_child(close)
 
 
+# --- Acerca de -----------------------------------------------------------------
+
+const ABOUT := """[center][b]Poké Tactics[/b] es un proyecto de fans, gratuito y sin ánimo de lucro.
+No está afiliado a Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.[/center]
+
+[color=#ffcc40][b]Pokémon[/b][/color]
+Pokémon y sus personajes son marcas y propiedad de Nintendo, Creatures Inc., GAME FREAK inc. y The Pokémon Company. Gracias a sus creadores por más de 25 años de aventuras.
+
+[color=#ffcc40][b]Modelos 3D[/b][/color]
+Repositorio [url=https://github.com/pokemon-party/3d-pokemon]3d-pokemon[/url] de [url=https://github.com/Pokemon-3D-api]Pokémon 3D API[/url] (Sudhanshu Ambastha), que reúne modelos publicados en Sketchfab. Los modelos son propiedad de Nintendo / Creatures Inc. / GAME FREAK inc. Las animaciones se hicieron para este juego con Blender.
+
+[color=#ffcc40][b]Datos[/b][/color]
+[url=https://pokemonshowdown.com]Pokémon Showdown[/url] (MIT): estadísticas, tipos, ataques y learnsets.
+[url=https://pokeapi.co]PokeAPI[/url] (BSD): nombres y descripciones en español, y los sprites de los objetos.
+
+[color=#ffcc40][b]Sonido[/b][/color]
+Efectos de [url=https://kenney.nl]Kenney[/url] (CC0). La música, los ambientes y los gritos se generan por código.
+
+[color=#ffcc40][b]Herramientas[/b][/color]
+Hecho con [url=https://godotengine.org]Godot Engine[/url] (MIT), [url=https://www.blender.org]Blender[/url] y [url=https://gltf-transform.dev]glTF Transform[/url]."""
+
+
+func _build_about_dialog() -> void:
+	_about_dialog = ColorRect.new()
+	(_about_dialog as ColorRect).color = Color(0, 0, 0, 0.6)
+	_about_dialog.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_about_dialog.visible = false
+	add_child(_about_dialog)
+	var panel := UiKit.panel()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_about_dialog.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 14)
+	panel.add_child(box)
+	var title := UiKit.label("Acerca de", 30, UiKit.ACCENT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	var text := RichTextLabel.new()
+	text.bbcode_enabled = true
+	text.fit_content = true
+	text.custom_minimum_size.x = 760
+	text.add_theme_font_size_override("normal_font_size", 16)
+	text.add_theme_font_size_override("bold_font_size", 17)
+	text.text = ABOUT
+	text.meta_clicked.connect(func(meta: Variant) -> void: OS.shell_open(str(meta)))
+	box.add_child(text)
+	box.add_child(UiKit.button("Cerrar", func() -> void: _about_dialog.visible = false, 20))
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and _options_dialog.visible:
+	if event.is_action_pressed("ui_cancel") and _about_dialog.visible:
+		_about_dialog.visible = false
+	elif event.is_action_pressed("ui_cancel") and _options_dialog.visible:
 		Game.save()
 		_options_dialog.visible = false
 	elif event.is_action_pressed("ui_cancel") and _map_dialog.visible:

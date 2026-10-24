@@ -146,6 +146,67 @@ _ground = min(_pos(n).dot(UP) for n in ("LToe", "RToe", "LFoot", "RFoot", "LHand
 SCALE = (_pos("Hips").dot(UP) - _ground) if QUAD else (_pos("Head").dot(UP) - _ground) / REF_HEIGHT
 
 
+_VERTS = []
+
+
+def _mesh_verts():
+    """(hueso con más peso, posición en el espacio de la armadura) de cada vértice de la malla."""
+    if not _VERTS:
+        to_arm = arm.matrix_world.inverted()
+        for o in (o for o in bpy.data.objects if o.type == "MESH" and o.find_armature() == arm):
+            groups = {g.index: g.name for g in o.vertex_groups}
+            m = to_arm @ o.matrix_world
+            _VERTS.extend((groups.get(max(v.groups, key=lambda g: g.weight).group), m @ v.co)
+                          for v in o.data.vertices if v.groups)
+    return _VERTS
+
+
+def _tail_lift(chain):
+    """Grados que hay que levantar la cola para que no atraviese el suelo (la de Wartortle cuelga 0,86
+    por debajo de los pies en el propio modelo). 0 si ya queda por encima."""
+    root = B[chain[0]]
+    tail = {root.name} | {b.name for b in root.children_recursive}
+    tail_v = [co for g, co in _mesh_verts() if g in tail]
+    body_v = [co for g, co in _mesh_verts() if g not in tail]
+    if not tail_v or not body_v:
+        return 0.0
+    ground = min(v.dot(UP) for v in body_v)
+    head = root.head_local
+
+    def lowest(deg):
+        q = Quaternion(PITCH, math.radians(deg))
+        return min((head + q @ (v - head)).dot(UP) for v in tail_v[::max(1, len(tail_v) // 400)])
+    # Rozar el suelo es normal (Charizard, Rhydon); solo se corrige si la atraviesa de verdad.
+    if lowest(0) >= ground - 0.05 * SCALE * REF_HEIGHT:
+        return 0.0
+    sign = 1 if lowest(10) > lowest(0) else -1
+    for deg in range(2, 92, 2):
+        if lowest(sign * deg) >= ground:
+            return float(sign * deg)
+    return 90.0 * sign
+
+
+# Ajustes por especie (el nombre del .blend), sobre lo que la herramienta deduce del esqueleto:
+#   arm_drop / arm2_drop: grados que bajan los brazos (y el segundo par) desde la horizontal (45 y 20);
+#   arm_fwd: grados que se adelantan los brazos (25); elbow: flexión extra de los codos;
+#   legs_in: grados que se cierran las piernas.
+_STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 5}  # brazos largos: colgando junto al cuerpo
+TWEAKS = {
+    "machop": _STRONG_ARMS,
+    "machoke": _STRONG_ARMS,
+    "machamp": dict(_STRONG_ARMS, arm2_drop=40),
+    "golem": {"arm_drop": 72, "legs_in": 10},  # los brazos casi tocan el suelo y parecían patas abiertas
+}.get(Path(bpy.data.filepath).stem, {})
+
+# Giros de base sumados a todas las poses: colas que atraviesan el suelo y piernas que se cierran.
+BASE_ROTS = {c[0]: [(PITCH, lift)] for c in TAILS if (lift := _tail_lift(c))}
+for _s, _k in (("L", 1), ("R", -1)):
+    if TWEAKS.get("legs_in"):
+        _a = TWEAKS["legs_in"] * _k * SIDE
+        BASE_ROTS[_s + "Thigh"] = [(ROLL, _a)]
+        BASE_ROTS[_s + "Foot"] = [(ROLL, -_a)]
+
+
 def _arm_drop(side):
     """side: "L", "R" o con el sufijo del par ("L2")."""
     hand, upper = (side[0] + "Hand" + side[1:], side[0] + "Arm" + side[1:])
@@ -157,9 +218,11 @@ def _arm_drop(side):
 # Pares de brazos: "" el principal y "2" el segundo de Machamp (LArm2...), que baja menos para
 # no solaparse. Pose base: tantos grados por debajo de la horizontal y 25° hacia delante (en pose
 # en T se bajan del todo; si el modelo ya los trae bajados, solo lo que falte).
-ARM_PAIRS = {"": 45.0}
-if all(n in B for n in ("LArm2", "LForeArm2", "LHand2", "RArm2", "RForeArm2", "RHand2")):
-    ARM_PAIRS["2"] = 20.0
+ARM_PAIRS = {"": TWEAKS.get("arm_drop", 45.0)}
+# Solo si cuelgan del lomo del propio Pokémon: los LArm2 de la cría de Kangaskhan cuelgan de SpineB.
+if all(n in B for n in ("LArm2", "LForeArm2", "LHand2", "RArm2", "RForeArm2", "RHand2")) \
+        and any(_descends("LArm2", n) for n in ("Spine1", "Spine2", "Spine3")):
+    ARM_PAIRS["2"] = TWEAKS.get("arm2_drop", 20.0)
 ARM_LOWER = {s + k: max(0.0, drop - _arm_drop(s + k)) for k, drop in ARM_PAIRS.items() for s in "LR"}
 
 
@@ -189,8 +252,9 @@ def arm_(side, fwd=0, up=0, inward=0, bend=0, pair=""):
     s = (1 if side == "L" else -1) * SIDE
     return {
         side + "Arm" + pair: [(YAW, -s * inward), (PITCH, -fwd), (ROLL, -s * up),
-                              (PITCH, 0 if ARM_AHEAD[side + pair] else -25), (ROLL, ARM_LOWER[side + pair] * s)],
-        side + "ForeArm" + pair: [(PITCH, -(bend if ARM_AHEAD[side + pair] else 25 + bend))],
+                              (PITCH, 0 if ARM_AHEAD[side + pair] else -TWEAKS.get("arm_fwd", 25)),
+                              (ROLL, ARM_LOWER[side + pair] * s)],
+        side + "ForeArm" + pair: [(PITCH, -(bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow", 0) + bend))],
     }
 
 
@@ -455,6 +519,22 @@ QUAD_LEGS = {leg: tuple(n for n in chain if n in B) for leg, chain in {
 NECK = [n for n in ("Neck", "Neck1", "Neck2") if n in B]
 
 
+
+def _leg_gap(leg):
+    """Altura sobre el suelo de lo más bajo de la pata (en alturas de cadera). Las manos de Nidoran♀
+    quedan 3 cm en el aire en el propio modelo; la IK las baja."""
+    end = B[QUAD_LEGS[leg][-1]]
+    names = {end.name} | {b.name for b in end.children_recursive}
+    low = [co.dot(UP) for g, co in _mesh_verts() if g in names]
+    return (min(low) - _ground_mesh) / SCALE if low else 0.0
+
+
+if QUAD:
+    _ground_mesh = min(co.dot(UP) for _, co in _mesh_verts())
+    LEG_GAP = {leg: _leg_gap(leg) for leg in QUAD_LEGS}
+    LEG_GAP = {leg: g if g > 0.02 else 0.0 for leg, g in LEG_GAP.items()}
+
+
 def _2d(v):
     return Vector((v.dot(FWD), v.dot(UP)))
 
@@ -500,7 +580,7 @@ def _leg_ik(p, leg, fwd=0.0, up=0.0, tip=0.0):
     parent_angle, offset = _fk(p, _ancestors(top))
     t0, e0 = _2d(_pos(top)), _2d(_pos(end))
     t = _rot2(t0, parent_angle) + offset
-    target = e0 + Vector((fwd, up)) * SCALE
+    target = e0 + Vector((fwd, up - LEG_GAP[leg])) * SCALE
     d = target - t
     if len(chain) == 2:
         d1 = -(_ang(d) - _ang(e0 - t0))
@@ -610,19 +690,38 @@ QUAD_PHASE = {"LH": 0.0, "LF": 0.25, "RH": 0.5, "RF": 0.75}
 DUTY, STRIDE, LIFT = 0.65, 0.22, 0.14
 
 
-def _step(ph):
+def _tip_max(leg):
+    """Giro de punta abajo al levantar la pata: 30° salvo que los dedos bajen más de lo que sube la pata
+    y atraviesen el suelo (los pies largos de los Nidoran)."""
+    end = B[QUAD_LEGS[leg][-1]]
+    names = {end.name} | {b.name for b in end.children_recursive}
+    head = _2d(end.head_local)
+    pts = [_2d(co) - head for g, co in _mesh_verts() if g in names]
+    if not pts:
+        return 30
+    low = min(v.y for v in pts)
+    for deg in range(30, 0, -2):
+        if low - min(_rot2(v, deg).y for v in pts) <= 0.8 * LIFT * SCALE:
+            return deg
+    return 0
+
+
+TIP_MAX = {leg: _tip_max(leg) for leg in QUAD_LEGS} if QUAD else {}
+
+
+def _step(ph, leg):
     """(fwd, up, tip) del extremo de una pata en la fase ph (0..1) del ciclo."""
     if ph < DUTY:
         return (STRIDE * (1 - 2 * ph / DUTY), 0.0, 0.0)
     q = (ph - DUTY) / (1 - DUTY)
     ease = q * q * (3 - 2 * q)
-    return (-STRIDE + 2 * STRIDE * ease, LIFT * math.sin(math.pi * q), 30 * math.sin(math.pi * q))
+    return (-STRIDE + 2 * STRIDE * ease, LIFT * math.sin(math.pi * q), TIP_MAX[leg] * math.sin(math.pi * q))
 
 
 def quad_walk_pose(t):
     s, c = math.sin, math.cos
     cyc = t / (2 * math.pi)
-    feet = {leg: _step((cyc + ph) % 1.0) for leg, ph in QUAD_PHASE.items()}
+    feet = {leg: _step((cyc + ph) % 1.0, leg) for leg, ph in QUAD_PHASE.items()}
     return qpose(
         qspine(pitch=1.0 * c(2 * t), hips_yaw=2 * s(t)),
         qhead(pitch=2 * c(2 * t - 0.8), yaw=-3 * c(t - 0.5), roll=-1.5 * s(t - 0.5)),
@@ -825,6 +924,8 @@ def build(name, keys):
             name = CANON.get(pb.name, "")  # "" = un duplicado al normalizar: se queda en reposo
             pb.rotation_mode = "QUATERNION"
             rots = p.get(name) if name else None
+            if name in BASE_ROTS:
+                rots = BASE_ROTS[name] + (rots or [])
             pb.rotation_quaternion = lquat(name, rots) if rots else Quaternion()
             pb.location = B[name].matrix_local.to_3x3().inverted() @ offset if name in ROOTS else Vector()
             pb.keyframe_insert("location", frame=frame, group=pb.name)
