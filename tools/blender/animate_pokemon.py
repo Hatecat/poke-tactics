@@ -209,12 +209,16 @@ def _tail_lift(chain):
 #   arm_drop / arm2_drop: grados que bajan los brazos (y el segundo par) desde la horizontal (45 y 20);
 #   arm_fwd: grados que se adelantan los brazos (25); elbow: flexión extra de los codos;
 #   legs_in: grados que se cierran las piernas.
-_STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 5}  # brazos largos: colgando junto al cuerpo
+_STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: colgando junto al cuerpo
 TWEAKS = {
     "machop": _STRONG_ARMS,
     "machoke": _STRONG_ARMS,
     "machamp": dict(_STRONG_ARMS, arm2_drop=40),
-    "golem": {"arm_drop": 72, "legs_in": 10},  # los brazos casi tocan el suelo y parecían patas abiertas
+    "golem": {"arm_drop": 62, "elbow": 45, "legs_in": 10},  # brazos largos: doblados, para que no parezcan patas
+    # Patas delanteras cortas y adelantadas: con el pecho más bajo, las manos van bajo los hombros.
+    "nidoranf": {"chest": 10, "front_back": 0.18},
+    # Brazos que en el modelo ya apuntan adelante: la mano quedaba delante del pecho y parecía otra cabeza.
+    "sandshrew": {"arm_out": 32, "arm_drop": 35, "arm_fwd": 0, "elbow": -10},
 }.get(Path(bpy.data.filepath).stem, {})
 
 # Estilos por especie, que cambian todas las acciones:
@@ -270,6 +274,17 @@ for _side, _ahead in ARM_AHEAD.items():
         ARM_LOWER[_side] = 0.0
 
 
+def _elbow_axis(side):
+    """Eje sobre el que se dobla el codo hacia delante: perpendicular al antebrazo y a FWD. Con el
+    brazo colgando es PITCH; con el brazo en cruz (Machop) PITCH lo retorcería sobre sí mismo."""
+    d = (_pos(side[0] + "Hand" + side[1:]) - _pos(side[0] + "ForeArm" + side[1:])).normalized()
+    axis = d.cross(FWD)
+    return axis.normalized() if axis.length > 0.3 else -PITCH
+
+
+ELBOW = {s + k: _elbow_axis(s + k) for k in ARM_PAIRS for s in "LR"}
+
+
 def lquat(name, rots):
     inv = B[name].matrix_local.to_3x3().inverted()
     q = Quaternion()
@@ -282,10 +297,11 @@ def lquat(name, rots):
 def arm_(side, fwd=0, up=0, inward=0, bend=0, pair=""):
     s = (1 if side == "L" else -1) * SIDE
     return {
-        side + "Arm" + pair: [(YAW, -s * inward), (PITCH, -fwd), (ROLL, -s * up),
+        side + "Arm" + pair: [(YAW, -s * (inward - TWEAKS.get("arm_out", 0))), (PITCH, -fwd), (ROLL, -s * up),
                               (PITCH, 0 if ARM_AHEAD[side + pair] else -TWEAKS.get("arm_fwd", 25)),
                               (ROLL, ARM_LOWER[side + pair] * s)],
-        side + "ForeArm" + pair: [(PITCH, -(bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow", 0) + bend))],
+        side + "ForeArm" + pair: [(ELBOW[side + pair],
+                                   bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow", 0) + bend)],
     }
 
 
@@ -641,6 +657,13 @@ def qpose(*parts, root=(0, 0, 0), feet=None):
     """Pose de cuadrúpedo: las piezas y, al final, las cuatro patas por IK. feet = {"RF": (fwd, up, tip)}."""
     p = pose(*parts, root=root)
     p["_q"] = ({k: list(v) for k, v in p.items() if k != "root"}, root, feet or {})
+    if TWEAKS.get("chest"):
+        p["Spine1"] = [(PITCH, TWEAKS["chest"])] + p.get("Spine1", [])
+    if TWEAKS.get("front_back"):
+        feet = dict(feet or {})
+        for leg in ("LF", "RF"):
+            f = (tuple(feet.get(leg, ())) + (0, 0, 0))[:3]
+            feet[leg] = (f[0] - TWEAKS["front_back"], f[1], f[2])
     for leg in QUAD_LEGS:
         for name, rots in _leg_ik(p, leg, *(feet or {}).get(leg, ())).items():
             p[name] = p.get(name, []) + rots

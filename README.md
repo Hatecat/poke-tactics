@@ -301,8 +301,8 @@ sin animar no se exportan, así que esas siguen usando la animación procedural:
 Ajustes que no se deducen del esqueleto:
 - `PROPS` en `setup_animations.py`: accesorios sueltos que se cuelgan de un hueso al importar (las cucharas de
   Alakazam en sus manos, la cría de Kangaskhan en la bolsa).
-- `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan y se doblan los brazos, piernas más
-  cerradas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
+- `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan, se abren y se doblan los brazos, piernas
+  más cerradas, pecho bajo y manos bajo los hombros en cuadrúpedos de patas cortas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
 - `STYLES` en `animate_pokemon.py`: forma de moverse distinta de la de su esqueleto. `fly` (Beedrill) vuela con
   las piernas colgando y aletea rápido los huesos de `wings`; `lotus` (Abra) levita con las piernas cruzadas;
   `sit` (Persian) se sienta como un gato en el reposo. En el juego el modelo se apoya igualmente en el suelo
