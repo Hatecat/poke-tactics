@@ -2,10 +2,20 @@ class_name PokemonPreview
 extends SubViewportContainer
 ## Vista 3D giratoria de un Pokémon, con su propio mundo (no interfiere con la batalla).
 
+## Gira solo; al arrastrar con el ratón (si `interactive`) deja de hacerlo.
+var spin := true
+## Permite girar el modelo arrastrando.
+var interactive := false:
+	set(v):
+		interactive = v
+		mouse_filter = Control.MOUSE_FILTER_STOP if v else Control.MOUSE_FILTER_IGNORE
+
 var _viewport: SubViewport
 var _pivot: Node3D
 var _camera: Camera3D
 var _unit: Unit
+## Cada acción reproducida invalida la vuelta a idle de la anterior.
+var _action_serial := 0
 
 
 func _init() -> void:
@@ -56,6 +66,7 @@ func show_pokemon(data: PokemonData) -> void:
 	if not is_inside_tree():
 		ready.connect(show_pokemon.bind(data), CONNECT_ONE_SHOT)
 		return
+	_action_serial += 1
 	if _unit:
 		_unit.queue_free()
 		_unit = null
@@ -74,5 +85,46 @@ func show_pokemon(data: PokemonData) -> void:
 	_camera.position = Vector3(0, 0.55 + 6.0 * tan(deg_to_rad(12.0)), 6)
 
 
+## Reproduce una acción (idle, walk, fight_b, hit, ko...) y, si no es un bucle, vuelve a idle al
+## terminar. Devuelve el clip usado ("" = animación procedural).
+func play_action(key: String, variant := "", move_id := "") -> String:
+	if _unit == null:
+		return ""
+	_action_serial += 1
+	var serial := _action_serial
+	var clip := _unit.clip_for(key, variant, move_id)
+	var duration := _unit.play(key, variant, move_id)
+	if key not in Unit.LOOPING_ANIMS and is_inside_tree():
+		get_tree().create_timer(duration + 0.6).timeout.connect(func() -> void:
+			if serial == _action_serial and is_instance_valid(_unit):
+				_unit.play("idle"))
+	return clip
+
+
+func unit() -> Unit:
+	return _unit
+
+
+## Deja de girar y muestra el modelo con ese ángulo (0 = de frente).
+func turn_to(degrees: float) -> void:
+	spin = false
+	_pivot.rotation.y = deg_to_rad(degrees)
+
+
+## Nombres de los clips que trae el modelo (vacío si solo usa animación procedural).
+func clips() -> PackedStringArray:
+	if _unit == null:
+		return PackedStringArray()
+	var players := _unit.find_children("*", "AnimationPlayer", true, false)
+	return (players[0] as AnimationPlayer).get_animation_list() if not players.is_empty() else PackedStringArray()
+
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		spin = false
+		_pivot.rotation.y += event.relative.x * 0.01
+
+
 func _process(delta: float) -> void:
-	_pivot.rotation.y += delta * 0.6
+	if spin:
+		_pivot.rotation.y += delta * 0.6

@@ -55,3 +55,4 @@ field_effect = ""
 extra_ct = 0
 pp = 1
 animation = "fight_d"
+anim_variant = "mind"

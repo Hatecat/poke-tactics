@@ -49,3 +49,4 @@ field_effect = "psychicterrain"
 extra_ct = 0
 pp = 2
 animation = "fight_d"
+anim_variant = "boost"

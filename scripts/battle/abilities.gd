@@ -299,7 +299,7 @@ static func on_hit(def: Unit, physical: bool, type: String) -> Dictionary:
 	return {}
 
 
-## Daño o curación al empezar el turno según el clima (fracción de PS; negativo = daño).
+## Daño o curación al terminar el turno según el clima (fracción de PS; negativo = daño).
 static func weather_hp(u: Unit, weather: int) -> float:
 	match u.ability:
 		"raindish": return 1.0 / 16.0 if weather == Weather.Kind.RAIN else 0.0

@@ -129,6 +129,57 @@ def secondaries(m):
     return [m["secondary"]] if m.get("secondary") else []
 
 
+## Variante de animación (MoveData.anim_variant): con qué parte del cuerpo se ataca.
+## Se prueban en orden; gana la primera cuya palabra aparezca en el id del ataque.
+## Los físicos que no encajan (Represalia, Finta...) usan el fight_b genérico.
+PHYSICAL_VARIANTS = [
+    ("wing", ("wingattack", "steelwing", "wingbeat", "fly", "bravebird", "skyattack", "acrobatics", "skydrop")),
+    # Látigos: cola o lianas (Látigo Cepa usa el mismo clip que Cola Férrea).
+    ("tail", ("tail", "whip")),
+    ("kick", ("kick", "stomp", "sweep", "axel", "highhorsepower")),
+    ("claw", ("claw", "slash", "scratch", "swipe", "cut", "scissor", "blade", "razorshell", "crosspoison",
+              "crabhammer", "aerialace")),
+    ("punch", ("chop", "slap", "pound", "lariat", "upperhand", "rocksmash", "brickbreak")),
+    ("horn", ("horn", "peck", "drill", "jab", "sting", "needle", "pinmissile", "furyattack", "pluck", "smartstrike")),
+]
+## Embestidas: solo si el ataque es de contacto (Carámbano no es un placaje).
+BODY_WORDS = ("tackle", "takedown", "doubleedge", "slam", "impact", "head", "rush", "charge", "wheel", "blitz",
+              "extremespeed", "quickattack", "rollout", "iceball", "spin", "roller", "crash", "bodypress", "jet",
+              "flipturn", "uturn", "lunge", "pounce", "outrage", "thrash", "struggle", "spark", "skullbash",
+              "gyroball", "firstimpression", "woodhammer")
+## Especiales que salen de la boca (fuego, agua, veneno, rayos...).
+BREATH_WORDS = ("breath", "flame", "fire", "ember", "incinerate", "inferno", "overheat", "burn", "lava", "water",
+                "hydro", "bubble", "scald", "pump", "spout", "octazooka", "brine", "sludge", "smog", "gas", "acid",
+                "mud", "beam", "cannon", "powdersnow", "dragonrage", "spitup")
+
+
+def anim_variant(mv):
+    """Variante de animación del ataque (ver PHYSICAL_VARIANTS); "" = solo la genérica."""
+    mid, flags = mv["id"], mv["flags"]
+    if mv["animation"] == "fight_b":
+        if "bite" in flags or "fang" in mid or mid in ("crunch", "bugbite", "leechlife", "lick"):
+            return "bite"
+        if "punch" in flags or mid == "hammerarm":
+            return "punch"
+        for variant, words in PHYSICAL_VARIANTS:
+            if any(w in mid for w in words):
+                return variant
+        if "contact" in flags and any(w in mid for w in BODY_WORDS):
+            return "body"
+        return ""
+    if "sound" in flags:
+        return "sound"
+    if "powder" in flags or mid == "sweetscent":
+        return "powder"
+    if mv["category"] == 2 and (mv["targets_self"] or (mv["self_stat_changes"] and not mv["stat_changes"])):
+        return "boost"
+    if any(w in mid for w in BREATH_WORDS):
+        return "breath"
+    if mv["type"] in ("psychic", "ghost"):
+        return "mind"
+    return ""
+
+
 def convert_move(mid, m, names, flavor):
     """Devuelve un dict con los campos de MoveData, o None si el ataque no se puede representar."""
     if mid in UNSUPPORTED or m.get("ohko") or m.get("isZ") or m.get("isMax"):
@@ -320,6 +371,7 @@ def convert_move(mid, m, names, flavor):
         return None
     if cat == 2:
         mv["animation"] = "fight_d"
+    mv["anim_variant"] = anim_variant(mv)
     return mv
 
 
@@ -386,6 +438,19 @@ def anim_map(clips):
                     result[key] = re.sub(r"[-_](loop|cycle)$", "", clip, flags=re.IGNORECASE)
                 break
     return result
+
+
+def manual_anim_map(pid):
+    """Entradas del anim_map puestas a mano en el .tres actual (por ataque, como
+    {"lowkick": "fight_b_kick_low"}, o por variante): las que no salen de ANIM_SYNONYMS.
+    Así regenerar los datos no las borra."""
+    path = OUT_POKEMON / f"{pid}.tres"
+    if not path.exists():
+        return {}
+    m = re.search(r"^anim_map = (\{\}|\{.*?^\})$", path.read_text(encoding="utf-8"), re.MULTILINE | re.DOTALL)
+    if not m:
+        return {}
+    return {k: v for k, v in json.loads(m.group(1)).items() if k not in ANIM_SYNONYMS}
 
 
 def expected_hits(mv):
@@ -585,7 +650,7 @@ def main():
         default = pick_default_moves(mon, learnable) or [converted["struggle"]]
         if not learnable:
             learnable = [converted["struggle"]]
-        write_pokemon(pid, mon, default, learnable, anim_map(glb_animations(model)),
+        write_pokemon(pid, mon, default, learnable, anim_map(glb_animations(model)) | manual_anim_map(pid),
                       evolution_info(pid, mon, mons), level_moves(pid, learnsets, converted))
 
     n_abilities = write_abilities(args.src, mons)

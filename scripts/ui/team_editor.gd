@@ -9,6 +9,7 @@ var _species: PokemonData
 ## Miembro del equipo que se está editando (null = viendo una especie del roster).
 var _member: TeamMember
 var _preview: PokemonPreview
+var _viewer: AnimationViewer
 var _detail: VBoxContainer
 var _roster_grid: GridContainer
 var _roster_search: LineEdit
@@ -92,9 +93,14 @@ func _ready() -> void:
 	detail_scroll.add_child(detail_col)
 	var preview_row := HBoxContainer.new()
 	detail_col.add_child(preview_row)
+	var preview_col := VBoxContainer.new()
+	preview_row.add_child(preview_col)
 	_preview = PokemonPreview.new()
 	_preview.custom_minimum_size = Vector2(240, 240)
-	preview_row.add_child(_preview)
+	preview_col.add_child(_preview)
+	var anim_button := UiKit.button("Ver animaciones", _open_viewer, 15)
+	anim_button.tooltip_text = "Reproduce sus animaciones y las de cada ataque"
+	preview_col.add_child(anim_button)
 	_detail = VBoxContainer.new()
 	_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_detail.add_theme_constant_override("separation", 6)
@@ -137,11 +143,19 @@ func _ready() -> void:
 	team_col.add_child(_team_box)
 	team_col.add_child(UiKit.label("Clic en un miembro del equipo para\nelegir sus ataques. El orden del equipo\nes el orden de despliegue.", 14, Color(1, 1, 1, 0.55)))
 
+	_viewer = AnimationViewer.new()
+	add_child(_viewer)
+
 	_refresh_team()
 	if not Game.player_team.is_empty():
 		_select_member(Game.player_team[0])
 	else:
 		_select_species(Game.roster[0])
+
+
+func _open_viewer() -> void:
+	if _species:
+		_viewer.open(_species, _member.moves if _member else _species.moves)
 
 
 func _build_learnset_box(parent: Control) -> void:
@@ -447,6 +461,9 @@ func _switch_team(index: int) -> void:
 	if index < 0:
 		return
 	Game.select_team(index)
+	_viewer = AnimationViewer.new()
+	add_child(_viewer)
+
 	_refresh_team()
 	if not Game.player_team.is_empty():
 		_select_member(Game.player_team[0])

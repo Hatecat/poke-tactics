@@ -49,3 +49,4 @@ field_effect = ""
 extra_ct = 0
 pp = 6
 animation = "fight_d"
+anim_variant = ""

@@ -414,6 +414,9 @@ func _next_turn() -> void:
 	Audio.cry(active.data, 1.0, -12.0)
 	_refresh_info(active)
 	if not await _start_of_turn(active):
+		# Aunque pierda el turno (dormido, paralizado...), el veneno y el clima le afectan igual.
+		if active.is_alive():
+			await _end_of_turn(active)
 		turns.end_turn(active, true, true)
 		await _wait(0.6)
 		_next_turn.call_deferred()
@@ -427,35 +430,15 @@ func _next_turn() -> void:
 		_end_turn()
 
 
-## Aplica efectos de estado al empezar el turno. Devuelve false si pierde el turno.
+## Al empezar el turno: lo que decide si puede actuar (sueño, congelación, parálisis,
+## confusión...). El daño residual va en _end_of_turn. Devuelve false si pierde el turno.
 func _start_of_turn(u: Unit) -> bool:
 	var expired := u.tick_stages()
 	if not expired.is_empty():
 		_log("Los cambios de %s de %s se disiparon." % [", ".join(expired), u.display_name()])
 	if not await effects.start_of_turn(u):
 		return false
-	var chip := Weather.chip_fraction(Combat.weather, u.data.types)
-	if Abilities.weather_immune(u, Combat.weather) or not Abilities.takes_indirect(u):
-		chip = 0.0
-	if chip > 0.0:
-		var dmg := maxi(1, int(u.max_hp * chip))
-		u.take_damage(dmg)
-		_popup(u, str(dmg), Color(0.85, 0.75, 0.55))
-		_log("%s sufre por el %s." % [u.display_name(), Weather.NAMES[weather].to_lower()])
-		await _wait(0.4)
-		if not u.is_alive():
-			return false
 	match u.status:
-		MoveData.Status.POISON, MoveData.Status.BURN:
-			if not Abilities.takes_indirect(u):
-				return true
-			var frac := 8 if u.status == MoveData.Status.POISON else 16
-			var dmg := maxi(1, u.max_hp / frac)
-			u.take_damage(dmg)
-			_popup(u, str(dmg), Color(0.75, 0.4, 1.0))
-			_log("%s sufre por estar %s." % [u.display_name(), Combat.STATUS_NAMES[u.status]])
-			await _wait(0.5)
-			return u.is_alive()
 		MoveData.Status.SLEEP:
 			if u.status_turns > 0:
 				u.status_turns -= 1
@@ -482,9 +465,38 @@ func _start_of_turn(u: Unit) -> bool:
 	return true
 
 
+## Daño y curación residuales después de actuar: volátiles, objetos y habilidades
+## (effects.end_of_turn), clima y veneno/quemadura. Se aplica aunque haya perdido el turno.
+func _end_of_turn(u: Unit) -> void:
+	await effects.end_of_turn(u)
+	if not u.is_alive():
+		return
+	var chip := Weather.chip_fraction(Combat.weather, u.data.types)
+	if Abilities.weather_immune(u, Combat.weather) or not Abilities.takes_indirect(u):
+		chip = 0.0
+	if chip > 0.0:
+		var dmg := maxi(1, int(u.max_hp * chip))
+		u.take_damage(dmg)
+		_popup(u, str(dmg), Color(0.85, 0.75, 0.55))
+		_log("%s sufre por el %s." % [u.display_name(), Weather.NAMES[weather].to_lower()])
+		await _wait(0.4)
+		if not u.is_alive():
+			return
+	if u.status in [MoveData.Status.POISON, MoveData.Status.BURN] and Abilities.takes_indirect(u):
+		var frac := 8 if u.status == MoveData.Status.POISON else 16
+		var dmg := maxi(1, u.max_hp / frac)
+		u.take_damage(dmg)
+		_popup(u, str(dmg), Color(0.75, 0.4, 1.0))
+		_log("%s sufre por estar %s." % [u.display_name(), Combat.STATUS_NAMES[u.status]])
+		await _wait(0.5)
+
+
 func _end_turn() -> void:
 	state = State.BUSY
 	_set_actions_enabled(false)
+	_board.clear_highlights()
+	if active.is_alive():
+		await _end_of_turn(active)
 	turns.end_turn(active, moved, acted, _extra_ct)
 	if active.is_alive() and Items.effect(active) == "quick_claw" and rng.randf() < Items.param(active, "chance", 0.2):
 		active.ct += Items.param(active, "ct", 30)
@@ -881,7 +893,7 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	_log("%s usó [b]%s[/b]." % [user.display_name(), move.display_name])
 	_board.clear_highlights()
 	_board.highlight(area, COLOR_AREA)
-	var anim_len := user.play(move.animation)
+	var anim_len := user.play(move.animation, move.anim_variant, move.id)
 	await _wait(clampf(anim_len * 0.4, 0.25, 0.6))
 	_extra_ct += Weather.extra_ct(Combat.weather, move)
 	user.spend_pp(move)

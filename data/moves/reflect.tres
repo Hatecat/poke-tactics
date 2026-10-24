@@ -49,3 +49,4 @@ field_effect = "reflect"
 extra_ct = 0
 pp = 4
 animation = "fight_d"
+anim_variant = "boost"

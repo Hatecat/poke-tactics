@@ -254,10 +254,43 @@ El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
 no lo tiene, usa una animación procedural. Solo 19 de los 151 modelos traen clips.
 
+Cada ataque indica además con qué parte del cuerpo se hace (`anim_variant` del `.tres`): el juego prueba
+primero `fight_b_<variante>` y, si el modelo no lo tiene, el `fight_b` genérico (igual con `fight_d`). Así cada
+Pokémon solo anima las variantes que le encajan; Charmander no necesita `wing` y sus ataques de alas usan `fight_b`.
+
+| Acción | Variantes |
+|---|---|
+| `fight_b` (físico) | `bite`, `claw`, `punch`, `kick`, `tail` (cola o lianas), `wing`, `horn` (cuerno, pico, aguijón), `body` (placajes) |
+| `fight_d` (especial/estado) | `breath` (sale de la boca), `sound`, `powder`, `mind` (psíquico/fantasma), `boost` (se potencia a sí mismo) |
+
+Las asigna `anim_variant()` en `tools/build_data.py`. Para recalcularlas sin regenerar los ataques:
+`python3 tools/assign_anim_variants.py` (`--dry-run` para ver el reparto; respeta las puestas a mano salvo con `--force`).
+
+La variante dice qué tipo de ataque es, no cómo se anima: cada Pokémon anima su clip a su manera (el
+`fight_d_mind` de Gengar lanza con las manos y el de Mightyena por la boca). Para casos concretos, el
+`anim_map` del Pokémon admite excepciones, que se prueban antes que la variante:
+
+```
+anim_map = {
+"lowkick": "fight_b_kick_low",
+"lowsweep": "fight_b_kick_low",
+"fight_d_mind": "fight_d_breath"
+}
+```
+
+Por ataque (`lowkick`: Patada Baja usa un segundo clip de patada) o por variante (todo lo `mind` usa el clip
+de boca). Orden de búsqueda: excepción del ataque → `fight_b_<variante>` → `fight_b` → procedural.
+`build_data.py` conserva estas entradas al regenerar.
+
 Para animar uno en Blender (no hace falta tocar el rig, todos tienen esqueleto):
 
 ```bash
 blender --background --python tools/blender/setup_animations.py -- charmander   # crea art/blender/charmander.blend
+blender --background --python tools/blender/setup_animations.py -- charmander claw bite tail breath   # añade variantes
+blender --background --python tools/blender/setup_animations.py -- blaziken kick kick_low   # segundo clip de patada
+# esqueleto con los nombres de Charmander, bípedo (Charmeleon, Nidoking, Rhydon...) o cuadrúpedo
+# (Arcanine, Rapidash, Venusaur, Nidorino, Slowpoke...): anima idle, walk y ataques solo
+blender --background art/blender/charmeleon.blend --python tools/blender/animate_pokemon.py
 # abre el .blend, anima cada acción en el Action Editor (Dope Sheet → Action Editor) y guarda
 blender --background art/blender/charmander.blend --python tools/blender/export_animations.py
 ```

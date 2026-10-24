@@ -103,3 +103,8 @@ enum Status { NONE, POISON, SLEEP, PARALYSIS, BURN, FREEZE }
 @export_group("Presentación")
 ## Clave de animación (se busca como subcadena en el nombre de la animación del modelo).
 @export var animation := "fight_b"
+## Con qué parte del cuerpo ataca: se prueba antes el clip "<animation>_<anim_variant>"
+## (p. ej. fight_b_bite) y, si el modelo no lo tiene, el genérico. Vacío = solo el genérico.
+## Físicos: bite, claw, punch, kick, tail, wing, horn, body.
+## Especiales/estado: breath, sound, powder, mind, boost.
+@export var anim_variant := ""

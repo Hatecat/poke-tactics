@@ -49,3 +49,4 @@ field_effect = "perishsong"
 extra_ct = 0
 pp = 1
 animation = "fight_d"
+anim_variant = "sound"

@@ -125,7 +125,7 @@ static func effects_text(kind: Kind) -> String:
 	return "Sin efectos"
 
 
-## Daño al empezar el turno (arena y granizo), como fracción de los PS máximos.
+## Daño al terminar el turno (arena y granizo), como fracción de los PS máximos.
 static func chip_fraction(kind: Kind, types: PackedStringArray) -> float:
 	if kind == Kind.SAND and not Array(types).any(func(t: String) -> bool: return t in SAND_IMMUNE):
 		return 1.0 / 16.0

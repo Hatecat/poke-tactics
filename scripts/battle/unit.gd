@@ -354,23 +354,50 @@ func face_towards(world_target: Vector3) -> void:
 
 
 ## Reproduce la animación de la acción `key` (idle, walk, fight_b, fight_d, hit, ko).
-## Busca el clip indicado en data.anim_map o, si no hay, uno que contenga `key`.
-## Si el modelo no lo tiene (la mayoría del repo no trae animaciones), usa una
+## Para un ataque, en orden: el clip que data.anim_map asigne a `move_id` (p. ej.
+## {"lowkick": "fight_b_kick_low"}), "<key>_<variant>" (fight_b_kick) y `key` (fight_b).
+## Si el modelo no tiene ninguno (la mayoría del repo no trae animaciones), usa una
 ## versión procedural. Devuelve la duración.
-func play(key: String) -> float:
+func play(key: String, variant := "", move_id := "") -> float:
 	_reset_procedural()
-	var clip_key: String = data.anim_map.get(key, key)
 	if _anim:
-		for anim_name in _anim.get_animation_list():
-			if clip_key in anim_name:
-				var anim := _anim.get_animation(anim_name)
-				anim.loop_mode = Animation.LOOP_LINEAR if key in LOOPING_ANIMS else Animation.LOOP_NONE
-				_anim.play(anim_name, 0.15)
-				return anim.length
+		var anim_name := clip_for(key, variant, move_id)
+		if anim_name:
+			var anim := _anim.get_animation(anim_name)
+			anim.loop_mode = Animation.LOOP_LINEAR if key in LOOPING_ANIMS else Animation.LOOP_NONE
+			_anim.play(anim_name, 0.15)
+			return anim.length
 		# Sin clip para esta acción: congelar el anterior (si no, p. ej. el de caminar
 		# seguiría en bucle) y usar la versión procedural.
 		_anim.pause()
 	return _play_procedural(key)
+
+
+## Clip que play() usaría para esa acción, o "" si no hay y se usa la versión procedural.
+func clip_for(key: String, variant := "", move_id := "") -> String:
+	if _anim == null:
+		return ""
+	var anim_name := _find_clip(move_id) if move_id and data.anim_map.has(move_id) else ""
+	if not anim_name and variant:
+		anim_name = _find_clip(key + "_" + variant)
+	if not anim_name:
+		anim_name = _find_clip(key)
+	return anim_name
+
+
+## Clip del modelo para `key`, mapeado por data.anim_map. Primero uno que termine en la
+## clave (los rips llevan prefijos: "model_skeleton|001fight_b"); si no, uno que la contenga,
+## pero no una variante suya: pedir "fight_b" no debe sonar "fight_b_bite".
+func _find_clip(key: String) -> String:
+	var clip_key: String = data.anim_map.get(key, key)
+	var clips := _anim.get_animation_list()
+	for anim_name in clips:
+		if anim_name.ends_with(clip_key):
+			return anim_name
+	for anim_name in clips:
+		if clip_key in anim_name and not (clip_key + "_") in anim_name:
+			return anim_name
+	return ""
 
 
 func _play_procedural(key: String) -> float:

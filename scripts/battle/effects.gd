@@ -164,7 +164,8 @@ func _terrain_boosts(type: String) -> bool:
 
 # --- Inicio de turno -------------------------------------------------------------
 
-## Volátiles, habilidades y terreno al empezar el turno de `u`. Devuelve false si pierde el turno.
+## Volátiles y habilidades al empezar el turno de `u`: lo que decide si puede actuar.
+## El daño y la curación residuales van en end_of_turn. Devuelve false si pierde el turno.
 func start_of_turn(u: Unit) -> bool:
 	check_binds()
 	for key in ["protect", "endure", "destinybond"]:
@@ -174,48 +175,6 @@ func start_of_turn(u: Unit) -> bool:
 	u.volatiles.erase("protect_used")
 
 	await _abilities_start(u)
-	if not u.is_alive():
-		return false
-	await _items_start(u)
-	if not u.is_alive():
-		return false
-
-	# Daño y curación por volátiles.
-	if u.volatiles.has("leechseed") and Abilities.takes_indirect(u):
-		var seeder: Unit = u.volatiles.leechseed.by
-		var dmg := maxi(1, u.max_hp / 8)
-		_hurt(u, dmg, "Drenadoras le roba PS a %s." % u.display_name(), Color(0.5, 0.9, 0.4))
-		if seeder and seeder.is_alive():
-			if Abilities.has(u, "liquidooze"):
-				_hurt(seeder, dmg, "¡%s absorbió Viscosecreción!" % seeder.display_name(), Color(0.7, 0.4, 0.9))
-			else:
-				b._heal(seeder, dmg)
-		await b._wait(0.35)
-	if u.is_alive() and u.volatiles.has("curse") and Abilities.takes_indirect(u):
-		_hurt(u, maxi(1, u.max_hp / 4), "La maldición daña a %s." % u.display_name(), Color(0.5, 0.3, 0.6))
-		await b._wait(0.35)
-	if u.is_alive() and u.volatiles.has("nightmare"):
-		if u.status == MoveData.Status.SLEEP and Abilities.takes_indirect(u):
-			_hurt(u, maxi(1, u.max_hp / 4), "%s tiene una pesadilla." % u.display_name(), Color(0.4, 0.3, 0.5))
-			await b._wait(0.35)
-		elif u.status != MoveData.Status.SLEEP:
-			u.volatiles.erase("nightmare")
-	# Atrapado (Constricción...) o en un remolino (Giro Fuego...): pierde 1/8 por turno mientras dure.
-	for key in ["wrapped", "vortex"]:
-		if u.is_alive() and u.volatiles.has(key):
-			if u.volatiles[key].turns <= 0:
-				release_bind(u, key)
-			else:
-				u.volatiles[key].turns -= 1
-				if Abilities.takes_indirect(u):
-					var text := "%s sufre dentro del remolino." if key == "vortex" else "%s sufre al estar atrapado."
-					_hurt(u, maxi(1, u.max_hp / 8), text % u.display_name(), Color(0.9, 0.6, 0.4))
-					await b._wait(0.35)
-	for key in ["ingrain", "aquaring"]:
-		if u.is_alive() and u.volatiles.has(key):
-			b._heal(u, maxi(1, u.max_hp / 16))
-	if u.is_alive() and field.terrain == "grassyterrain" and field.grounded(u):
-		b._heal(u, maxi(1, u.max_hp / 16))
 	if not u.is_alive():
 		return false
 
@@ -271,8 +230,59 @@ func start_of_turn(u: Unit) -> bool:
 	return true
 
 
+# --- Fin de turno ------------------------------------------------------------------
+
+## Daño y curación residuales de `u` después de actuar (como en los juegos: primero se
+## actúa y luego pasan factura el veneno, el clima, Drenadoras...). Ver también
+## battle._end_of_turn, que añade el clima y los estados.
+func end_of_turn(u: Unit) -> void:
+	await _abilities_end(u)
+	if not u.is_alive():
+		return
+	await _items_end(u)
+	if not u.is_alive():
+		return
+
+	# Daño y curación por volátiles.
+	if u.volatiles.has("leechseed") and Abilities.takes_indirect(u):
+		var seeder: Unit = u.volatiles.leechseed.by
+		var dmg := maxi(1, u.max_hp / 8)
+		_hurt(u, dmg, "Drenadoras le roba PS a %s." % u.display_name(), Color(0.5, 0.9, 0.4))
+		if seeder and seeder.is_alive():
+			if Abilities.has(u, "liquidooze"):
+				_hurt(seeder, dmg, "¡%s absorbió Viscosecreción!" % seeder.display_name(), Color(0.7, 0.4, 0.9))
+			else:
+				b._heal(seeder, dmg)
+		await b._wait(0.35)
+	if u.is_alive() and u.volatiles.has("curse") and Abilities.takes_indirect(u):
+		_hurt(u, maxi(1, u.max_hp / 4), "La maldición daña a %s." % u.display_name(), Color(0.5, 0.3, 0.6))
+		await b._wait(0.35)
+	if u.is_alive() and u.volatiles.has("nightmare"):
+		if u.status == MoveData.Status.SLEEP and Abilities.takes_indirect(u):
+			_hurt(u, maxi(1, u.max_hp / 4), "%s tiene una pesadilla." % u.display_name(), Color(0.4, 0.3, 0.5))
+			await b._wait(0.35)
+		elif u.status != MoveData.Status.SLEEP:
+			u.volatiles.erase("nightmare")
+	# Atrapado (Constricción...) o en un remolino (Giro Fuego...): pierde 1/8 por turno mientras dure.
+	for key in ["wrapped", "vortex"]:
+		if u.is_alive() and u.volatiles.has(key):
+			if u.volatiles[key].turns <= 0:
+				release_bind(u, key)
+			else:
+				u.volatiles[key].turns -= 1
+				if Abilities.takes_indirect(u):
+					var text := "%s sufre dentro del remolino." if key == "vortex" else "%s sufre al estar atrapado."
+					_hurt(u, maxi(1, u.max_hp / 8), text % u.display_name(), Color(0.9, 0.6, 0.4))
+					await b._wait(0.35)
+	for key in ["ingrain", "aquaring"]:
+		if u.is_alive() and u.volatiles.has(key):
+			b._heal(u, maxi(1, u.max_hp / 16))
+	if u.is_alive() and field.terrain == "grassyterrain" and field.grounded(u):
+		b._heal(u, maxi(1, u.max_hp / 16))
+
+
+## Habilidades que se activan al empezar el turno (las de entrada: Sequía, Intimidación...).
 func _abilities_start(u: Unit) -> void:
-	var weather: int = Combat.weather
 	# Clima por habilidad (Sequía) en su primer turno.
 	if u.ability == "drought" and not u.volatiles.has("ability_used"):
 		u.volatiles["ability_used"] = {}
@@ -297,6 +307,11 @@ func _abilities_start(u: Unit) -> void:
 				u.intimidated[foe] = true
 				b._log("¡%s intimida a %s!" % [u.display_name(), foe.display_name()])
 				drop_stats(u, foe, {"attack": -1})
+
+
+## Habilidades de fin de turno: curan estados (Mudar, Hidratación) o dañan/curan con el clima.
+func _abilities_end(u: Unit) -> void:
+	var weather: int = Combat.weather
 	# Curar estados.
 	if u.status != MoveData.Status.NONE:
 		var cure: bool = (u.ability in ["shedskin", "naturalcure"] and b.rng.randf() < SHED_SKIN_CHANCE) \
@@ -320,7 +335,8 @@ func _abilities_start(u: Unit) -> void:
 		await b._wait(0.3)
 
 
-func _items_start(u: Unit) -> void:
+## Objetos de fin de turno (Restos, Lodo Negro, esferas de estado) y Cosecha.
+func _items_end(u: Unit) -> void:
 	match Items.effect(u):
 		"leftovers":
 			if u.hp < u.max_hp:
