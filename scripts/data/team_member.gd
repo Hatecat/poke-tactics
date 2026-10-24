@@ -18,6 +18,8 @@ var exp := 0
 var known: Array[MoveData] = []
 ## Objeto equipado (o null).
 var item: ItemData
+## Torre: ha alcanzado su nivel de evolución y espera la animación (se puede cancelar).
+var wants_to_evolve := false
 
 const MAX_LEVEL := 100
 ## Experiencia para pasar de nivel N a N+1: N × EXP_PER_LEVEL.
@@ -122,9 +124,9 @@ func exp_to_next() -> int:
 	return level * EXP_PER_LEVEL
 
 
-## Suma experiencia. Devuelve lo ocurrido (subidas de nivel, ataques nuevos, evolución).
-## `species_lookup` resuelve el id de la especie a la que evoluciona.
-func gain_exp(amount: int, species_lookup: Callable, rng: RandomNumberGenerator) -> PackedStringArray:
+## Suma experiencia. Devuelve lo ocurrido (subidas de nivel, ataques nuevos). Al subir de nivel con el
+## nivel de evolución alcanzado no evoluciona aún: queda `wants_to_evolve` (ver evolve_into).
+func gain_exp(amount: int) -> PackedStringArray:
 	var events := PackedStringArray()
 	exp += amount
 	while level < MAX_LEVEL and exp >= exp_to_next():
@@ -134,38 +136,36 @@ func gain_exp(amount: int, species_lookup: Callable, rng: RandomNumberGenerator)
 		for id: String in data.level_moves:
 			if data.level_moves[id] == level:
 				_learn(id, events)
-		if not data.evolves_to.is_empty() and level >= data.evolve_level and not (item and item.effect == "everstone"):
-			var target: PokemonData = species_lookup.call(data.evolves_to[rng.randi_range(0, data.evolves_to.size() - 1)])
-			if target:
-				events.append("¡%s evolucionó a %s!" % [TeamMember.display(data, gender), target.species_name])
-				var slot := data.abilities.find(ability)
-				data = target
-				ability = target.abilities[clampi(slot, 0, target.abilities.size() - 1)] if not target.abilities.is_empty() else ""
-				if gender not in genders_for(target):
-					gender = genders_for(target)[0]
-				# Ataques que la nueva forma aprende justo al evolucionar (nivel 1 o su nivel actual).
-				for id: String in target.level_moves:
-					if target.level_moves[id] <= 1 or target.level_moves[id] == level:
-						_learn(id, events)
+		if can_evolve_by_level():
+			wants_to_evolve = true
 	if level >= MAX_LEVEL:
 		exp = 0
 	return events
 
 
-## Evoluciona con una piedra. Devuelve el mensaje, o "" si la especie no reacciona a esa piedra.
-func evolve_with_stone(stone_id: String, species_lookup: Callable) -> String:
-	if not data.stone_evolutions.has(stone_id):
-		return ""
-	var target: PokemonData = species_lookup.call(data.stone_evolutions[stone_id])
-	if target == null:
-		return ""
-	var text := "¡%s evolucionó a %s!" % [TeamMember.display(data, gender), target.species_name]
+## Ha alcanzado su nivel de evolución (y no lleva Piedra Eterna).
+func can_evolve_by_level() -> bool:
+	return not data.evolves_to.is_empty() and level >= data.evolve_level and not (item and item.effect == "everstone")
+
+
+## Evoluciona a `target`. Devuelve lo ocurrido (la evolución y los ataques nuevos).
+func evolve_into(target: PokemonData) -> PackedStringArray:
+	var events := PackedStringArray(["¡%s evolucionó a %s!" % [TeamMember.display(data, gender), target.species_name]])
 	var slot := data.abilities.find(ability)
 	data = target
+	wants_to_evolve = false
 	ability = target.abilities[clampi(slot, 0, target.abilities.size() - 1)] if not target.abilities.is_empty() else ""
 	if gender not in genders_for(target):
 		gender = genders_for(target)[0]
-	return text
+	# Ataques que la nueva forma aprende justo al evolucionar (nivel 1 o su nivel actual); el resto de los
+	# de su lista hasta su nivel quedan disponibles sin anunciarlos.
+	for id: String in target.level_moves:
+		if target.level_moves[id] <= 1 or target.level_moves[id] == level:
+			_learn(id, events)
+	for mv in moves_up_to(target, level):
+		if mv not in known:
+			known.append(mv)
+	return events
 
 
 func _learn(id: String, events: PackedStringArray) -> void:
@@ -185,7 +185,7 @@ func _learn(id: String, events: PackedStringArray) -> void:
 func to_dict() -> Dictionary:
 	return {"species": data.id, "moves": moves.map(func(mv: MoveData) -> String: return mv.id), "ability": ability, "gender": gender,
 		"level": level, "exp": exp, "known": known.map(func(mv: MoveData) -> String: return mv.id),
-		"item": item.id if item else ""}
+		"item": item.id if item else "", "wants_to_evolve": wants_to_evolve}
 
 
 ## `species_lookup` recibe un id y devuelve el PokemonData (o null).
@@ -208,6 +208,7 @@ static func from_dict(d: Dictionary, species_lookup: Callable) -> TeamMember:
 	m.level = d.get("level", 50)
 	m.item = Items.find(d.get("item", ""))
 	m.exp = d.get("exp", 0)
+	m.wants_to_evolve = d.get("wants_to_evolve", false) and m.can_evolve_by_level()
 	for move_id: String in d.get("known", []):
 		var path := MOVES_DIR + move_id + ".tres"
 		if ResourceLoader.exists(path):

@@ -9,7 +9,8 @@ var _selected: TeamMember
 var _preview: PokemonPreview
 var _topology := BoardGrid.Topology.SQUARE
 var _difficulty := 1
-var _news_overlay: Control
+## Ventana encima del hub (novedades o evolución).
+var _overlay: Control
 
 
 func _ready() -> void:
@@ -43,9 +44,9 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	UiKit.clear(_content)
-	if _news_overlay:
-		_news_overlay.queue_free()
-		_news_overlay = null
+	if _overlay:
+		_overlay.queue_free()
+		_overlay = null
 	_preview = null
 	if _run == null:
 		_show_start()
@@ -274,6 +275,15 @@ func _show_hub() -> void:
 	actions.add_child(go)
 	if not _run.news.is_empty():
 		_build_news()
+	else:
+		# Tras las novedades, las evoluciones pendientes, de una en una.
+		for m in _run.party + _run.box:
+			if m.wants_to_evolve:
+				var target := _run.level_evolution(m)
+				if target:
+					_build_evolution(m, target)
+					break
+				m.wants_to_evolve = false
 
 
 ## Símbolo y color de cada tipo de novedad.
@@ -290,7 +300,7 @@ func _build_news() -> void:
 	overlay.color = Color(0, 0, 0, 0.65)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(overlay)
-	_news_overlay = overlay
+	_overlay = overlay
 	var center := CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(center)
@@ -344,6 +354,98 @@ func _build_news() -> void:
 	ok.custom_minimum_size.y = 46
 	box.add_child(ok)
 	ok.grab_focus.call_deferred()
+
+
+## Tiempo de cada cambio de forma durante la evolución (cada vez más rápido).
+const EVOLVE_SWAPS := [0.55, 0.5, 0.45, 0.4, 0.34, 0.28, 0.23, 0.18, 0.14, 0.11, 0.09, 0.08, 0.08]
+const EVOLVE_GLOW := Color(4, 4, 4)
+
+
+## Animación de evolución: el Pokémon brilla y alterna entre su forma y la nueva cada vez más rápido.
+## Se puede cancelar mientras dura (con piedra, la piedra no se gasta).
+func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null) -> void:
+	if _overlay:
+		_overlay.queue_free()
+	var who := TeamMember.display(m.data, m.gender)
+	var overlay := ColorRect.new()
+	overlay.color = Color(0, 0, 0, 0.75)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(overlay)
+	_overlay = overlay
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+	var panel := UiKit.panel()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.11, 0.13, 0.18)
+	style.border_color = UiKit.ACCENT
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(20)
+	panel.add_theme_stylebox_override("panel", style)
+	panel.custom_minimum_size.x = 560
+	center.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	panel.add_child(box)
+	var title := UiKit.label("¿Eh? ¡%s está evolucionando!" % who, 26, UiKit.ACCENT)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	var preview := PokemonPreview.new()
+	preview.custom_minimum_size = Vector2(400, 360)
+	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	box.add_child(preview)
+	preview.show_pokemon(m.data)
+	var details := UiKit.label("", 16, Color(1, 1, 1, 0.8))
+	details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(details)
+	var button := Button.new()
+	button.text = "Cancelar"
+	button.add_theme_font_size_override("font_size", 20)
+	button.custom_minimum_size.y = 46
+	box.add_child(button)
+	Audio.cry(m.data)
+
+	# "running" mientras dura, luego "done" (evolucionó) o "cancelled".
+	var phase := {"value": "running"}
+	var tw := create_tween()
+	tw.tween_interval(1.2)
+	tw.tween_property(preview, "self_modulate", EVOLVE_GLOW, 0.8)
+	for i in EVOLVE_SWAPS.size():
+		var shown := target if i % 2 == 0 else m.data
+		tw.tween_callback(func() -> void:
+			preview.show_pokemon(shown)
+			Audio.sfx("ui_hover", -6.0, 0.8 + 0.05 * i))
+		tw.tween_interval(EVOLVE_SWAPS[i])
+	tw.tween_callback(func() -> void:
+		phase.value = "done"
+		preview.show_pokemon(target)
+		var events := _run.evolve(m, target, stone)
+		title.text = "¡Enhorabuena! ¡%s evolucionó a %s!" % [who, target.species_name]
+		details.text = "\n".join(events.slice(1))
+		button.text = "¡Genial!"
+		Audio.sfx("buff")
+		Audio.cry(target))
+	tw.tween_property(preview, "self_modulate", Color.WHITE, 0.6)
+
+	button.pressed.connect(func() -> void:
+		if phase.value == "running":
+			# Cancelado: vuelve a su forma (sin brillo) y no evoluciona.
+			phase.value = "cancelled"
+			tw.kill()
+			preview.show_pokemon(m.data)
+			preview.self_modulate = Color.WHITE
+			if stone == null:
+				_run.cancel_evolution(m)
+			title.text = "¿Eh? %s dejó de evolucionar." % who
+			details.text = "Puedes evolucionarlo luego desde su ficha." if stone == null else "La %s no se ha gastado." % stone.display_name
+			button.text = "Vale"
+			Audio.sfx("ui_error", -6.0)
+		else:
+			Game.save()
+			_refresh())
+	button.grab_focus.call_deferred()
 
 
 func _news_row(n: Dictionary) -> Control:
@@ -567,6 +669,10 @@ func _member_detail(m: TeamMember) -> Control:
 	if m.data.evolve_level > 0:
 		var to := ", ".join(Array(m.data.evolves_to).map(func(id: String) -> String: return Game.find_species(id).species_name if Game.find_species(id) else id))
 		info.add_child(UiKit.label("Evoluciona a %s a nivel %d" % [to, m.data.evolve_level], 15, UiKit.ACCENT))
+		if m.can_evolve_by_level():
+			info.add_child(UiKit.button("Evolucionar", func() -> void:
+				m.wants_to_evolve = true
+				_refresh(), 15))
 	col.add_child(UiKit.label("Ataques (%d/4) — clic para quitar o añadir" % m.moves.size(), 18, UiKit.ACCENT))
 	for mv in m.known:
 		var on := mv in m.moves
@@ -589,11 +695,12 @@ func _member_detail(m: TeamMember) -> Control:
 
 func _use_bag_item(it: ItemData) -> void:
 	if it.category == ItemData.Category.STONE:
-		var text := _run.use_stone(_selected, it)
-		_run.last_report.append(text if text else "%s no reacciona a la %s." % [TeamMember.display(_selected.data, _selected.gender), it.display_name])
-		if text:
-			Audio.sfx("buff")
-			Audio.cry(_selected.data)
+		var target := TowerRun.stone_evolution(_selected, it)
+		if target:
+			_build_evolution(_selected, target, it)
+			return
+		_run.last_report.append("%s no reacciona a la %s." % [TeamMember.display(_selected.data, _selected.gender), it.display_name])
+		Audio.sfx("ui_error", -6.0)
 	else:
 		_run.equip(_selected, it)
 		Audio.sfx("ui_place", -4.0)

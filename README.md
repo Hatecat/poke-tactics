@@ -199,7 +199,8 @@ estado (×2 dormido/congelado, ×1,5 otro) × Ball (Super ×1,5, Ultra ×2; la M
 (los legendarios, ×0,25). Si acierta, el Pokémon se convierte en una
 Poké Ball que se agita hasta 3 veces; si escapa, reaparece entre humo. Entre pisos el equipo se cura y gana experiencia (nivel del rival × 10
 por cada derrotado o capturado), sube de nivel, aprende ataques (de sus listas por nivel) y evoluciona (las de
-piedra/intercambio/amistad, a nivel 30). Puedes cambiar miembros por capturados (máx. 6 en el equipo) y elegir
+intercambio/amistad, a nivel 30; las de piedra, usando la piedra). Cada evolución se ve con una animación que se puede
+*Cancelar* (con piedra, no se gasta); si se cancela, vuelve a intentarlo al subir de nivel o con *Evolucionar* en su ficha. Puedes cambiar miembros por capturados (máx. 6 en el equipo) y elegir
 4 ataques de los aprendidos. La subida se guarda y se puede continuar; se guarda el récord de pisos.
 Lógica en `scripts/tower_run.gd`, pantalla en `scripts/ui/tower.gd`.
 

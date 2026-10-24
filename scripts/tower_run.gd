@@ -326,15 +326,15 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	for m in party:
 		var before := m.level
 		var who := TeamMember.display(m.data, m.gender)
-		var events := m.gain_exp(total, Game.find_species, rng)
+		var events := m.gain_exp(total)
 		last_report.append_array(events)
 		if m.level > before:
 			news.append({"kind": "level", "text": "%s subió al nivel %d" % [who, m.level]})
 		for e in events:
-			if "evolucionó" in e:
-				news.append({"kind": "evolve", "text": e})
-			elif "aprend" in e:
+			if "aprend" in e:
 				news.append({"kind": "move", "text": e})
+		if m.wants_to_evolve and m.level > before:
+			news.append({"kind": "evolve", "text": "¡%s está a punto de evolucionar!" % who})
 	balls.poke = balls.get("poke", 0) + BALLS_PER_WIN
 	last_report.append("Recibes %d Poké Ball. Tienes %d." % [BALLS_PER_WIN, balls.poke])
 	var earned := MONEY_BASE + MONEY_PER_FLOOR * floor_number
@@ -452,12 +452,29 @@ func unequip(m: TeamMember) -> void:
 		m.item = null
 
 
-## Usa una piedra de la mochila sobre un miembro. Devuelve el mensaje ("" si no reacciona).
-func use_stone(m: TeamMember, stone: ItemData) -> String:
-	var text := m.evolve_with_stone(stone.id, Game.find_species)
-	if text:
-		take_item(stone)
-	return text
+## Especie a la que evoluciona por nivel (si hay varias, una al azar).
+func level_evolution(m: TeamMember) -> PokemonData:
+	return Game.find_species(m.data.evolves_to[rng.randi_range(0, m.data.evolves_to.size() - 1)]) if m.can_evolve_by_level() else null
+
+
+## Especie a la que evoluciona con esa piedra (null si no reacciona).
+static func stone_evolution(m: TeamMember, stone: ItemData) -> PokemonData:
+	return Game.find_species(m.data.stone_evolutions[stone.id]) if m.data.stone_evolutions.has(stone.id) else null
+
+
+## Evoluciona a un miembro (por nivel, o con `stone`, que se gasta) y lo apunta en el informe.
+func evolve(m: TeamMember, target: PokemonData, stone: ItemData = null) -> PackedStringArray:
+	if stone and not take_item(stone):
+		return PackedStringArray()
+	var events := m.evolve_into(target)
+	last_report.append_array(events)
+	return events
+
+
+## El jugador cancela la evolución: lo volverá a intentar al subir de nivel (o con «Evolucionar» en su ficha).
+func cancel_evolution(m: TeamMember) -> void:
+	m.wants_to_evolve = false
+	last_report.append("%s no evolucionó." % TeamMember.display(m.data, m.gender))
 
 
 func _roll_rarity() -> int:
