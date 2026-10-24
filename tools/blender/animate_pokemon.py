@@ -11,12 +11,14 @@ Sin acciones, crea todas las que necesita. Solo sobrescribe acciones quietas (la
 setup_animations.py); con --force rehace también las que ya tienen movimiento.
 Después: tools/blender/export_animations.py.
 
-Necesita un esqueleto con la convención de los rips de Charmander: Hips (o Waist), Head, LArm/LHand,
-LThigh/LFoot y sus R. Lo demás es opcional: Spine1/Spine2 (o un solo Spine), Neck (o Neck1/Neck2),
+Necesita un esqueleto con la convención de los rips de Charmander: Hips (o Waist) y LThigh/LFoot (o
+LLeg/LFoot) y sus R. Lo demás es opcional: Head (sin ella el cuerpo es la cabeza, como Jigglypuff o
+Mankey), LArm/LHand (sin brazos, como Oddish), Spine1/Spine2 (o un solo Spine), Neck (o Neck1/Neck2),
 Jaw (o LowerJaw), ForeArm/Leg (sin ellos la pata es de un hueso, como Raticate), Toe, la cola (Tail1..N; TailB01..
 como Rapidash; o varias colas LTailA1.., RTailB1.. que salen de Hips, como Vulpix) y su punta
 (TailA..). Sin cola no se crea fight_b_tail. En los cuadrúpedos Arm/ForeArm/Hand son las patas
-delanteras. Los nombres se normalizan: "059 RArm" y "RArm_15" cuentan como RArm.
+delanteras. Los nombres se normalizan: "059 RArm" y "RArm_15" cuentan como RArm, y los de 3ds Max
+("Bip001 L Calf") se traducen (LLeg).
 El tamaño, hacia dónde mira y cuánto hay que bajar los brazos se miden en el propio esqueleto.
 """
 import math
@@ -28,7 +30,7 @@ import bpy
 from mathutils import Quaternion, Vector
 
 PROJECT = Path(__file__).resolve().parents[2]
-REQUIRED = ["Hips", "Head"] + [s + b for s in "LR" for b in ("Arm", "Hand", "Thigh", "Foot")]
+REQUIRED = ["Hips"] + [s + b for s in "LR" for b in ("Thigh", "Foot")]
 # Altura cabeza-dedos de Charmander, con la que se escribieron las distancias de abajo.
 REF_HEIGHT = 0.379
 
@@ -38,14 +40,23 @@ arm = next(o for o in bpy.context.scene.objects if o.type == "ARMATURE")
 PB = arm.pose.bones
 
 
+# Huesos de 3ds Max (Exeggutor): "Bip001 L Calf" -> "LLeg". Sus Spine, Spine1... van un número por delante.
+BIPED = {"Pelvis": "Hips", "Spine": "Spine1", "Spine1": "Spine2", "Spine2": "Spine3", "Calf": "Leg",
+         "Toe0": "Toe", "Clavicle": "Shoulder", "UpperArm": "Arm", "Forearm": "ForeArm"}
+
+
 def _canon(name):
     """Nombre sin el número de nodo de algunos rips: "059 RArm" y "RArm_15" -> "RArm"."""
-    return re.sub(r"_\d+$", "", re.sub(r"^\d+ ", "", name))
+    name = re.sub(r"_\d+$", "", re.sub(r"^\d+ ", "", name))
+    m = re.fullmatch(r"Bip\d+ (?:([LR]) )?(\w+)", name)
+    if m:
+        name = (m.group(1) or "") + BIPED.get(m.group(2), m.group(2))
+    return name
 
 
 # B: huesos por nombre normalizado. Si falta un hueso, hace sus veces el equivalente de otros rips:
-# un solo Spine (Raticate), Waist (Squirtle), LowerJaw (Psyduck, Kangaskhan).
-ALIASES = {"Spine1": "Spine", "Hips": "Waist", "Jaw": "LowerJaw"}
+# un solo Spine (Raticate), Waist (Squirtle), LowerJaw (Psyduck, Kangaskhan), piernas de un hueso (Vileplume).
+ALIASES = {"Spine1": "Spine", "Hips": "Waist", "Jaw": "LowerJaw", "LThigh": "LLeg", "RThigh": "RLeg"}
 B = {_canon(b.name): b for b in arm.data.bones}
 for _want, _have in ALIASES.items():
     if _want not in B and _have in B:
@@ -54,6 +65,12 @@ CANON = {b.name: n for n, b in B.items()}
 missing = [n for n in REQUIRED if n not in B]
 if missing:
     raise SystemExit(f"El esqueleto no sigue la convención de Charmander; faltan: {', '.join(missing)}")
+HAS_ARMS = all(s + b in B for s in "LR" for b in ("Arm", "Hand"))
+# Sin cabeza aparte (Jigglypuff, Mankey, Graveler) el cuerpo hace de cabeza. CANON sigue diciendo
+# Hips, así que los giros de cabeza de las poses no se aplican: el cuerpo ya se mueve como cadera.
+HEAD_IS_BODY = "Head" not in B
+if HEAD_IS_BODY:
+    B["Head"] = B["Hips"]
 
 
 def _name(bone):
@@ -108,13 +125,13 @@ def _pos(name):
 # Cuadrúpedo: las manos (patas delanteras) llegan casi al suelo. La vertical sale de las patas, que en
 # cualquier cuerpo apuntan hacia abajo (de la cadera a los pies; los brazos en cruz de un bípedo se
 # anulan entre sí). Con la cadera no basta: en Rattata los pies quedan más atrás que abajo.
-_hip_up = _snap(-sum((_pos(s + end) - _pos(s + top) for s in "LR" for top, end in (("Thigh", "Foot"), ("Arm", "Hand"))),
-                     Vector()))
+_hip_up = _snap(-sum((_pos(s + end) - _pos(s + top) for s in "LR"
+                      for top, end in (("Thigh", "Foot"),) + ((("Arm", "Hand"),) if HAS_ARMS else ())), Vector()))
 _feet_h = min(_pos(n).dot(_hip_up) for n in ("LToe", "RToe", "LFoot", "RFoot") if n in B)
 # Las manos, a ras de suelo: ni altas ni muy por debajo de los pies (en Persian quedan a -0,67 caderas,
 # porque los pies se miden en los dedos). Muy por debajo es que los brazos apuntan hacia delante y
 # tuercen la vertical (los cañones de Blastoise, a -35): entonces es un bípedo.
-_hands = (_pos("LHand").dot(_hip_up) - _feet_h) / (_pos("Hips").dot(_hip_up) - _feet_h)
+_hands = (_pos("LHand").dot(_hip_up) - _feet_h) / (_pos("Hips").dot(_hip_up) - _feet_h) if HAS_ARMS else 9
 QUAD = -1.5 < _hands < 0.3
 
 # Ejes en el espacio de la armadura, medidos en el esqueleto (cada rip trae los suyos: Charmander
@@ -143,7 +160,9 @@ PITCH, YAW, ROLL = LEFT, UP, BACK
 SIDE = 1 if (_pos("LThigh") - _pos("RThigh")).dot(LEFT) > 0 else -1
 _ground = min(_pos(n).dot(UP) for n in ("LToe", "RToe", "LFoot", "RFoot", "LHand", "RHand") if n in B)
 # Bípedos: distancias escritas para la altura de Charmander. Cuadrúpedos: en alturas de cadera.
-SCALE = (_pos("Hips").dot(UP) - _ground) if QUAD else (_pos("Head").dot(UP) - _ground) / REF_HEIGHT
+# Sin cabeza aparte se mide hasta el centro del cuerpo, que queda a media altura.
+SCALE = (_pos("Hips").dot(UP) - _ground) if QUAD else \
+    (_pos("Head").dot(UP) - _ground) * (1.6 if HEAD_IS_BODY else 1) / REF_HEIGHT
 
 
 _VERTS = []
@@ -218,7 +237,7 @@ def _arm_drop(side):
 # Pares de brazos: "" el principal y "2" el segundo de Machamp (LArm2...), que baja menos para
 # no solaparse. Pose base: tantos grados por debajo de la horizontal y 25° hacia delante (en pose
 # en T se bajan del todo; si el modelo ya los trae bajados, solo lo que falte).
-ARM_PAIRS = {"": TWEAKS.get("arm_drop", 45.0)}
+ARM_PAIRS = {"": TWEAKS.get("arm_drop", 45.0)} if HAS_ARMS else {}
 # Solo si cuelgan del lomo del propio Pokémon: los LArm2 de la cría de Kangaskhan cuelgan de SpineB.
 if all(n in B for n in ("LArm2", "LForeArm2", "LHand2", "RArm2", "RForeArm2", "RHand2")) \
         and any(_descends("LArm2", n) for n in ("Spine1", "Spine2", "Spine3")):
@@ -959,7 +978,9 @@ def main():
         pb.rotation_quaternion = Quaternion()
         pb.location = Vector()
     bpy.ops.wm.save_mainfile()
-    body = "cuadrúpedo" if QUAD else f"bípedo, brazos bajados L {ARM_LOWER['L']:.0f}° R {ARM_LOWER['R']:.0f}°" + (", brazos hacia delante" if ARM_AHEAD["L"] else "")
+    body = "cuadrúpedo" if QUAD else "bípedo, sin brazos" if not HAS_ARMS else \
+        f"bípedo, brazos bajados L {ARM_LOWER['L']:.0f}° R {ARM_LOWER['R']:.0f}°" + (", brazos hacia delante" if ARM_AHEAD["L"] else "")
+    body += ", el cuerpo es la cabeza" if HEAD_IS_BODY else ""
     print(f"Arriba {tuple(UP)}, delante {tuple(FWD)}, L{'=' if SIDE > 0 else ' espejado'}. Escala {SCALE:.2f}, {body}, "
           f"{len(TAILS)} cola(s), la principal de {len(TAIL)} huesos (+{len(FLAME)} de punta, {len(FLICKER)} de llamas)")
     print("Animadas:", ", ".join(made) or "ninguna")
