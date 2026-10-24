@@ -217,8 +217,20 @@ TWEAKS = {
     "golem": {"arm_drop": 72, "legs_in": 10},  # los brazos casi tocan el suelo y parecían patas abiertas
 }.get(Path(bpy.data.filepath).stem, {})
 
+# Estilos por especie, que cambian todas las acciones:
+#   fly: insecto que vuela (Beedrill): flota, las patas cuelgan y aletea rápido (las alas en "wings");
+#   lotus: levita con las piernas cruzadas (Abra); sit: el idle es sentado, como un gato (Persian).
+STYLES = {
+    "beedrill": {"style": "fly", "wings": ["LFeelerA", "LFeelerB", "RFeelerA", "RFeelerB"]},
+    "abra": {"style": "lotus"},
+    "persian": {"style": "sit"},
+}
+STYLE = STYLES.get(Path(bpy.data.filepath).stem, {})
+
 # Giros de base sumados a todas las poses: colas que atraviesan el suelo y piernas que se cierran.
-BASE_ROTS = {c[0]: [(PITCH, lift)] for c in TAILS if (lift := _tail_lift(c))}
+# Los que flotan no tocan el suelo: el abdomen de Beedrill puede colgar.
+BASE_ROTS = {} if STYLE.get("style") in ("fly", "lotus") else \
+    {c[0]: [(PITCH, lift)] for c in TAILS if (lift := _tail_lift(c))}
 for _s, _k in (("L", 1), ("R", -1)):
     if TWEAKS.get("legs_in"):
         _a = TWEAKS["legs_in"] * _k * SIDE
@@ -703,6 +715,16 @@ def quad_idle_pose(t):
         root=(0, 0.004 * s(t + 0.3), -0.02 + 0.012 * s(t)))
 
 
+def quad_sit_pose(t):
+    """Sentado como un gato: la grupa en el suelo, el pecho alto sobre las patas delanteras estiradas."""
+    s = math.sin
+    return qpose(
+        qspine(pitch=-42 + 1.0 * s(t + 0.5), pitch2=-10, hips=-62),
+        qhead(pitch=45 + 1.5 * s(2 * t + 0.5), yaw=6 * s(t + 1.0), roll=1.5 * s(t + 2.0), jaw=1.0 - s(t - 0.4)),
+        tail(yaw=70 + 8 * s(t), pitch=65), flicker(t),
+        root=(0, 0.04, -0.33 + 0.008 * s(t)), feet={"LH": (0.14, 0, 0), "RH": (0.14, 0, 0)})
+
+
 # Paso lateral (el de casi todos los cuadrúpedos al andar): trasera izq., delantera izq., trasera der.,
 # delantera der., cada una un cuarto de ciclo después. 65 % del ciclo apoyada.
 QUAD_PHASE = {"LH": 0.0, "LF": 0.25, "RH": 0.5, "RF": 0.75}
@@ -924,7 +946,66 @@ def has_motion(action):
     return False
 
 
+HOVER = 0.06  # altura de vuelo, en alturas de Charmander como el resto de distancias
+
+
+def _float_legs(frame):
+    """Piernas de los que flotan: colgando (fly) o cruzadas (lotus)."""
+    sw = math.sin(frame * 0.4)
+    if STYLE["style"] == "fly":
+        return {**leg("L", 18 + 4 * sw, 40 + 6 * sw), **leg("R", 14 - 4 * sw, 36 - 6 * sw)}
+    d = {}
+    for side, k in (("L", SIDE), ("R", -SIDE)):
+        # Muslo hacia delante y afuera; la espinilla gira en horizontal hacia el centro (sobre el eje que,
+        # con el muslo adelantado, ya es el vertical) y se cruza delante con la otra.
+        d[side + "Thigh"] = [(YAW, 45 * k), (PITCH, -80)]
+        d[side + "Leg"] = [(ROLL, 105 * k), (PITCH, 10)]
+        d[side + "Foot"] = [(PITCH, 70)]
+    return d
+
+
+def styled(name, keys):
+    """Aplica el estilo de la especie a las poses clave de una acción."""
+    kind = STYLE.get("style")
+    if kind in ("fly", "lotus"):
+        out = []
+        for i, (frame, p) in enumerate(keys):
+            p = dict(p)
+            p.update(_float_legs(frame))
+            # Flota a HOVER, con un vaivén lento; al debilitarse va cayendo al suelo.
+            k = 1 - i / max(1, len(keys) - 1) if name == "ko" else 1
+            bob = 0.012 * math.sin(2 * math.pi * (frame - 1) / 24)
+            root = p.get("root", (0, 0, 0))
+            p["root"] = (root[0], root[1], root[2] + (HOVER + bob) * k)
+            if name == "walk":  # vuela inclinado hacia delante
+                p["Hips"] = [(PITCH, 12)] + p.get("Hips", [])
+            if kind == "lotus":  # la cola cuelga en vez de quedar tiesa hacia atrás
+                for n, rots in tail(pitch=-35).items():
+                    p[n] = rots + p.get(n, [])
+            out.append((frame, p))
+        return out
+    if kind == "sit" and name == "idle":
+        return cycle(quad_sit_pose, 48)
+    return keys
+
+
+def flap(act):
+    """Aleteo rápido de insecto (un batido cada 3 fotogramas) en toda la acción, encima de las claves."""
+    wings = [w for w in STYLE.get("wings", []) if w in B]
+    if not wings:
+        return
+    by_canon = {CANON.get(pb.name): pb for pb in PB}
+    for frame in range(int(act.frame_start), int(act.frame_end) + 1):
+        a = 38 * math.sin(2 * math.pi * frame / 3)
+        for w in wings:
+            pb = by_canon[w]
+            k = SIDE if w.startswith("L") else -SIDE
+            pb.rotation_quaternion = lquat(w, [(ROLL, -a * k)])
+            pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+
+
 def build(name, keys):
+    keys = styled(name, keys)
     if QUAD and name not in ("idle", "walk"):
         keys = densify(keys)
     old = bpy.data.actions.get(name)
@@ -949,6 +1030,7 @@ def build(name, keys):
             pb.location = B[name].matrix_local.to_3x3().inverted() @ offset if name in ROOTS else Vector()
             pb.keyframe_insert("location", frame=frame, group=pb.name)
             pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+    flap(act)
 
 
 def main():

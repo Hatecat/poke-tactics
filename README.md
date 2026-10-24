@@ -303,5 +303,9 @@ Ajustes que no se deducen del esqueleto:
   Alakazam en sus manos, la cría de Kangaskhan en la bolsa).
 - `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan y se doblan los brazos, piernas más
   cerradas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
+- `STYLES` en `animate_pokemon.py`: forma de moverse distinta de la de su esqueleto. `fly` (Beedrill) vuela con
+  las piernas colgando y aletea rápido los huesos de `wings`; `lotus` (Abra) levita con las piernas cruzadas;
+  `sit` (Persian) se sienta como un gato en el reposo. En el juego el modelo se apoya igualmente en el suelo
+  (como las aves de los rips): se ve el vaivén pero no la altura de vuelo.
 - Las llamas de los rips (`FireCore` / `FireSten`, Rapidash y Magmar) traen máscaras en gris: `Unit` las cambia
   en el juego por un material de fuego.
