@@ -11,9 +11,9 @@ Sin acciones, crea todas las que necesita. Solo sobrescribe acciones quietas (la
 setup_animations.py); con --force rehace también las que ya tienen movimiento.
 Después: tools/blender/export_animations.py.
 
-Necesita un esqueleto con la convención de los rips de Charmander: Hips, Head, LArm/LHand,
+Necesita un esqueleto con la convención de los rips de Charmander: Hips (o Waist), Head, LArm/LHand,
 LThigh/LFoot y sus R. Lo demás es opcional: Spine1/Spine2 (o un solo Spine), Neck (o Neck1/Neck2),
-Jaw, ForeArm/Leg (sin ellos la pata es de un hueso, como Raticate), Toe, la cola (Tail1..N; TailB01..
+Jaw (o LowerJaw), ForeArm/Leg (sin ellos la pata es de un hueso, como Raticate), Toe, la cola (Tail1..N; TailB01..
 como Rapidash; o varias colas LTailA1.., RTailB1.. que salen de Hips, como Vulpix) y su punta
 (TailA..). Sin cola no se crea fight_b_tail. En los cuadrúpedos Arm/ForeArm/Hand son las patas
 delanteras. Los nombres se normalizan: "059 RArm" y "RArm_15" cuentan como RArm.
@@ -43,10 +43,13 @@ def _canon(name):
     return re.sub(r"_\d+$", "", re.sub(r"^\d+ ", "", name))
 
 
-# B: huesos por nombre normalizado. Un solo "Spine" hace de Spine1.
+# B: huesos por nombre normalizado. Si falta un hueso, hace sus veces el equivalente de otros rips:
+# un solo Spine (Raticate), Waist (Squirtle), LowerJaw (Psyduck, Kangaskhan).
+ALIASES = {"Spine1": "Spine", "Hips": "Waist", "Jaw": "LowerJaw"}
 B = {_canon(b.name): b for b in arm.data.bones}
-if "Spine" in B and "Spine1" not in B:
-    B["Spine1"] = B.pop("Spine")
+for _want, _have in ALIASES.items():
+    if _want not in B and _have in B:
+        B[_want] = B.pop(_have)
 CANON = {b.name: n for n, b in B.items()}
 missing = [n for n in REQUIRED if n not in B]
 if missing:
@@ -108,7 +111,11 @@ def _pos(name):
 _hip_up = _snap(-sum((_pos(s + end) - _pos(s + top) for s in "LR" for top, end in (("Thigh", "Foot"), ("Arm", "Hand"))),
                      Vector()))
 _feet_h = min(_pos(n).dot(_hip_up) for n in ("LToe", "RToe", "LFoot", "RFoot") if n in B)
-QUAD = (_pos("LHand").dot(_hip_up) - _feet_h) < 0.3 * (_pos("Hips").dot(_hip_up) - _feet_h)
+# Las manos, a ras de suelo: ni altas ni muy por debajo de los pies (en Persian quedan a -0,67 caderas,
+# porque los pies se miden en los dedos). Muy por debajo es que los brazos apuntan hacia delante y
+# tuercen la vertical (los cañones de Blastoise, a -35): entonces es un bípedo.
+_hands = (_pos("LHand").dot(_hip_up) - _feet_h) / (_pos("Hips").dot(_hip_up) - _feet_h)
+QUAD = -1.5 < _hands < 0.3
 
 # Ejes en el espacio de la armadura, medidos en el esqueleto (cada rip trae los suyos: Charmander
 # tiene +Z arriba y mira a -Y; Nidoking, -Y arriba y mira a -Z). Arriba: de los pies a la cabeza.
@@ -119,9 +126,13 @@ if QUAD:
     _fwd = _pos("Head") - _pos("Hips")
 else:
     UP = _snap(_pos("Head") - (_pos("LFoot") + _pos("RFoot")) / 2)
-    if "LToe" not in B and "Jaw" not in B:
-        raise SystemExit("Bípedo sin LToe ni Jaw: no se puede saber hacia dónde mira.")
-    _fwd = (_pos("LToe") - _pos("LFoot")) if "LToe" in B else (_pos("Jaw") - _pos("Head"))
+    # Dedos: LToe o, si hay varios (LToeA, LToeB... como Pinsir), su punto medio. Con los dos pies:
+    # en Alakazam los dedos se abren hacia fuera y los de un solo pie apuntarían de lado.
+    _toes = {s: [n for n in B if re.fullmatch(s + r"Toe[A-Z]?\d*", n)] for s in "LR"}
+    if not all(_toes.values()) and "Jaw" not in B:
+        raise SystemExit("Bípedo sin dedos (LToe) ni mandíbula (Jaw): no se puede saber hacia dónde mira.")
+    _fwd = sum((sum((_pos(n) for n in t), Vector()) / len(t) - _pos(s + "Foot") for s, t in _toes.items()),
+               Vector()) if all(_toes.values()) else (_pos("Jaw") - _pos("Head"))
 FWD = _snap(_fwd - UP * _fwd.dot(UP))
 LEFT = UP.cross(FWD)
 BACK = -FWD
@@ -152,6 +163,19 @@ if all(n in B for n in ("LArm2", "LForeArm2", "LHand2", "RArm2", "RForeArm2", "R
 ARM_LOWER = {s + k: max(0.0, drop - _arm_drop(s + k)) for k, drop in ARM_PAIRS.items() for s in "LR"}
 
 
+def _arm_ahead(side):
+    """Brazo que ya apunta hacia delante, no en cruz (los cañones de Blastoise): no se baja ni se
+    adelanta, que con esos giros se levantaría o se retorcería."""
+    d = (_pos(side[0] + "Hand" + side[1:]) - _pos(side[0] + "Arm" + side[1:])).normalized()
+    return not QUAD and d.dot(FWD) > 0.95
+
+
+ARM_AHEAD = {s + k: _arm_ahead(s + k) for k in ARM_PAIRS for s in "LR"}
+for _side, _ahead in ARM_AHEAD.items():
+    if _ahead:
+        ARM_LOWER[_side] = 0.0
+
+
 def lquat(name, rots):
     inv = B[name].matrix_local.to_3x3().inverted()
     q = Quaternion()
@@ -164,9 +188,9 @@ def lquat(name, rots):
 def arm_(side, fwd=0, up=0, inward=0, bend=0, pair=""):
     s = (1 if side == "L" else -1) * SIDE
     return {
-        side + "Arm" + pair: [(YAW, -s * inward), (PITCH, -fwd), (ROLL, -s * up), (PITCH, -25),
-                              (ROLL, ARM_LOWER[side + pair] * s)],
-        side + "ForeArm" + pair: [(PITCH, -(25 + bend))],
+        side + "Arm" + pair: [(YAW, -s * inward), (PITCH, -fwd), (ROLL, -s * up),
+                              (PITCH, 0 if ARM_AHEAD[side + pair] else -25), (ROLL, ARM_LOWER[side + pair] * s)],
+        side + "ForeArm" + pair: [(PITCH, -(bend if ARM_AHEAD[side + pair] else 25 + bend))],
     }
 
 
@@ -834,7 +858,7 @@ def main():
         pb.rotation_quaternion = Quaternion()
         pb.location = Vector()
     bpy.ops.wm.save_mainfile()
-    body = "cuadrúpedo" if QUAD else f"bípedo, brazos bajados L {ARM_LOWER['L']:.0f}° R {ARM_LOWER['R']:.0f}°"
+    body = "cuadrúpedo" if QUAD else f"bípedo, brazos bajados L {ARM_LOWER['L']:.0f}° R {ARM_LOWER['R']:.0f}°" + (", brazos hacia delante" if ARM_AHEAD["L"] else "")
     print(f"Arriba {tuple(UP)}, delante {tuple(FWD)}, L{'=' if SIDE > 0 else ' espejado'}. Escala {SCALE:.2f}, {body}, "
           f"{len(TAILS)} cola(s), la principal de {len(TAIL)} huesos (+{len(FLAME)} de punta, {len(FLICKER)} de llamas)")
     print("Animadas:", ", ".join(made) or "ninguna")
