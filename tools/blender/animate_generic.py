@@ -49,7 +49,8 @@ ROOTS = [b for b in BONES if b.parent is None]
 # en el ataque especial: escala del cuerpo), wings (cadenas de alas: aletean las dos a la vez, arriba y abajo;
 # "flap" = (grados, grados de alas alzadas, retraso de las de detrás en ciclos, aleteos por ciclo de reposo)),
 # shell (huesos que van con el cuerpo, como la concha de Cloyster), roll (al avanzar rueda, como Voltorb),
-# legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal).
+# legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal),
+# crab (anda de lado: se gira 90° y las patas solo suben y bajan, deprisa).
 TWEAKS = {
     "butterfree": {"hover": True, "freq": 4, "wings": r"[LR]Feeler[AB]\d*", "flap": (32, 10, 0.04, 6)},
     # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho.
@@ -75,10 +76,11 @@ TWEAKS = {
     "horsea": {"float": True, "amp": 12},
     "seadra": {"float": True, "amp": 12},
     "lapras": {"amp": 8},
-    "shellder": {"amp": 14},
+    "shellder": {"amp": 7},  # la concha abre poco: más estira la cara de dentro
     "kabuto": {"amp": 12},
-    "krabby": {"amp": 14},
-    "kingler": {"amp": 14},
+    # Cangrejos: andan de lado (crab) sobre sus patas, con las pinzas casi quietas.
+    "krabby": {"amp": 6, "legs": True, "crab": True},
+    "kingler": {"amp": 6, "legs": True, "crab": True},
 }.get(NAME, {})
 AMP = TWEAKS.get("amp", 10)
 FREQ = TWEAKS.get("freq", 1)
@@ -86,6 +88,7 @@ HOVER = TWEAKS.get("hover", False)
 FLOAT = TWEAKS.get("float", False)
 PUFF = TWEAKS.get("puff", 1.0)
 ROLL_WALK = TWEAKS.get("roll", False)
+CRAB = TWEAKS.get("crab", False)
 
 # Cuerpo: raíces y columna; lo que deforma pero no es cuerpo es un apéndice.
 _BODY = re.compile(r"Hips|Waist|Spine\d*|Neck\d*|Head\d*|Origin|_rootJoint|pm\d+.*|mesh\d*"
@@ -93,7 +96,7 @@ _BODY = re.compile(r"Hips|Waist|Spine\d*|Neck\d*|Head\d*|Origin|_rootJoint|pm\d+
 BODY = [b for b in BONES if _BODY.fullmatch(_canon(b.name))]
 APPENDAGES = [b for b in BONES if b not in BODY and not _SKIP.fullmatch(_canon(b.name))]
 # Patas: el muslo barre y levanta; lo que cuelga de él (rodilla, pie) va rígido.
-LEGS = [b for b in APPENDAGES if TWEAKS.get("legs") and re.fullmatch(r"[LR]Thigh2?", _canon(b.name))]
+LEGS = [b for b in APPENDAGES if TWEAKS.get("legs") and re.fullmatch(r"[LR](Thigh2?|Leg1)", _canon(b.name))]
 APPENDAGES = [b for b in APPENDAGES if not any(b.parent == l or b.parent in l.children_recursive for l in LEGS)]
 WINGS = [b for b in APPENDAGES if "wings" in TWEAKS and re.fullmatch(TWEAKS["wings"], _canon(b.name))]
 
@@ -163,6 +166,8 @@ def idle_pose(t):
 def walk_pose(t):
     if ROLL_WALK:  # una vuelta entera por ciclo, sin saltar
         return P(pitch=360 * t, amp=AMP * 0.5, phase=2 * FREQ * t)
+    if CRAB:  # de lado: el costado derecho por delante, con pasitos rápidos
+        return P(yaw=90, up=0.01 * abs(math.sin(8 * math.pi * t)), phase=2 * FREQ * t, gait=4 * t)
     if LEGS:  # anda sobre las patas: el cuerpo apenas se mece
         return P(up=0.01 * abs(math.sin(4 * math.pi * t)), pitch=2 * math.sin(4 * math.pi * t), phase=2 * FREQ * t,
                  gait=t)
@@ -212,8 +217,9 @@ def apply_pose(frame, p):
         scale = Vector((1, 1, 1))
         if bone in ROOTS:
             head = bone.head_local
-            loc = bone.matrix_local.to_3x3().inverted() @ (offset + pivot + (turn @ head - head if ROLL_WALK else Vector()))
-            q = lquat(bone, PITCH, p["pitch"])
+            roll = turn @ head - head if ROLL_WALK else Vector()
+            loc = bone.matrix_local.to_3x3().inverted() @ (offset + pivot + roll)
+            q = lquat(bone, UP, p["yaw"]) @ lquat(bone, PITCH, p["pitch"])
             scale = Vector((1, 1, 1)) * p["scale"]
         elif bone in LEGS:
             q = Quaternion()
@@ -222,8 +228,8 @@ def apply_pose(frame, p):
                 # En diagonal: la delantera izquierda con la trasera derecha, y al revés.
                 off = 0.0 if (side > 0) == _canon(bone.name).endswith("Thigh") else 0.5
                 ph = 2 * math.pi * (p["gait"] + off)
-                q = lquat(bone, UP, -side * 28 * math.cos(ph)) @ \
-                    lquat(bone, FWD, side * 24 * max(0.0, -math.sin(ph)))
+                q = lquat(bone, UP, -side * (0 if CRAB else 28) * math.cos(ph)) @ \
+                    lquat(bone, FWD, side * (30 if CRAB else 24) * max(0.0, -math.sin(ph)))
         elif bone in WINGS:
             amp, lift, lag, beats = TWEAKS["flap"]
             d = DEPTH[bone.name]

@@ -17,12 +17,15 @@ RIGS = {
     # ---------- bípedos (animate_pokemon.py) ----------
     "chansey": {
         "Hips": ((0, 0.05, 0.3), (0, 0.05, 0.75), None),
+        # Tronco hacia el huevo: la barriga y el huevo no van con las patas ni con los brazos.
+        "Belly": ((0, 0.05, 0.3), (0, -0.48, 0.25), "Hips"),
         "LThigh": ((0.24, -0.02, 0.09), (0.24, -0.05, 0.04), "Hips"),
         "LFoot": ((0.24, -0.05, 0.04), (0.24, -0.2, 0.02), "LThigh"),
         "LToe": ((0.24, -0.2, 0.02), (0.24, -0.26, 0.02), "LFoot"),
-        "LArm": ((0.4, -0.15, 0.72), (0.48, -0.15, 0.72), "Hips"),
-        "LForeArm": ((0.48, -0.15, 0.72), (0.56, -0.15, 0.72), "LArm"),
-        "LHand": ((0.56, -0.15, 0.72), (0.64, -0.15, 0.72), "LForeArm"),
+        # Muñones que apuntan hacia delante a los lados del huevo (lo rosa de arriba son las orejas).
+        "LArm": ((0.26, -0.32, 0.6), (0.27, -0.44, 0.6), "Hips"),
+        "LForeArm": ((0.27, -0.44, 0.6), (0.28, -0.53, 0.6), "LArm"),
+        "LHand": ((0.28, -0.53, 0.6), (0.28, -0.62, 0.6), "LForeArm"),
         "Tail1": ((0, 0.3, 0.1), (0, 0.5, 0.07), "Hips"),
         "Tail2": ((0, 0.5, 0.07), (0, 0.72, 0.05), "Tail1"),
     },
@@ -155,6 +158,7 @@ RIGS = {
     },
     "poliwag": {  # bola con patas y cola, sin brazos
         "Hips": ((0, -0.5, 0.3), (0, -0.5, 0.8), None),
+        "Belly": ((0, -0.5, 0.3), (0, -0.5, 0.1), "Hips"),
         "LThigh": ((0.22, -0.5, 0.14), (0.25, -0.52, 0.06), "Hips"),
         "LFoot": ((0.25, -0.52, 0.06), (0.25, -0.68, 0.03), "LThigh"),
         "LToe": ((0.25, -0.68, 0.03), (0.25, -0.76, 0.02), "LFoot"),

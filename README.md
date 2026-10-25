@@ -328,10 +328,17 @@ gas morado oscuro) y Magneton.
 
 Los demás sin esqueleto (Chansey, Snorlax, Lapras, Ponyta, Goldeen...) llevan uno de plantilla:
 `tools/blender/rig_templates.py` da la posición de cada hueso en alturas del modelo, con los nombres de
-Charmander, y `setup_animations.py` lo monta y pesa cada vértice por su distancia a los huesos (el tronco
-cuenta como más cerca, para que las patas no se lleven la barriga). Después se animan con `animate_pokemon.py`
-(bípedos y cuadrúpedos) o `animate_generic.py` (peces, cangrejos, Golbat, Shellder...). Para medir un modelo
-nuevo, render ortográfico de frente, de lado y desde arriba con una rejilla de 0,1 alturas.
+Charmander, y `setup_animations.py` lo monta y pesa cada vértice por su distancia a los huesos: el tronco
+(Hips, Spine, Head, Belly...) se mueve rígido y brazos, patas y colas solo se llevan lo que sobresale, para que
+no arrastren la cara ni la barriga. Después se animan con `animate_pokemon.py` (bípedos y cuadrúpedos) o
+`animate_generic.py` (peces, cangrejos, Golbat, Shellder...). Si se retoca una plantilla, `--reweight` recoloca
+los huesos del .blend y rehace los pesos sin tocar las acciones (luego hay que volver a animar con `--force`):
+
+```bash
+blender --background --python tools/blender/setup_animations.py -- chansey --reweight
+```
+
+Para medir un modelo nuevo, render ortográfico de frente, de lado y desde arriba con una rejilla de 0,1 alturas.
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
 sin animar no se exportan, así que esas siguen usando la animación procedural: puedes ir de a poco.

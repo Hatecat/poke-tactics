@@ -157,20 +157,105 @@ def auto_rig():
     return armature
 
 
-CORE_BIAS = 0.7
+# Huesos del tronco: se deforman como una pieza rígida; brazos, patas, colas... solo se llevan lo que sobresale.
+_CORE = re.compile(r"(Hips|Waist|Spine|Neck|Head|Belly)\d*")
+# Franja de mezcla entre tronco y extremidad: distancia a la extremidad / distancia al tronco. Por debajo de
+# LIMB_FULL el vértice es de la extremidad; por encima de LIMB_NONE, del tronco.
+LIMB_FULL, LIMB_NONE = 0.35, 0.6
 
 
-def template_rig(name):
-    """Esqueleto de rig_templates.RIGS (posiciones en alturas del modelo) con pesos por distancia."""
-    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+def distance_weights(armature, meshes, pinned=None):
+    """Pesos por distancia a cada hueso. El calor de huesos de Blender trata cada malla por separado y la capa
+    de la cara se despega del cuerpo; así todas se deforman igual. En dos capas: el tronco reparte entre sus
+    huesos y las extremidades solo se quedan los vértices claramente más cerca de ellas que del tronco, para
+    que al mover una pata no se arrastre la cara o la barriga (Clefairy, Chansey, Poliwag)."""
+    pinned = pinned or {}
+    segs = [(b.name, b.head_local, b.tail_local) for b in armature.data.bones]
+    to_arm = armature.matrix_world.inverted()
+
+    def blend(dists):
+        near = min(d for d, _ in dists)
+        ws = [((near / d) ** 6, n) for d, n in dists]
+        ws = [(w, n) for w, n in ws if w > 0.05]
+        total = sum(w for w, _ in ws)
+        return [(w / total, n) for w, n in ws]
+
+    def weights(p):
+        core, limb = [], []
+        for n, h, t in segs:
+            _, k = intersect_point_line(p, h, t)
+            d = max((p - (h + (t - h) * min(max(k, 0), 1))).length, 1e-6)
+            (core if _CORE.fullmatch(n) else limb).append((d, n))
+        share = 0.0
+        if limb and core:
+            r = min(limb)[0] / min(core)[0]
+            share = min(max((LIMB_NONE - r) / (LIMB_NONE - LIMB_FULL), 0.0), 1.0)
+        elif limb:
+            share = 1.0
+        ws = [(w * (1 - share), n) for w, n in blend(core)] if share < 1 else []
+        ws += [(w * share, n) for w, n in blend(limb)] if share > 0 else []
+        return [(w, n) for w, n in ws if w > 0.01]
+
+    for obj in meshes:
+        for g in list(obj.vertex_groups):
+            obj.vertex_groups.remove(g)
+        m = to_arm @ obj.matrix_world
+        groups = {n: obj.vertex_groups.new(name=n) for n, _, _ in segs}
+        for v in obj.data.vertices:
+            if v.index in pinned.get(obj, {}):
+                groups[pinned[obj][v.index]].add([v.index], 1.0, "REPLACE")
+                continue
+            for w, n in weights(m @ v.co):
+                groups[n].add([v.index], w, "REPLACE")
+
+
+def _model_frame(meshes):
+    """Paso de las coordenadas de plantilla (alturas del modelo) al mundo."""
     pts = [o.matrix_world @ v.co for o in meshes for v in o.data.vertices]
     lo = Vector([min(p[k] for p in pts) for k in range(3)])
     hi = Vector([max(p[k] for p in pts) for k in range(3)])
     height = hi.z - lo.z
     center = (lo + hi) / 2
+    return lambda p: Vector((center.x + p[0] * height, center.y + p[1] * height, lo.z + p[2] * height))
 
-    def world(p):
-        return Vector((center.x + p[0] * height, center.y + p[1] * height, lo.z + p[2] * height))
+
+def _place_bones(armature, name, meshes):
+    """Vuelve a poner los huesos donde dice la plantilla (si se ha retocado después de crear el .blend) y
+    crea los que se hayan añadido."""
+    world = _model_frame(meshes)
+    to_arm = armature.matrix_world.inverted()
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    for bone, head, tail, parent in rig_templates.bones(name):
+        eb = armature.data.edit_bones.get(bone) or armature.data.edit_bones.new(bone)
+        eb.head, eb.tail = to_arm @ world(head), to_arm @ world(tail)
+        eb.parent = armature.data.edit_bones[parent] if parent else None
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def reweight(name):
+    """Recalcula los pesos de un esqueleto de plantilla ya hecho (--reweight), sin tocar sus acciones. Las
+    piezas de "_props" (el péndulo de Hypno) siguen enteras en su hueso."""
+    armature = next(o for o in bpy.context.scene.objects if o.type == "ARMATURE")
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH" and o.find_armature() == armature]
+    if "_props" not in rig_templates.RIGS[name]:  # con piezas recolocadas la caja ya no es la del rip
+        _place_bones(armature, name, meshes)
+    prop_bones = {p["bone"] for p in rig_templates.RIGS[name].get("_props", [])}
+    pinned = {}
+    for obj in meshes:
+        names = {g.index: g.name for g in obj.vertex_groups}
+        for v in obj.data.vertices:
+            full = [names[g.group] for g in v.groups if g.weight > 0.999 and names[g.group] in prop_bones]
+            if full and len([g for g in v.groups if g.weight > 0.01]) == 1:
+                pinned.setdefault(obj, {})[v.index] = full[0]
+    distance_weights(armature, meshes, pinned)
+    print(f"Pesos recalculados: {len(armature.data.bones)} huesos")
+
+
+def template_rig(name):
+    """Esqueleto de rig_templates.RIGS (posiciones en alturas del modelo) con pesos por distancia."""
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    world = _model_frame(meshes)
 
     # Piezas sueltas fuera de sitio (el péndulo de Hypno): se giran y se llevan a su hueso.
     pinned = {}  # objeto -> {índice de vértice: hueso}
@@ -203,35 +288,13 @@ def template_rig(name):
     armature.data.display_type = "OCTAHEDRAL"
     armature.show_in_front = True
 
-    # Pesos por distancia a cada hueso, mezclando los cercanos. El calor de huesos de Blender trata cada
-    # malla por separado y la capa de la cara se despega del cuerpo; así todas se deforman igual. El tronco
-    # cuenta como más cerca (CORE_BIAS): en los cuerpos redondos las patas no se llevan media barriga.
-    segs = [(b.name, b.head_local, b.tail_local) for b in arm_data.bones]
-    bias = {n: CORE_BIAS if re.match(r"(Hips|Spine|Neck|Head)", n) else 1.0 for n, _, _ in segs}
-    to_arm = armature.matrix_world.inverted()
+    distance_weights(armature, meshes, pinned)
     for obj in meshes:
-        m = to_arm @ obj.matrix_world
-        groups = {n: obj.vertex_groups.new(name=n) for n, _, _ in segs}
-        for v in obj.data.vertices:
-            if v.index in pinned.get(obj, {}):
-                groups[pinned[obj][v.index]].add([v.index], 1.0, "REPLACE")
-                continue
-            p = m @ v.co
-            dists = []
-            for n, h, t in segs:
-                _, k = intersect_point_line(p, h, t)
-                dists.append((max((p - (h + (t - h) * min(max(k, 0), 1))).length * bias[n], 1e-6), n))
-            near = min(dists)[0]
-            ws = [((near / d) ** 6, n) for d, n in dists]
-            ws = [(w, n) for w, n in ws if w > 0.05]
-            total = sum(w for w, _ in ws)
-            for w, n in ws:
-                groups[n].add([v.index], w / total, "REPLACE")
         world = obj.matrix_world.copy()
         obj.parent = armature
         obj.matrix_world = world
         obj.modifiers.new("Armature", "ARMATURE").object = armature
-    print(f"Esqueleto de plantilla: {len(segs)} huesos")
+    print(f"Esqueleto de plantilla: {len(arm_data.bones)} huesos")
     return armature
 
 
@@ -347,6 +410,12 @@ def main():
     args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     if not args:
         raise SystemExit("Falta el nombre del Pokémon: ... -- charmander")
+    if "--reweight" in args:  # solo recalcular los pesos de un esqueleto de plantilla
+        name = next(a for a in args if not a.startswith("--"))
+        bpy.ops.wm.open_mainfile(filepath=str(PROJECT / "art/blender" / f"{name}.blend"))
+        reweight(name)
+        bpy.ops.wm.save_mainfile()
+        return
     name, variants = args[0], args[1:]
     # "kick_low" es un segundo clip de "kick": se valida por la parte antes del primer "_".
     unknown = [v for v in variants if v.split("_")[0] not in VARIANTS]

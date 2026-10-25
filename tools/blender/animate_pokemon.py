@@ -137,8 +137,8 @@ _feet_h = min(_pos(n).dot(_hip_up) for n in ("LToe", "RToe", "LFoot", "RFoot") i
 # porque los pies se miden en los dedos). Muy por debajo es que los brazos apuntan hacia delante y
 # tuercen la vertical (los cañones de Blastoise, a -35): entonces es un bípedo.
 _hands = (_pos("LHand").dot(_hip_up) - _feet_h) / (_pos("Hips").dot(_hip_up) - _feet_h) if HAS_ARMS else 9
-# Brazos que apuntan hacia delante (Clefairy) tuercen la vertical de las patas: aquí se fija a mano.
-QUAD = {"clefairy": False}.get(Path(bpy.data.filepath).stem, -1.5 < _hands < 0.3)
+# Brazos que apuntan hacia delante (Clefairy, Chansey) tuercen la vertical de las patas: aquí se fija a mano.
+QUAD = {"clefairy": False, "chansey": False}.get(Path(bpy.data.filepath).stem, -1.5 < _hands < 0.3)
 
 # Ejes en el espacio de la armadura, medidos en el esqueleto (cada rip trae los suyos: Charmander
 # tiene +Z arriba y mira a -Y; Nidoking, -Y arriba y mira a -Z). Arriba: de los pies a la cabeza.
