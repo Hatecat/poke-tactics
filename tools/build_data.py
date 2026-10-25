@@ -32,6 +32,9 @@ STATUS = {"psn": 1, "tox": 1, "slp": 2, "par": 3, "brn": 4, "frz": 5}
 CATEGORY = {"Physical": 0, "Special": 1, "Status": 2}
 SINGLE, CIRCLE, CROSS, LINE = range(4)
 SPECIES_NAMES = {"nidoranf": "Nidoran♀", "nidoranm": "Nidoran♂", "farfetchd": "Farfetch'd"}
+# El Pokédex da el largo del cuerpo de las serpientes; enroscadas (tools/blender/animate_serpent.py) se alzan
+# solo una parte: esa fracción es la que cuenta como altura del modelo.
+COILED_HEIGHT = {"ekans": 0.4, "arbok": 0.4, "dratini": 0.4, "dragonair": 0.4}
 
 # Ataques que viajan en línea recta.
 LINE_MOVES = {
@@ -584,9 +587,10 @@ def write_pokemon(pid, mon, default, learnset, anims, evo=None, lv_moves=None):
     gender = mon.get("gender")
     male_ratio = -1.0 if gender == "N" else (1.0 if gender == "M" else (0.0 if gender == "F" else mon.get("genderRatio", {}).get("M", 0.5)))
     size = 3 if height >= 5.0 else (2 if height >= 1.6 or weight >= 150 else 1)
+    shown = height * COILED_HEIGHT.get(pid, 1.0)
     fields = {
         "id": pid, "species_name": SPECIES_NAMES.get(pid, mon["name"]), "dex_number": mon["num"],
-        "model_height": round(min(max(0.9 * math.sqrt(height / 0.7), 0.5), 2.4), 2),
+        "model_height": round(min(max(0.9 * math.sqrt(shown / 0.7), 0.5), 2.4), 2),
         "base_hp": st["hp"], "base_attack": st["atk"], "base_defense": st["def"],
         "base_sp_attack": st["spa"], "base_sp_defense": st["spd"], "base_speed": st["spe"],
         "size": size, "move_modifier": 1 if flies else (-1 if weight >= 200 or size >= 2 and weight >= 80 else 0),
