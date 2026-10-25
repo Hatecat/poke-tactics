@@ -257,7 +257,7 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`.
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
-no lo tiene, usa una animación procedural. Solo 19 de los 151 modelos traen clips.
+no lo tiene, usa una animación procedural. 88 de los 151 modelos traen clips.
 
 Cada ataque indica además con qué parte del cuerpo se hace (`anim_variant` del `.tres`): el juego prueba
 primero `fight_b_<variante>` y, si el modelo no lo tiene, el `fight_b` genérico (igual con `fight_d`). Así cada
@@ -309,7 +309,8 @@ Ajustes que no se deducen del esqueleto:
 - `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan, se abren y se doblan los brazos, piernas
   más cerradas, pecho bajo y manos bajo los hombros en cuadrúpedos de patas cortas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
 - `STYLES` en `animate_pokemon.py`: forma de moverse distinta de la de su esqueleto. `fly` (Beedrill) vuela con
-  las piernas colgando y aletea rápido los huesos de `wings`; `lotus` (Abra) levita con las piernas cruzadas;
+  las piernas colgando y aletea rápido los huesos de `wings`; las aves (Pidgey, Zapdos...) usan el mismo
+  estilo con `flap` (fotogramas por batido y grados) para un aleteo lento y amplio; `lotus` (Abra) levita con las piernas cruzadas;
   `sit` (Persian) se sienta como un gato en el reposo. En el juego el modelo se apoya igualmente en el suelo
   (como las aves de los rips): se ve el vaivén pero no la altura de vuelo.
 - Las llamas de los rips (`FireCore` / `FireSten`, Rapidash y Magmar) traen máscaras en gris: `Unit` las cambia

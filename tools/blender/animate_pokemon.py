@@ -223,9 +223,20 @@ TWEAKS = {
 
 # Estilos por especie, que cambian todas las acciones:
 #   fly: insecto que vuela (Beedrill): flota, las patas cuelgan y aletea rápido (las alas en "wings");
+#        las aves usan el mismo estilo con un aleteo más lento y amplio ("flap": fotogramas por batido, grados);
 #   lotus: levita con las piernas cruzadas (Abra); sit: el idle es sentado, como un gato (Persian).
+_BIRD = {"style": "fly", "wings": ["LArm", "RArm"], "flap": (12, 40)}
 STYLES = {
     "beedrill": {"style": "fly", "wings": ["LFeelerA", "LFeelerB", "RFeelerA", "RFeelerB"]},
+    "pidgey": _BIRD,
+    "pidgeotto": _BIRD,
+    "pidgeot": _BIRD,
+    "spearow": _BIRD,
+    "fearow": _BIRD,
+    "farfetchd": _BIRD,
+    "articuno": _BIRD,
+    "aerodactyl": _BIRD,
+    "zapdos": dict(_BIRD, wings=["LShoulder", "RShoulder"]),  # las plumas en punta cuelgan del hombro
     "abra": {"style": "lotus"},
     "persian": {"style": "sit"},
 }
@@ -1013,13 +1024,14 @@ def styled(name, keys):
 
 
 def flap(act):
-    """Aleteo rápido de insecto (un batido cada 3 fotogramas) en toda la acción, encima de las claves."""
+    """Aleteo en toda la acción, encima de las claves: de insecto (un batido cada 3 fotogramas) o el de "flap"."""
     wings = [w for w in STYLE.get("wings", []) if w in B]
     if not wings:
         return
+    period, amp = STYLE.get("flap", (3, 38))
     by_canon = {CANON.get(pb.name): pb for pb in PB}
     for frame in range(int(act.frame_start), int(act.frame_end) + 1):
-        a = 38 * math.sin(2 * math.pi * frame / 3)
+        a = amp * math.sin(2 * math.pi * frame / period)
         for w in wings:
             pb = by_canon[w]
             k = SIDE if w.startswith("L") else -SIDE
