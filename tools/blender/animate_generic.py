@@ -50,7 +50,8 @@ ROOTS = [b for b in BONES if b.parent is None]
 # "flap" = (grados, grados de alas alzadas, retraso de las de detrás en ciclos, aleteos por ciclo de reposo)),
 # shell (huesos que van con el cuerpo, como la concha de Cloyster), roll (al avanzar rueda, como Voltorb),
 # legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal),
-# crab (anda de lado: se gira 90° y las patas solo suben y bajan, deprisa).
+# crab (anda de lado: se gira 90° y las patas solo suben y bajan, deprisa), hold (huesos con un giro fijo
+# hacia delante en todas las poses: regex -> grados sobre el eje de cabeceo).
 TWEAKS = {
     "butterfree": {"hover": True, "freq": 4, "wings": r"[LR]Feeler[AB]\d*", "flap": (32, 10, 0.04, 6)},
     # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho.
@@ -60,7 +61,8 @@ TWEAKS = {
     "tentacruel": {"amp": 12},
     "cloyster": {"shell": r"[LR]Feeler[AB]"},
     "paras": {"legs": True, "amp": 5},
-    "parasect": {"legs": True, "amp": 5},
+    # Las pinzas colgaban por debajo de las patas y el juego lo apoyaba en ellas: van levantadas hacia delante.
+    "parasect": {"legs": True, "amp": 5, "hold": {r"[LR]ForeArm": -70}},
     "voltorb": {"roll": True},
     "electrode": {"roll": True},
     # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
@@ -89,6 +91,9 @@ FLOAT = TWEAKS.get("float", False)
 PUFF = TWEAKS.get("puff", 1.0)
 ROLL_WALK = TWEAKS.get("roll", False)
 CRAB = TWEAKS.get("crab", False)
+# Una vuelta por casilla: el juego tarda STEP_TIME (0,22 s) en cada una y el clip de andar dura 21 fotogramas
+# (0,875 s a 24 fps), así que lleva 4 vueltas. Al llegar a la casilla queda de cara y volver al reposo no se nota.
+ROLL_TURNS, ROLL_FRAMES = 4, 21
 
 # Cuerpo: raíces y columna; lo que deforma pero no es cuerpo es un apéndice.
 _BODY = re.compile(r"Hips|Waist|Spine\d*|Neck\d*|Head\d*|Origin|_rootJoint|pm\d+.*|mesh\d*"
@@ -146,6 +151,10 @@ def lquat(bone, axis, deg):
 
 
 # ---------- poses: dict con root=(adelante, arriba) en alturas, pitch del cuerpo y fase/amp de apéndices ----------
+HOLD = {b.name: lquat(b, PITCH, deg) for b in BONES for rx, deg in TWEAKS.get("hold", {}).items()
+        if re.fullmatch(rx, _canon(b.name))}
+
+
 def P(fwd=0.0, up=0.0, pitch=0.0, yaw=0.0, amp=None, phase=0.0, spread=0.0, scale=1.0, wing=None, gait=None):
     """wing: fase del aleteo (ciclos); si no se da, aletea al ritmo de los fotogramas (lo pone apply_pose).
     gait: fase del paso de las patas (ciclos); sin él, quietas."""
@@ -165,7 +174,7 @@ def idle_pose(t):
 
 def walk_pose(t):
     if ROLL_WALK:  # una vuelta entera por ciclo, sin saltar
-        return P(pitch=360 * t, amp=AMP * 0.5, phase=2 * FREQ * t)
+        return P(pitch=360 * ROLL_TURNS * t, amp=AMP * 0.5, phase=2 * FREQ * t)
     if CRAB:  # de lado: el costado derecho por delante, con pasitos rápidos
         return P(yaw=90, up=0.01 * abs(math.sin(8 * math.pi * t)), phase=2 * FREQ * t, gait=4 * t)
     if LEGS:  # anda sobre las patas: el cuerpo apenas se mece
@@ -183,7 +192,9 @@ def _held(start, end, **kw):
 
 ACTIONS = {
     "idle": lambda: cycle(idle_pose, 48),
-    "walk": lambda: cycle(walk_pose, 24),
+    # Rodando, una clave por fotograma: entre dos claves gira 69° y con más saltaría por el camino corto.
+    "walk": lambda: [(f + 1, walk_pose(f / ROLL_FRAMES)) for f in range(ROLL_FRAMES + 1)] if ROLL_WALK
+    else cycle(walk_pose, 24),
     "fight_b": lambda: [  # se echa atrás y embiste
         (1, P()),
         (8, P(fwd=-0.06, up=0.02, pitch=-14, amp=AMP * 0.6, phase=0.25)),
@@ -242,6 +253,8 @@ def apply_pose(frame, p):
             # La onda baja por la cadena: cada hueso va un poco por detrás del anterior.
             a = p["amp"] * math.sin(2 * math.pi * (p["phase"] - 0.12 * d)) + p["spread"] * (1 if d == 0 else 0.3)
             q = lquat(bone, AXIS[bone.name], a)
+        if bone.name in HOLD:
+            q = HOLD[bone.name] @ q
         pb.rotation_quaternion = q
         pb.location = loc
         pb.scale = scale
