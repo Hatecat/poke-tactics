@@ -2,6 +2,8 @@ extends Control
 ## Torre de Batallas: inicio, draft (4 × elegir 1 de 6 básicos), gestión entre pisos y fin.
 
 const STAT_MAX := 160.0
+const LOCK_CLOSED := preload("res://assets/ui/lock_closed.svg")
+const LOCK_OPEN := preload("res://assets/ui/lock_open.svg")
 
 var _run: TowerRun
 var _content: Control
@@ -492,8 +494,27 @@ func _build_shop() -> Control:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 6)
 	panel.add_child(col)
-	col.add_child(UiKit.label("Tienda", 20))
-	col.add_child(UiKit.label("Tienes %d ₽ · los objetos cambian en cada piso." % _run.money, 13, Color(1, 1, 1, 0.6)))
+	var title_row := HBoxContainer.new()
+	col.add_child(title_row)
+	var title := UiKit.label("Tienda", 20)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_row.add_child(title)
+	var lock := UiKit.button("Bloqueada" if _run.shop_locked else "Bloquear", func() -> void:
+		_run.shop_locked = not _run.shop_locked
+		Audio.sfx("ui_place" if _run.shop_locked else "ui_hover", -4.0)
+		Game.save()
+		_refresh(), 14)
+	lock.icon = LOCK_CLOSED if _run.shop_locked else LOCK_OPEN
+	lock.toggle_mode = true
+	lock.button_pressed = _run.shop_locked
+	lock.tooltip_text = "Con el candado puesto, al superar el piso la tienda conserva lo que queda a la venta (el candado se quita solo al llegar)."
+	if _run.shop_locked:
+		lock.add_theme_color_override("font_color", UiKit.ACCENT)
+		lock.add_theme_color_override("font_pressed_color", UiKit.ACCENT)
+		lock.add_theme_color_override("icon_pressed_color", UiKit.ACCENT)
+	title_row.add_child(lock)
+	col.add_child(UiKit.label("Tienes %d ₽ · %s" % [_run.money, "se guarda para el próximo piso." if _run.shop_locked else "los objetos cambian en cada piso."], 13,
+		UiKit.ACCENT if _run.shop_locked else Color(1, 1, 1, 0.6)))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

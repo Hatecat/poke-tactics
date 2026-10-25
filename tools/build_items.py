@@ -90,6 +90,10 @@ TYPE_BOOSTERS = {
     "metal-coat": "steel", "fairy-feather": "fairy",
 }
 CATALOG += [(k, 1, "type_boost", {"type": t, "boost": 1.2}, 30, 0) for k, t in TYPE_BOOSTERS.items()]
+# Descripciones propias para los objetos cuyo efecto en el tablero no es el de los juegos.
+DESCRIPTIONS = {
+    "quick-claw": "Garra ligera y afilada. Al terminar cada turno, el Pokémon que la lleva tiene un 20 % de probabilidad de que su siguiente turno llegue antes (casi un tercio de turno).",
+}
 STONES = ["fire-stone", "water-stone", "thunder-stone", "leaf-stone", "moon-stone"]
 CATALOG += [(k, 2, "evolution", {}, 30, 2) for k in STONES]
 
@@ -131,7 +135,7 @@ def main():
         item_id = ident.replace("-", "")
         fields = {
             "id": item_id, "display_name": names.get(pid, ident.replace("-", " ").title()),
-            "description": flavor.get(pid, ""), "category": cat, "effect": effect, "params": params,
+            "description": DESCRIPTIONS.get(ident, flavor.get(pid, "")), "category": cat, "effect": effect, "params": params,
             "fling_power": fling, "rarity": rarity,
         }
         lines = ['[gd_resource type="Resource" script_class="ItemData" format=3]', "",

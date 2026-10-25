@@ -13,6 +13,8 @@ const SHED_SKIN_CHANCE := 0.3
 const ATTRACT_TURNS := 5
 ## Turnos propios que dura Constricción o un remolino (Giro Fuego, Torbellino...).
 const BIND_TURNS := 2
+## Pausas al comerse una baya: tras el golpe, entre el nombre de la baya y su efecto, y al terminar.
+const BERRY_DELAYS: Array[float] = [0.45, 0.6, 0.4]
 
 # --- Tablero ---
 ## Daño por cada nivel de altura a favor (+) o en contra (-), con topes.
@@ -35,6 +37,8 @@ const SAND_DWELLERS: PackedStringArray = ["ground", "rock", "steel"]
 
 var b # la batalla (scripts/battle/battle.gd)
 var field := FieldState.new()
+## Pokémon cuya baya debe activarse: se la comen en la siguiente pausa (eat_pending), así se ve antes el golpe.
+var _pending_berries: Array[Unit] = []
 
 
 func _init(battle) -> void:
@@ -222,7 +226,8 @@ func start_of_turn(u: Unit) -> bool:
 			b._log("%s ya no está confuso." % u.display_name())
 			u.refresh_label()
 		elif b.rng.randf() < CONFUSION_SELF_HIT:
-			var dmg := maxi(1, int((22.0 * CONFUSION_POWER * u.stat("attack") / u.stat("defense")) / 50.0 + 2.0))
+			# Golpe físico sin tipo de potencia 40 contra sí mismo, con la fórmula de daño normal (según su nivel).
+			var dmg := maxi(1, int((2.0 * u.level / 5.0 + 2.0) * CONFUSION_POWER * u.stat("attack") / u.stat("defense") / 50.0 + 2.0))
 			b._popup(u, "?!", Color(1.0, 0.8, 1.0))
 			_hurt(u, dmg, "¡%s está tan confuso que se hirió a sí mismo!" % u.display_name(), Color(1.0, 0.7, 0.9))
 			await b._wait(0.5)
@@ -361,6 +366,7 @@ func _items_end(u: Unit) -> void:
 		u.consumed_item = null
 		b._log("¡%s recogió una %s gracias a Cosecha!" % [u.display_name(), u.item.display_name])
 	check_berries(u)
+	await eat_pending()
 
 
 # --- Bayas y objetos que reaccionan ---------------------------------------------------
@@ -375,41 +381,77 @@ func can_eat(u: Unit) -> bool:
 	return true
 
 
-## Comprueba si su baya debe activarse (PS bajos, estados, sin PP).
+## Comprueba si su baya debe activarse (PS bajos, estados, sin PP) y la deja en cola: se la come en la
+## siguiente pausa del combate (eat_pending).
 func check_berries(u: Unit) -> void:
+	if berry_ready(u) and u not in _pending_berries:
+		_pending_berries.append(u)
+
+
+func berry_ready(u: Unit) -> bool:
 	if not u.is_alive() or not can_eat(u):
-		return
+		return false
 	var it := u.item
-	var low: float = it.params.get("threshold", 0.5)
 	match it.effect:
 		"heal_flat", "heal_frac":
-			if u.hp <= u.max_hp * low and u.hp < u.max_hp:
-				var amount: int = it.params.amount if it.effect == "heal_flat" else int(u.max_hp * it.params.amount)
-				_eat(u)
-				b._heal(u, maxi(1, amount))
+			return u.hp <= u.max_hp * it.params.get("threshold", 0.5) and u.hp < u.max_hp
+		"cure":
+			var which: String = it.params.status
+			var has_status: bool = u.status != MoveData.Status.NONE and (which == "all" or STATUS_CODES.get(which, -1) == u.status)
+			return has_status or (u.volatiles.has("confusion") and which in ["all", "confusion"])
+		"pinch":
+			return u.hp <= u.max_hp * (0.5 if u.ability == "gluttony" else 0.25)
+		"pp":
+			return u.moves.any(func(mv: MoveData) -> bool: return u.pp.get(mv, 1) <= 0)
+	return false
+
+
+## Se comen las bayas en cola, de una en una y con pausas: golpe, nombre de la baya, efecto.
+func eat_pending() -> void:
+	while not _pending_berries.is_empty():
+		var u: Unit = _pending_berries.pop_front()
+		if not berry_ready(u):
+			continue
+		await b._wait(BERRY_DELAYS[0])
+		var it := u.item
+		_eat(u)
+		await b._wait(BERRY_DELAYS[1])
+		_berry_effect(u, it)
+		await b._wait(BERRY_DELAYS[2])
+
+
+## Se come la baya al momento, sin pausas (Picadura, Ladrón...).
+func apply_berry(u: Unit) -> void:
+	var it := u.item
+	_eat(u)
+	_berry_effect(u, it)
+
+
+func _berry_effect(u: Unit, it: ItemData) -> void:
+	match it.effect:
+		"heal_flat", "heal_frac":
+			var amount: int = it.params.amount if it.effect == "heal_flat" else int(u.max_hp * it.params.amount)
+			b._heal(u, maxi(1, amount))
 		"cure":
 			var which: String = it.params.status
 			var has_status: bool = u.status != MoveData.Status.NONE and (which == "all" or STATUS_CODES.get(which, -1) == u.status)
 			var confused: bool = u.volatiles.has("confusion") and which in ["all", "confusion"]
-			if has_status or confused:
-				_eat(u)
-				if has_status:
-					u.status = MoveData.Status.NONE
-					u.status_turns = 0
-				if confused:
-					u.volatiles.erase("confusion")
-				u.refresh_label()
-				b._log("%s se recuperó." % u.display_name())
+			if has_status:
+				u.status = MoveData.Status.NONE
+				u.status_turns = 0
+			if confused:
+				u.volatiles.erase("confusion")
+			u.refresh_label()
+			Fx.aura(b, u.position, Fx.HEAL_COLOR, u.data.model_height)
+			b._popup(u, "¡Curado!", Color(0.4, 1.0, 0.5))
+			b._log("%s se recuperó." % u.display_name())
 		"pinch":
-			var threshold := 0.5 if u.ability == "gluttony" else 0.25
-			if u.hp <= u.max_hp * threshold:
-				_eat(u)
-				_boost(u, {it.params.stat: 1}, it.display_name)
+			_boost(u, {it.params.stat: 1}, it.display_name)
 		"pp":
 			for mv in u.moves:
 				if u.pp.get(mv, 1) <= 0:
-					_eat(u)
 					u.pp[mv] = it.params.amount
+					b._popup(u, "+%d PP" % it.params.amount, Color(0.5, 0.85, 1.0))
 					b._log("%s recuperó PP de %s." % [u.display_name(), mv.display_name])
 					break
 
@@ -420,8 +462,9 @@ const STATUS_CODES := {"par": MoveData.Status.PARALYSIS, "slp": MoveData.Status.
 
 func _eat(u: Unit) -> void:
 	b._log("¡%s se comió su %s!" % [u.display_name(), u.item.display_name])
-	b._popup(u, u.item.display_name, Color(0.6, 1.0, 0.6))
+	b._popup(u, u.item.display_name, Color(0.6, 1.0, 0.6), 1.2)
 	Audio.sfx("heal", -8.0, 1.2)
+	Fx.aura(b, u.position, Color(0.6, 1.0, 0.6), u.data.model_height * 0.6, false)
 	u.lose_item(true)
 	u.refresh_label()
 

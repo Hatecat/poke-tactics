@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "quickclaw"
 display_name = "Garra Rápida"
-description = "Garra ligera y afilada que permite que el Pokémon que la lleve ataque a veces el primero."
+description = "Garra ligera y afilada. Al terminar cada turno, el Pokémon que la lleva tiene un 20 % de probabilidad de que su siguiente turno llegue antes (casi un tercio de turno)."
 category = 1
 effect = "quick_claw"
 params = {

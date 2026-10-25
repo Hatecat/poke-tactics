@@ -56,3 +56,20 @@ extends Resource
 ## Clip a usar para cada acción cuando el modelo los nombra distinto,
 ## p. ej. {"hit": "dizzy"}. Claves: idle, walk, fight_b, fight_d, hit, ko.
 @export var anim_map := {}
+
+
+## Por debajo de esta altura de modelo, un Pokémon de una casilla es de talla S.
+const SMALL_HEIGHT := 0.9
+
+
+## Talla: S y M ocupan 1 casilla (S, los de modelo pequeño), L 2×2 y XL 3×3.
+func size_label() -> String:
+	match size:
+		2: return "L"
+		3: return "XL"
+	return "S" if model_height < SMALL_HEIGHT else "M"
+
+
+func size_description() -> String:
+	var cells := "1 casilla" if size == 1 else "%d×%d casillas" % [size, size]
+	return "Talla %s: ocupa %s" % [size_label(), cells]

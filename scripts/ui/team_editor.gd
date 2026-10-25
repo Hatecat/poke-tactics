@@ -199,12 +199,11 @@ func _card(p: PokemonData, callback: Callable, width: float) -> Button:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 3)
 	b.add_child(box)
-	var title := UiKit.label("#%03d %s%s" % [p.dex_number, p.species_name, "  ◆" if p.size > 1 else ""], 16)
+	var title := UiKit.label("#%03d %s  %s" % [p.dex_number, p.species_name, p.size_label()], 16)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
 	box.add_child(UiKit.type_row(p.types, true))
-	if p.size > 1:
-		b.tooltip_text = "◆ Pokémon grande: ocupa %d×%d casillas" % [p.size, p.size]
+	b.tooltip_text = p.size_description()
 	return b
 
 
@@ -262,7 +261,7 @@ func _show(p: PokemonData) -> void:
 	var swim := ""
 	if "water" in p.types:
 		swim = " (%d nadando)" % ((tiles - mini(p.move_modifier, 0)) * 2)
-	_detail.add_child(UiKit.label("Movimiento %d%s · Salto %d · Tamaño %d" % [tiles, swim, p.jump, p.size], 15, UiKit.ACCENT))
+	_detail.add_child(UiKit.label("Movimiento %d%s · Salto %d · Talla %s" % [tiles, swim, p.jump, p.size_label()], 15, UiKit.ACCENT))
 
 	var profile := TypeChart.defensive_profile(p.types)
 	for group in [["Débil a", [4.0, 2.0]], ["Resiste", [0.5, 0.25]], ["Inmune a", [0.0]]]:

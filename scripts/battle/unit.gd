@@ -269,7 +269,10 @@ const VOLATILE_SHORT := {
 func volatiles_text() -> String:
 	var parts := PackedStringArray()
 	for key: String in volatiles:
-		var label: String = VOLATILE_SHORT.get(key, key)
+		# Las marcas internas (ability_used, protect_used) no tienen nombre y no se muestran.
+		if not VOLATILE_SHORT.has(key):
+			continue
+		var label: String = VOLATILE_SHORT[key]
 		if key == "perish":
 			label += " %d" % volatiles[key].turns
 		parts.append(label)

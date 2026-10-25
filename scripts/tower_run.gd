@@ -95,6 +95,8 @@ var bag := {}
 var money := START_MONEY
 ## Tienda del piso actual: ids de objetos a la venta (cada uno se puede comprar una vez).
 var shop: PackedStringArray = []
+## Candado de la tienda: si está puesto al superar el piso, la tienda no cambia (y el candado se quita).
+var shop_locked := false
 var biome := Biome.Kind.MEADOW
 var weather := Weather.Kind.CLEAR
 ## Resumen del último combate (para la pantalla entre pisos).
@@ -364,7 +366,14 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 			news.append({"kind": "item", "text": "Obtienes: %s" % it.display_name, "item": it.id})
 	floor_number += 1
 	Game.tower_best = maxi(Game.tower_best, floor_number - 1)
-	roll_shop()
+	if shop_locked:
+		shop_locked = false
+		# Las Balls que ahora se venden siempre salen del lote guardado.
+		for kind: String in BALL_KINDS:
+			while ball_always_sold(kind) and SHOP_BALL_PREFIX + kind in shop:
+				shop.remove_at(shop.find(SHOP_BALL_PREFIX + kind))
+	else:
+		roll_shop()
 
 
 ## Nueva tienda: a veces Super, Ultra o Master Ball (si aún no se venden siempre), y objetos al azar hasta
@@ -516,7 +525,7 @@ func to_dict() -> Dictionary:
 		"floor": floor_number, "balls": balls, "topology": topology, "difficulty": difficulty,
 		"picks_left": picks_left, "offer": offer.map(func(p: PokemonData) -> String: return p.id),
 		"party": pack.call(party), "box": pack.call(box), "finished": finished, "bag": bag,
-		"money": money, "shop": shop, "badges": badges,
+		"money": money, "shop": shop, "shop_locked": shop_locked, "badges": badges,
 	}
 
 
@@ -533,6 +542,7 @@ static func from_dict(d: Dictionary) -> TowerRun:
 	run.bag = d.get("bag", {})
 	run.money = d.get("money", START_MONEY)
 	run.shop = PackedStringArray(d.get("shop", []))
+	run.shop_locked = d.get("shop_locked", false)
 	run.badges = PackedStringArray(d.get("badges", []))
 	for id: String in d.get("offer", []):
 		var p := Game.find_species(id)

@@ -498,6 +498,7 @@ func _end_turn() -> void:
 	_board.clear_highlights()
 	if active.is_alive():
 		await _end_of_turn(active)
+	await effects.eat_pending()
 	turns.end_turn(active, moved, acted, _extra_ct)
 	if active.is_alive() and Items.effect(active) == "quick_claw" and rng.randf() < Items.param(active, "chance", 0.2):
 		active.ct += Items.param(active, "ct", 30)
@@ -980,6 +981,8 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 				var got := _hit_once(user, t, hit_move, type, i, hits > 1)
 				total += got
 				landed += 1
+				# La baya (Aranja, Zidra...) se come entre golpe y golpe, con pausas para que se vea.
+				await effects.eat_pending()
 			dealt += total
 			if hits > 1:
 				_log("¡Golpeó %d %s! %s recibe %d de daño en total." % [landed, "vez" if landed == 1 else "veces", t.display_name(), total])
@@ -1165,6 +1168,7 @@ func _special_value(u: Unit, from: Array[Vector2i], move: MoveData, target: Vect
 
 
 func _end_move(user: Unit) -> void:
+	await effects.eat_pending()
 	await _wait(0.6)
 	if user.is_alive():
 		user.play("idle")
@@ -1305,8 +1309,10 @@ func _item_move(user: Unit, t: Unit, move: MoveData) -> void:
 					_heal(user, berry.params.amount if berry.effect == "heal_flat" else int(user.max_hp * berry.params.amount))
 					user.item = saved
 				else:
-					effects.check_berries(user)
-					if user.item == berry:
+					if effects.berry_ready(user):
+						effects.apply_berry(user)
+					# Se la haya comido o no, recupera su propio objeto.
+					if user.item == berry or user.item == null:
 						user.item = saved
 		"burnberry":
 			if t.item and t.item.category == ItemData.Category.BERRY and not sticky:
@@ -2149,11 +2155,11 @@ func _refresh_info(u: Unit) -> void:
 			boosts.append("[color=#%s]%s %+d[/color] (%d t.)" % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
 				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
 	var vols := u.volatiles_text()
-	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Tamaño %d\n%s[font_size=14]Débil a: %s[/font_size]" % [
+	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Talla %s\n%s[font_size=14]Débil a: %s[/font_size]" % [
 		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), u.item.display_name if u.item else "—", u.hp, u.max_hp,
 		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
-		u.stats.speed, int(u.ct), _move_text(u), u.data.jump, u.data.size,
+		u.stats.speed, int(u.ct), _move_text(u), u.data.jump, u.data.size_label(),
 		("Mejoras: " + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",
 		", ".join(weak) if not weak.is_empty() else "—",
 	]
