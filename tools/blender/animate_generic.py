@@ -44,10 +44,58 @@ PITCH = LEFT  # inclina adelante (+)
 # Huesos que solo marcan el final de una cadena o vienen del rip sin deformar nada.
 _SKIP = re.compile(r"End.*|_rootJoint|mesh\d*|pm\d+.*|Origin")
 ROOTS = [b for b in BONES if b.parent is None]
+# Ajustes por especie: amp (grados del vaivén de apéndices), freq (vaivenes por ciclo de reposo), hover
+# (flota: insectos voladores), float (flota subiendo y bajando mucho, sin saltar al avanzar), puff (se hincha
+# en el ataque especial: escala del cuerpo), wings (cadenas de alas: aletean las dos a la vez, arriba y abajo;
+# "flap" = (grados, grados de alas alzadas, retraso de las de detrás en ciclos, aleteos por ciclo de reposo)),
+# shell (huesos que van con el cuerpo, como la concha de Cloyster), roll (al avanzar rueda, como Voltorb),
+# legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal).
+TWEAKS = {
+    "butterfree": {"hover": True, "freq": 4, "wings": r"[LR]Feeler[AB]\d*", "flap": (32, 10, 0.04, 6)},
+    # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho.
+    "venomoth": {"hover": True, "freq": 3, "wings": r"[LR]Feeler[AB]\d*", "flap": (40, 20, 0.15, 4)},
+    "magikarp": {"amp": 16, "freq": 2},
+    "tentacool": {"amp": 14},
+    "tentacruel": {"amp": 12},
+    "cloyster": {"shell": r"[LR]Feeler[AB]"},
+    "paras": {"legs": True, "amp": 5},
+    "parasect": {"legs": True, "amp": 5},
+    "voltorb": {"roll": True},
+    "electrode": {"roll": True},
+    # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
+    "koffing": {"float": True, "puff": 1.3, "amp": 9},
+    "weezing": {"float": True, "puff": 1.25, "amp": 9},
+    "gastly": {"float": True, "puff": 1.15, "amp": 6},
+    "magneton": {"float": True, "amp": 8},
+    "exeggcute": {"amp": 8},
+    # Esqueletos de plantilla (rig_templates.py).
+    "golbat": {"hover": True, "amp": 28, "freq": 3},
+    "goldeen": {"amp": 16, "freq": 2},
+    "seaking": {"amp": 16, "freq": 2},
+    "horsea": {"float": True, "amp": 12},
+    "seadra": {"float": True, "amp": 12},
+    "lapras": {"amp": 8},
+    "shellder": {"amp": 14},
+    "kabuto": {"amp": 12},
+    "krabby": {"amp": 14},
+    "kingler": {"amp": 14},
+}.get(NAME, {})
+AMP = TWEAKS.get("amp", 10)
+FREQ = TWEAKS.get("freq", 1)
+HOVER = TWEAKS.get("hover", False)
+FLOAT = TWEAKS.get("float", False)
+PUFF = TWEAKS.get("puff", 1.0)
+ROLL_WALK = TWEAKS.get("roll", False)
+
 # Cuerpo: raíces y columna; lo que deforma pero no es cuerpo es un apéndice.
-_BODY = re.compile(r"Hips|Waist|Spine\d*|Neck\d*|Head\d*|Origin|_rootJoint|pm\d+.*|mesh\d*")
+_BODY = re.compile(r"Hips|Waist|Spine\d*|Neck\d*|Head\d*|Origin|_rootJoint|pm\d+.*|mesh\d*"
+                   + ("|" + TWEAKS["shell"] if "shell" in TWEAKS else ""))
 BODY = [b for b in BONES if _BODY.fullmatch(_canon(b.name))]
 APPENDAGES = [b for b in BONES if b not in BODY and not _SKIP.fullmatch(_canon(b.name))]
+# Patas: el muslo barre y levanta; lo que cuelga de él (rodilla, pie) va rígido.
+LEGS = [b for b in APPENDAGES if TWEAKS.get("legs") and re.fullmatch(r"[LR]Thigh2?", _canon(b.name))]
+APPENDAGES = [b for b in APPENDAGES if not any(b.parent == l or b.parent in l.children_recursive for l in LEGS)]
+WINGS = [b for b in APPENDAGES if "wings" in TWEAKS and re.fullmatch(TWEAKS["wings"], _canon(b.name))]
 
 
 def _depth(bone):
@@ -72,25 +120,21 @@ def _swing_axis(bone):
 
 
 AXIS = {b.name: _swing_axis(b) for b in APPENDAGES}
+# Las patas giran sobre la vertical (barrido) y sobre el eje de delante (levantar): signo según el lado.
+for _b in LEGS:
+    del AXIS[_b.name]
+# Las alas giran sobre el eje de delante (arriba y abajo), espejadas: el signo según el lado del cuerpo.
+for _b in WINGS:
+    AXIS[_b.name] = FWD if _b.head_local.dot(LEFT) > 0 else -FWD
+_verts = [arm.matrix_world.inverted() @ (o.matrix_world @ v.co)
+          for o in bpy.context.scene.objects if o.type == "MESH" for v in o.data.vertices]
+# Centro de la caja del cuerpo (espacio de la armadura): sobre él gira al rodar.
+CENTER = Vector([(min(v[i] for v in _verts) + max(v[i] for v in _verts)) / 2 for i in range(3)])
 
-# Ajustes por especie: amp (grados del vaivén de apéndices), freq (vaivenes por ciclo de reposo), hover
-# (flota y aletea rápido: insectos voladores), float (flota subiendo y bajando mucho, sin saltar al
-# avanzar), puff (se hincha en el ataque especial: escala del cuerpo).
-TWEAKS = {
-    "butterfree": {"hover": True, "amp": 28, "freq": 4},
-    "venomoth": {"hover": True, "amp": 28, "freq": 4},
-    "magikarp": {"amp": 16, "freq": 2},
-    "tentacool": {"amp": 14},
-    "tentacruel": {"amp": 12},
-    # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
-    "koffing": {"float": True, "puff": 1.3, "amp": 9},
-    "weezing": {"float": True, "puff": 1.25, "amp": 9},
-}.get(NAME, {})
-AMP = TWEAKS.get("amp", 10)
-FREQ = TWEAKS.get("freq", 1)
-HOVER = TWEAKS.get("hover", False)
-FLOAT = TWEAKS.get("float", False)
-PUFF = TWEAKS.get("puff", 1.0)
+
+
+def lquat_arm(axis, deg):
+    return Quaternion(axis, math.radians(deg))
 
 
 def lquat(bone, axis, deg):
@@ -99,9 +143,11 @@ def lquat(bone, axis, deg):
 
 
 # ---------- poses: dict con root=(adelante, arriba) en alturas, pitch del cuerpo y fase/amp de apéndices ----------
-def P(fwd=0.0, up=0.0, pitch=0.0, yaw=0.0, amp=None, phase=0.0, spread=0.0, scale=1.0):
+def P(fwd=0.0, up=0.0, pitch=0.0, yaw=0.0, amp=None, phase=0.0, spread=0.0, scale=1.0, wing=None, gait=None):
+    """wing: fase del aleteo (ciclos); si no se da, aletea al ritmo de los fotogramas (lo pone apply_pose).
+    gait: fase del paso de las patas (ciclos); sin él, quietas."""
     return {"root": (fwd, up), "pitch": pitch, "yaw": yaw, "amp": AMP if amp is None else amp,
-            "phase": phase, "spread": spread, "scale": scale}
+            "phase": phase, "spread": spread, "scale": scale, "wing": wing, "gait": gait}
 
 
 def cycle(fn, frames):
@@ -115,6 +161,11 @@ def idle_pose(t):
 
 
 def walk_pose(t):
+    if ROLL_WALK:  # una vuelta entera por ciclo, sin saltar
+        return P(pitch=360 * t, amp=AMP * 0.5, phase=2 * FREQ * t)
+    if LEGS:  # anda sobre las patas: el cuerpo apenas se mece
+        return P(up=0.01 * abs(math.sin(4 * math.pi * t)), pitch=2 * math.sin(4 * math.pi * t), phase=2 * FREQ * t,
+                 gait=t)
     hop = math.sin(2 * math.pi * t) * 0.6 if FLOAT else abs(math.sin(2 * math.pi * t))
     return P(fwd=0.0, up=(0.02 if HOVER or FLOAT else 0.05) * hop, pitch=6 + 3 * math.sin(4 * math.pi * t),
              amp=AMP * 1.4, phase=2 * FREQ * t)
@@ -148,6 +199,11 @@ ACTIONS = {
 def apply_pose(frame, p):
     fwd, up = p["root"]
     offset = (FWD * fwd + UP * up) * HEIGHT
+    if p["wing"] is None and WINGS:  # el reposo dura 48 fotogramas: "flap"[3] batidos en ese tiempo
+        p = dict(p, wing=(frame - 1) * TWEAKS["flap"][3] / 48)
+    turn = lquat_arm(PITCH, p["pitch"])
+    # Gira sobre el centro del cuerpo y no sobre la cabeza del hueso raíz (rodar, cabecear).
+    pivot = CENTER - turn @ CENTER if ROLL_WALK else Vector()
     for pb in PB:
         bone = pb.bone
         pb.rotation_mode = "QUATERNION"
@@ -155,9 +211,26 @@ def apply_pose(frame, p):
         loc = Vector()
         scale = Vector((1, 1, 1))
         if bone in ROOTS:
-            loc = bone.matrix_local.to_3x3().inverted() @ offset
+            head = bone.head_local
+            loc = bone.matrix_local.to_3x3().inverted() @ (offset + pivot + (turn @ head - head if ROLL_WALK else Vector()))
             q = lquat(bone, PITCH, p["pitch"])
             scale = Vector((1, 1, 1)) * p["scale"]
+        elif bone in LEGS:
+            q = Quaternion()
+            if p["gait"] is not None:
+                side = 1 if bone.head_local.dot(LEFT) > 0 else -1
+                # En diagonal: la delantera izquierda con la trasera derecha, y al revés.
+                off = 0.0 if (side > 0) == _canon(bone.name).endswith("Thigh") else 0.5
+                ph = 2 * math.pi * (p["gait"] + off)
+                q = lquat(bone, UP, -side * 28 * math.cos(ph)) @ \
+                    lquat(bone, FWD, side * 24 * max(0.0, -math.sin(ph)))
+        elif bone in WINGS:
+            amp, lift, lag, beats = TWEAKS["flap"]
+            d = DEPTH[bone.name]
+            back = lag if re.search(r"B\d*$", _canon(bone.name)) else 0.0
+            ph = p["wing"] - back - 0.06 * d
+            a = amp * math.sin(2 * math.pi * ph) * (1 if d == 0 else 0.35) + (lift if d == 0 else 0)
+            q = lquat(bone, AXIS[bone.name], a)
         elif bone.name in AXIS:
             d = DEPTH[bone.name]
             # La onda baja por la cadena: cada hueso va un poco por detrás del anterior.

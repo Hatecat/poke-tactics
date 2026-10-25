@@ -65,7 +65,8 @@ CANON = {b.name: n for n, b in B.items()}
 missing = [n for n in REQUIRED if n not in B]
 if missing:
     raise SystemExit(f"El esqueleto no sigue la convención de Charmander; faltan: {', '.join(missing)}")
-HAS_ARMS = all(s + b in B for s in "LR" for b in ("Arm", "Hand"))
+# Sin mano (las guadañas de Scyther), el brazo acaba en la punta del antebrazo.
+HAS_ARMS = all(s + "Arm" in B and (s + "Hand" in B or s + "ForeArm" in B) for s in "LR")
 # Sin cabeza aparte (Jigglypuff, Mankey, Graveler) el cuerpo hace de cabeza. CANON sigue diciendo
 # Hips, así que los giros de cabeza de las poses no se aplican: el cuerpo ya se mueve como cadera.
 HEAD_IS_BODY = "Head" not in B
@@ -119,6 +120,10 @@ def _snap(v):
 
 
 def _pos(name):
+    if name not in B and re.fullmatch(r"[LR]Hand\d*", name):
+        # La cola de los huesos del rip apunta a cualquier parte: se prolonga el brazo.
+        fore, upper = B[name.replace("Hand", "ForeArm")].head_local, B[name.replace("Hand", "Arm")].head_local
+        return fore + (fore - upper)
     return B[name].head_local
 
 
@@ -132,7 +137,8 @@ _feet_h = min(_pos(n).dot(_hip_up) for n in ("LToe", "RToe", "LFoot", "RFoot") i
 # porque los pies se miden en los dedos). Muy por debajo es que los brazos apuntan hacia delante y
 # tuercen la vertical (los cañones de Blastoise, a -35): entonces es un bípedo.
 _hands = (_pos("LHand").dot(_hip_up) - _feet_h) / (_pos("Hips").dot(_hip_up) - _feet_h) if HAS_ARMS else 9
-QUAD = -1.5 < _hands < 0.3
+# Brazos que apuntan hacia delante (Clefairy) tuercen la vertical de las patas: aquí se fija a mano.
+QUAD = {"clefairy": False}.get(Path(bpy.data.filepath).stem, -1.5 < _hands < 0.3)
 
 # Ejes en el espacio de la armadura, medidos en el esqueleto (cada rip trae los suyos: Charmander
 # tiene +Z arriba y mira a -Y; Nidoking, -Y arriba y mira a -Z). Arriba: de los pies a la cabeza.
@@ -143,6 +149,8 @@ if QUAD:
     _fwd = _pos("Head") - _pos("Hips")
 else:
     UP = _snap(_pos("Head") - (_pos("LFoot") + _pos("RFoot")) / 2)
+    # El cuello largo y estirado de Fearow deja la cabeza más adelante que arriba de los pies.
+    UP = {"fearow": Vector((0, 0, 1))}.get(Path(bpy.data.filepath).stem, UP)
     # Dedos: LToe o, si hay varios (LToeA, LToeB... como Pinsir), su punto medio. Con los dos pies:
     # en Alakazam los dedos se abren hacia fuera y los de un solo pie apuntarían de lado.
     _toes = {s: [n for n in B if re.fullmatch(s + r"Toe[A-Z]?\d*", n)] for s in "LR"}
@@ -208,7 +216,7 @@ def _tail_lift(chain):
 # Ajustes por especie (el nombre del .blend), sobre lo que la herramienta deduce del esqueleto:
 #   arm_drop / arm2_drop: grados que bajan los brazos (y el segundo par) desde la horizontal (45 y 20);
 #   arm_fwd: grados que se adelantan los brazos (25); elbow: flexión extra de los codos;
-#   legs_in: grados que se cierran las piernas.
+#   legs_in: grados que se cierran las piernas; hold: giros fijos de otros huesos (eje PITCH/YAW/ROLL, grados).
 _STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: colgando junto al cuerpo
 TWEAKS = {
     "machop": _STRONG_ARMS,
@@ -219,6 +227,12 @@ TWEAKS = {
     "nidoranf": {"chest": 10, "front_back": 0.18},
     # Brazos que en el modelo ya apuntan adelante: la mano quedaba delante del pecho y parecía otra cabeza.
     "sandshrew": {"arm_out": 32, "arm_drop": 35, "arm_fwd": 0, "elbow": -10},
+    # Muñones cortos (esqueletos de plantilla): bajarlos mucho los hunde en el cuerpo.
+    "chansey": {"arm_drop": 15},
+    "clefairy": {"arm_drop": 15, "arm_fwd": 0},
+    "snorlax": {"arm_drop": 30},
+    # Ave de suelo: alas plegadas a los costados (el puerro, en la mano izquierda, queda bajo el ala).
+    "farfetchd": {"arm_drop": 80, "arm_fwd": 0, "hold": {"FeelerB1": [("PITCH", -90)]}},
 }.get(Path(bpy.data.filepath).stem, {})
 
 # Estilos por especie, que cambian todas las acciones:
@@ -228,12 +242,12 @@ TWEAKS = {
 _BIRD = {"style": "fly", "wings": ["LArm", "RArm"], "flap": (12, 40)}
 STYLES = {
     "beedrill": {"style": "fly", "wings": ["LFeelerA", "LFeelerB", "RFeelerA", "RFeelerB"]},
+    "scyther": {"style": "fly", "wings": ["LFeelerA", "LFeelerB", "RFeelerA", "RFeelerB"]},
     "pidgey": _BIRD,
     "pidgeotto": _BIRD,
     "pidgeot": _BIRD,
     "spearow": _BIRD,
     "fearow": _BIRD,
-    "farfetchd": _BIRD,
     "articuno": _BIRD,
     "aerodactyl": _BIRD,
     "zapdos": dict(_BIRD, wings=["LShoulder", "RShoulder"]),  # las plumas en punta cuelgan del hombro
@@ -241,11 +255,17 @@ STYLES = {
     "persian": {"style": "sit"},
 }
 STYLE = STYLES.get(Path(bpy.data.filepath).stem, {})
+_WINGS = [w for w in STYLE.get("wings", []) if w in B]
+# Lo que cuelga de las alas (antebrazo, mano, plumas) solo se mueve con el aleteo: el balanceo de brazos de
+# las poses lo haría remar.
+WING_CHAIN = {n for n in B if n in _WINGS or any(_descends(n, w) for w in _WINGS)}
 
 # Giros de base sumados a todas las poses: colas que atraviesan el suelo y piernas que se cierran.
 # Los que flotan no tocan el suelo: el abdomen de Beedrill puede colgar.
 BASE_ROTS = {} if STYLE.get("style") in ("fly", "lotus") else \
     {c[0]: [(PITCH, lift)] for c in TAILS if (lift := _tail_lift(c))}
+for _n, _rots in TWEAKS.get("hold", {}).items():
+    BASE_ROTS[_n] = [({"PITCH": PITCH, "YAW": YAW, "ROLL": ROLL}[_ax], _deg) for _ax, _deg in _rots]
 for _s, _k in (("L", 1), ("R", -1)):
     if TWEAKS.get("legs_in"):
         _a = TWEAKS["legs_in"] * _k * SIDE
@@ -1004,7 +1024,7 @@ def styled(name, keys):
     if kind in ("fly", "lotus"):
         out = []
         for i, (frame, p) in enumerate(keys):
-            p = dict(p)
+            p = {n: r for n, r in p.items() if n not in WING_CHAIN}
             p.update(_float_legs(frame))
             # Flota a HOVER, con un vaivén lento; al debilitarse va cayendo al suelo.
             k = 1 - i / max(1, len(keys) - 1) if name == "ko" else 1
@@ -1025,18 +1045,22 @@ def styled(name, keys):
 
 def flap(act):
     """Aleteo en toda la acción, encima de las claves: de insecto (un batido cada 3 fotogramas) o el de "flap"."""
-    wings = [w for w in STYLE.get("wings", []) if w in B]
-    if not wings:
+    if not _WINGS:
         return
     period, amp = STYLE.get("flap", (3, 38))
     by_canon = {CANON.get(pb.name): pb for pb in PB}
+    # Brazo de las aves: el ala sube y baja desde el hombro y la punta (antebrazo, mano) la sigue con algo de
+    # retraso, doblándose un poco; así barre arriba y abajo en vez de adelante y atrás.
+    chain = {w: [w] + sorted((n for n in WING_CHAIN if _descends(n, w) and re.fullmatch(r"[LR](Arm|ForeArm|Hand)\d*", n)),
+                             key=lambda n: len(_ancestors(n))) for w in _WINGS}
     for frame in range(int(act.frame_start), int(act.frame_end) + 1):
-        a = amp * math.sin(2 * math.pi * frame / period)
-        for w in wings:
-            pb = by_canon[w]
+        for w in _WINGS:
             k = SIDE if w.startswith("L") else -SIDE
-            pb.rotation_quaternion = lquat(w, [(ROLL, -a * k)])
-            pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+            for i, n in enumerate(chain[w]):
+                a = amp * (1 if i == 0 else 0.15) * math.sin(2 * math.pi * (frame / period - 0.06 * i))
+                pb = by_canon[n]
+                pb.rotation_quaternion = lquat(n, [(ROLL, -a * k)])
+                pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
 
 
 def build(name, keys):

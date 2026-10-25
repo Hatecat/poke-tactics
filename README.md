@@ -257,8 +257,8 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`.
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
-no lo tiene, usa una animación procedural. 121 de los 151 modelos traen clips; los 30 restantes (Chansey,
-Snorlax, Lapras...) no tienen esqueleto en el rip.
+no lo tiene, usa una animación procedural. Los 151 modelos traen clips; a los que venían sin esqueleto en el
+rip se lo pone `setup_animations.py` (ver más abajo).
 
 Cada ataque indica además con qué parte del cuerpo se hace (`anim_variant` del `.tres`): el juego prueba
 primero `fight_b_<variante>` y, si el modelo no lo tiene, el `fight_b` genérico (igual con `fight_d`). Así cada
@@ -288,7 +288,7 @@ Por ataque (`lowkick`: Patada Baja usa un segundo clip de patada) o por variante
 de boca). Orden de búsqueda: excepción del ataque → `fight_b_<variante>` → `fight_b` → procedural.
 `build_data.py` conserva estas entradas al regenerar.
 
-Para animar uno en Blender (no hace falta tocar el rig, todos tienen esqueleto):
+Para animar uno en Blender:
 
 ```bash
 blender --background --python tools/blender/setup_animations.py -- charmander   # crea art/blender/charmander.blend
@@ -303,7 +303,8 @@ blender --background art/blender/charmander.blend --python tools/blender/export_
 
 Las serpientes (Ekans, Arbok, Dratini, Dragonair, y también Caterpie y Weedle) no tienen patas y en el rip están de pie y rectas como un palo;
 las anima otro script, que pone la postura (cola enroscada en el suelo y cuello alzado como una cobra) y la mueve
-desde ahí. Como enroscadas abultan menos que su largo, `COILED_HEIGHT` en `tools/build_data.py` reduce su altura:
+desde ahí (Ekans reposa enroscado en espiral; Caterpie y Weedle avanzan como orugas, estirando y encogiendo el
+cuerpo). Como enroscadas abultan menos que su largo, `COILED_HEIGHT` en `tools/build_data.py` reduce su altura:
 
 ```bash
 blender --background art/blender/ekans.blend --python tools/blender/animate_serpent.py
@@ -312,7 +313,8 @@ blender --background art/blender/ekans.blend --python tools/blender/animate_serp
 El resto de los que no tienen patas (Magikarp, Tentacool, Voltorb, Butterfree, Gyarados, Staryu...) usan un
 animador genérico: el cuerpo se balancea y embiste desde los huesos raíz y cada apéndice (cola, antenas,
 tentáculos, aletas, alas) ondula a lo largo de su cadena. Solo hace idle, walk, fight_b y fight_d; `TWEAKS`
-ajusta la amplitud y el ritmo por especie (las mariposas flotan y aletean rápido):
+ajusta la amplitud y el ritmo por especie: las mariposas flotan y baten las dos alas a la vez, Voltorb y Electrode
+avanzan rodando, Paras y Parasect andan con las cuatro patas en diagonal y la concha de Cloyster va con el cuerpo:
 
 ```bash
 blender --background art/blender/magikarp.blend --python tools/blender/animate_generic.py
@@ -321,7 +323,15 @@ blender --background art/blender/magikarp.blend --python tools/blender/animate_g
 Koffing y Weezing no traen esqueleto: `setup_animations.py` les pone uno (`AUTO_RIG`) con un hueso para el cuerpo
 y otro para cada pieza suelta que sobresale (las nubes de gas, la cabeza pequeña de Weezing), y el animador
 genérico los hace flotar y hincharse en el ataque especial. En el juego sueltan además gas tóxico todo el rato
-(`TOXIC_GAS` en `unit.gd`, `Fx.toxic_gas`).
+(`GAS` en `unit.gd`, `Fx.toxic_gas`). Igual se montan Exeggcute (un hueso por huevo), Gastly (que en el juego suelta
+gas morado oscuro) y Magneton.
+
+Los demás sin esqueleto (Chansey, Snorlax, Lapras, Ponyta, Goldeen...) llevan uno de plantilla:
+`tools/blender/rig_templates.py` da la posición de cada hueso en alturas del modelo, con los nombres de
+Charmander, y `setup_animations.py` lo monta y pesa cada vértice por su distancia a los huesos (el tronco
+cuenta como más cerca, para que las patas no se lleven la barriga). Después se animan con `animate_pokemon.py`
+(bípedos y cuadrúpedos) o `animate_generic.py` (peces, cangrejos, Golbat, Shellder...). Para medir un modelo
+nuevo, render ortográfico de frente, de lado y desde arriba con una rejilla de 0,1 alturas.
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
 sin animar no se exportan, así que esas siguen usando la animación procedural: puedes ir de a poco.

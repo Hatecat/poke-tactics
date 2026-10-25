@@ -103,11 +103,12 @@ def lquat(name, rots):
 
 # ---------- poses (ángulos en grados; distancias en fracciones del largo del cuerpo) ----------
 def body(lift=1.0, lean=0.0, sway=0.0, head=0.0, jaw=0.0, coil=230.0, wave=0.0, phase=0.0, tail_whip=0.0,
-         root=(0, 0)):
+         root=(0, 0), hump=0.0, spiral=0.0):
     """Postura completa. lift: 1 = cuello vertical, menos = inclinado adelante, más = echado atrás;
     lean: grados que se inclina adelante la parte erguida; sway: grados que se ladea; head: cabeceo;
     coil: grados que se enrosca la cola; wave/phase: serpenteo por el suelo (grados por hueso, fase 0-1);
-    tail_whip: grados extra en la cola, más en la punta."""
+    tail_whip: grados extra en la cola, más en la punta; hump: joroba que recorre el cuerpo de la cola a la
+    cabeza (grados por hueso, oruga); spiral: grados que sube cada hueso de la cola (enroscada en espiral)."""
     p = {_F[0]: [(PITCH, 90)], TAIL[0]: [(PITCH, 90)]}
     ground = LIE + COIL
     for i, n in enumerate(ground):
@@ -117,6 +118,10 @@ def body(lift=1.0, lean=0.0, sway=0.0, head=0.0, jaw=0.0, coil=230.0, wave=0.0, 
             k = COIL.index(n) / max(1, len(COIL) - 1)
             a += coil / len(COIL) + tail_whip * (0.3 + k) / len(COIL)
         p[n] = [(GROUND_YAW, a)]
+        if hump:
+            p[n].append((PITCH, hump * math.sin(2 * math.pi * (phase + 1.0 * s))))
+        if spiral and n in COIL:
+            p[n].append((PITCH, -spiral))
     for n in RAISE:
         p[n] = [(PITCH, -90 * lift / len(RAISE))]
     for n in NECK:
@@ -131,8 +136,18 @@ def body(lift=1.0, lean=0.0, sway=0.0, head=0.0, jaw=0.0, coil=230.0, wave=0.0, 
     return p
 
 
+# Ajustes por especie. coiled: en reposo, enroscada en espiral con la cabeza baja (Ekans); crawl: oruga que
+# avanza encogiendo y estirando el cuerpo en vez de serpentear (Caterpie, Weedle).
+TWEAKS = {
+    "ekans": {"coiled": True},
+    "caterpie": {"crawl": True},
+    "weedle": {"crawl": True},
+}.get(NAME, {})
+REST = dict(lift=0.75, lean=-10, coil=560, spiral=7) if TWEAKS.get("coiled") else {}
+
+
 def BASE():
-    return body()
+    return body(**REST)
 
 
 def cycle(fn, frames):
@@ -141,11 +156,16 @@ def cycle(fn, frames):
 
 def idle_pose(t):
     s = math.sin(2 * math.pi * t)
-    return body(lift=1.0 + 0.04 * s, sway=5 * math.sin(2 * math.pi * t + 0.8), head=-2 * s,
-                wave=2.5, phase=t)
+    return body(**{**REST, "lift": REST.get("lift", 1.0) + 0.04 * s},
+                sway=5 * math.sin(2 * math.pi * t + 0.8), head=-2 * s, wave=2.5, phase=t)
 
 
 def walk_pose(t):
+    if TWEAKS.get("crawl"):
+        # Estira el frente y lo vuelve a recoger mientras una joroba sube de la cola a la cabeza.
+        s = math.sin(2 * math.pi * t)
+        return body(lift=1.0 - 0.2 * s, lean=12 + 18 * s, head=-14 * s, coil=150, hump=35, phase=t,
+                    sway=3 * math.sin(2 * math.pi * t + 0.5), root=(0.05 * s, 0.02 * max(0.0, -s)))
     return body(lean=8, sway=4 * math.sin(2 * math.pi * t), wave=12, phase=t)
 
 

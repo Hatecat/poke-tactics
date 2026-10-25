@@ -19,8 +19,12 @@ const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At
 	"speed": "Velocidad", "accuracy": "Precisión", "evasion": "Evasión", "crit": "Índice crítico"}
 ## El índice de crítico va de 0 a 3 (no se puede bajar).
 const MAX_CRIT_STAGE := 3
-## Pokémon que sueltan gas tóxico todo el rato (Fx.toxic_gas).
-const TOXIC_GAS: PackedStringArray = ["koffing", "weezing"]
+## Pokémon que sueltan gas todo el rato (Fx.toxic_gas): colores al salir y al deshacerse.
+const GAS := {
+	"koffing": [Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3)],
+	"weezing": [Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3)],
+	"gastly": [Color(0.55, 0.35, 0.72, 0.6), Color(0.78, 0.6, 0.95)],
+}
 
 var data: PokemonData
 ## Especie original (Transformación cambia `data` y `moves` durante el combate).
@@ -570,8 +574,8 @@ func _load_model() -> void:
 	if _gas:
 		_gas.queue_free()
 		_gas = null
-	if data.id in TOXIC_GAS:
-		_gas = Fx.toxic_gas(self, data.model_height)
+	if data.id in GAS:
+		_gas = Fx.toxic_gas(self, data.model_height, GAS[data.id][0], GAS[data.id][1])
 	play("idle")
 
 

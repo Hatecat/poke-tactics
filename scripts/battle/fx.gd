@@ -188,12 +188,14 @@ static func smoke(parent: Node3D, pos: Vector3) -> void:
 
 ## Gas tóxico que sale sin parar de un Pokémon (Koffing, Weezing). Las partículas se sueltan en el mundo,
 ## así que al moverse dejan un rastro. Devuelve el emisor para apagarlo (emitting = false).
-static func toxic_gas(parent: Node3D, height: float) -> CPUParticles3D:
-	var parts := _particles(Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3), false, 0.3 * height)
+static func toxic_gas(parent: Node3D, height: float, color: Color, color2: Color) -> CPUParticles3D:
+	var parts := _particles(color, color2, false, 0.3 * height)
 	parts.one_shot = false
 	parts.explosiveness = 0.0
 	parts.amount = 26
 	parts.lifetime = 2.4
+	# Empieza ya con la nube formada: las partículas que aún no han salido se pintaban como un punto oscuro.
+	parts.preprocess = parts.lifetime
 	parts.local_coords = false
 	# Sale de un anillo alrededor de la parte alta del cuerpo, no de dentro: así no tapa la cara.
 	parts.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING

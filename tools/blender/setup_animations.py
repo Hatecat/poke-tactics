@@ -15,11 +15,17 @@ que se asigna a ataques concretos en el anim_map del Pokémon ({"lowkick": "figh
 Después abre art/blender/charmander.blend, anima cada acción en el Action Editor
 y exporta con tools/blender/export_animations.py.
 """
+import math
+import re
 import sys
 from pathlib import Path
 
 import bpy
 from mathutils import Matrix, Vector
+from mathutils.geometry import intersect_point_line
+
+sys.path.insert(0, str(Path(__file__).parent))
+import rig_templates  # noqa: E402
 
 PROJECT = Path(__file__).resolve().parents[2]
 # Acción -> (fotogramas, bucle). Los nombres coinciden con las claves del juego.
@@ -48,6 +54,8 @@ def import_model(name):
     armature = next((o for o in bpy.context.scene.objects if o.type == "ARMATURE"), None)
     if armature is None and name in AUTO_RIG:
         return auto_rig()
+    if armature is None and name in rig_templates.RIGS:
+        return template_rig(name)
     if armature is None:
         raise SystemExit("El modelo no tiene esqueleto.")
     # El importador de glTF dibuja cada hueso como una esfera (Icosphere): tapan la malla y, al
@@ -64,8 +72,9 @@ def import_model(name):
 
 
 # Modelos sin esqueleto con forma de bola y piezas sueltas alrededor (las nubes de gas de Koffing, la
-# cabeza pequeña de Weezing): auto_rig() les pone uno.
-AUTO_RIG = {"koffing", "weezing"}
+# cabeza pequeña de Weezing, los huevos de Exeggcute, los imanes de Magneton): auto_rig() les pone uno.
+# Los demás sin esqueleto llevan uno de plantilla (rig_templates.py).
+AUTO_RIG = {"koffing", "weezing", "exeggcute", "gastly", "magneton"}
 
 
 def _islands(mesh):
@@ -145,6 +154,84 @@ def auto_rig():
         obj.matrix_world = world
         obj.modifiers.new("Armature", "ARMATURE").object = armature
     print(f"Esqueleto automático: cuerpo y {len(limbs)} pieza(s) con hueso propio; {len(parts)} piezas en total")
+    return armature
+
+
+CORE_BIAS = 0.7
+
+
+def template_rig(name):
+    """Esqueleto de rig_templates.RIGS (posiciones en alturas del modelo) con pesos por distancia."""
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    pts = [o.matrix_world @ v.co for o in meshes for v in o.data.vertices]
+    lo = Vector([min(p[k] for p in pts) for k in range(3)])
+    hi = Vector([max(p[k] for p in pts) for k in range(3)])
+    height = hi.z - lo.z
+    center = (lo + hi) / 2
+
+    def world(p):
+        return Vector((center.x + p[0] * height, center.y + p[1] * height, lo.z + p[2] * height))
+
+    # Piezas sueltas fuera de sitio (el péndulo de Hypno): se giran y se llevan a su hueso.
+    pinned = {}  # objeto -> {índice de vértice: hueso}
+    for prop in rig_templates.RIGS[name].get("_props", []):
+        box_lo, box_hi = world(prop["box"][0]), world(prop["box"][1])
+        pivot, to = world(prop["pivot"]), world(prop["to"])
+        move = Matrix.Translation(to) @ Matrix.Rotation(math.radians(-prop["pitch"]), 4, "X") @ \
+            Matrix.Translation(-pivot)
+        for obj in meshes:
+            inv = obj.matrix_world.inverted()
+            for idx in _islands(obj.data):
+                pts = [obj.matrix_world @ obj.data.vertices[i].co for i in idx]
+                if all(all(box_lo[k] <= p[k] <= box_hi[k] for k in range(3)) for p in pts):
+                    for i, p in zip(idx, pts):
+                        obj.data.vertices[i].co = inv @ (move @ p)
+                        pinned.setdefault(obj, {})[i] = prop["bone"]
+
+    arm_data = bpy.data.armatures.new("Armature")
+    armature = bpy.data.objects.new("Armature", arm_data)
+    bpy.context.scene.collection.objects.link(armature)
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    for bone, head, tail, parent in rig_templates.bones(name):
+        eb = arm_data.edit_bones.new(bone)
+        eb.head, eb.tail = world(head), world(tail)
+        if parent:
+            eb.parent = arm_data.edit_bones[parent]
+            eb.use_connect = (eb.parent.tail - eb.head).length < 1e-6
+    bpy.ops.object.mode_set(mode="OBJECT")
+    armature.data.display_type = "OCTAHEDRAL"
+    armature.show_in_front = True
+
+    # Pesos por distancia a cada hueso, mezclando los cercanos. El calor de huesos de Blender trata cada
+    # malla por separado y la capa de la cara se despega del cuerpo; así todas se deforman igual. El tronco
+    # cuenta como más cerca (CORE_BIAS): en los cuerpos redondos las patas no se llevan media barriga.
+    segs = [(b.name, b.head_local, b.tail_local) for b in arm_data.bones]
+    bias = {n: CORE_BIAS if re.match(r"(Hips|Spine|Neck|Head)", n) else 1.0 for n, _, _ in segs}
+    to_arm = armature.matrix_world.inverted()
+    for obj in meshes:
+        m = to_arm @ obj.matrix_world
+        groups = {n: obj.vertex_groups.new(name=n) for n, _, _ in segs}
+        for v in obj.data.vertices:
+            if v.index in pinned.get(obj, {}):
+                groups[pinned[obj][v.index]].add([v.index], 1.0, "REPLACE")
+                continue
+            p = m @ v.co
+            dists = []
+            for n, h, t in segs:
+                _, k = intersect_point_line(p, h, t)
+                dists.append((max((p - (h + (t - h) * min(max(k, 0), 1))).length * bias[n], 1e-6), n))
+            near = min(dists)[0]
+            ws = [((near / d) ** 6, n) for d, n in dists]
+            ws = [(w, n) for w, n in ws if w > 0.05]
+            total = sum(w for w, _ in ws)
+            for w, n in ws:
+                groups[n].add([v.index], w / total, "REPLACE")
+        world = obj.matrix_world.copy()
+        obj.parent = armature
+        obj.matrix_world = world
+        obj.modifiers.new("Armature", "ARMATURE").object = armature
+    print(f"Esqueleto de plantilla: {len(segs)} huesos")
     return armature
 
 
