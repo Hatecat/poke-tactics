@@ -34,7 +34,7 @@ SINGLE, CIRCLE, CROSS, LINE = range(4)
 SPECIES_NAMES = {"nidoranf": "Nidoran♀", "nidoranm": "Nidoran♂", "farfetchd": "Farfetch'd"}
 # El Pokédex da el largo del cuerpo de las serpientes; enroscadas (tools/blender/animate_serpent.py) se alzan
 # solo una parte: esa fracción es la que cuenta como altura del modelo.
-COILED_HEIGHT = {"ekans": 0.4, "arbok": 0.4, "dratini": 0.4, "dragonair": 0.4}
+COILED_HEIGHT = {"ekans": 0.4, "arbok": 0.4, "dratini": 0.4, "dragonair": 0.4, "caterpie": 0.6, "weedle": 0.6}
 
 # Ataques que viajan en línea recta.
 LINE_MOVES = {

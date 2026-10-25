@@ -257,7 +257,8 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`.
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
-no lo tiene, usa una animación procedural. 92 de los 151 modelos traen clips.
+no lo tiene, usa una animación procedural. 119 de los 151 modelos traen clips; los 32 restantes (Chansey,
+Snorlax, Lapras...) no tienen esqueleto en el rip.
 
 Cada ataque indica además con qué parte del cuerpo se hace (`anim_variant` del `.tres`): el juego prueba
 primero `fight_b_<variante>` y, si el modelo no lo tiene, el `fight_b` genérico (igual con `fight_d`). Así cada
@@ -300,12 +301,21 @@ blender --background art/blender/charmeleon.blend --python tools/blender/animate
 blender --background art/blender/charmander.blend --python tools/blender/export_animations.py
 ```
 
-Las serpientes (Ekans, Arbok, Dratini, Dragonair) no tienen patas y en el rip están de pie y rectas como un palo;
+Las serpientes (Ekans, Arbok, Dratini, Dragonair, y también Caterpie y Weedle) no tienen patas y en el rip están de pie y rectas como un palo;
 las anima otro script, que pone la postura (cola enroscada en el suelo y cuello alzado como una cobra) y la mueve
 desde ahí. Como enroscadas abultan menos que su largo, `COILED_HEIGHT` en `tools/build_data.py` reduce su altura:
 
 ```bash
 blender --background art/blender/ekans.blend --python tools/blender/animate_serpent.py
+```
+
+El resto de los que no tienen patas (Magikarp, Tentacool, Voltorb, Butterfree, Gyarados, Staryu...) usan un
+animador genérico: el cuerpo se balancea y embiste desde los huesos raíz y cada apéndice (cola, antenas,
+tentáculos, aletas, alas) ondula a lo largo de su cadena. Solo hace idle, walk, fight_b y fight_d; `TWEAKS`
+ajusta la amplitud y el ritmo por especie (las mariposas flotan y aletean rápido):
+
+```bash
+blender --background art/blender/magikarp.blend --python tools/blender/animate_generic.py
 ```
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
