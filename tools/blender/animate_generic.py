@@ -74,17 +74,23 @@ def _swing_axis(bone):
 AXIS = {b.name: _swing_axis(b) for b in APPENDAGES}
 
 # Ajustes por especie: amp (grados del vaivén de apéndices), freq (vaivenes por ciclo de reposo), hover
-# (flota y aletea rápido: insectos voladores), bob (sube y baja el cuerpo, en alturas).
+# (flota y aletea rápido: insectos voladores), float (flota subiendo y bajando mucho, sin saltar al
+# avanzar), puff (se hincha en el ataque especial: escala del cuerpo).
 TWEAKS = {
     "butterfree": {"hover": True, "amp": 28, "freq": 4},
     "venomoth": {"hover": True, "amp": 28, "freq": 4},
     "magikarp": {"amp": 16, "freq": 2},
     "tentacool": {"amp": 14},
     "tentacruel": {"amp": 12},
+    # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
+    "koffing": {"float": True, "puff": 1.3, "amp": 9},
+    "weezing": {"float": True, "puff": 1.25, "amp": 9},
 }.get(NAME, {})
 AMP = TWEAKS.get("amp", 10)
 FREQ = TWEAKS.get("freq", 1)
 HOVER = TWEAKS.get("hover", False)
+FLOAT = TWEAKS.get("float", False)
+PUFF = TWEAKS.get("puff", 1.0)
 
 
 def lquat(bone, axis, deg):
@@ -93,9 +99,9 @@ def lquat(bone, axis, deg):
 
 
 # ---------- poses: dict con root=(adelante, arriba) en alturas, pitch del cuerpo y fase/amp de apéndices ----------
-def P(fwd=0.0, up=0.0, pitch=0.0, yaw=0.0, amp=None, phase=0.0, spread=0.0):
+def P(fwd=0.0, up=0.0, pitch=0.0, yaw=0.0, amp=None, phase=0.0, spread=0.0, scale=1.0):
     return {"root": (fwd, up), "pitch": pitch, "yaw": yaw, "amp": AMP if amp is None else amp,
-            "phase": phase, "spread": spread}
+            "phase": phase, "spread": spread, "scale": scale}
 
 
 def cycle(fn, frames):
@@ -104,13 +110,13 @@ def cycle(fn, frames):
 
 def idle_pose(t):
     s = math.sin(2 * math.pi * t)
-    hover = 0.03 * math.sin(2 * math.pi * t) if HOVER else 0.0
+    hover = 0.03 * s if HOVER else 0.05 * s if FLOAT else 0.0
     return P(up=0.012 * s + hover, pitch=1.5 * s, phase=FREQ * t)
 
 
 def walk_pose(t):
-    hop = abs(math.sin(2 * math.pi * t))
-    return P(fwd=0.0, up=(0.02 if HOVER else 0.05) * hop, pitch=6 + 3 * math.sin(4 * math.pi * t),
+    hop = math.sin(2 * math.pi * t) * 0.6 if FLOAT else abs(math.sin(2 * math.pi * t))
+    return P(fwd=0.0, up=(0.02 if HOVER or FLOAT else 0.05) * hop, pitch=6 + 3 * math.sin(4 * math.pi * t),
              amp=AMP * 1.4, phase=2 * FREQ * t)
 
 
@@ -131,9 +137,9 @@ ACTIONS = {
     ],
     "fight_d": lambda: [  # se recoge, se hincha y lanza el ataque, vibrando
         (1, P()),
-        (9, P(up=-0.03, pitch=8, amp=AMP * 0.5, spread=-12, phase=0.2)),
-        (14, P(up=0.05, pitch=-10, spread=18, phase=0.5)),
-        *_held(16, 26, up=0.05, pitch=-10, spread=18, amp=AMP * 0.6),
+        (9, P(up=-0.03, pitch=8, amp=AMP * 0.5, spread=-12, phase=0.2, scale=1 - (PUFF - 1) * 0.3)),
+        (14, P(up=0.05, pitch=-10, spread=18, phase=0.5, scale=PUFF)),
+        *_held(16, 26, up=0.05, pitch=-10, spread=18, amp=AMP * 0.6, scale=PUFF),
         (32, P()),
     ],
 }
@@ -147,9 +153,11 @@ def apply_pose(frame, p):
         pb.rotation_mode = "QUATERNION"
         q = Quaternion()
         loc = Vector()
+        scale = Vector((1, 1, 1))
         if bone in ROOTS:
             loc = bone.matrix_local.to_3x3().inverted() @ offset
             q = lquat(bone, PITCH, p["pitch"])
+            scale = Vector((1, 1, 1)) * p["scale"]
         elif bone.name in AXIS:
             d = DEPTH[bone.name]
             # La onda baja por la cadena: cada hueso va un poco por detrás del anterior.
@@ -157,8 +165,11 @@ def apply_pose(frame, p):
             q = lquat(bone, AXIS[bone.name], a)
         pb.rotation_quaternion = q
         pb.location = loc
+        pb.scale = scale
         pb.keyframe_insert("location", frame=frame, group=pb.name)
         pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+        if PUFF != 1.0:
+            pb.keyframe_insert("scale", frame=frame, group=pb.name)
 
 
 def has_motion(action):
@@ -207,6 +218,7 @@ def main():
     for pb in PB:
         pb.rotation_quaternion = Quaternion()
         pb.location = Vector()
+        pb.scale = Vector((1, 1, 1))
     bpy.ops.wm.save_mainfile()
     print(f"Arriba {tuple(UP)}, delante {tuple(FWD)}. Raíces: {', '.join(_canon(b.name) for b in ROOTS)}; "
           f"{len(APPENDAGES)} huesos de apéndices")

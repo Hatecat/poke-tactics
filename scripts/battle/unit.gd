@@ -19,6 +19,8 @@ const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At
 	"speed": "Velocidad", "accuracy": "Precisión", "evasion": "Evasión", "crit": "Índice crítico"}
 ## El índice de crítico va de 0 a 3 (no se puede bajar).
 const MAX_CRIT_STAGE := 3
+## Pokémon que sueltan gas tóxico todo el rato (Fx.toxic_gas).
+const TOXIC_GAS: PackedStringArray = ["koffing", "weezing"]
 
 var data: PokemonData
 ## Especie original (Transformación cambia `data` y `moves` durante el combate).
@@ -78,6 +80,7 @@ var _time := 0.0
 var _proc_mode := ""
 var _model_base_pos := Vector3.ZERO
 var _model_base_scale := Vector3.ONE
+var _gas: CPUParticles3D
 
 
 func setup(member: TeamMember, p_team: int, p_level := LEVEL) -> void:
@@ -328,6 +331,8 @@ func take_damage(amount: int) -> void:
 
 
 func _fade_out(delay: float) -> void:
+	if _gas:
+		_gas.emitting = false
 	if not is_inside_tree():
 		_model.visible = false
 		return
@@ -562,6 +567,11 @@ func _load_model() -> void:
 	_normalize_model()
 	_model_base_pos = _model.position
 	_model_base_scale = _model.scale
+	if _gas:
+		_gas.queue_free()
+		_gas = null
+	if data.id in TOXIC_GAS:
+		_gas = Fx.toxic_gas(self, data.model_height)
 	play("idle")
 
 

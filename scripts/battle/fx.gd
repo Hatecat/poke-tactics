@@ -186,6 +186,41 @@ static func smoke(parent: Node3D, pos: Vector3) -> void:
 	_spawn(parent, parts, pos + Vector3.UP * 0.2)
 
 
+## Gas tóxico que sale sin parar de un Pokémon (Koffing, Weezing). Las partículas se sueltan en el mundo,
+## así que al moverse dejan un rastro. Devuelve el emisor para apagarlo (emitting = false).
+static func toxic_gas(parent: Node3D, height: float) -> CPUParticles3D:
+	var parts := _particles(Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3), false, 0.3 * height)
+	parts.one_shot = false
+	parts.explosiveness = 0.0
+	parts.amount = 26
+	parts.lifetime = 2.4
+	parts.local_coords = false
+	# Sale de un anillo alrededor de la parte alta del cuerpo, no de dentro: así no tapa la cara.
+	parts.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
+	parts.emission_ring_axis = Vector3.UP
+	parts.emission_ring_radius = 0.5 * height
+	parts.emission_ring_inner_radius = 0.4 * height
+	parts.emission_ring_height = 0.2 * height
+	parts.direction = Vector3.UP
+	parts.spread = 60.0
+	parts.initial_velocity_min = 0.1
+	parts.initial_velocity_max = 0.3
+	parts.gravity = Vector3(0, 0.12, 0)
+	parts.damping_min = 0.2
+	parts.damping_max = 0.5
+	parts.scale_amount_min = 0.7
+	parts.scale_amount_max = 1.6
+	# Crecen al alejarse, como una nube que se deshace.
+	var grow := Curve.new()
+	grow.add_point(Vector2(0, 0.4))
+	grow.add_point(Vector2(1, 1.4))
+	parts.scale_amount_curve = grow
+	parent.add_child(parts)
+	parts.position = Vector3.UP * height * 0.7
+	parts.emitting = true
+	return parts
+
+
 static func _solid(color: Color) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = color

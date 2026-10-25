@@ -257,7 +257,7 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`.
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
-no lo tiene, usa una animación procedural. 119 de los 151 modelos traen clips; los 32 restantes (Chansey,
+no lo tiene, usa una animación procedural. 121 de los 151 modelos traen clips; los 30 restantes (Chansey,
 Snorlax, Lapras...) no tienen esqueleto en el rip.
 
 Cada ataque indica además con qué parte del cuerpo se hace (`anim_variant` del `.tres`): el juego prueba
@@ -317,6 +317,11 @@ ajusta la amplitud y el ritmo por especie (las mariposas flotan y aletean rápid
 ```bash
 blender --background art/blender/magikarp.blend --python tools/blender/animate_generic.py
 ```
+
+Koffing y Weezing no traen esqueleto: `setup_animations.py` les pone uno (`AUTO_RIG`) con un hueso para el cuerpo
+y otro para cada pieza suelta que sobresale (las nubes de gas, la cabeza pequeña de Weezing), y el animador
+genérico los hace flotar y hincharse en el ataque especial. En el juego sueltan además gas tóxico todo el rato
+(`TOXIC_GAS` en `unit.gd`, `Fx.toxic_gas`).
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
 sin animar no se exportan, así que esas siguen usando la animación procedural: puedes ir de a poco.

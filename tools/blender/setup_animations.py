@@ -46,6 +46,8 @@ def import_model(name):
     # malla (una oreja de Jolteon acaba de pie en el lomo); en el resto de rips da lo mismo.
     bpy.ops.import_scene.gltf(filepath=str(glb), guess_original_bind_pose=False)
     armature = next((o for o in bpy.context.scene.objects if o.type == "ARMATURE"), None)
+    if armature is None and name in AUTO_RIG:
+        return auto_rig()
     if armature is None:
         raise SystemExit("El modelo no tiene esqueleto.")
     # El importador de glTF dibuja cada hueso como una esfera (Icosphere): tapan la malla y, al
@@ -58,6 +60,91 @@ def import_model(name):
         bpy.data.objects.remove(obj)
     bake_import_pose(armature)
     attach_props(armature, name)
+    return armature
+
+
+# Modelos sin esqueleto con forma de bola y piezas sueltas alrededor (las nubes de gas de Koffing, la
+# cabeza pequeña de Weezing): auto_rig() les pone uno.
+AUTO_RIG = {"koffing", "weezing"}
+
+
+def _islands(mesh):
+    """Piezas sueltas de una malla: listas de índices de vértices conectados por aristas."""
+    parent = list(range(len(mesh.vertices)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for e in mesh.edges:
+        a, b = find(e.vertices[0]), find(e.vertices[1])
+        if a != b:
+            parent[a] = b
+    groups = {}
+    for i in range(len(mesh.vertices)):
+        groups.setdefault(find(i), []).append(i)
+    return list(groups.values())
+
+
+def auto_rig():
+    """Esqueleto para un modelo sin huesos: Hips en el centro de la pieza más grande (el cuerpo) y un
+    hueso por cada pieza grande que sobresale de él (nubes de gas, otra cabeza), que sale de la superficie
+    del cuerpo hacia el centro de la pieza. Las piezas pequeñas (ojos, dientes) van con la pieza grande
+    más cercana que las contiene. Cada vértice pesa 1 en su hueso: se mueven como piezas rígidas."""
+    meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    parts = []  # (objeto, índices, centro, radio) en el espacio del mundo
+    for obj in meshes:
+        world = [obj.matrix_world @ v.co for v in obj.data.vertices]
+        for idx in _islands(obj.data):
+            pts = [world[i] for i in idx]
+            lo = Vector([min(p[k] for p in pts) for k in range(3)])
+            hi = Vector([max(p[k] for p in pts) for k in range(3)])
+            parts.append((obj, idx, (lo + hi) / 2, max(hi - lo) / 2))
+    parts.sort(key=lambda p: -p[3])
+    body = parts[0]
+    # Piezas grandes fuera del cuerpo: cada una con su hueso.
+    limbs = [p for p in parts[1:] if p[3] > body[3] * 0.18 and (p[2] - body[2]).length > body[3] * 0.8]
+    arm_data = bpy.data.armatures.new("Armature")
+    armature = bpy.data.objects.new("Armature", arm_data)
+    bpy.context.scene.collection.objects.link(armature)
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.object.mode_set(mode="EDIT")
+    hips = arm_data.edit_bones.new("Hips")
+    hips.head = body[2]
+    hips.tail = body[2] + Vector((0, 0, body[3] * 0.5))
+    owners = [("Hips", body)]
+    for i, limb in enumerate(limbs):
+        d = (limb[2] - body[2]).normalized()
+        bone = arm_data.edit_bones.new(f"Feeler{i + 1}")
+        bone.head = body[2] + d * body[3] * 0.85
+        bone.tail = limb[2]
+        bone.parent = hips
+        owners.append((bone.name, limb))
+    bpy.ops.object.mode_set(mode="OBJECT")
+    armature.data.display_type = "OCTAHEDRAL"
+    armature.show_in_front = True
+
+    def owner_of(part):
+        if any(part is o[1] for o in owners):
+            return next(n for n, o in owners if o is part)
+        # La pieza grande más cercana que la contiene (o, si ninguna, la más cercana).
+        inside = [(n, o) for n, o in owners if (part[2] - o[2]).length <= o[3] * 1.1]
+        cands = inside or owners
+        return min(cands, key=lambda no: (part[2] - no[1][2]).length)[0]
+
+    for part in parts:
+        obj, idx = part[0], part[1]
+        name = owner_of(part)
+        group = obj.vertex_groups.get(name) or obj.vertex_groups.new(name=name)
+        group.add(idx, 1.0, "REPLACE")
+    for obj in meshes:
+        world = obj.matrix_world.copy()
+        obj.parent = armature
+        obj.matrix_world = world
+        obj.modifiers.new("Armature", "ARMATURE").object = armature
+    print(f"Esqueleto automático: cuerpo y {len(limbs)} pieza(s) con hueso propio; {len(parts)} piezas en total")
     return armature
 
 
