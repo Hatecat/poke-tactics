@@ -255,7 +255,54 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 ## Animaciones
 
-El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`.
+El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`, y en
+reposo el clip de su estado: `status_freeze`, `status_sleep`, `status_paralysis`, `status_confusion` o
+`status_burn` / `status_poison` (en ese orden de prioridad). Cambia solo al recibir o curarse el estado
+(`Unit.idle_key`); además, como en los juegos, cada estado se ve sobre el modelo mientras dure: congelado queda encerrado en un
+bloque de hielo facetado y translúcido (`Fx.ice_block`); quemado, se tiñe de rojo, que palpita, y le brotan
+lenguas de fuego del cuerpo (`Fx.burning`), con una llamarada
+cada vez que se resiente; dormido suelta zetas que suben de la cabeza (`Fx.sleeping`); envenenado, se tiñe
+de morado y le salen burbujas moradas que suben y revientan (`Fx.poisoned`); paralizado, a ratos parpadea en amarillo y le saltan
+rayos en zigzag alrededor del cuerpo (`Fx.paralyzed`), y confuso, estrellas y pajaritos que le dan vueltas sobre la cabeza (`Fx.dizzy`, aparte del resto, porque
+se puede estar confuso y además quemado). Todos se ven en el visor de animaciones
+del editor de equipo.
+
+Las Poké Balls se animan como en los juegos (`scripts/battle/ball_fx.gd`). Al empezar cualquier combate, cada
+Pokémon sale de su bola: llega en arco desde fuera del tablero, se abre en el aire con un destello y el Pokémon se
+materializa como una silueta blanca que crece y toma color (primero los rivales y luego los tuyos; los salvajes de
+la Torre ya están ahí). Al capturar en la Torre, la bola vuela en arco, se abre, el Pokémon entra como energía roja,
+la bola cae dando botes y se sacude hasta tres veces con el botón parpadeando; si lo atrapa, hace clic y saltan
+estrellitas, y si se escapa, la bola se abre de golpe y el Pokémon vuelve a salir. En el visor de animaciones,
+*Captura* y *Salida* las reproducen sobre el Pokémon.
+
+Los terrenos se generan con geografía (`scripts/grid/biome.gd`): relieve de ruido fractal suavizado (sin picos
+sueltos), y luego el suelo según altura y pendiente, y los obstáculos donde tendrían sentido. Pradera: lomas, un
+sendero entre los dos bandos, una charca y bosquecillos. Bosque: arboleda con claros, un arroyo y hojarasca bajo la
+espesura (pinos en lo alto). Montaña: macizo central con valles verdes, roca y cumbres nevadas, pedregal al pie de
+los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca y un oasis con palmeras. Lago: cuenca
+central con playa de arena. Nieve: ventisqueros, estanque helado y pinares nevados. Cueva: crestas de roca,
+charcas, estalagmitas y cristales. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
+hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol), el agua tiene oleaje,
+reflejos y espuma en la orilla; con lluvia el suelo, las rocas y los árboles se ven mojados (más oscuros y
+brillantes), salen charcos y las gotas hacen ondas en el agua; con tormenta de arena hay bruma,
+nubes de polvo que cruzan, ráfagas de arena y polvo que se levanta de las crestas de las dunas; con granizo caen bolitas de hielo
+azuladas que rebotan, se acumulan en el suelo y salpican el agua, con ventisca a ras de suelo; los cristales laten y cada bioma tiene su ambiente (hojas que caen, polen, arena
+que corre, copos, motas que brillan).
+
+Los estados, el daño recibido y el debilitado de los 151 salen de `tools/blender/animate_status.py`, que parte del
+`idle` de cada especie (así sirve para cualquier esqueleto) y le suma el movimiento, como en los juegos: al recibir
+daño retrocede echando la cabeza atrás, se encoge y se recupera con un pequeño rebote; dormido se
+encorva con la cabeza caída y respira lento; paralizado va a tirones con calambres; envenenado se balancea
+encorvado con escalofríos; quemado se encoge por el ardor, con punzadas de dolor y sacudidas; confuso da vueltas mareado; congelado se queda rígido con algún temblor; debilitado
+se queja, cae de lado (de bruces si es más ancho que alto, como las aves) y queda tendido. Las serpientes se
+duermen y caen con su propio animador (`animate_serpent.py`, bajando el cuello al suelo); Mewtwo y Dragonite usan
+sus clips de los juegos para dormir, aturdido y debilitado (`anim_map`), y Bulbasaur su `ko`.
+
+```bash
+blender --background art/blender/pikachu.blend --python tools/blender/animate_status.py            # las que falten
+blender --background art/blender/pikachu.blend --python tools/blender/animate_status.py -- ko --force  # rehacer una
+blender --background --python tools/blender/animate_status.py -- --import mewtwo  # .blend de un rip con clips propios
+```
 Busca el clip indicado en `anim_map` del `.tres` o, si no hay, uno cuyo nombre contenga la acción; si el modelo
 no lo tiene, usa una animación procedural. Los 151 modelos traen clips; a los que venían sin esqueleto en el
 rip se lo pone `setup_animations.py` (ver más abajo).

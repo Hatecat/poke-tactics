@@ -5,7 +5,9 @@ extends ColorRect
 ## (fight_b / fight_d) o la animación procedural si el modelo no trae ninguno.
 
 const ACTIONS := [["idle", "Reposo"], ["walk", "Caminar"], ["fight_b", "Ataque físico"],
-	["fight_d", "Ataque especial"], ["hit", "Recibe daño"], ["ko", "Debilitado"]]
+	["fight_d", "Ataque especial"], ["hit", "Recibe daño"], ["ko", "Debilitado"],
+	["status_confusion", "Confuso"], ["status_paralysis", "Paralizado"], ["status_sleep", "Dormido"],
+	["status_poison", "Envenenado"], ["status_burn", "Quemado"], ["status_freeze", "Congelado"]]
 const OWN_CLIP := Color(1.0, 0.8, 0.25)
 const BASE_CLIP := Color(0.85, 0.9, 1.0)
 const NO_CLIP := Color(1, 1, 1, 0.45)
@@ -175,6 +177,13 @@ func _refresh() -> void:
 		b.tooltip_text = clip if clip else "procedural"
 		b.add_theme_color_override("font_color", BASE_CLIP if clip else NO_CLIP)
 		_actions_row.add_child(b)
+	# Con Poké Ball (animaciones del juego, no clips del modelo).
+	var capture := UiKit.button("Captura", _play_ball.bind("Captura", _preview.play_capture), 15)
+	capture.tooltip_text = "Lo captura con una Poké Ball, como en los juegos"
+	_actions_row.add_child(capture)
+	var send := UiKit.button("Salida", _play_ball.bind("Salida", _preview.play_send_out), 15)
+	send.tooltip_text = "Sale de su Poké Ball, como al empezar el combate"
+	_actions_row.add_child(send)
 	UiKit.clear(_own_box)
 	for m in _moves:
 		var b := UiKit.button("%s  ·  %s" % [m.display_name, _clip_text(m)], _play_move.bind(m), 15)
@@ -218,6 +227,11 @@ func _clip_color(m: MoveData) -> Color:
 
 func _play_move(m: MoveData) -> void:
 	_play(m.display_name, m.animation, m.anim_variant, m.id)
+
+
+func _play_ball(label: String, action: Callable) -> void:
+	_status.text = "%s → con Poké Ball" % label
+	action.call()
 
 
 func _play(label: String, key: String, variant := "", move_id := "") -> void:

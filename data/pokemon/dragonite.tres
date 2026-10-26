@@ -156,7 +156,9 @@ anim_map = {
 "fight_b": "pm0149_00_00_20400_attack01",
 "fight_d": "pm0149_00_00_20450_rangeattack01",
 "hit": "pm0149_00_00_20500_damage01",
-"ko": "pm0149_00_00_20520_down01_start"
+"ko": "pm0149_00_00_20520_down01_start",
+"status_sleep": "pm0149_00_00_00281_sleep01",
+"status_paralysis": "pm0149_00_00_20511_stun01"
 }
 male_ratio = 0.5
 evolve_level = 0

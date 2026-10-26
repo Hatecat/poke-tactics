@@ -148,9 +148,7 @@ base_speed = 45
 size = 1
 move_modifier = 0
 jump = 1
-anim_map = {
-"walk": "bd_run"
-}
+anim_map = {}
 male_ratio = 0.25
 evolve_level = 0
 stage = 2

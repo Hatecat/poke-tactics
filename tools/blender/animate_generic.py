@@ -83,6 +83,16 @@ TWEAKS = {
     # Cangrejos: andan de lado (crab) sobre sus patas, con las pinzas casi quietas.
     "krabby": {"amp": 6, "legs": True, "crab": True},
     "kingler": {"amp": 6, "legs": True, "crab": True},
+    # Rips con esqueletos propios (Bone001..., L_UpperArm...): sin la convención de Charmander.
+    "zubat": {"hover": True, "amp": 24, "freq": 3},
+    "moltres": {"hover": True, "freq": 2, "wings": r"[LR]_(UpperArm|Forearm|Hand|Wing_ex)", "flap": (30, 8, 0.0, 4)},
+    "onix": {"amp": 7},
+    "ditto": {"amp": 6},
+    "grimer": {"amp": 7},
+    "muk": {"amp": 7},
+    "wigglytuff": {"amp": 8},
+    "haunter": {"float": True, "amp": 10},
+    "magnemite": {"float": True, "amp": 4},
 }.get(NAME, {})
 AMP = TWEAKS.get("amp", 10)
 FREQ = TWEAKS.get("freq", 1)

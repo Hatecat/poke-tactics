@@ -28,12 +28,12 @@ const EXP_PER_LEVEL := 20
 const GENDER_SYMBOLS := ["", "♂", "♀"]
 
 
-## Nombre con el símbolo de género (Nidoran♀ ya lo lleva en el nombre: no se repite).
+## Nombre con el símbolo de género, separado por un espacio (Nidoran♀ ya lo lleva en el nombre: no se repite).
 static func display(p_data: PokemonData, p_gender: int) -> String:
 	var n := p_data.species_name
-	if n.ends_with("♀") or n.ends_with("♂"):
+	if n.ends_with("♀") or n.ends_with("♂") or p_gender == 0:
 		return n
-	return n + GENDER_SYMBOLS[p_gender]
+	return n + " " + GENDER_SYMBOLS[p_gender]
 
 
 ## Géneros posibles de la especie.

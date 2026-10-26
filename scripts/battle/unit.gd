@@ -6,7 +6,22 @@ signal fainted(unit: Unit)
 
 const LEVEL := 50
 const TEAM_COLORS: Array[Color] = [Color(0.25, 0.55, 1.0), Color(1.0, 0.3, 0.25)]
-const LOOPING_ANIMS: PackedStringArray = ["idle", "walk", "run"]
+const LOOPING_ANIMS: PackedStringArray = ["idle", "walk", "run", "status_sleep", "status_paralysis",
+	"status_poison", "status_confusion", "status_freeze", "status_burn"]
+## Color de la capa de hielo que cubre al Pokémon congelado.
+const FROZEN_TINT := Color(0.62, 0.86, 1.0, 0.5)
+## Tinte rojo que palpita sobre el Pokémon quemado (alfa mínimo y máximo).
+## (Multiplica el color del modelo, como el del envenenado: fuerza mínima y máxima.)
+const BURN_TINT := Color(1.0, 0.35, 0.22)
+const BURN_STRENGTH := Vector2(0.5, 0.85)
+## Tinte morado que palpita, más lento, sobre el envenenado: multiplica el color del modelo (conserva sus
+## sombras), con esta fuerza mínima y máxima.
+const POISON_TINT := Color(0.62, 0.25, 0.95)
+const POISON_STRENGTH := Vector2(0.65, 0.95)
+## Destello amarillo del paralizado cuando le saltan las chispas.
+const PARALYSIS_TINT := Color(1.0, 0.92, 0.2)
+## Altura de la etiqueta (nombre, PS, estado) sobre la cabeza: por encima de las estrellas del confuso.
+const LABEL_HEIGHT := 0.6
 ## Radio del anillo de equipo según el tamaño del Pokémon.
 const RING_SCALE := [1.0, 1.0, 2.1, 2.9]
 ## Las mejoras de stats duran estos turnos propios (aplicar otra reinicia la cuenta).
@@ -85,6 +100,22 @@ var _proc_mode := ""
 var _model_base_pos := Vector3.ZERO
 var _model_base_scale := Vector3.ONE
 var _gas: CPUParticles3D
+## Última acción pedida a play() y, si era "idle", el clip de reposo que tocó según el estado.
+var _current_key := ""
+var _idle_key := ""
+## La acción que se está viendo, ya resuelta ("status_burn" si se pidió idle estando quemado).
+var _visual_key := ""
+## Aspecto del estado sobre el modelo: "" nada, "ice" congelado, "burn" quemado (tinte y llamas), "sleep"
+## dormido (zetas), "poison" envenenado (tinte y burbujas) o "paralysis" paralizado (chispas y destellos).
+var _look := ""
+var _overlay: StandardMaterial3D
+var _status_fx: Node3D
+## Silueta de luz al entrar o salir de la Poké Ball (set_energy); mientras, tapa la capa del estado.
+var _energy: StandardMaterial3D
+## Animación con Poké Ball en curso: el modelo lo mueve materialize/dematerialize (sin respiración procedural).
+var _in_ball := false
+## Estrellas que giran sobre la cabeza del confuso (va aparte: se puede estar confuso y además quemado).
+var _dizzy: Node3D
 
 
 func setup(member: TeamMember, p_team: int, p_level := LEVEL) -> void:
@@ -306,17 +337,181 @@ func set_active(on: bool) -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	if _active:
-		_marker.position.y = data.model_height + 0.75 + sin(_time * 4.0) * 0.1
+		_marker.position.y = data.model_height + LABEL_HEIGHT + 0.4 + sin(_time * 4.0) * 0.1
 		_marker.rotation.y += delta * 2.0
 		var pulse := 0.5 + 0.5 * sin(_time * 5.0)
 		_ring_mat.emission_energy_multiplier = 0.6 + pulse * 2.0
 		var r: float = RING_SCALE[data.size] * (1.0 + pulse * 0.12)
 		_ring.scale = Vector3(r, 0.15, r)
-	match _proc_mode:
+	match "" if _in_ball else _proc_mode:
 		"idle":
 			_model.scale = _model_base_scale * Vector3(1.0, 1.0 + 0.025 * sin(_time * 2.5), 1.0)
 		"walk":
 			_model.position.y = _model_base_pos.y + absf(sin(_time * 14.0)) * 0.06 * data.model_height
+	# En reposo, el clip sigue al estado: si se duerme, se paraliza o se cura, cambia solo.
+	if _current_key == "idle" and is_alive() and idle_key() != _idle_key:
+		play("idle")
+	var look := _status_look()
+	if look != _look:
+		_set_look(look)
+	match _look:
+		"burn":
+			var k := lerpf(BURN_STRENGTH.x, BURN_STRENGTH.y, 0.5 + 0.5 * sin(_time * 6.0))
+			_overlay.albedo_color = Color.WHITE.lerp(BURN_TINT, k)
+		"poison":
+			var k := lerpf(POISON_STRENGTH.x, POISON_STRENGTH.y, 0.5 + 0.5 * sin(_time * 2.5))
+			_overlay.albedo_color = Color.WHITE.lerp(POISON_TINT, k)
+	var dizzy := is_alive() and (volatiles.has("confusion") or _visual_key == "status_confusion")
+	if dizzy != (_dizzy != null):
+		_set_dizzy(dizzy)
+	if _dizzy:
+		_dizzy.rotation = Vector3(0.18 * sin(_time * 2.0), _time * 3.5, 0.18 * cos(_time * 2.0))
+
+
+## Clip de reposo según el estado: congelado, dormido, paralizado, confuso, envenenado o el normal.
+## (Las quemaduras no cambian la postura.)
+func idle_key() -> String:
+	match status:
+		MoveData.Status.FREEZE: return "status_freeze"
+		MoveData.Status.SLEEP: return "status_sleep"
+		MoveData.Status.PARALYSIS: return "status_paralysis"
+	if volatiles.has("confusion"):
+		return "status_confusion"
+	match status:
+		MoveData.Status.BURN: return "status_burn"
+		MoveData.Status.POISON: return "status_poison"
+	return "idle"
+
+
+## Aspecto que toca según el estado (o el clip que se está viendo, para el visor de animaciones).
+func _status_look() -> String:
+	if not is_alive():
+		return ""
+	if status == MoveData.Status.FREEZE or _visual_key == "status_freeze":
+		return "ice"
+	if status == MoveData.Status.SLEEP or _visual_key == "status_sleep":
+		return "sleep"
+	if status == MoveData.Status.PARALYSIS or _visual_key == "status_paralysis":
+		return "paralysis"
+	if status == MoveData.Status.BURN or _visual_key == "status_burn":
+		return "burn"
+	if status == MoveData.Status.POISON or _visual_key == "status_poison":
+		return "poison"
+	return ""
+
+
+## Congelado: capa de hielo encima (como el bloque de hielo de los juegos). Quemado: tinte rojo que palpita y
+## llamitas que brotan del cuerpo mientras dure (como en los juegos de DS). Dormido: zetas que suben de la
+## cabeza. Envenenado: tinte morado y burbujas. Paralizado: chispas a ratos y destellos amarillos.
+func _set_look(look: String) -> void:
+	_look = look
+	_overlay = null
+	if look in ["ice", "burn", "poison", "paralysis"]:
+		_overlay = StandardMaterial3D.new()
+		_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_overlay.emission_enabled = true
+	if look == "ice":
+		_overlay.albedo_color = FROZEN_TINT
+		_overlay.emission = Color(0.45, 0.75, 1.0)
+		_overlay.emission_energy_multiplier = 0.35
+		_overlay.metallic_specular = 1.0
+		_overlay.roughness = 0.1
+	elif look == "burn":
+		_overlay.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+		_overlay.emission_enabled = false
+		_overlay.blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+		_overlay.albedo_color = Color.WHITE.lerp(BURN_TINT, BURN_STRENGTH.x)
+		_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# Encima, una capa roja suave: solo con multiplicar, los verdes y azules quedaban marrones.
+		var glow := StandardMaterial3D.new()
+		glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow.albedo_color = Color(1.0, 0.22, 0.05, 0.28)
+		_overlay.next_pass = glow
+	elif look == "poison":
+		_overlay.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+		_overlay.emission_enabled = false
+		_overlay.blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+		_overlay.albedo_color = Color.WHITE.lerp(POISON_TINT, POISON_STRENGTH.x)
+		_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	elif look == "paralysis":
+		_overlay.albedo_color = Color(PARALYSIS_TINT, 0.0)
+		_overlay.emission = PARALYSIS_TINT
+		_overlay.emission_energy_multiplier = 1.0
+		_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_apply_overlay()
+	if _status_fx:
+		_status_fx.queue_free()
+		_status_fx = null
+	match look:
+		"burn": _status_fx = Fx.burning(self, data.model_height, 0.6 * data.size)
+		"ice": _status_fx = Fx.ice_block(self, data.model_height, maxf(0.3, 0.55 * data.size))
+		"sleep": _status_fx = Fx.sleeping(self, data.model_height)
+		"poison": _status_fx = Fx.poisoned(self, data.model_height, 0.6 * data.size)
+		"paralysis": _status_fx = Fx.paralyzed(self, data.model_height, 0.6 * data.size, _overlay)
+
+
+func _apply_overlay() -> void:
+	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
+		m.material_overlay = _energy if _energy else _overlay
+
+
+## Silueta de luz del color dado sobre el modelo (al entrar o salir de la Poké Ball): `amount` 0 = el modelo
+## normal (vuelve la capa del estado), 1 = todo del color.
+func set_energy(color: Color, amount: float) -> void:
+	if amount <= 0.0:
+		if _energy:
+			_energy = null
+			_apply_overlay()
+		return
+	if _energy == null:
+		_energy = StandardMaterial3D.new()
+		_energy.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_energy.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_apply_overlay()
+	_energy.albedo_color = Color(color, amount)
+
+
+## Sale de una Poké Ball abierta en `from` (posición global): una silueta de luz crece desde la bola hasta su
+## sitio y tamaño y se desvanece (blanca al salir; roja si se escapa de la bola al intentar capturarlo).
+func materialize(from: Vector3, duration := 0.45, color := Color.WHITE) -> void:
+	_in_ball = true
+	visible = true
+	set_energy(color, 1.0)
+	_model.position = to_local(from)
+	_model.scale = _model_base_scale * 0.02
+	var tw := create_tween().set_parallel()
+	tw.tween_property(_model, "position", _model_base_pos, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(_model, "scale", _model_base_scale, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tw.chain().tween_method(func(a: float) -> void: set_energy(color, a), 1.0, 0.0, 0.3)
+	await tw.finished
+	set_energy(color, 0.0)
+	_in_ball = false
+
+
+## Entra en una Poké Ball abierta en `to` (posición global): se vuelve una silueta roja y se encoge hacia la bola.
+## Al terminar queda oculto (visible = false) y con el modelo de vuelta en su sitio.
+func dematerialize(to: Vector3, duration := 0.4) -> void:
+	_in_ball = true
+	var red := Color(1.0, 0.3, 0.32)
+	var tw := create_tween()
+	tw.tween_method(func(a: float) -> void: set_energy(red, a), 0.0, 1.0, 0.15)
+	tw.tween_property(_model, "position", to_local(to), duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.parallel().tween_property(_model, "scale", _model_base_scale * 0.02, duration).set_ease(Tween.EASE_IN)
+	await tw.finished
+	visible = false
+	_model.position = _model_base_pos
+	_model.scale = _model_base_scale
+	set_energy(red, 0.0)
+	_in_ball = false
+
+
+func _set_dizzy(on: bool) -> void:
+	if _dizzy:
+		_dizzy.queue_free()
+		_dizzy = null
+	if on:
+		_dizzy = Fx.dizzy(self, data.model_height, 0.6 * data.size)
 
 
 func take_damage(amount: int) -> void:
@@ -365,13 +560,21 @@ func face_towards(world_target: Vector3) -> void:
 			_facing_arrow.rotation.y = _model.rotation.y
 
 
-## Reproduce la animación de la acción `key` (idle, walk, fight_b, fight_d, hit, ko).
-## Para un ataque, en orden: el clip que data.anim_map asigne a `move_id` (p. ej.
+## Reproduce la animación de la acción `key` (idle, walk, fight_b, fight_d, hit, ko o un
+## status_*). Para un ataque, en orden: el clip que data.anim_map asigne a `move_id` (p. ej.
 ## {"lowkick": "fight_b_kick_low"}), "<key>_<variant>" (fight_b_kick) y `key` (fight_b).
+## "idle" toca el reposo de su estado (idle_key); un status_* sin clip usa el idle.
 ## Si el modelo no tiene ninguno (la mayoría del repo no trae animaciones), usa una
 ## versión procedural. Devuelve la duración.
 func play(key: String, variant := "", move_id := "") -> float:
 	_reset_procedural()
+	_current_key = key
+	if key == "idle":
+		_idle_key = idle_key()
+		key = _idle_key
+	_visual_key = key
+	if key.begins_with("status_") and not clip_for(key):
+		key = "idle"
 	if _anim:
 		var anim_name := clip_for(key, variant, move_id)
 		if anim_name:
@@ -447,6 +650,14 @@ func _reset_procedural() -> void:
 		_model.rotation.z = 0.0
 
 
+## Muestra u oculta las letras de encima (nombre, PS, estado), p. ej. mientras una Poké Ball pasa por ahí.
+## Devuelve si se veían antes, para dejarlas como estaban.
+func show_label(on: bool) -> bool:
+	var was := _label.visible
+	_label.visible = on
+	return was
+
+
 func refresh_label() -> void:
 	var st := status_text()
 	var boosts := stages_text()
@@ -478,8 +689,10 @@ func transform_into(t: Unit) -> void:
 		pp[mv] = ceili(mv.pp / 2.0)
 	choice_lock = null
 	_load_model()
+	_set_look(_look)  # el modelo nuevo aún no lleva la capa de hielo o el tinte
+	_set_dizzy(_dizzy != null)  # a la altura del modelo nuevo
 	_model.rotation.y = rot
-	_label.position.y = data.model_height + 0.35
+	_label.position.y = data.model_height + LABEL_HEIGHT
 	refresh_label()
 
 
@@ -541,7 +754,7 @@ func _build_visuals() -> void:
 	_label.font_size = 22
 	_label.outline_size = 8
 	_label.modulate = TEAM_COLORS[team].lightened(0.5)
-	_label.position.y = data.model_height + 0.35
+	_label.position.y = data.model_height + LABEL_HEIGHT
 	add_child(_label)
 	refresh_label()
 

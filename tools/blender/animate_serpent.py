@@ -217,7 +217,24 @@ ACTIONS = {
         (24, body(lift=1.15, lean=-8, sway=-8, coil=300, head=-6)),
         (34, BASE()),
     ],
+    # Los demás estados los hace animate_status.py desde el idle; estos dos necesitan bajar el cuello al suelo.
+    "status_sleep": lambda: cycle(sleep_pose, 72),
+    "ko": lambda: [  # se yergue con un quejido y el cuello se desploma hacia delante hasta el suelo
+        (1, BASE()),
+        (6, body(**{**REST, "lift": 1.15, "lean": -10, "head": -15, "jaw": 20})),
+        (18, body(**{**REST, "lift": 0.05, "lean": 10, "head": 12, "jaw": 12})),
+        (22, body(**{**REST, "lift": 0.14, "lean": 6, "head": 8, "jaw": 10})),
+        (26, body(**{**REST, "lift": 0.0, "lean": 4, "head": 6, "jaw": 8, "coil": REST.get("coil", 230) * 0.8})),
+        (37, body(**{**REST, "lift": 0.0, "lean": 4, "head": 6, "jaw": 8, "coil": REST.get("coil", 230) * 0.8})),
+    ],
 }
+
+
+def sleep_pose(t):
+    """Enroscado con la cabeza apoyada casi en el suelo y respirando despacio."""
+    b = math.sin(2 * math.pi * 2 * t)
+    return body(**{**REST, "lift": 0.22 + 0.03 * b, "lean": 0, "head": 14 - 2 * b,
+                   "coil": REST.get("coil", 230) + 60, "sway": 2 * math.sin(2 * math.pi * t)})
 
 
 def learnset_actions(name):
@@ -254,7 +271,7 @@ def build(name, keys):
     act.use_fake_user = True
     act.use_frame_range = True
     act.frame_start, act.frame_end = keys[0][0], keys[-1][0]
-    act.use_cyclic = name in ("idle", "walk")
+    act.use_cyclic = name in ("idle", "walk") or name.startswith("status_")
     arm.animation_data.action = act
     for frame, p in keys:
         fwd, up = p.get("root", (0, 0))

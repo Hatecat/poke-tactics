@@ -19,6 +19,10 @@ const BALL_RANGE := 4
 const COLOR_BALL_RANGE := Color(1.0, 1.0, 1.0, 0.16)
 ## Duración de cada sacudida de la Poké Ball.
 const BALL_SHAKE_TIME := 0.9
+## Fuerza del viento en el terreno según el clima (árboles, hierba y agua).
+const WIND := {Weather.Kind.SUN: 0.6, Weather.Kind.RAIN: 1.8, Weather.Kind.SAND: 2.4, Weather.Kind.HAIL: 1.6}
+## Color de la Poké Ball de la que salen los Pokémon al empezar el combate.
+const POKE_BALL_COLOR := Color(0.85, 0.12, 0.12)
 ## Fácil: probabilidad de elegir una acción aceptable al azar en vez de la mejor.
 const EASY_MISTAKE := 0.35
 ## Difícil: cuánto pesa el daño que podría recibir en el destino.
@@ -182,11 +186,40 @@ func _start_battle() -> void:
 	_log("%s · tablero %s · %s %s. Coloca a tu equipo en la zona azul." % [where,
 		"cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal",
 		Weather.ICONS[weather], Weather.NAMES[weather]])
-	_begin_deploy()
 	if _trainer_battle():
 		var t: Dictionary = Game.tower.trainer
 		_log("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar." % [Trainers.full_name(t), Trainers.types_text(t.types)])
 		_flash_turn("¡%s quiere luchar!" % Trainers.full_name(t), Color(1.0, 0.8, 0.3) if t.leader else Color(1.0, 0.6, 0.5))
+	await _send_out_intro()
+	_begin_deploy()
+
+
+## Al empezar, cada Pokémon sale de su Poké Ball (en todos los modos): primero los rivales y luego los tuyos.
+## Los salvajes de la Torre no salen de ninguna bola: ya están ahí, como en los juegos.
+func _send_out_intro() -> void:
+	state = State.BUSY
+	_deploy_box.visible = false
+	_actions_box.visible = false
+	var wild := _tower() and not _trainer_battle()
+	var center := grid.to_world(Vector2i(grid.width / 2, grid.height / 2))
+	var teams: Array[Array] = []
+	for team in [1, 0]:
+		var members := units.filter(func(u: Unit) -> bool: return u.team == team and not (team == 1 and wild))
+		for u: Unit in members:
+			u.visible = false
+		if not members.is_empty():
+			teams.append(members)
+	for members in teams:
+		_focus_camera(grid.to_world(_zone_center(members[0].team)))
+		await _wait(0.45)
+		for u: Unit in members:
+			# La bola llega desde fuera del tablero, por detrás de su bando.
+			var away := u.position - center
+			away.y = 0.0
+			var from := u.position + away.normalized() * 3.0 + Vector3.UP * 2.5
+			BallFx.send_out(self, u, POKE_BALL_COLOR, from)
+			await _wait(0.3)
+		await _wait(1.1)
 
 
 ## Cambia el clima. `turns` = turnos (de cualquier Pokémon) que dura; 0 = permanente.
@@ -198,6 +231,9 @@ func _set_weather(kind: Weather.Kind, turns: int) -> void:
 		Audio.sfx("weather", -4.0)
 	_weather_turns = turns
 	_weather_fx.apply(kind, self)
+	_board.set_wind(WIND.get(kind, 1.0))
+	_board.set_rain(kind == Weather.Kind.RAIN)
+	_board.set_hail(kind == Weather.Kind.HAIL)
 	_refresh_weather_label()
 
 
@@ -486,6 +522,8 @@ func _end_of_turn(u: Unit) -> void:
 	if u.status in [MoveData.Status.POISON, MoveData.Status.BURN] and Abilities.takes_indirect(u):
 		var frac := 8 if u.status == MoveData.Status.POISON else 16
 		var dmg := maxi(1, u.max_hp / frac)
+		if u.status == MoveData.Status.BURN:  # se resiente de la quemadura: una llamarada lo envuelve
+			Fx.burst(self, u.global_position + Vector3.UP * u.data.model_height * 0.5, "fire", 0.8)
 		u.take_damage(dmg)
 		_popup(u, str(dmg), Color(0.75, 0.4, 1.0))
 		_log("%s sufre por estar %s." % [u.display_name(), Combat.STATUS_NAMES[u.status]])
@@ -1976,53 +2014,51 @@ func _throw_ball(target: Vector2i) -> void:
 	var hit := Combat.trace(grid, origin, target, func(c: Vector2i) -> Unit:
 		var o := _unit_at(c)
 		return o if o != active else null)
-	var points: Array[Vector3] = [active.position + Vector3.UP * active.data.model_height * 0.6]
+	# Sale de encima de su cabeza (no de dentro del modelo) y sin sus letras de por medio.
+	var points: Array[Vector3] = [BallFx.above(active, 1.0)]
 	var path: Array[Vector2i] = hit.path
 	for c in path:
 		points.append(_aim_point(c))
 	Audio.sfx("launch_projectile", -6.0, 1.4)
-	var ball := Fx.projectile(self, points, "normal")
-	await ball.finished
+	# Vuela la Poké Ball de verdad, en arco, siguiendo la trayectoria del lanzamiento.
+	var pokeball := BallFx.new_ball(self, TowerRun.BALLS[kind].color)
+	var dist := points[0].distance_to(points[-1])
 	var t := _unit_at(hit.cell)
-	if hit.blocker == "obstacle" or t == null or t.team != 1:
+	var on_target: bool = hit.blocker != "obstacle" and t != null and t.team == 1
+	# Las letras del que lanza y del objetivo se apartan mientras la bola vuela por encima.
+	var thrower_label := active.show_label(false)
+	if on_target:
+		BallFx.hide_label(t)
+		# Llega por encima de su cabeza (no contra su cuerpo), donde se abrirá.
+		points[-1] = BallFx.above(t, 1.0)
+	await BallFx.throw_path(self, pokeball, points, 0.4 + 0.12 * dist, clampf(dist * 0.09, 0.3, 0.9))
+	active.show_label(thrower_label)
+	if not on_target:
 		_log("La %s no llegó a ningún Pokémon salvaje..." % ball_name)
 		Audio.sfx("ui_error", -6.0)
+		Fx.smoke(self, pokeball.global_position)
+		pokeball.queue_free()
 		return
 	var chance := TowerRun.catch_chance(t, kind)
-	# El Pokémon entra en la bola: se encoge y en su lugar queda la Poké Ball en el suelo.
-	var shrink := create_tween()
-	shrink.tween_property(t, "scale", Vector3.ONE * 0.01, 0.25)
-	await shrink.finished
-	t.visible = false
-	var pokeball := Fx.pokeball(self, TowerRun.BALLS[kind].color)
-	pokeball.global_position = grid.footprint_center(t.footprint) + Vector3.UP * 0.12
-	Audio.sfx("ui_place", -4.0)
-	await _wait(0.4)
+	# Como en los juegos: la bola se abre, el Pokémon entra como energía roja, cae al suelo dando botes y se
+	# sacude hasta tres veces con el botón parpadeando.
+	await BallFx.absorb(self, pokeball, t, grid.footprint_center(t.footprint))
+	await _wait(0.3)
 	var escaped := false
 	for i in 3:
-		Audio.sfx("ui_hover", -2.0, 0.7)
-		var shake := create_tween()
-		var side := 1.0 if i % 2 == 0 else -1.0
-		shake.tween_property(pokeball, "rotation:z", 0.45 * side, BALL_SHAKE_TIME * 0.25).set_trans(Tween.TRANS_SINE)
-		shake.tween_property(pokeball, "rotation:z", -0.3 * side, BALL_SHAKE_TIME * 0.25).set_trans(Tween.TRANS_SINE)
-		shake.tween_property(pokeball, "rotation:z", 0.0, BALL_SHAKE_TIME * 0.2).set_trans(Tween.TRANS_SINE)
-		await shake.finished
+		await BallFx.wobble(pokeball, i, BALL_SHAKE_TIME)
 		await _wait(BALL_SHAKE_TIME * 0.3)
 		if rng.randf() > pow(chance, 1.0 / 3.0):
 			escaped = true
 			break
 	if escaped:
-		Fx.smoke(self, pokeball.global_position)
-		pokeball.queue_free()
-		t.visible = true
-		var grow := create_tween()
-		grow.tween_property(t, "scale", Vector3.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		await BallFx.escape(self, pokeball, t)
 		_popup(t, "¡Se escapó!", Color(1.0, 0.6, 0.5))
 		_log("¡%s se escapó de la %s!" % [t.display_name(), ball_name])
 		Audio.sfx("ui_error", -6.0)
 		Audio.cry(t.data, 1.1, -8.0)
 		return
-	Fx.burst(self, pokeball.global_position + Vector3.UP * 0.2, "fairy", 0.6)
+	await BallFx.caught(self, pokeball)
 	_log("¡%s ha sido capturado!" % t.display_name())
 	_popup(t, "¡Capturado!", Color(1.0, 0.9, 0.4), 1.3)
 	Audio.sfx("ui_confirm")

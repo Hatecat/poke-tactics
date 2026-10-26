@@ -74,7 +74,7 @@ def import_model(name):
 # Modelos sin esqueleto con forma de bola y piezas sueltas alrededor (las nubes de gas de Koffing, la
 # cabeza pequeña de Weezing, los huevos de Exeggcute, los imanes de Magneton): auto_rig() les pone uno.
 # Los demás sin esqueleto llevan uno de plantilla (rig_templates.py).
-AUTO_RIG = {"koffing", "weezing", "exeggcute", "gastly", "magneton"}
+AUTO_RIG = {"koffing", "weezing", "exeggcute", "gastly", "magneton", "haunter", "magnemite"}
 
 
 def _islands(mesh):
