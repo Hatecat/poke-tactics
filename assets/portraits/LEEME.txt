@@ -1,3 +1,3 @@
 Retratos de los diálogos del modo historia: <id>.png (cuadrados, por ejemplo 512×512).
-Ids del capítulo 1: cristina, papa, mama, rufian, rufiana, eevee, pidgey, gengar.
+Ids del capítulo 1: cristina, papa, mama, hermano, rufian, rufiana, eevee, pidgey, gengar, tentacool, krabby.
 Si falta alguno, el juego dibuja uno provisional con la inicial.

@@ -196,17 +196,20 @@ Atracción (50 % de no poder atacar cada turno, 5 turnos), Seducción, Gran Enca
 
 ## Modo historia
 
-*Historia* en el menú empieza (o continúa) el capítulo. Está hecha la **primera mitad del Capítulo 1**:
+*Historia* en el menú empieza (o continúa) el capítulo. Está hecho el **Capítulo 1** completo:
 la mañana en Pueblo Lavanda, la discusión con su padre, el ataque de los rufianes en la Ruta 8 (combate en el
-que Gengar llega como aliado) y la reacción de Gengar ante la madre. El progreso se guarda en cada paso.
+que Gengar llega como aliado), la reacción de Gengar ante la madre, la revelación del padre esa noche, la
+videollamada con su hermano y la salida por la Ruta 12 (combate contra Pokémon salvajes en la niebla). El
+progreso se guarda en cada paso.
 
 - **Escenas:** el lugar en 3D con sus participantes (los Pokémon con su modelo; las personas, con una figura
   provisional de colores). Abajo, el cuadro de diálogo con el retrato de quien habla; clic, Enter o Espacio
   pasan la línea, y *Saltar escena* (o Esc) la salta entera. Lo que Cristina percibe de Gengar sale en cursiva
   morada: Gengar no habla, transmite sentimientos.
-- **Combates:** el equipo de Cristina sube de nivel con la experiencia (como en la Torre) y aprende ataques.
+- **Combates:** el equipo de Cristina sube de nivel con la experiencia (como en la Torre) y aprende ataques;
+  si ya conoce cuatro, la escena siguiente pregunta cuál olvidar (o no aprender el nuevo).
   Un combate puede tener eventos a mitad (diálogos y aliados que juega la IA). Si pierdes, se reintenta.
-- **Retratos:** `assets/portraits/<id>.png` (cristina, papa, mama, rufian, rufiana, eevee, pidgey, gengar). Si
+- **Retratos:** `assets/portraits/<id>.png` (cristina, papa, mama, hermano, rufian, rufiana, eevee, pidgey, gengar). Si
   no hay, se dibuja uno provisional con la inicial y el color del personaje.
 - **Escribir capítulos:** cada capítulo es un JSON en `data/story/` (`capitulo1.json`). La lista de órdenes del
   guion (decir, siente, narrar, mover, mirar, emocion, anim, aparecer, irse, camara, esperar, fundido, musica...)

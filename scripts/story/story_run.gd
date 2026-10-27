@@ -13,6 +13,9 @@ var chapter := 0
 var step := 0
 var party: Array[TeamMember] = []
 var report := PackedStringArray()
+## Ataques nuevos que no caben (ya conoce 4): [{"member": índice en party, "move": id}]. La próxima escena
+## pregunta cuál olvidar.
+var pending_moves: Array = []
 var _data := {}
 
 
@@ -132,7 +135,7 @@ static func weather_kind(place: Dictionary) -> Weather.Kind:
 
 func to_dict() -> Dictionary:
 	return {"chapter": chapter, "step": step, "party": party.map(func(m: TeamMember) -> Dictionary: return m.to_dict()),
-		"report": Array(report)}
+		"report": Array(report), "pending_moves": pending_moves}
 
 
 static func from_dict(d: Dictionary) -> StoryRun:
@@ -144,4 +147,5 @@ static func from_dict(d: Dictionary) -> StoryRun:
 		if m:
 			run.party.append(m)
 	run.report = PackedStringArray(d.get("report", []))
+	run.pending_moves = d.get("pending_moves", [])
 	return run

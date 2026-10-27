@@ -198,6 +198,14 @@ func _start_battle() -> void:
 	var p_anchor := _zone_center(0)
 	for i in player_team.size():
 		_spawn(player_team[i], 0, p_anchor + Vector2i((i - player_team.size() / 2) * 3, 0))
+	if _story():
+		# Aliados que juega la IA desde el principio (Gengar acompañando a Cristina).
+		for d: Dictionary in _story_step.get("aliados", []):
+			var m := StoryRun.member(d, rng)
+			if m:
+				var near: Variant = d.get("en", null)
+				_spawn(m, 0, Vector2i(near[0], near[1]) if near is Array else p_anchor + Vector2i(0, -2), false)
+				units[-1].ally_ai = true
 	if map and not map.enemies.is_empty():
 		for e: Dictionary in map.enemies:
 			var member := TeamMember.from_dict(e, Game.find_species)
@@ -232,11 +240,12 @@ func _send_out_intro() -> void:
 	state = State.BUSY
 	_deploy_box.visible = false
 	_actions_box.visible = false
-	var wild := _tower() and not _trainer_battle()
+	var wild: bool = (_tower() and not _trainer_battle()) or (_story() and _story_step.get("salvajes", false))
 	var center := grid.to_world(Vector2i(grid.width / 2, grid.height / 2))
 	var teams: Array[Array] = []
 	for team in [1, 0]:
-		var members := units.filter(func(u: Unit) -> bool: return u.team == team and not (team == 1 and wild))
+		# Los aliados de la IA ya están ahí: no salen de ninguna bola de Cristina.
+		var members := units.filter(func(u: Unit) -> bool: return u.team == team and not (team == 1 and wild) and not u.ally_ai)
 		for u: Unit in members:
 			u.visible = false
 		if not members.is_empty():
@@ -2030,6 +2039,8 @@ func _story() -> bool:
 	return Game.mode == "story" and Game.story != null
 
 
+## Un combate de historia admite además "aliados" (Pokémon que juega la IA desde el principio, como los
+## del evento) y "salvajes": true (los rivales no salen de Poké Balls).
 ## Eventos del guion del combate: {"cuando": {"turno": N, "ps_bajo": 0.5}, "guion": [...], "aliado": {...},
 ## "en": [x, y]}. Ocurre una vez, al cumplirse cualquiera de las condiciones (turno N de este combate,
 ## o uno de tus Pokémon por debajo de esa fracción de PS). El guion son líneas de diálogo ("decir",
@@ -2097,8 +2108,16 @@ func _finish_story() -> void:
 			total += u.level * TowerRun.EXP_PER_ENEMY_LEVEL
 	var report := PackedStringArray()
 	report.append("¡Victoria! Cada Pokémon de Cristina gana %d de experiencia." % total)
-	for m in Game.story.party:
-		report.append_array(m.gain_exp(total))
+	for i in Game.story.party.size():
+		var m: TeamMember = Game.story.party[i]
+		var before := m.known.duplicate()
+		for line in m.gain_exp(total):
+			# En la historia no hay ficha: el ataque que no cabe se elige en la próxima escena.
+			if not line.contains("cámbialo en su ficha"):
+				report.append(line)
+		for mv in m.known:
+			if mv not in before and mv not in m.moves:
+				Game.story.pending_moves.append({"member": i, "move": mv.id})
 	Game.story.report = report
 	Game.story.advance()
 	Game.save()

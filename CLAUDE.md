@@ -56,8 +56,9 @@ Ver README.md para las reglas y la estructura de carpetas.
   sección "story") recorre los pasos del capítulo: "titulo" y "escena" en scenes/story.tscn (`cutscene.gd`, guion
   en JSON), "combate" en battle.tscn con `Game.mode = "story"`. `DialogueBox` es el cuadro estilo FFT (retratos en
   assets/portraits/<id>.png), `StoryFigure` la persona provisional y `Unit.ally_ai` el aliado de la IA (Gengar).
-  Biblia narrativa: ~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx. Hecha la primera mitad del capítulo 1
-  (puntos 1-4 de la cronología); falta desde la revelación del padre (punto 5).
+  Biblia narrativa: ~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx. Hecho el capítulo 1 completo
+  (termina en "Continuará... Capítulo 2 · Ciudad Fucsia"). Los ataques que no caben se guardan en
+  `StoryRun.pending_moves` y la escena siguiente pregunta cuál olvidar (`DialogueBox.choose`).
 
 ## Cómo trabajar
 

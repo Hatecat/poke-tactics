@@ -6,6 +6,7 @@ extends Control
 ## Los retratos se buscan en assets/portraits/<id>.png; si no hay, se dibuja uno provisional con la inicial.
 
 signal advanced
+signal chosen(index: int)
 
 const PORTRAIT_DIR := "res://assets/portraits/"
 const CHARS_PER_SECOND := 45.0
@@ -22,6 +23,8 @@ var _initial: Label
 var _name: Label
 var _text: RichTextLabel
 var _arrow: Label
+var _options: HFlowContainer
+var _choosing := false
 var _typing := false
 var _shown := 0.0
 var _time := 0.0
@@ -75,6 +78,10 @@ func _ready() -> void:
 	_text.add_theme_font_size_override("normal_font_size", 22)
 	_text.add_theme_font_size_override("italics_font_size", 22)
 	col.add_child(_text)
+	_options = HFlowContainer.new()
+	_options.add_theme_constant_override("h_separation", 8)
+	_options.visible = false
+	col.add_child(_options)
 	_arrow = UiKit.label("▼", 18, UiKit.ACCENT)
 	_arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	col.add_child(_arrow)
@@ -129,6 +136,23 @@ func say(who: Dictionary, text: String, feeling := false) -> void:
 	await advanced
 
 
+## Pregunta con opciones (botones dentro del cuadro). Devuelve el índice elegido.
+func choose(who: Dictionary, text: String, options: PackedStringArray) -> int:
+	UiKit.clear(_options)
+	for i in options.size():
+		var b := UiKit.button(options[i], chosen.emit.bind(i), 18)
+		b.focus_mode = Control.FOCUS_NONE
+		_options.add_child(b)
+	_choosing = true
+	say(who, text)
+	_finish_typing()
+	_options.visible = true
+	var index: int = await chosen
+	_choosing = false
+	_options.visible = false
+	return index
+
+
 func close() -> void:
 	visible = false
 
@@ -167,7 +191,7 @@ func _finish_typing() -> void:
 
 
 func _next() -> void:
-	if not visible:
+	if not visible or _choosing:
 		return
 	if _typing:
 		_finish_typing()

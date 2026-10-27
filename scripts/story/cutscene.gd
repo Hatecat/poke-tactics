@@ -14,7 +14,9 @@ extends Node3D
 ##   {"aparecer": id, "efecto": "sombra" | "normal"}   actor que empezaba "oculto"
 ##   {"irse": id, "a": [x, y]}         (opcional "a") camina y desaparece
 ##   {"camara": id | [x, y], "zoom"}   {"esperar": segundos}   {"fundido": "negro" | "abrir"}
-## El lugar admite "hora": "atardecer" (luz anaranjada).
+## El lugar admite "hora": "atardecer" (luz anaranjada) o "noche" (luz azul y faroles encendidos).
+## Además de Pokémon ("especie") y personas, un actor puede ser un objeto: {"objeto": "pantalla"} (la
+## pantalla flotante de una videollamada).
 ##   {"musica": nombre}  {"sonido": nombre}  {"grito": id}  {"temblor": id}
 
 const ZOOM := 6.5
@@ -46,10 +48,12 @@ func _ready() -> void:
 	match _step.get("tipo", ""):
 		"titulo":
 			await _show_report()
+			await _learn_moves()
 			await _title_card()
 		"escena":
 			_build_place()
 			await _show_report()
+			await _learn_moves()
 			await _run(_step.get("guion", []))
 	_finish()
 
@@ -83,6 +87,8 @@ func _build_place() -> void:
 	_board.batching = true
 	add_child(_board)
 	_board.build(grid)
+	if place.get("hora", "") == "noche":
+		_night()
 	var weather := StoryRun.weather_kind(place)
 	if weather != Weather.Kind.CLEAR:
 		var fx := WeatherFx.new()
@@ -125,6 +131,31 @@ func _sunset() -> void:
 		sky.ground_horizon_color = Color(0.7, 0.45, 0.4)
 
 
+## Noche: luna azulada, cielo oscuro y una luz cálida en cada farola.
+func _night() -> void:
+	var sun: DirectionalLight3D = get_node_or_null("Sun")
+	if sun:
+		sun.light_color = Color(0.55, 0.65, 1.0)
+		sun.light_energy *= 0.3
+	var world: WorldEnvironment = get_node_or_null("WorldEnvironment")
+	if world:
+		world.environment.ambient_light_energy *= 0.45
+		if world.environment.sky and world.environment.sky.sky_material is ProceduralSkyMaterial:
+			var sky: ProceduralSkyMaterial = world.environment.sky.sky_material
+			sky.sky_top_color = Color(0.03, 0.04, 0.12)
+			sky.sky_horizon_color = Color(0.12, 0.12, 0.28)
+			sky.ground_horizon_color = Color(0.08, 0.08, 0.16)
+			sky.ground_bottom_color = Color(0.02, 0.02, 0.05)
+	for c: Vector2i in grid.props:
+		if grid.props[c] == Biome.Prop.LAMP:
+			var light := OmniLight3D.new()
+			light.light_color = Color(1.0, 0.8, 0.5)
+			light.light_energy = 1.6
+			light.omni_range = 4.0
+			light.position = grid.to_world(c) + Vector3(0.2, 1.0, 0.0)
+			add_child(light)
+
+
 ## Casillas en que hay actores o a las que alguno va a caminar.
 func _scripted_cells() -> Array[Vector2i]:
 	var list: Array[Vector2i] = []
@@ -154,6 +185,10 @@ func _spawn(a: Dictionary) -> void:
 		u.position = _stand_point(u, c)
 		u.play("idle")
 		node = u
+	elif a.has("objeto"):
+		node = _object(a.objeto)
+		_units_root.add_child(node)
+		node.position = _stand_point(node, c)
 	else:
 		var f := StoryFigure.new()
 		_units_root.add_child(f)
@@ -162,6 +197,35 @@ func _spawn(a: Dictionary) -> void:
 		node = f
 	node.visible = not a.get("oculto", false)
 	_actors[id] = node
+
+
+## Objetos de escena. "pantalla": la de una videollamada, flotando y con luz propia.
+func _object(kind: String) -> Node3D:
+	var root := Node3D.new()
+	if kind == "pantalla":
+		var screen := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = Vector3(0.62, 0.4, 0.03)
+		screen.mesh = box
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.35, 0.65, 1.0, 0.85)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.emission_enabled = true
+		mat.emission = Color(0.3, 0.6, 1.0)
+		mat.emission_energy_multiplier = 1.4
+		screen.material_override = mat
+		screen.position.y = 1.05
+		root.add_child(screen)
+		var light := OmniLight3D.new()
+		light.light_color = Color(0.5, 0.75, 1.0)
+		light.light_energy = 0.8
+		light.omni_range = 2.0
+		light.position.y = 1.05
+		root.add_child(light)
+		var tw := root.create_tween().set_loops()
+		tw.tween_property(screen, "position:y", 1.12, 1.2).set_trans(Tween.TRANS_SINE)
+		tw.tween_property(screen, "position:y", 1.05, 1.2).set_trans(Tween.TRANS_SINE)
+	return root
 
 
 func _cell(v: Variant) -> Vector2i:
@@ -301,8 +365,10 @@ func _path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
 
 func _face(id: String, target: Variant) -> void:
 	var node: Node3D = _actors.get(id)
-	if node:
+	if node and node.has_method("face_towards"):
 		node.face_towards(_point(target))
+	elif node:
+		node.look_at(Vector3(_point(target).x, node.global_position.y, _point(target).z), Vector3.UP, true)
 
 
 func _emote(id: String, symbol: String) -> void:
@@ -397,6 +463,33 @@ func _show_report() -> void:
 	for line in _story.report:
 		await _dialogue.say({}, line)
 	_story.report = PackedStringArray()
+	_dialogue.close()
+
+
+## Ataques nuevos que no cabían: como en los juegos, se elige cuál olvidar (o no aprenderlo).
+func _learn_moves() -> void:
+	for p: Dictionary in _story.pending_moves:
+		var i: int = p.get("member", -1)
+		var path := TeamMember.MOVES_DIR + "%s.tres" % p.get("move", "")
+		if i < 0 or i >= _story.party.size() or not ResourceLoader.exists(path):
+			continue
+		var m := _story.party[i]
+		var mv: MoveData = load(path)
+		if mv in m.moves:
+			continue
+		var who := TeamMember.display(m.data, m.gender)
+		var options := PackedStringArray()
+		for old in m.moves:
+			options.append("Olvidar %s" % old.display_name)
+		options.append("No aprender %s" % mv.display_name)
+		var pick := await _dialogue.choose({}, "%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?" % [who, mv.display_name], options)
+		if pick < m.moves.size():
+			var old := m.moves[pick]
+			m.moves[pick] = mv
+			await _dialogue.say({}, "1, 2 y... ¡listo! %s olvidó %s y aprendió %s." % [who, old.display_name, mv.display_name])
+		else:
+			await _dialogue.say({}, "%s no aprendió %s." % [who, mv.display_name])
+	_story.pending_moves = []
 	_dialogue.close()
 
 
