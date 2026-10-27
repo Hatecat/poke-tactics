@@ -87,7 +87,10 @@ var _preview_label: RichTextLabel
 var _tile_label: RichTextLabel
 var _pause: PauseMenu
 var _banner_buttons: HBoxContainer
+## Separadores y fila de Balls del panel de acciones (se rehacen con los botones).
 var _action_separators: Array[Control] = []
+var _left_panel: PanelContainer
+var _log_panel: PanelContainer
 ## Torre: Balls lanzadas en este combate ({tipo: cantidad}), la que se está apuntando y Pokémon capturados.
 var _balls_used := {}
 var _ball_kind := "poke"
@@ -1835,6 +1838,8 @@ func _build_ui() -> void:
 
 	# Panel izquierdo: info de la unidad y acciones.
 	var left := _panel(root, Vector2(16, 16), Vector2(300, 0))
+	_left_panel = left
+	left.resized.connect(_fit_log_panel)
 	var left_box := VBoxContainer.new()
 	left_box.add_theme_constant_override("separation", 8)
 	left.add_child(left_box)
@@ -1904,6 +1909,8 @@ func _build_ui() -> void:
 	bottom.offset_bottom = -16
 	bottom.offset_left = 16
 	bottom.offset_right = 576
+	_log_panel = bottom
+	get_viewport().size_changed.connect(_fit_log_panel)
 	_log_label = RichTextLabel.new()
 	_log_label.bbcode_enabled = true
 	_log_label.scroll_following = true
@@ -2289,18 +2296,40 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		_attack_buttons.append(b)
 	if _tower() and not _trainer_battle():
 		_add_action_separator()
+		# Las Balls van en una sola fila (icono y cantidad; el nombre en el tooltip) para no alargar el panel.
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		_actions_box.add_child(row)
+		_action_separators.append(row)
 		for kind: String in TowerRun.BALL_KINDS:
 			if kind != "poke" and _balls_left(kind) <= 0:
 				continue
-			var ball := _button("%s  (%d)" % [TowerRun.BALLS[kind].name, _balls_left(kind)], _begin_pick_ball.bind(kind))
+			var ball := _button("%d" % _balls_left(kind), _begin_pick_ball.bind(kind))
 			ball.icon = TowerRun.BALLS[kind].icon
 			ball.add_theme_constant_override("icon_max_width", 24)
+			ball.alignment = HORIZONTAL_ALIGNMENT_CENTER
+			ball.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			ball.set_meta("no_pp", _balls_left(kind) <= 0)
-			ball.tooltip_text = tr("Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s") % tr(TowerRun.BALLS[kind].desc)
-			_actions_box.add_child(ball)
+			ball.tooltip_text = "%s (%d)\n%s" % [tr(TowerRun.BALLS[kind].name), _balls_left(kind),
+				tr("Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s") % tr(TowerRun.BALLS[kind].desc)]
+			row.add_child(ball)
 			_attack_buttons.append(ball)
 	_add_action_separator()
 	_actions_box.add_child(_wait_button)
+
+
+## Si el panel izquierdo (info + acciones) baja hasta el registro, aparta el registro a su derecha (y el texto
+## de la casilla, a la derecha del registro).
+func _fit_log_panel() -> void:
+	if _left_panel == null or _log_panel == null:
+		return
+	var screen := get_viewport().get_visible_rect().size
+	var overlaps := _left_panel.position.y + _left_panel.size.y + 8 > screen.y + _log_panel.offset_top
+	var x := _left_panel.position.x + _left_panel.size.x + 16 if overlaps else 16.0
+	_log_panel.offset_left = x
+	_log_panel.offset_right = x + 560
+	if _tile_label:
+		_tile_label.offset_left = maxf(-760.0, x + 576.0 - screen.x)
 
 
 func _add_action_separator() -> void:
