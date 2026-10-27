@@ -1,6 +1,6 @@
 # Poké Tactics — instrucciones para Claude Code
 
-**Clave del proyecto: `poketactics`.** Cuando el usuario escriba "poketactics", retoma este proyecto: lee este
+**Clave del proyecto: `poketactics` (o `poketactis`).** Cuando el usuario escriba cualquiera de las dos, retoma este proyecto: lee este
 archivo y el README, resume en pocas líneas en qué estado está y pregunta con qué quiere seguir.
 
 El usuario habla español y escribe frases cortas ("muéstrame...", "mejóralo"). Responde en español. Espera ver

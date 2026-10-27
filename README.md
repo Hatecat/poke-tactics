@@ -282,7 +282,9 @@ espesura (pinos en lo alto). Montaña: macizo central con valles verdes, roca y 
 los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca y un oasis con palmeras. Lago: cuenca
 central con playa de arena. Nieve: ventisqueros, estanque helado y pinares nevados. Cueva: crestas de roca,
 charcas, estalagmitas y cristales. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
-hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol), el agua tiene oleaje,
+hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol); la hierba crece en zonas de
+hierba alta y claros de césped corto, y se aparta alrededor de cada Pokémon para no taparlo; las copas, los pinos y
+los troncos tienen textura procedural (racimos de hojas, agujas y corteza con grietas); el agua tiene oleaje,
 reflejos y espuma en la orilla; con lluvia el suelo, las rocas y los árboles se ven mojados (más oscuros y
 brillantes), salen charcos y las gotas hacen ondas en el agua; con tormenta de arena hay bruma,
 nubes de polvo que cruzan, ráfagas de arena y polvo que se levanta de las crestas de las dunas; con granizo caen bolitas de hielo

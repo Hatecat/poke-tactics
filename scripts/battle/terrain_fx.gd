@@ -18,11 +18,49 @@ uniform float glow = 0.0;
 uniform float pulse = 0.0;
 uniform float roughness = 0.85;
 uniform float wet = 0.0;
+uniform float push = 0.0;  // 1 en la hierba: se aparta y se aplasta alrededor de los Pokémon
+uniform vec4 pushers[12];  // xyz = pies de cada Pokémon, w = radio (0 = libre)
+uniform int pattern = 0;  // textura procedural: 0 lisa, 1 copa de hojas, 2 agujas de pino, 3 corteza, 4 corteza con musgo
 instance uniform float base_y = 0.0;
 instance uniform float height = 1.0;
+varying vec3 rest_pos;  // posición en el mundo sin viento: la textura no resbala al mecerse
+
+float hash13(vec3 p) {
+	p = fract(p * 0.1031);
+	p += dot(p, p.zyx + 31.32);
+	return fract((p.x + p.y) * p.z);
+}
+
+float vnoise(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x),
+			mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
+		mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x),
+			mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+
+// Distancia al centro de la hoja más cercana (celdas de Voronoi): 0 en el centro, ~1 en los huecos.
+float leaves(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	float d = 8.0;
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			for (int z = -1; z <= 1; z++) {
+				vec3 o = vec3(float(x), float(y), float(z));
+				vec3 h = vec3(hash13(i + o), hash13(i + o + 17.1), hash13(i + o + 41.7));
+				d = min(d, length(o + h - f));
+			}
+		}
+	}
+	return d;
+}
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	rest_pos = wp;
 	float k = clamp((wp.y - base_y) / height, 0.0, 1.4);
 	k *= k;
 	float ph = dot(MODEL_MATRIX[3].xz, vec2(0.37, 0.29));
@@ -33,6 +71,20 @@ void vertex() {
 		* flutter * min(wind, 2.0) * k * 0.015;
 	wp.xz += off;
 	wp.y -= length(off) * 0.35 * k;
+	if (push > 0.0) {
+		for (int i = 0; i < 12; i++) {
+			vec4 u = pushers[i];
+			vec2 d = wp.xz - u.xz;
+			float dist = length(d);
+			if (u.w <= 0.0 || dist > u.w || abs(base_y - u.y) > 0.2) {
+				continue;
+			}
+			float f = push * (1.0 - smoothstep(u.w * 0.35, u.w, dist));
+			vec2 dir = dist > 0.001 ? d / dist : vec2(1.0, 0.0);
+			wp.xz += dir * f * k * height * 0.9;
+			wp.y = max(base_y + 0.01, wp.y - f * k * height * 0.75);
+		}
+	}
 	VERTEX = (inverse(MODEL_MATRIX) * vec4(wp, 1.0)).xyz;
 }
 
@@ -40,6 +92,68 @@ void fragment() {
 	vec3 c = albedo.rgb;
 	if (vertex_color) {
 		c *= pow(COLOR.rgb, vec3(2.2));  // color de vértice en sRGB
+	}
+	if (pattern > 0) {
+		vec3 q = rest_pos - NODE_POSITION_WORLD;
+		vec3 qn = normalize(q + vec3(0.0, 0.0001, 0.0));
+		vec2 dir = normalize(q.xz + vec2(0.0001));
+		float up = clamp((rest_pos.y - base_y) / height, 0.0, 1.0);
+		float rim = 1.0 - abs(dot(NORMAL, VIEW));  // 1 en la silueta
+		float bump = 0.0;  // relieve (en metros) para sombrear las hojas o las grietas
+		if (pattern <= 2) {
+			float shade;
+			float edge;  // lo que se recorta en la silueta: solo formas grandes, sin puntitos
+			if (pattern == 1) {
+				// Copa: racimos de hojas con bordes en sombra, hojitas finas, manchas grandes, la parte de
+				// abajo de cada bola en su propia sombra y la de abajo de la copa en penumbra.
+				shade = smoothstep(0.15, 0.8, leaves(rest_pos * 10.0));
+				float fine = vnoise(rest_pos * 38.0);
+				float tuft = vnoise(rest_pos * 3.5);
+				c *= mix(1.2, 0.6, shade) * mix(0.88, 1.1, fine) * mix(0.82, 1.12, tuft) * mix(0.72, 1.08, up);
+				c *= mix(0.62, 1.0, smoothstep(-0.9, 0.5, qn.y));
+				c = mix(c, c * vec3(1.15, 1.12, 0.78), (1.0 - shade) * up * 0.55);  // puntas al sol, más amarillas
+				bump = (1.0 - shade) * 0.03 + fine * 0.006;
+				edge = shade;
+			} else {
+				// Pino: vetas de agujas que caen desde el eje, mechones oscuros y el borde de cada piso, que
+				// cuelga, más claro; la parte alta del piso queda bajo el de arriba.
+				float streak = vnoise(vec3(dir * 16.0, q.y * 4.0 + vnoise(rest_pos * 5.0) * 2.0));
+				float needles = vnoise(vec3(dir * 14.0, q.y * 16.0));
+				float clumps = smoothstep(0.1, 0.85, leaves(rest_pos * 12.0));
+				shade = clumps * 0.45 + streak * 0.35 + needles * 0.2;
+				shade = mix(clumps, shade, smoothstep(0.03, 0.12, length(q.xz)));  // sin rayado en la punta, donde se juntan las vetas
+				c *= mix(1.3, 0.55, shade) * mix(0.75, 1.05, up);
+				c *= mix(1.12, 0.78, smoothstep(-0.6, 0.6, qn.y));
+				bump = (1.0 - shade) * 0.025;
+				edge = clumps;
+			}
+			// Bordes de hoja: en la silueta se recortan los huecos entre racimos (sin bolas lisas).
+			if (edge > mix(1.5, 0.5, smoothstep(0.6, 0.97, rim))) {
+				discard;
+			}
+			BACKLIGHT = c * 0.4;  // el sol atraviesa las hojas
+		} else {
+			// Corteza: grietas verticales irregulares, veta fina, nudos y la base más oscura; con
+			// `pattern` 4 sale musgo en la parte baja.
+			float n = vnoise(vec3(dir * 3.0, rest_pos.y * 2.2)) * 0.7 + vnoise(vec3(dir * 7.0, rest_pos.y * 5.0)) * 0.3;
+			float crack = smoothstep(0.02, 0.18, abs(n - 0.5));
+			float grain = vnoise(rest_pos * vec3(30.0, 6.0, 30.0));
+			float knot = smoothstep(0.08, 0.16, leaves(vec3(dir * 2.5, rest_pos.y * 4.0)));
+			c *= mix(0.5, 1.08, crack) * mix(0.88, 1.1, grain) * mix(0.55, 1.0, knot) * mix(0.7, 1.0, smoothstep(0.0, 0.25, up));
+			if (pattern == 4) {
+				float moss = smoothstep(0.45, 0.7, vnoise(rest_pos * 9.0) + (0.35 - up) * 1.5) * crack;
+				c = mix(c, vec3(0.2, 0.34, 0.12) * mix(0.8, 1.15, grain), moss);
+			}
+			bump = crack * 0.012 + (1.0 - knot) * 0.008;
+		}
+		// Relieve sin UV (Mikkelsen): inclina la normal según cómo cambia `bump` en pantalla.
+		vec3 dpdx = dFdx(VERTEX);
+		vec3 dpdy = dFdy(VERTEX);
+		vec3 r1 = cross(dpdy, NORMAL);
+		vec3 r2 = cross(NORMAL, dpdx);
+		float det = dot(dpdx, r1);
+		vec3 grad = sign(det) * (dFdx(bump) * r1 + dFdy(bump) * r2);
+		NORMAL = normalize(abs(det) * NORMAL - grad);
 	}
 	ALBEDO = c * (1.0 - 0.2 * wet);  // mojado: más oscuro y algo más brillante
 	ROUGHNESS = mix(roughness, 0.55, wet);
@@ -185,14 +299,37 @@ static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	match kind:
-		"grass", "fern":
+		"grass":
+			# Césped corto y tupido: matas pequeñas por toda la casilla.
+			for i in rng.randi_range(12, 15):
+				var p := _spot(rng, 0.47)
+				for b in rng.randi_range(11, 15):
+					var a := rng.randf() * TAU
+					_curved_blade(st, p + Vector3(cos(a), 0, sin(a)) * 0.015, Vector3(cos(a), 0, sin(a)),
+						rng.randf_range(0.06, 0.13), rng.randf_range(0.02, 0.028), rng.randf_range(0.025, 0.06), 2,
+						_grass_tone(rng, tint))
+		"tallgrass":
+			# Hierba alta: matas densas de hojas largas que se doblan, algunas con espiga.
+			for i in rng.randi_range(16, 19):
+				var p := _spot(rng, 0.48)
+				var clump_h := rng.randf_range(0.3, 0.46)
+				for b in rng.randi_range(18, 24):
+					var a := rng.randf() * TAU
+					var dir := Vector3(cos(a), 0, sin(a))
+					_curved_blade(st, p + dir * 0.02, dir, clump_h * rng.randf_range(0.65, 1.0),
+						rng.randf_range(0.03, 0.045), rng.randf_range(0.05, 0.14), 3, _grass_tone(rng, tint))
+				if rng.randf() < 0.15:
+					var h := clump_h * 1.1
+					var lean := Vector3(rng.randf_range(-0.03, 0.03), 0, rng.randf_range(-0.03, 0.03))
+					_blade(st, p, lean, h, 0.006, tint.darkened(0.1).lerp(Color(0.8, 0.75, 0.45), 0.4))
+					_blossom(st, p + lean + Vector3.UP * h, 0.018, Color(0.82, 0.74, 0.46), 1.6)
+		"fern":
 			for i in rng.randi_range(3, 5):
 				var p := _spot(rng, 0.4)
-				var tall := 0.17 if kind == "grass" else 0.22
 				for b in rng.randi_range(6, 10):
 					var a := rng.randf() * TAU
-					var lean := Vector3(cos(a), 0, sin(a)) * rng.randf_range(0.02, 0.07 if kind == "grass" else 0.12)
-					_blade(st, p, lean, rng.randf_range(0.6, 1.0) * tall, 0.018 if kind == "grass" else 0.035,
+					var lean := Vector3(cos(a), 0, sin(a)) * rng.randf_range(0.02, 0.12)
+					_blade(st, p, lean, rng.randf_range(0.6, 1.0) * 0.22, 0.035,
 						tint.darkened(rng.randf_range(0.0, 0.25)).lerp(Color(0.75, 0.8, 0.35), rng.randf() * 0.2))
 		"flowers":
 			var petals := [Color(1, 0.92, 0.3), Color(1, 1, 1), Color(0.95, 0.45, 0.6), Color(0.65, 0.5, 0.95), Color(1, 0.55, 0.25)]
@@ -246,7 +383,8 @@ static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 			for i in rng.randi_range(1, 2):
 				var p := _spot(rng, 0.3)
 				_blossom(st, p, rng.randf_range(0.1, 0.16), tint, 0.35)
-	st.generate_normals()
+	if kind not in ["grass", "tallgrass"]:  # la hierba lleva sus propias normales (luz suave, sin facetas)
+		st.generate_normals()
 	var mesh := st.commit()
 	_meshes[key] = mesh
 	return mesh
@@ -267,6 +405,46 @@ static func _blade(st: SurfaceTool, p: Vector3, lean: Vector3, h: float, w: floa
 		st.add_vertex(face[1])
 		st.set_color(color.lightened(0.15))
 		st.add_vertex(tip)
+
+
+## Hoja de hierba curva: sube `h` en `segs` tramos, se estrecha hacia la punta y se dobla hacia `dir`
+## (`bend` = cuánto se aleja la punta). Base oscura, punta clara; normales hacia arriba para que el
+## césped se ilumine como una masa suave y no como triángulos sueltos.
+static func _curved_blade(st: SurfaceTool, p: Vector3, dir: Vector3, h: float, w: float, bend: float, segs: int,
+		color: Color) -> void:
+	var side := Vector3(-dir.z, 0, dir.x)
+	var normal := (Vector3.UP + dir * 0.35).normalized()
+	var pts: Array[Vector3] = []
+	var cols: Array[Color] = []
+	for i in segs + 1:
+		var t := float(i) / segs
+		pts.append(p + dir * bend * t * t + Vector3.UP * h * (t - 0.25 * t * t * bend / maxf(h, 0.01)))
+		cols.append(color.darkened(0.5 * (1.0 - t)).lerp(color.lightened(0.08), t * t))
+	for i in segs:
+		var w0 := w * (1.0 - float(i) / segs)
+		var w1 := w * (1.0 - float(i + 1) / segs)
+		var a0 := pts[i] - side * w0
+		var b0 := pts[i] + side * w0
+		var a1 := pts[i + 1] - side * w1
+		var b1 := pts[i + 1] + side * w1
+		var tris := [[a0, b0, b1, 0, 0, 1], [a0, b1, a1, 0, 1, 1]] if i < segs - 1 else [[a0, b0, a1, 0, 0, 1]]
+		for tri: Array in tris:
+			for order in [[0, 1, 2], [0, 2, 1]]:  # dos caras
+				for j: int in order:
+					st.set_normal(normal)
+					st.set_color(cols[i + tri[3 + j]])
+					st.add_vertex(tri[j])
+
+
+## Tono de una hoja: el del suelo, algo más oscuro, más amarillo o más fresco según la hoja.
+static func _grass_tone(rng: RandomNumberGenerator, tint: Color) -> Color:
+	var c := tint.darkened(rng.randf_range(0.05, 0.3))
+	var r := rng.randf()
+	if r < 0.12:
+		return c.lerp(Color(0.74, 0.72, 0.36), 0.35)  # hoja seca
+	if r < 0.4:
+		return c.lerp(Color(0.32, 0.72, 0.22), 0.35)  # brote nuevo
+	return c
 
 
 ## Bola facetada pequeña (flor, sombrerillo de seta, montoncito de nieve). `flat` aplasta en vertical.

@@ -17,6 +17,7 @@ var _traps_root: Node3D
 var _live_mats := {} # clave -> ShaderMaterial con viento (vegetación, agua)
 var _side_mats := {}
 var _tint_noise := FastNoiseLite.new()
+var _grass_noise := FastNoiseLite.new()  # zonas de hierba alta / corta
 var _wind := 1.0
 var _wet := 0.0
 var _wet_tween: Tween
@@ -52,6 +53,8 @@ func build(p_grid: BoardGrid) -> void:
 	_hail_bounce = null
 	_tint_noise.seed = 7
 	_tint_noise.frequency = 0.18
+	_grass_noise.seed = grid.width * 131 + grid.height * 17 + grid.biome
+	_grass_noise.frequency = 0.22
 	for c in grid.all_cells():
 		_build_cell(c)
 	var w0 := grid.to_world(Vector2i.ZERO)
@@ -103,6 +106,25 @@ func set_traps(traps: Dictionary) -> void:
 				var rock := _part(node, BoxMesh.new(), Vector3(-0.15 + i * 0.3, 0.55 + i * 0.1, 0), Color(0.55, 0.48, 0.4))
 				rock.scale = Vector3.ONE * 0.16
 				rock.rotation = Vector3(0.5, 0.8 * i, 0.3)
+
+
+## La hierba y las plantas se apartan alrededor de cada Pokémon (grupo "units"), para que no lo tapen.
+func _process(_delta: float) -> void:
+	var pushers := PackedVector4Array()
+	pushers.resize(12)
+	var i := 0
+	for u: Node3D in get_tree().get_nodes_in_group("units"):
+		if i >= 12:
+			break
+		if not u.visible or not u.is_inside_tree():
+			continue
+		var size: int = u.data.size if u.get("data") else 1
+		var p := u.global_position
+		pushers[i] = Vector4(p.x, p.y, p.z, 0.3 + 0.32 * size)
+		i += 1
+	for key: String in _live_mats:
+		if key.begins_with("decor_"):
+			_live_mats[key].set_shader_parameter("pushers", pushers)
 
 
 ## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).
@@ -367,21 +389,22 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 		Biome.Prop.TREE:
 			var leaf := Color(0.22, 0.48, 0.2) if grid.biome == Biome.Kind.FOREST else Color(0.28, 0.56, 0.24)
 			leaf = leaf.lerp(Color(0.45, 0.55, 0.18), float(h % 7) / 20.0)
-			_leaf(node, _cyl(0.05, 0.1, 0.62, 7), Vector3(0, 0.31, 0), Color(0.4, 0.27, 0.16), 0.3)
-			_leaf(node, _cyl(0.02, 0.04, 0.3, 5), Vector3(0.1, 0.55, 0), Color(0.4, 0.27, 0.16), 0.4).rotation.z = -0.8
+			var bark := 3 if snowy else 4  # con musgo salvo en la nieve
+			_leaf(node, _cyl(0.05, 0.1, 0.62, 7), Vector3(0, 0.31, 0), Color(0.4, 0.27, 0.16), 0.3, 0.0, bark)
+			_leaf(node, _cyl(0.02, 0.04, 0.3, 5), Vector3(0.1, 0.55, 0), Color(0.4, 0.27, 0.16), 0.4, 0.0, bark).rotation.z = -0.8
 			var blobs := [[0.34, Vector3(0, 0.84, 0)], [0.24, Vector3(0.22, 0.72, 0.1)], [0.22, Vector3(-0.2, 0.75, -0.08)],
 				[0.2, Vector3(0.04, 1.06, 0.04)], [0.18, Vector3(-0.05, 0.7, 0.24)]]
 			for i in blobs.size():
 				var r: float = blobs[i][0]
-				_leaf(node, _sphere(r, r * 1.7), blobs[i][1], leaf.lightened(0.06 * (i % 3)).darkened(0.05 * (i % 2)), 1.0, 1.0)
+				_leaf(node, _sphere(r, r * 1.7), blobs[i][1], leaf.lightened(0.06 * (i % 3)).darkened(0.05 * (i % 2)), 1.0, 1.0, 1)
 			height = 1.2
 		Biome.Prop.PINE:
 			var needle := Color(0.14, 0.36, 0.24)
-			_leaf(node, _cyl(0.04, 0.08, 0.4, 6), Vector3(0, 0.2, 0), Color(0.38, 0.25, 0.15), 0.25)
+			_leaf(node, _cyl(0.04, 0.08, 0.4, 6), Vector3(0, 0.2, 0), Color(0.38, 0.25, 0.15), 0.25, 0.0, 3)
 			var tiers := [[0.42, 0.45, 0.42], [0.34, 0.4, 0.66], [0.26, 0.34, 0.88], [0.16, 0.3, 1.08]]
 			for i in tiers.size():
 				var t: Array = tiers[i]
-				_leaf(node, _cyl(0.0, t[0], t[1], 9), Vector3(0, t[2], 0), needle.lightened(0.05 * i), 0.7, 0.35)
+				_leaf(node, _cyl(0.0, t[0], t[1], 9), Vector3(0, t[2], 0), needle.lightened(0.05 * i), 0.7, 0.35, 2)
 				if snowy:
 					_leaf(node, _cyl(0.0, t[0] * 0.75, t[1] * 0.45, 9), Vector3(0, t[2] + t[1] * 0.3, 0), snow, 0.7, 0.35)
 			height = 1.25
@@ -412,7 +435,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			var bark := Color(0.55, 0.42, 0.28)
 			var p := Vector3.ZERO
 			for i in 5:
-				var seg := _leaf(node, _cyl(0.05, 0.065, 0.24, 6), p + Vector3(0, 0.12, 0), bark.darkened(0.04 * (i % 2)), 0.5)
+				var seg := _leaf(node, _cyl(0.05, 0.065, 0.24, 6), p + Vector3(0, 0.12, 0), bark.darkened(0.04 * (i % 2)), 0.5, 0.0, 3)
 				seg.rotation.z = -0.08 * i
 				p += Vector3(0.03 * i, 0.23, 0)
 			for i in 7:
@@ -462,12 +485,16 @@ func _root_sway(node: Node3D, base_y: float) -> void:
 
 
 ## Parte con viento: `sway` cuánto se dobla, `flutter` cuánto tiemblan las hojas.
-func _leaf(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color, sway: float, flutter := 0.0) -> MeshInstance3D:
+## `pattern`: textura del shader (1 copa de hojas, 2 agujas de pino, 3 corteza, 4 corteza con musgo).
+func _leaf(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color, sway: float, flutter := 0.0, pattern := 0) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.position = pos
-	mi.material_override = _live("leaf_%s_%.2f_%.2f" % [color.to_html(), sway, flutter],
-		func() -> ShaderMaterial: return TerrainFx.foliage_material(color, sway, flutter))
+	mi.material_override = _live("leaf_%s_%.2f_%.2f_%d" % [color.to_html(), sway, flutter, pattern],
+		func() -> ShaderMaterial:
+			var m := TerrainFx.foliage_material(color, sway, flutter)
+			m.set_shader_parameter("pattern", pattern)
+			return m)
 	parent.add_child(mi)
 	return mi
 
@@ -508,6 +535,8 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 	var n := snappedf(_tint_noise.get_noise_2d(w.x, w.z), 0.25)
 	if tile_kind == Biome.Tile.GRASS:
 		color = color.lerp(Color(0.62, 0.7, 0.32) if n > 0 else Color(0.26, 0.52, 0.26), absf(n) * 0.45)
+		if _tall_grass(c):
+			color = color.darkened(0.12)  # bajo la hierba alta el suelo queda en sombra
 	else:
 		color = color.lightened(n * 0.08) if n > 0 else color.darkened(-n * 0.1)
 	color = color.lightened(0.04 * grid.get_height(c))
@@ -560,6 +589,18 @@ func _shore(c: Vector2i) -> Vector4:
 	return out
 
 
+## La hierba crece en zonas: matorrales de hierba alta separados por claros de césped corto.
+func _tall_grass(c: Vector2i) -> bool:
+	if grid.tiles.get(c, -1) != Biome.Tile.GRASS or grid.props.get(c, Biome.Prop.NONE) != Biome.Prop.NONE:
+		return false
+	var w := grid.to_world(c)
+	var threshold := 0.05
+	match grid.biome:
+		Biome.Kind.FOREST: threshold = 0.2
+		Biome.Kind.MOUNTAIN, Biome.Kind.DESERT: threshold = 0.35
+	return _grass_noise.get_noise_2d(w.x, w.z) > threshold
+
+
 ## Detalles pequeños del suelo (no estorban): hierba, flores, helechos, setas, juncos y nenúfares en la
 ## orilla, piedrecillas, matojos secos, montoncitos de nieve. Elegidos de forma estable por casilla.
 func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
@@ -576,12 +617,15 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 	var r2 := rng.randf()
 	match tile_kind:
 		Biome.Tile.GRASS:
-			if b == Biome.Kind.FOREST:
-				if r1 < 0.55: list.append(["fern", grass, 0.5, 0.2])
-				if r2 < 0.1: list.append(["mushrooms", Color(0.85, 0.22, 0.15), 0.0, 0.1])
+			if _tall_grass(c):
+				list.append(["tallgrass", grass, 0.9, 0.4])
 			else:
-				if r1 < 0.75: list.append(["grass", grass, 0.6, 0.17])
-				if r2 < (0.3 if b == Biome.Kind.MEADOW else 0.1): list.append(["flowers", grass, 0.6, 0.15])
+				list.append(["grass", grass, 0.45, 0.1])
+				if b == Biome.Kind.FOREST:
+					if r1 < 0.45: list.append(["fern", grass, 0.5, 0.2])
+					if r2 < 0.1: list.append(["mushrooms", Color(0.85, 0.22, 0.15), 0.0, 0.1])
+				elif r2 < (0.3 if b == Biome.Kind.MEADOW else 0.1):
+					list.append(["flowers", grass, 0.6, 0.15])
 		Biome.Tile.DIRT:
 			if r1 < 0.3: list.append(["pebbles", Color(0.5, 0.42, 0.34), 0.0, 0.1])
 			if b == Biome.Kind.FOREST and r2 < 0.35: list.append(["fern", grass.darkened(0.1), 0.5, 0.2])
@@ -622,7 +666,9 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 				return m)
 		elif sway > 0.0:
 			mi.material_override = _live("decor_%.2f" % sway, func() -> ShaderMaterial:
-				return TerrainFx.foliage_material(Color.WHITE, sway, sway, true))
+				var m := TerrainFx.foliage_material(Color.WHITE, sway, sway, true)
+				m.set_shader_parameter("push", 1.0)
+				return m)
 			mi.set_instance_shader_parameter("base_y", y)
 			mi.set_instance_shader_parameter("height", d[3])
 		else:

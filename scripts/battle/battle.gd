@@ -297,6 +297,7 @@ func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> v
 		_log("¡%s se debilitó!" % x.display_name())
 		Audio.sfx("faint", -4.0)
 		Audio.cry(x.data, 0.7, -6.0))
+	u.add_to_group("units")  # la hierba se aparta a su alrededor (BoardView)
 	units.append(u)
 
 
