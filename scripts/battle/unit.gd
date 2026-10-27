@@ -50,6 +50,8 @@ var level := LEVEL
 ## Ataques de este Pokémon concreto (los elegidos en el editor de equipo).
 var moves: Array[MoveData] = []
 var team := 0
+## Aliado de tu bando que juega la IA (Gengar en la historia): no lo mueves tú ni cuenta para perder.
+var ally_ai := false
 ## Celda ancla; `footprint` son todas las celdas que ocupa (ver BoardGrid.footprint).
 var cell := Vector2i.ZERO
 var footprint: Array[Vector2i] = []
@@ -652,6 +654,15 @@ func _reset_procedural() -> void:
 
 ## Muestra u oculta las letras de encima (nombre, PS, estado), p. ej. mientras una Poké Ball pasa por ahí.
 ## Devuelve si se veían antes, para dejarlas como estaban.
+## Escenas de historia: sin anillo de equipo, cartel de PS ni flecha de orientación.
+func hide_battle_marks() -> void:
+	_ring.visible = false
+	_label.visible = false
+	_marker.visible = false
+	if _facing_arrow:
+		_facing_arrow.visible = false
+
+
 func show_label(on: bool) -> bool:
 	var was := _label.visible
 	_label.visible = on

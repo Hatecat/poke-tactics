@@ -34,8 +34,8 @@ func _ready() -> void:
 	Audio.ambience("")
 
 	var left := VBoxContainer.new()
-	left.position = Vector2(120, 110)
-	left.add_theme_constant_override("separation", 14)
+	left.position = Vector2(120, 60)
+	left.add_theme_constant_override("separation", 10)
 	add_child(left)
 	var title := UiKit.label("POKÉ TACTICS", 72, UiKit.ACCENT)
 	title.add_theme_constant_override("outline_size", 14)
@@ -45,6 +45,10 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 20
 	left.add_child(spacer)
+	if Game.story and not Game.story.finished():
+		_menu_button(left, "Historia  (continuar)", _story.bind(false))
+	else:
+		_menu_button(left, "Historia", _story.bind(true))
 	_play_button = _menu_button(left, "Partida rápida", _open_map_dialog)
 	var tower_text := "Torre de Batallas" + ("  (piso %d)" % Game.tower.floor_number if Game.tower and not Game.tower.finished and Game.tower.picks_left == 0 else "")
 	_menu_button(left, tower_text, _go.bind("tower"))
@@ -77,6 +81,14 @@ func _ready() -> void:
 	_build_map_dialog()
 	_build_options_dialog()
 	_build_about_dialog()
+
+
+## Historia: continuar donde se dejó o empezar desde el principio.
+func _story(new_game: bool) -> void:
+	if new_game:
+		Game.story = StoryRun.new_game()
+		Game.save()
+	Game.story.go(get_tree())
 
 
 func _go(scene: String) -> void:

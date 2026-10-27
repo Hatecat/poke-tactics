@@ -52,6 +52,13 @@ Ver README.md para las reglas y la estructura de carpetas.
   tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se
   acumulan. La fuerza del viento depende del clima (`WIND` en battle.gd).
 
+- **Modo historia** (scripts/story/, data/story/capitulo1.json): `StoryRun` (en `Game.story`, guardado en la
+  sección "story") recorre los pasos del capítulo: "titulo" y "escena" en scenes/story.tscn (`cutscene.gd`, guion
+  en JSON), "combate" en battle.tscn con `Game.mode = "story"`. `DialogueBox` es el cuadro estilo FFT (retratos en
+  assets/portraits/<id>.png), `StoryFigure` la persona provisional y `Unit.ally_ai` el aliado de la IA (Gengar).
+  Biblia narrativa: ~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx. Hecha la primera mitad del capítulo 1
+  (puntos 1-4 de la cronología); falta desde la revelación del padre (punto 5).
+
 ## Cómo trabajar
 
 - Godot: en el equipo original es el flatpak `org.godotengine.Godot` (4.7.2). En otro equipo puede ser el
@@ -65,7 +72,10 @@ Ver README.md para las reglas y la estructura de carpetas.
   `change_scene_to_file("res://scenes/battle.tscn")`, espera `while b.state != b.State.DEPLOY` y guarda las
   capturas con `root.get_texture().get_image().save_png(...)`.
 - **Video:** añade `--write-movie salida.avi --fixed-fps 30` y conviértelo a mp4 con ffmpeg.
-- **No crear ni tocar el guardado del usuario** (`user://save.cfg`) en las pruebas.
+- **No crear ni tocar el guardado del usuario** (`user://save.cfg`) en las pruebas: lanza Godot con la variable
+  de entorno `POKE_TACTICS_NO_SAVE=1` y `Game.save()` no escribe nada. En un script `--script`, no uses
+  `StoryRun` u otras clases que lean `Game` al compilar: cárgalas con `load()` y espera un frame (el roster aún no
+  está cargado en `_initialize`).
 - **Exportar:** `tools/export_demo.sh`, o
   `godot --headless --path . --export-release "Windows Desktop" <ruta>.exe` (y `"Linux"` para `.x86_64`).
   Hacen falta las plantillas de exportación de 4.7.2, que se descargan de las releases de Godot en GitHub.

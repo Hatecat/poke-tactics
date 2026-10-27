@@ -30,8 +30,10 @@ var roster: Array[PokemonData] = []
 var teams: Array[TeamSlot] = []
 var current_team := 0
 var difficulty := Difficulty.NORMAL
-## Modo de la batalla en curso: "quick" (Partida rápida) o "tower" (Torre de Batallas).
+## Modo de la batalla en curso: "quick" (Partida rápida), "tower" (Torre de Batallas) o "story" (Historia).
 var mode := "quick"
+## Partida del modo historia (null = no empezada).
+var story: StoryRun
 ## Partida de la Torre en curso (null = ninguna) y récord de pisos.
 var tower: TowerRun
 var tower_best := 0
@@ -216,6 +218,9 @@ func speed_slider(on_change := Callable()) -> HBoxContainer:
 
 
 func save() -> void:
+	# Las pruebas automáticas lo ponen para no tocar el guardado del jugador.
+	if OS.has_environment("POKE_TACTICS_NO_SAVE"):
+		return
 	var cfg := ConfigFile.new()
 	cfg.set_value("teams", "list", teams.map(func(t: TeamSlot) -> Dictionary:
 		return {"name": t.name, "members": t.members.map(func(m: TeamMember) -> Dictionary: return m.to_dict())}))
@@ -226,6 +231,7 @@ func save() -> void:
 	cfg.set_value("options", "graphics_quality", graphics_quality)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
+	cfg.set_value("story", "run", story.to_dict() if story else {})
 	cfg.set_value("options", "topology", topology)
 	cfg.set_value("options", "biome", biome)
 	cfg.set_value("options", "weather", weather)
@@ -267,6 +273,9 @@ func _load_save() -> void:
 		var run: Dictionary = cfg.get_value("tower", "run", {})
 		if not run.is_empty():
 			tower = TowerRun.from_dict(run)
+		var story_run: Dictionary = cfg.get_value("story", "run", {})
+		if not story_run.is_empty():
+			story = StoryRun.from_dict(story_run)
 	if teams.is_empty():
 		var slot := TeamSlot.new()
 		slot.name = "Equipo 1"

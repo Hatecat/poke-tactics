@@ -1,0 +1,239 @@
+{
+	"titulo": "Capítulo 1: Huellas en la niebla",
+	"personajes": {
+		"cristina": {"nombre": "Cristina", "color": "#c0392b",
+			"figura": {"ropa": "#c0392b", "pantalon": "#2c3e50", "pelo": "#5a3220", "melena": true, "alto": 0.9}},
+		"papa": {"nombre": "Papá", "color": "#3d5a80",
+			"figura": {"ropa": "#3d5a80", "pantalon": "#3a3a3a", "pelo": "#2b2b2b", "alto": 1.05}},
+		"mama": {"nombre": "Mamá", "color": "#9b7fb6",
+			"figura": {"ropa": "#9b7fb6", "pantalon": "#5d4a6e", "pelo": "#7a5a48", "melena": true, "alto": 0.98}},
+		"rufian": {"nombre": "Rufián", "color": "#4a4a4a",
+			"figura": {"ropa": "#2d2d2d", "pantalon": "#1c1c1c", "pelo": "#111111", "alto": 1.05}},
+		"rufiana": {"nombre": "Rufiana", "color": "#7a3030",
+			"figura": {"ropa": "#5c2a2a", "pantalon": "#1c1c1c", "pelo": "#c94f2b", "melena": true, "alto": 0.97}},
+		"eevee": {"nombre": "Eevee", "color": "#a57548"},
+		"pidgey": {"nombre": "Pidgey", "color": "#b08b5a"},
+		"gengar": {"nombre": "Gengar", "color": "#5b3f8c"}
+	},
+	"equipo": [
+		{"especie": "eevee", "nivel": 8},
+		{"especie": "pidgey", "nivel": 7}
+	],
+	"pasos": [
+		{
+			"tipo": "titulo",
+			"titulo": "Capítulo 1",
+			"subtitulo": "Huellas en la niebla · Primera parte"
+		},
+		{
+			"tipo": "escena",
+			"lugar": {"nombre": "Pueblo Lavanda", "bioma": "MEADOW", "semilla": 21, "ancho": 16, "alto": 12,
+				"obstaculos": {"BUILDING": [[6, 6], [11, 5], [2, 5]], "LAMP": [[9, 7], [4, 7]], "TREE": [[14, 9], [0, 7]]}},
+			"musica": "editor",
+			"actores": [
+				{"id": "mama", "en": [7, 9], "mira": [7, 3]},
+				{"id": "papa", "en": [11, 10], "mira": "mama"},
+				{"id": "cristina", "en": [2, 10], "mira": [7, 9]},
+				{"id": "eevee", "especie": "eevee", "nivel": 8, "en": [2, 11], "mira": [7, 9]},
+				{"id": "pidgey", "especie": "pidgey", "nivel": 7, "en": [9, 11], "oculto": true}
+			],
+			"guion": [
+				{"narrar": "Pueblo Lavanda. Han pasado muchos años desde que los grandes campeones recorrieron Kanto, pero la niebla sigue bajando cada mañana desde la Torre Pokémon."},
+				{"mover": "eevee", "a": [5, 10], "paralelo": true},
+				{"mover": "cristina", "a": [6, 9]},
+				{"decir": "cristina", "texto": "¡Mamá, mira! Eevee ya aprendió Ataque Rápido. Bueno... casi."},
+				{"anim": "eevee", "clip": "fight_b"},
+				{"esperar": 0.6},
+				{"mirar": "mama", "a": "eevee"},
+				{"decir": "mama", "texto": "Qué Eevee tan bonito. ¿Es tuyo, cielo?"},
+				{"emocion": "cristina", "simbolo": "..."},
+				{"decir": "cristina", "texto": "...Sí, mamá. Me lo regaló papá. Hace dos años."},
+				{"decir": "mama", "texto": "Ah... claro. Claro que sí."},
+				{"mirar": "mama", "a": [7, 3]},
+				{"esperar": 0.8},
+				{"mover": "papa", "a": [9, 10]},
+				{"decir": "papa", "texto": "Cristina, ¿me ayudas a preparar el té de tu madre? Le gusta mirar la niebla un rato antes."},
+				{"mover": "cristina", "a": [8, 10]},
+				{"mirar": "papa", "a": "cristina"},
+				{"decir": "cristina", "texto": "Papá... cada día se acuerda de menos cosas."},
+				{"decir": "papa", "texto": "Hay días buenos y días malos. Hoy es de los malos, nada más."},
+				{"decir": "papa", "texto": "Ayer se rió con tu Pidgey toda la tarde. ¿Te acuerdas? Eso también cuenta."},
+				{"aparecer": "pidgey"},
+				{"grito": "pidgey"},
+				{"anim": "pidgey", "clip": "salto"},
+				{"decir": "cristina", "texto": "¡Pidgey! Ya vuela casi sin cojear. Cuando lo encontré con el ala rota pensé que no lo lograría."},
+				{"decir": "papa", "texto": "Lo cuidaste todo el invierno. Tienes buena mano con los Pokémon."},
+				{"emocion": "cristina", "simbolo": "!"},
+				{"decir": "cristina", "texto": "Entonces déjame empezar mi viaje. Tengo quince años. ¡Mi hermano se fue a Johto con catorce!"},
+				{"decir": "papa", "texto": "Tu hermano se fue cuando tu madre estaba bien."},
+				{"esperar": 0.6},
+				{"decir": "papa", "texto": "No puedo cuidarla a ella y además pasarme las noches preguntándome dónde estás tú."},
+				{"decir": "cristina", "texto": "¡Pero yo no soy una niña! Puedo cuidarme sola."},
+				{"decir": "papa", "texto": "No es un no para siempre, Cristina. Es un no para ahora."},
+				{"emocion": "cristina", "simbolo": "!!"},
+				{"decir": "cristina", "texto": "Siempre es «ahora». Me voy a entrenar a la Ruta 8. ¡Ya verás que puedo!"},
+				{"mover": "cristina", "a": [2, 10], "paralelo": true},
+				{"mover": "eevee", "a": [2, 11], "paralelo": true},
+				{"irse": "pidgey", "a": [3, 11]},
+				{"esperar": 0.4},
+				{"irse": "cristina"},
+				{"irse": "eevee"},
+				{"mirar": "mama", "a": [2, 10]},
+				{"decir": "mama", "texto": "No te acerques a la niebla, cariño... Ahí es donde se pierden las cosas."},
+				{"decir": "papa", "texto": "...¿Qué has dicho, amor?"},
+				{"mirar": "mama", "a": [7, 3]},
+				{"narrar": "Pero ella ya había vuelto a mirar hacia la Torre, en silencio."},
+				{"fundido": "negro"}
+			]
+		},
+		{
+			"tipo": "escena",
+			"lugar": {"nombre": "Ruta 8", "bioma": "MEADOW", "semilla": 808},
+			"musica": "editor",
+			"camara": [10, 13],
+			"actores": [
+				{"id": "cristina", "en": [10, 16], "mira": [10, 10]},
+				{"id": "eevee", "especie": "eevee", "nivel": 8, "en": [9, 14], "mira": [10, 10]},
+				{"id": "pidgey", "especie": "pidgey", "nivel": 7, "en": [11, 14], "mira": [10, 10]},
+				{"id": "rufian", "en": [9, 2], "mira": [10, 16], "oculto": true},
+				{"id": "rufiana", "en": [11, 2], "mira": [10, 16], "oculto": true}
+			],
+			"guion": [
+				{"decir": "cristina", "texto": "Muy bien, equipo. ¡Otra vez! Eevee, Placaje contra ese tronco. Pidgey, desde arriba."},
+				{"anim": "eevee", "clip": "fight_b"},
+				{"anim": "pidgey", "clip": "fight_b"},
+				{"decir": "cristina", "texto": "Así... Así se hace. Si papá nos viera ahora..."},
+				{"aparecer": "rufian"},
+				{"aparecer": "rufiana"},
+				{"mover": "rufian", "a": [9, 10], "paralelo": true},
+				{"mover": "rufiana", "a": [11, 10]},
+				{"decir": "rufian", "texto": "Vaya, vaya. Una entrenadora novata, solita en la Ruta 8."},
+				{"decir": "rufiana", "texto": "Mira ese Eevee. En Ciudad Azulona pagan muy bien por uno así de sano."},
+				{"emocion": "cristina", "simbolo": "!"},
+				{"decir": "cristina", "texto": "¡No se acerquen!"},
+				{"decir": "rufian", "texto": "Tranquila, nadie tiene que salir herido. Danos al Eevee y la mochila, y te vas a casa."},
+				{"mirar": "eevee", "a": "cristina"},
+				{"decir": "cristina", "texto": "Ni lo sueñes. ¡Eevee, Pidgey, adelante!"},
+				{"decir": "rufiana", "texto": "Como quieras, niña. ¡A por ellos!"}
+			]
+		},
+		{
+			"tipo": "combate",
+			"lugar": {"nombre": "Ruta 8", "bioma": "MEADOW", "semilla": 808},
+			"rival": "¡Los rufianes de la Ruta 8 atacan!",
+			"rivales": [
+				{"especie": "rattata", "nivel": 7},
+				{"especie": "ekans", "nivel": 8},
+				{"especie": "zubat", "nivel": 6}
+			],
+			"eventos": [
+				{
+					"cuando": {"turno": 6, "ps_bajo": 0.45},
+					"antes": [
+						{"narrar": "De pronto, una sombra se alarga sobre la hierba, aunque no hay nada que pueda proyectarla..."}
+					],
+					"aliado": {"especie": "gengar", "nivel": 22},
+					"en": [10, 13],
+					"guion": [
+						{"decir": "rufian", "texto": "¿¡Un Gengar!? ¿De dónde ha salido eso?"},
+						{"siente": "gengar", "texto": "No son palabras. Es una sensación cálida y firme, como una mano en el hombro: «No tengas miedo. Estoy contigo»."},
+						{"decir": "cristina", "texto": "¿Tú... me estás ayudando?"}
+					]
+				}
+			]
+		},
+		{
+			"tipo": "escena",
+			"lugar": {"nombre": "Ruta 8", "bioma": "MEADOW", "semilla": 808},
+			"musica": "editor",
+			"camara": [10, 12],
+			"actores": [
+				{"id": "cristina", "en": [10, 15], "mira": [10, 10]},
+				{"id": "eevee", "especie": "eevee", "nivel": 8, "en": [9, 14], "mira": [10, 10]},
+				{"id": "pidgey", "especie": "pidgey", "nivel": 7, "en": [11, 14], "mira": [10, 10]},
+				{"id": "gengar", "especie": "gengar", "nivel": 22, "en": [10, 12], "mira": [10, 9]},
+				{"id": "rufian", "en": [9, 9], "mira": "gengar"},
+				{"id": "rufiana", "en": [11, 9], "mira": "gengar"}
+			],
+			"guion": [
+				{"decir": "rufiana", "texto": "¡Esto no se queda así, niña!"},
+				{"decir": "rufian", "texto": "¡Corre, corre! ¡Ese bicho no es normal!"},
+				{"irse": "rufian", "a": [9, 1]},
+				{"irse": "rufiana", "a": [11, 1]},
+				{"esperar": 0.5},
+				{"mirar": "gengar", "a": "cristina"},
+				{"decir": "cristina", "texto": "Se fueron... Gracias. De verdad."},
+				{"decir": "cristina", "texto": "Pero ¿por qué me ayudaste? Los Gengar no suelen acercarse a la gente."},
+				{"siente": "gengar", "texto": "Una nostalgia enorme, de esas que aprietan el pecho. Y debajo, algo parecido a un reconocimiento."},
+				{"emocion": "cristina", "simbolo": "?"},
+				{"decir": "cristina", "texto": "¿Me... conoces?"},
+				{"mirar": "gengar", "a": [10, 19]},
+				{"siente": "gengar", "texto": "Ganas de ir hacia allí. Hacia Lavanda."},
+				{"decir": "cristina", "texto": "Ese es el camino a mi casa."},
+				{"esperar": 0.6},
+				{"decir": "cristina", "texto": "¿Quieres venir conmigo? Supongo que papá va a gritar un poco..."},
+				{"emocion": "gengar", "simbolo": "!"},
+				{"anim": "gengar", "clip": "fight_d"},
+				{"decir": "cristina", "texto": "Lo tomaré como un sí."},
+				{"fundido": "negro"}
+			]
+		},
+		{
+			"tipo": "escena",
+			"lugar": {"nombre": "Pueblo Lavanda · Al atardecer", "hora": "atardecer", "bioma": "MEADOW", "semilla": 21, "ancho": 16, "alto": 12,
+				"obstaculos": {"BUILDING": [[6, 6], [11, 5], [2, 5]], "LAMP": [[9, 7], [4, 7]], "TREE": [[14, 9], [0, 7]]}},
+			"musica": "cave",
+			"actores": [
+				{"id": "papa", "en": [9, 9], "mira": [2, 10]},
+				{"id": "mama", "en": [7, 8], "mira": [7, 3], "oculto": true},
+				{"id": "cristina", "en": [1, 10], "mira": [9, 9]},
+				{"id": "eevee", "especie": "eevee", "nivel": 8, "en": [1, 11], "mira": [9, 9]},
+				{"id": "gengar", "especie": "gengar", "nivel": 22, "en": [0, 9], "mira": [9, 9]}
+			],
+			"guion": [
+				{"fundido": "abrir"},
+				{"mover": "eevee", "a": [4, 11], "paralelo": true},
+				{"mover": "gengar", "a": [3, 9], "paralelo": true},
+				{"mover": "cristina", "a": [4, 10]},
+				{"emocion": "papa", "simbolo": "!!"},
+				{"decir": "papa", "texto": "¡Cristina! ¿Dónde estabas? ...¿Qué es eso? ¡Apártate de ese Gengar!"},
+				{"decir": "cristina", "texto": "¡Espera, papá! Me salvó. Unos rufianes intentaron robarme a Eevee en la Ruta 8 y él apareció de la nada."},
+				{"decir": "papa", "texto": "¿Rufianes? ¿Estás bien? ¿Te hicieron algo?"},
+				{"decir": "cristina", "texto": "Estoy bien. Gracias a él."},
+				{"aparecer": "mama"},
+				{"mover": "mama", "a": [7, 9]},
+				{"mirar": "mama", "a": "gengar"},
+				{"mirar": "gengar", "a": "mama"},
+				{"temblor": "gengar"},
+				{"emocion": "gengar", "simbolo": "!"},
+				{"siente": "gengar", "texto": "Todo se detiene. Una alegría tan grande que duele... y miedo. Miedo de que ella no lo recuerde."},
+				{"mover": "mama", "a": [5, 9]},
+				{"esperar": 0.8},
+				{"decir": "mama", "texto": "...¿Eres tú?"},
+				{"decir": "papa", "texto": "¿Amor?"},
+				{"decir": "mama", "texto": "Esos ojos... Yo conozco esos ojos. Tú estabas... estabas en la Torre, con ella..."},
+				{"emocion": "cristina", "simbolo": "?"},
+				{"decir": "cristina", "texto": "¿Con quién, mamá? ¿De qué estás hablando?"},
+				{"esperar": 1.0},
+				{"mirar": "mama", "a": "cristina"},
+				{"decir": "mama", "texto": "¿Cristina? ¿Qué hace este Pokémon en el jardín? Vamos a asustar a los vecinos..."},
+				{"emocion": "gengar", "simbolo": "..."},
+				{"siente": "gengar", "texto": "Tristeza. Una tristeza vieja y cansada, como la de quien lleva mucho tiempo esperando."},
+				{"mover": "mama", "a": [7, 8]},
+				{"irse": "mama"},
+				{"esperar": 0.6},
+				{"mover": "papa", "a": [6, 10]},
+				{"mirar": "papa", "a": "cristina"},
+				{"decir": "papa", "texto": "Cristina... entra. Y trae a tu amigo."},
+				{"decir": "papa", "texto": "Hay cosas de tu madre que nunca te conté. Creo que ya es hora."},
+				{"fundido": "negro"},
+				{"narrar": "Fin de la primera parte del Capítulo 1."}
+			]
+		},
+		{
+			"tipo": "titulo",
+			"titulo": "Continuará...",
+			"subtitulo": "Capítulo 1 · Segunda parte: El pasado silenciado"
+		}
+	]
+}

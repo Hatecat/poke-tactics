@@ -11,9 +11,13 @@ Los 151 Pokémon de Kanto, con sus ataques aprendibles traducidos a reglas táct
 tools/export_demo.sh                                                          # builds Windows + Linux
 ```
 
+**Historia:** *Kanto: Huellas en la niebla*. Cristina, de Pueblo Lavanda, sale de viaje con Eevee y Pidgey
+y un Gengar misterioso que reconoce a su madre. Escenas 3D con diálogos al estilo de *FF Tactics* entre
+combates; ver [Modo historia](#modo-historia).
+
 **Flujo:** Menú principal → *Editor de equipo* (hasta 6 Pokémon con 4 ataques cada uno, se guarda solo) →
 *Partida rápida* (escenario guardado, o tablero + campo + clima, cada uno elegible o al azar) → despliegue en tu zona azul → combate contra un rival
-aleatorio (Pokémon y ataques) del mismo tamaño. *Editor de escenarios* crea mapas para el futuro modo historia.
+aleatorio (Pokémon y ataques) del mismo tamaño. *Editor de escenarios* crea escenarios fijos.
 *Tabla de tipos* muestra las 18×18 efectividades.
 
 **Controles:** clic para seleccionar · clic derecho/Esc para cancelar · Q/E rotar · rueda zoom ·
@@ -30,6 +34,9 @@ WASD/flechas o botón central para mover la cámara · **R** revancha al termina
 | `scripts/battle/` | Batalla: turnos CT, combate, unidades, tablero 3D, cámara |
 | `scripts/data/` | Recursos de datos y `TeamMember` (especie + ataques elegidos) |
 | `scripts/game.gd` | Autoload `Game`: roster, equipo guardado (`user://save.cfg`), rival, escenarios |
+| `data/story/*.json` | Capítulos del modo historia: personajes, equipo inicial y pasos (escenas y combates) |
+| `scripts/story/` | Modo historia: partida (`StoryRun`), escenas (`cutscene.gd`), cuadro de diálogo y figuras |
+| `assets/portraits/` | Retratos de los personajes para los diálogos (`<id>.png`) |
 | `scripts/ui/` | Menú, editor de equipo, editor de escenarios, tabla de tipos, vista 3D, kit de UI |
 | `tools/` | Generación de datos, importación de modelos, Blender y exportación |
 | `art/` | Fuentes de arte (`.blend`); Godot las ignora (`.gdignore`) |
@@ -186,6 +193,25 @@ jugar al empezar una partida rápida. Constantes en `game.gd` y al principio de 
 
 ♂/♀/sin género según la proporción real de cada especie (se elige en el editor; los rivales al azar).
 Atracción (50 % de no poder atacar cada turno, 5 turnos), Seducción, Gran Encanto y Rivalidad.
+
+## Modo historia
+
+*Historia* en el menú empieza (o continúa) el capítulo. Está hecha la **primera mitad del Capítulo 1**:
+la mañana en Pueblo Lavanda, la discusión con su padre, el ataque de los rufianes en la Ruta 8 (combate en el
+que Gengar llega como aliado) y la reacción de Gengar ante la madre. El progreso se guarda en cada paso.
+
+- **Escenas:** el lugar en 3D con sus participantes (los Pokémon con su modelo; las personas, con una figura
+  provisional de colores). Abajo, el cuadro de diálogo con el retrato de quien habla; clic, Enter o Espacio
+  pasan la línea, y *Saltar escena* (o Esc) la salta entera. Lo que Cristina percibe de Gengar sale en cursiva
+  morada: Gengar no habla, transmite sentimientos.
+- **Combates:** el equipo de Cristina sube de nivel con la experiencia (como en la Torre) y aprende ataques.
+  Un combate puede tener eventos a mitad (diálogos y aliados que juega la IA). Si pierdes, se reintenta.
+- **Retratos:** `assets/portraits/<id>.png` (cristina, papa, mama, rufian, rufiana, eevee, pidgey, gengar). Si
+  no hay, se dibuja uno provisional con la inicial y el color del personaje.
+- **Escribir capítulos:** cada capítulo es un JSON en `data/story/` (`capitulo1.json`). La lista de órdenes del
+  guion (decir, siente, narrar, mover, mirar, emocion, anim, aparecer, irse, camara, esperar, fundido, musica...)
+  está al principio de `scripts/story/cutscene.gd`; los eventos de combate, en `_story_events` de `battle.gd`.
+  Un lugar con la misma `semilla` genera el mismo tablero en la escena y en el combate.
 
 ## Torre de Batallas
 

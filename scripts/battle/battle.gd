@@ -94,6 +94,11 @@ var _ball_kind := "poke"
 var _caught: Array[TeamMember] = []
 var _throwing := false
 var _ball_reach: Array[Vector2i] = []
+## Historia: paso del guion (combate) y eventos que ya ocurrieron; turnos jugados en este combate.
+var _story_step := {}
+var _story_fired := {}
+var _turn_count := 0
+var _dialogue: DialogueBox
 
 
 func _ready() -> void:
@@ -104,6 +109,15 @@ func _ready() -> void:
 		topology = Game.tower.topology
 		player_team = Game.tower.party.duplicate()
 		enemy_team = Game.tower.enemies.duplicate()
+	elif _story():
+		# Historia: el equipo de Cristina contra los rivales que diga el guion.
+		_story_step = Game.story.current()
+		topology = BoardGrid.Topology.SQUARE
+		player_team = Game.story.party.duplicate()
+		for d: Dictionary in _story_step.get("rivales", []):
+			var m := StoryRun.member(d, rng)
+			if m:
+				enemy_team.append(m)
 	else:
 		topology = Game.topology
 		player_team = Game.player_team.duplicate()
@@ -140,7 +154,13 @@ func _start_battle() -> void:
 	effects = Effects.new(self)
 	var map := Game.map
 	var zones: Array = []
-	if map:
+	_story_fired.clear()
+	_turn_count = 0
+	if _story():
+		var built := StoryRun.build_grid(_story_step.get("lugar", {}))
+		grid = built.grid
+		zones = built.zones
+	elif map:
 		grid = map.to_grid()
 		zones = [map.player_zone, map.enemy_zone]
 	else:
@@ -161,7 +181,9 @@ func _start_battle() -> void:
 			_zones[team][c] = true
 	_reset_environment()
 	_board.build(grid)
-	if map:
+	if _story():
+		base_weather = StoryRun.weather_kind(_story_step.get("lugar", {}))
+	elif map:
 		base_weather = map.weather
 	elif _tower():
 		base_weather = Game.tower.weather
@@ -188,6 +210,8 @@ func _start_battle() -> void:
 	_banner_box.visible = false
 	_log_label.clear()
 	var where: String = map.map_name if map else Biome.NAMES[grid.biome]
+	if _story():
+		where = _story_step.get("lugar", {}).get("nombre", where)
 	_log("%s · tablero %s · %s %s. Coloca a tu equipo en la zona azul." % [where,
 		"cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal",
 		Weather.ICONS[weather], Weather.NAMES[weather]])
@@ -195,6 +219,9 @@ func _start_battle() -> void:
 		var t: Dictionary = Game.tower.trainer
 		_log("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar." % [Trainers.full_name(t), Trainers.types_text(t.types)])
 		_flash_turn("¡%s quiere luchar!" % Trainers.full_name(t), Color(1.0, 0.8, 0.3) if t.leader else Color(1.0, 0.6, 0.5))
+	elif _story() and _story_step.has("rival"):
+		_log("[b]%s[/b]" % _story_step.rival)
+		_flash_turn(_story_step.rival, Color(1.0, 0.6, 0.5))
 	await _send_out_intro()
 	_begin_deploy()
 
@@ -291,7 +318,7 @@ func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> v
 	var u := Unit.new()
 	_units_root.add_child(u)
 	u.set_meta("member", member)
-	var level: int = member.level if _tower() else (Unit.LEVEL if team == 0 else Game.DIFFICULTY_LEVELS[Game.difficulty])
+	var level: int = member.level if _tower() or _story() else (Unit.LEVEL if team == 0 else Game.DIFFICULTY_LEVELS[Game.difficulty])
 	u.setup(member, team, level)
 	var allowed := _in_zone.bind(team) if in_zone else func(c: Vector2i) -> bool: return true
 	_place(u, _find_free_anchor(u, near, allowed))
@@ -359,7 +386,7 @@ func _can_deploy(u: Unit, anchor: Vector2i) -> bool:
 
 func _deploy_click(c: Vector2i) -> void:
 	var clicked := _unit_at(c)
-	if clicked and clicked.team == 0:
+	if clicked and clicked.team == 0 and not clicked.ally_ai:
 		_deploy_selected = clicked if clicked != _deploy_selected else null
 		if _deploy_selected:
 			Audio.cry(clicked.data, 1.0, -8.0)
@@ -431,6 +458,10 @@ func _next_turn() -> void:
 	_board.clear_highlights()
 	if _check_game_over():
 		return
+	if _story() and await _story_events():
+		if _check_game_over():
+			return
+	_turn_count += 1
 	var previous := active
 	if previous:
 		previous.set_active(false)
@@ -467,7 +498,7 @@ func _next_turn() -> void:
 		await _wait(0.6)
 		_next_turn.call_deferred()
 		return
-	if active.team == 0:
+	if active.team == 0 and not active.ally_ai:
 		_show_menu()
 	else:
 		_set_actions_enabled(false)
@@ -599,7 +630,8 @@ func _ai_face(u: Unit) -> void:
 
 func _check_game_over() -> bool:
 	for team in 2:
-		if not units.any(func(u: Unit) -> bool: return u.team == team and u.is_alive()):
+		# Los aliados de la IA no cuentan: si caen todos los tuyos, pierdes.
+		if not units.any(func(u: Unit) -> bool: return u.team == team and u.is_alive() and not u.ally_ai):
 			state = State.GAME_OVER
 			_set_actions_enabled(false)
 			_banner.text = "¡Victoria!" if team == 1 else "Derrota..."
@@ -1820,6 +1852,13 @@ func _build_ui() -> void:
 	var go := UiKit.button("¡Comenzar combate!", _finish_deploy, 20)
 	go.custom_minimum_size.y = 48
 	_deploy_box.add_child(go)
+	# Diálogos de la historia: en su propia capa, por encima de los paneles del combate.
+	var talk := CanvasLayer.new()
+	talk.layer = 5
+	add_child(talk)
+	_dialogue = DialogueBox.new()
+	_dialogue.theme = UiKit.theme()
+	talk.add_child(_dialogue)
 	_pause = PauseMenu.new()
 	_pause.quit_text = "Volver al editor" if Game.testing_map else \
 		("Salir (el piso se reintenta después)" if _tower() else "Abandonar (volver al menú)")
@@ -1952,6 +1991,13 @@ func _fill_banner_buttons(victory: bool) -> void:
 	if _tower():
 		_banner_buttons.add_child(UiKit.button("Continuar", _finish_tower.bind(victory), 22))
 		return
+	if _story():
+		if victory:
+			_banner_buttons.add_child(UiKit.button("Continuar", _finish_story, 22))
+		else:
+			_banner_buttons.add_child(UiKit.button("Reintentar", _start_battle, 22))
+			_banner_buttons.add_child(UiKit.button("Menú principal", _go_to_menu, 22))
+		return
 	_banner_buttons.add_child(UiKit.button("Revancha", _start_battle, 22))
 	_banner_buttons.add_child(UiKit.button("Nuevo rival", func() -> void:
 		Game.roll_enemy_team()
@@ -1976,6 +2022,87 @@ func _finish_tower(victory: bool) -> void:
 	Game.tower.finish_floor(victory, beaten, _caught)
 	Game.save()
 	get_tree().change_scene_to_file("res://scenes/tower.tscn")
+
+
+# --- Historia ----------------------------------------------------------------------
+
+func _story() -> bool:
+	return Game.mode == "story" and Game.story != null
+
+
+## Eventos del guion del combate: {"cuando": {"turno": N, "ps_bajo": 0.5}, "guion": [...], "aliado": {...},
+## "en": [x, y]}. Ocurre una vez, al cumplirse cualquiera de las condiciones (turno N de este combate,
+## o uno de tus Pokémon por debajo de esa fracción de PS). El guion son líneas de diálogo ("decir",
+## "siente", "narrar"); el aliado llega después y lo juega la IA. Devuelve si ocurrió alguno.
+func _story_events() -> bool:
+	var fired := false
+	var events: Array = _story_step.get("eventos", [])
+	for i in events.size():
+		var ev: Dictionary = events[i]
+		if _story_fired.has(i) or not _event_due(ev.get("cuando", {})):
+			continue
+		_story_fired[i] = true
+		fired = true
+		state = State.BUSY
+		_set_actions_enabled(false)
+		if ev.has("aliado"):
+			var m := StoryRun.member(ev.aliado, rng)
+			if m:
+				var near: Variant = ev.get("en", null)
+				var cell := Vector2i(near[0], near[1]) if near is Array else _zone_center(0) + Vector2i(0, -2)
+				_spawn(m, 0, cell, false)
+				var u: Unit = units[-1]
+				u.ally_ai = true
+				u.visible = false
+				u.ct = 0.0
+				await _story_dialogue(ev.get("antes", []))
+				_focus_camera(u.position)
+				await _wait(0.4)
+				await u.materialize(u.global_position + Vector3.DOWN * 0.6, 0.9, Color(0.45, 0.2, 0.7))
+				Audio.cry(u.data)
+				_log("¡%s se une al combate de tu lado!" % u.display_name())
+				_refresh_turn_order()
+		await _story_dialogue(ev.get("guion", []))
+	return fired
+
+
+func _event_due(when: Dictionary) -> bool:
+	if when.has("turno") and _turn_count >= int(when.turno):
+		return true
+	if when.has("ps_bajo"):
+		for u in units:
+			if u.team == 0 and not u.ally_ai and float(u.hp) / u.max_hp <= float(when.ps_bajo):
+				return true
+	return false
+
+
+func _story_dialogue(lines: Array) -> void:
+	if lines.is_empty():
+		return
+	for line: Dictionary in lines:
+		var id: String = line.get("decir", line.get("siente", ""))
+		var who := {}
+		if id:
+			who = Game.story.character(id).duplicate()
+			who["id"] = id
+		await _dialogue.say(who, line.get("texto", line.get("narrar", "")), line.has("siente"))
+	_dialogue.close()
+
+
+## Historia: experiencia para el equipo de Cristina y siguiente paso del guion.
+func _finish_story() -> void:
+	var total := 0
+	for u in units:
+		if u.team == 1 and not u.is_alive():
+			total += u.level * TowerRun.EXP_PER_ENEMY_LEVEL
+	var report := PackedStringArray()
+	report.append("¡Victoria! Cada Pokémon de Cristina gana %d de experiencia." % total)
+	for m in Game.story.party:
+		report.append_array(m.gain_exp(total))
+	Game.story.report = report
+	Game.story.advance()
+	Game.save()
+	Game.story.go(get_tree())
 
 
 # --- Poké Balls (Torre) -----------------------------------------------------------
