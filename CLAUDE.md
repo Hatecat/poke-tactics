@@ -94,4 +94,6 @@ Ver README.md para las reglas y la estructura de carpetas.
   (`mv.display_name`, `Combat.TYPE_NAMES[t]`, `Biome.NAMES[k]`...) se traducen al mostrarlos: `tr(mv.display_name)`.
   No compares textos mostrados para decidir lógica (usa ids o listas). Las frases montadas necesitan `tr()` antes de rellenar: `tr("¡{a} usó {b}!").format({"a": ..., "b": tr(mv.display_name)})`
   (huecos con nombre, para que cada idioma ordene la frase; `tr_n()` para plurales). Nada de pegar trozos con
-  género o artículos.
+  género o artículos. Los textos que se guardan para mostrarlos después (informes de la Torre y de la historia)
+  van como mensajes `Msg.make("frase en español", [datos])` y se muestran con `Msg.text` / `Msg.lines`, así salen
+  en el idioma del momento.

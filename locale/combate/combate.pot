@@ -549,7 +549,7 @@ msgid "¡%s está arraigado y no se mueve!"
 msgstr ""
 
 #: scripts/battle/battle.gd:1850
-#: scripts/battle/battle.gd:2319
+#: scripts/battle/battle.gd:2318
 msgid "Mover"
 msgstr ""
 
@@ -607,68 +607,68 @@ msgid "¡%s se une al combate de tu lado!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2110
+#: scripts/battle/battle.gd:2109
 msgid "¡Victoria! Cada Pokémon de Cristina gana %d de experiencia."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2156
+#: scripts/battle/battle.gd:2155
 msgid "%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2163
+#: scripts/battle/battle.gd:2162
 msgid "¡%s lanza una %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2188
+#: scripts/battle/battle.gd:2187
 msgid "La %s no llegó a ningún Pokémon salvaje..."
 msgstr ""
 
-#: scripts/battle/battle.gd:2207
+#: scripts/battle/battle.gd:2206
 msgid "¡Se escapó!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2208
+#: scripts/battle/battle.gd:2207
 msgid "¡%s se escapó de la %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2213
+#: scripts/battle/battle.gd:2212
 msgid "¡%s ha sido capturado!"
 msgstr ""
 
-#: scripts/battle/battle.gd:2214
+#: scripts/battle/battle.gd:2213
 msgid "¡Capturado!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2274
+#: scripts/battle/battle.gd:2273
 msgid "   PP %d/%d"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2300
+#: scripts/battle/battle.gd:2299
 msgid "Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s"
 msgstr ""
 
-#: scripts/battle/battle.gd:2319
+#: scripts/battle/battle.gd:2318
 msgid "Mover  (inmovilizado)"
 msgstr ""
 
-#: scripts/battle/battle.gd:2324
+#: scripts/battle/battle.gd:2323
 msgid "Turno rival..."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2342
+#: scripts/battle/battle.gd:2341
 msgid "[color=#%s]%s %+d[/color] (%d t.)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2345
+#: scripts/battle/battle.gd:2344
 msgid ""
 "[b]%s[/b]  Nv.%d\n"
 "%s\n"
@@ -681,7 +681,7 @@ msgid ""
 "%s[font_size=14]Débil a: %s[/font_size]"
 msgstr ""
 
-#: scripts/battle/battle.gd:2350
+#: scripts/battle/battle.gd:2349
 msgid "Mejoras: "
 msgstr ""
 

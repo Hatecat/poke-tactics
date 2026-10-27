@@ -127,18 +127,18 @@ func exp_to_next() -> int:
 	return level * EXP_PER_LEVEL
 
 
-## Suma experiencia. Devuelve lo ocurrido (subidas de nivel, ataques nuevos). Al subir de nivel con el
+## Suma experiencia. Devuelve lo ocurrido como mensajes (ver Msg): subidas de nivel, ataques nuevos. Al subir de nivel con el
 ## nivel de evolución alcanzado no evoluciona aún: queda `wants_to_evolve` (ver evolve_into).
 ## `pending_hint`: añade "cámbialo en su ficha" a los ataques que no caben (la historia los pregunta aparte).
-func gain_exp(amount: int, pending_hint := true) -> PackedStringArray:
-	var events := PackedStringArray()
+func gain_exp(amount: int, pending_hint := true) -> Array:
+	var events := []
 	learned.clear()
 	pending.clear()
 	exp += amount
 	while level < MAX_LEVEL and exp >= exp_to_next():
 		exp -= exp_to_next()
 		level += 1
-		events.append(TranslationServer.translate("%s subió a nivel %d.") % [TeamMember.display(data, gender), level])
+		events.append(Msg.make("%s subió a nivel %d.", [TeamMember.display(data, gender), level]))
 		for id: String in data.level_moves:
 			if data.level_moves[id] == level:
 				_learn(id, events, pending_hint)
@@ -154,9 +154,9 @@ func can_evolve_by_level() -> bool:
 	return not data.evolves_to.is_empty() and level >= data.evolve_level and not (item and item.effect == "everstone")
 
 
-## Evoluciona a `target`. Devuelve lo ocurrido (la evolución y los ataques nuevos).
-func evolve_into(target: PokemonData) -> PackedStringArray:
-	var events := PackedStringArray([TranslationServer.translate("¡%s evolucionó a %s!") % [TeamMember.display(data, gender), target.species_name]])
+## Evoluciona a `target`. Devuelve lo ocurrido como mensajes (la evolución y los ataques nuevos).
+func evolve_into(target: PokemonData) -> Array:
+	var events := [Msg.make("¡%s evolucionó a %s!", [TeamMember.display(data, gender), target.species_name])]
 	learned.clear()
 	pending.clear()
 	var slot := data.abilities.find(ability)
@@ -176,7 +176,7 @@ func evolve_into(target: PokemonData) -> PackedStringArray:
 	return events
 
 
-func _learn(id: String, events: PackedStringArray, pending_hint := true) -> void:
+func _learn(id: String, events: Array, pending_hint := true) -> void:
 	if not ResourceLoader.exists(MOVES_DIR + id + ".tres"):
 		return
 	var mv: MoveData = load(MOVES_DIR + id + ".tres")
@@ -184,15 +184,14 @@ func _learn(id: String, events: PackedStringArray, pending_hint := true) -> void
 		return
 	known.append(mv)
 	var who := TeamMember.display(data, gender)
-	var move_name: String = TranslationServer.translate(mv.display_name)
 	if moves.size() < MAX_MOVES:
 		moves.append(mv)
 		learned.append(mv)
-		events.append(TranslationServer.translate("%s aprendió %s.") % [who, move_name])
+		events.append(Msg.make("%s aprendió %s.", [who, mv.display_name]))
 	else:
 		pending.append(mv)
 		if pending_hint:
-			events.append(TranslationServer.translate("%s puede aprender %s (cámbialo en su ficha).") % [who, move_name])
+			events.append(Msg.make("%s puede aprender %s (cámbialo en su ficha).", [who, mv.display_name]))
 
 
 func to_dict() -> Dictionary:

@@ -237,7 +237,7 @@ func _show_hub() -> void:
 	text.bbcode_enabled = true
 	text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text.add_theme_font_size_override("normal_font_size", 15)
-	text.text = "\n".join(_run.last_report) if not _run.last_report.is_empty() else \
+	text.text = Msg.lines(_run.last_report) if not _run.last_report.is_empty() else \
 		tr("Tu equipo se cura por completo antes de cada piso.\n\nElige los 4 ataques de cada Pokémon entre los que ha aprendido, y cambia miembros del equipo por los capturados.")
 	report_col.add_child(text)
 	report_col.add_child(HSeparator.new())
@@ -425,7 +425,7 @@ func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null
 		preview.show_pokemon(target)
 		var events := _run.evolve(m, target, stone)
 		title.text = tr("¡Enhorabuena! ¡%s evolucionó a %s!") % [who, target.species_name]
-		details.text = "\n".join(events.slice(1))
+		details.text = Msg.lines(events.slice(1))
 		button.text = tr("¡Genial!")
 		Audio.sfx("buff")
 		Audio.cry(target))
@@ -773,8 +773,8 @@ func _show_game_over() -> void:
 	panel.add_child(box)
 	box.add_child(UiKit.label(tr("Fin de la subida"), 32, UiKit.ACCENT))
 	box.add_child(UiKit.label(tr("Llegaste al piso %d. Récord: piso %d.") % [_run.floor_number, Game.tower_best], 20))
-	for line in _run.last_report:
-		box.add_child(UiKit.label(line, 15, Color(1, 1, 1, 0.75)))
+	for line: Variant in _run.last_report:
+		box.add_child(UiKit.label(Msg.text(line), 15, Color(1, 1, 1, 0.75)))
 	box.add_child(UiKit.label(tr("Tu equipo final:") + " " + ", ".join(_run.party.map(func(m: TeamMember) -> String: return tr("%s Nv.%d") % [TeamMember.display(m.data, m.gender), m.level])), 15))
 	var again := UiKit.button(tr("Nueva subida"), func() -> void:
 		Game.tower = null

@@ -1293,13 +1293,13 @@ msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
 #: scripts/tower_run.gd:336
-#: scripts/data/team_member.gd:191
+#: scripts/data/team_member.gd:190
 msgid "%s aprendió %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
 #: scripts/tower_run.gd:338
-#: scripts/data/team_member.gd:195
+#: scripts/data/team_member.gd:194
 msgid "%s puede aprender %s (cámbialo en su ficha)."
 msgstr ""
 

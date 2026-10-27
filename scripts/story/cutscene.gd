@@ -460,9 +460,9 @@ func _fade_to(alpha: float) -> void:
 func _show_report() -> void:
 	if _story.report.is_empty():
 		return
-	for line in _story.report:
-		await _dialogue.say({}, line)
-	_story.report = PackedStringArray()
+	for line: Variant in _story.report:
+		await _dialogue.say({}, Msg.text(line))
+	_story.report = []
 	_dialogue.close()
 
 

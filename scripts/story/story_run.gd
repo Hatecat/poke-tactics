@@ -12,7 +12,7 @@ const DEPLOY_ROWS := 4
 var chapter := 0
 var step := 0
 var party: Array[TeamMember] = []
-var report := PackedStringArray()
+var report := []
 ## Ataques nuevos que no caben (ya conoce 4): [{"member": índice en party, "move": id}]. La próxima escena
 ## pregunta cuál olvidar.
 var pending_moves: Array = []
@@ -135,7 +135,7 @@ static func weather_kind(place: Dictionary) -> Weather.Kind:
 
 func to_dict() -> Dictionary:
 	return {"chapter": chapter, "step": step, "party": party.map(func(m: TeamMember) -> Dictionary: return m.to_dict()),
-		"report": Array(report), "pending_moves": pending_moves}
+		"report": report, "pending_moves": pending_moves}
 
 
 static func from_dict(d: Dictionary) -> StoryRun:
@@ -146,6 +146,6 @@ static func from_dict(d: Dictionary) -> StoryRun:
 		var m := TeamMember.from_dict(md, Game.find_species)
 		if m:
 			run.party.append(m)
-	run.report = PackedStringArray(d.get("report", []))
+	run.report = d.get("report", [])
 	run.pending_moves = d.get("pending_moves", [])
 	return run

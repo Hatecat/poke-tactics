@@ -100,7 +100,7 @@ var shop_locked := false
 var biome := Biome.Kind.MEADOW
 var weather := Weather.Kind.CLEAR
 ## Resumen del último combate (para la pantalla entre pisos).
-var last_report := PackedStringArray()
+var last_report := []
 ## Lo destacado del último piso para el anuncio: [{"kind": level/move/evolve/item/badge/catch/money,
 ## "text", "item" (id, opcional)}]. No se guarda: se muestra una vez al volver del combate.
 var news: Array[Dictionary] = []
@@ -307,24 +307,24 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	news.clear()
 	for m in caught:
 		box.append(m)
-		last_report.append(tr("¡%s (Nv. %d) capturado! Está en la caja.") % [TeamMember.display(m.data, m.gender), m.level])
+		last_report.append(Msg.make("¡%s (Nv. %d) capturado! Está en la caja.", [TeamMember.display(m.data, m.gender), m.level]))
 		news.append({"kind": "catch", "text": tr("¡%s capturado! (Nv. %d)") % [TeamMember.display(m.data, m.gender), m.level]})
 	if not victory:
 		finished = true
 		Game.tower_best = maxi(Game.tower_best, floor_number)
-		last_report.append(tr("Tu equipo fue derrotado en el piso %d.") % floor_number)
+		last_report.append(Msg.make("Tu equipo fue derrotado en el piso %d.", [floor_number]))
 		return
 	var total := 0
 	for lv in beaten:
 		total += lv * EXP_PER_ENEMY_LEVEL
 	if not trainer.is_empty():
 		total = int(total * TRAINER_EXP_MULT)
-		last_report.append(tr("¡Has vencido a %s!") % Trainers.full_name(trainer))
+		last_report.append(Msg.make("¡Has vencido a %s!", [["%s %s", trainer.title, trainer.name]]))
 		if trainer.leader and trainer.badge and trainer.badge not in badges:
 			badges.append(trainer.badge)
-			last_report.append(tr_n("¡Consigues la %s! (%d medalla)", "¡Consigues la %s! (%d medallas)", badges.size()) % [tr(trainer.badge), badges.size()])
+			last_report.append(Msg.plural("¡Consigues la %s! (%d medalla)", "¡Consigues la %s! (%d medallas)", badges.size(), [trainer.badge, badges.size()]))
 			news.append({"kind": "badge", "text": tr("¡%s! Ya tienes %d.") % [tr(trainer.badge), badges.size()]})
-	last_report.append(tr("¡Piso %d superado! Cada Pokémon gana %d de experiencia.") % [floor_number, total])
+	last_report.append(Msg.make("¡Piso %d superado! Cada Pokémon gana %d de experiencia.", [floor_number, total]))
 	for m in party:
 		var before := m.level
 		var who := TeamMember.display(m.data, m.gender)
@@ -339,14 +339,14 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 		if m.wants_to_evolve and m.level > before:
 			news.append({"kind": "evolve", "text": tr("¡%s está a punto de evolucionar!") % who})
 	balls.poke = balls.get("poke", 0) + BALLS_PER_WIN
-	last_report.append(tr("Recibes %d Poké Ball. Tienes %d.") % [BALLS_PER_WIN, balls.poke])
+	last_report.append(Msg.make("Recibes %d Poké Ball. Tienes %d.", [BALLS_PER_WIN, balls.poke]))
 	var earned := MONEY_BASE + MONEY_PER_FLOOR * floor_number
 	for lv in beaten:
 		earned += lv * MONEY_PER_ENEMY_LEVEL
 	if not trainer.is_empty():
 		earned = int(earned * (LEADER_MONEY_MULT if trainer.leader else TRAINER_MONEY_MULT))
 	money += earned
-	last_report.append(tr("Ganas %d ₽ (tienes %d ₽).") % [earned, money])
+	last_report.append(Msg.make("Ganas %d ₽ (tienes %d ₽).", [earned, money]))
 	news.push_front({"kind": "money", "text": "+%d ₽  ·  +%d Poké Ball" % [earned, BALLS_PER_WIN]})
 	# Recompensas: a veces un objeto, y cada 5 pisos uno seguro (poco común o raro).
 	var rewards: Array[ItemData] = []
@@ -359,11 +359,11 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	for m in party:
 		if m.ability == "pickup" and rng.randf() < PICKUP_CHANCE:
 			rewards.append(_random_item(0))
-			last_report.append(tr("¡%s encontró algo con Recogida!") % TeamMember.display(m.data, m.gender))
+			last_report.append(Msg.make("¡%s encontró algo con Recogida!", [TeamMember.display(m.data, m.gender)]))
 	for it in rewards:
 		if it:
 			add_item(it)
-			last_report.append(tr("Obtienes: %s.") % tr(it.display_name))
+			last_report.append(Msg.make("Obtienes: %s.", [it.display_name]))
 			news.append({"kind": "item", "text": tr("Obtienes: %s") % tr(it.display_name), "item": it.id})
 	floor_number += 1
 	Game.tower_best = maxi(Game.tower_best, floor_number - 1)
@@ -472,10 +472,10 @@ static func stone_evolution(m: TeamMember, stone: ItemData) -> PokemonData:
 	return Game.find_species(m.data.stone_evolutions[stone.id]) if m.data.stone_evolutions.has(stone.id) else null
 
 
-## Evoluciona a un miembro (por nivel, o con `stone`, que se gasta) y lo apunta en el informe.
-func evolve(m: TeamMember, target: PokemonData, stone: ItemData = null) -> PackedStringArray:
+## Evoluciona a un miembro (por nivel, o con `stone`, que se gasta) y lo apunta en el informe (mensajes, ver Msg).
+func evolve(m: TeamMember, target: PokemonData, stone: ItemData = null) -> Array:
 	if stone and not take_item(stone):
-		return PackedStringArray()
+		return []
 	var events := m.evolve_into(target)
 	last_report.append_array(events)
 	return events
@@ -484,7 +484,7 @@ func evolve(m: TeamMember, target: PokemonData, stone: ItemData = null) -> Packe
 ## El jugador cancela la evolución: lo volverá a intentar al subir de nivel (o con «Evolucionar» en su ficha).
 func cancel_evolution(m: TeamMember) -> void:
 	m.wants_to_evolve = false
-	last_report.append(tr("%s no evolucionó.") % TeamMember.display(m.data, m.gender))
+	last_report.append(Msg.make("%s no evolucionó.", [TeamMember.display(m.data, m.gender)]))
 
 
 func _roll_rarity() -> int:

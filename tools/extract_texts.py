@@ -2,7 +2,8 @@
 """Extrae los textos traducibles del código y actualiza sus plantillas y traducciones (gettext) en locale/.
 
 Busca en los scripts:
-  - tr("texto"), tr_n("singular", "plural", n) y TranslationServer.translate("texto");
+  - tr("texto"), tr_n("singular", "plural", n), TranslationServer.translate("texto") y los mensajes guardados
+    Msg.make("texto", [...]) / Msg.plural("singular", "plural", n, [...]);
   - las constantes marcadas con el comentario `# i18n` (al final de su primera línea o en la línea de antes):
     se toman sus textos, salvo las claves de diccionario, las rutas y los identificadores en minúsculas que no
     son valores de un diccionario (["idle", "Reposo"] → solo "Reposo").
@@ -37,7 +38,7 @@ THEMES = {
 }
 # Campos de los capítulos que se muestran al jugador.
 JSON_FIELDS = {"texto", "narrar", "nombre", "titulo", "subtitulo", "rival"}
-CALLS = re.compile(r"(?:\btr|\btr_n|TranslationServer\.translate|TranslationServer\.translate_plural)\(\s*$")
+CALLS = re.compile(r"(?:\btr|\btr_n|TranslationServer\.translate|TranslationServer\.translate_plural|Msg\.make|Msg\.plural)\(\s*$")
 PLACEHOLDER = re.compile(r"%[-0-9.]*[sdf]|\{\w*\}")
 
 
@@ -118,7 +119,7 @@ def extract(path):
         before = toks[k - 1][1] if k > 0 and toks[k - 1][0] == "code" else ""
         if CALLS.search(before):
             plural = None
-            if before.rstrip().endswith(("tr_n(", "translate_plural(")) and k + 2 < len(toks) \
+            if before.rstrip().endswith(("tr_n(", "translate_plural(", "Msg.plural(")) and k + 2 < len(toks) \
                     and toks[k + 1][0] == "code" and toks[k + 1][1].strip() == "," and toks[k + 2][0] == "str":
                 plural = toks[k + 2][1]
             found.append((text, plural, line_of(src, pos)))
