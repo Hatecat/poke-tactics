@@ -244,6 +244,139 @@ void fragment() {
 }
 "
 
+## Suelo de piedra (cueva y roca): losas irregulares con juntas oscuras y gravilla, cada losa de un tono,
+## grano fino y relieve sin UV. Solo en la cara de arriba; `albedo` es el color de la casilla.
+const STONE_SHADER := "
+shader_type spatial;
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform float wet = 0.0;
+varying vec3 wpos;
+varying vec3 wnormal;
+
+float hash13(vec3 p) {
+	p = fract(p * 0.1031);
+	p += dot(p, p.zyx + 31.32);
+	return fract((p.x + p.y) * p.z);
+}
+
+float vnoise(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x),
+			mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
+		mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x),
+			mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+
+void vertex() {
+	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	wnormal = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz;
+}
+
+void fragment() {
+	vec3 c = albedo.rgb;
+	float gap = 1.0;
+	if (wnormal.y > 0.5) {
+		// Voronoi en el plano: distancia a la losa más cercana (f1) y a la segunda (f2).
+		vec2 p = wpos.xz * 2.6 + vec2(vnoise(wpos * 2.0), vnoise(wpos * 2.0 + 7.0)) * 0.5;
+		vec2 ip = floor(p);
+		vec2 fp = fract(p);
+		float f1 = 8.0;
+		float f2 = 8.0;
+		vec2 id = vec2(0.0);
+		for (int x = -1; x <= 1; x++) {
+			for (int y = -1; y <= 1; y++) {
+				vec2 o = vec2(float(x), float(y));
+				vec2 cell = ip + o;
+				vec2 h = vec2(hash13(vec3(cell, 1.0)), hash13(vec3(cell, 5.0)));
+				float d = length(o + h - fp);
+				if (d < f1) {
+					f2 = f1;
+					f1 = d;
+					id = cell;
+				} else if (d < f2) {
+					f2 = d;
+				}
+			}
+		}
+		// Grietas de grosor desigual: unas casi cerradas, otras abiertas.
+		float width = mix(0.01, 0.06, vnoise(vec3(wpos.xz * 3.0, 4.0)));
+		gap = smoothstep(0.0, width, f2 - f1);
+		float tone = hash13(vec3(id, 9.0));
+		float grain = vnoise(vec3(wpos.xz * 30.0, 0.0));
+		float rough = abs(vnoise(vec3(wpos.xz * 9.0, 1.0)) * 2.0 - 1.0);  // superficie áspera, con aristas
+		float big = vnoise(vec3(wpos.xz * 1.2, 3.0));
+		float gravel = step(0.72, hash13(vec3(floor(wpos.xz * 55.0), 2.0)));
+		c *= mix(0.88, 1.1, tone) * mix(0.93, 1.05, grain) * mix(0.86, 1.08, big) * mix(1.04, 0.94, rough);
+		c *= mix(1.03, 0.92, f1 * f1);  // cada piedra abombada: el borde algo más oscuro
+		c *= mix(0.74 + gravel * 0.2, 1.0, gap);  // grietas suaves con gravilla clara
+		float bump = gap * (0.006 + (1.0 - f1 * f1) * 0.015) + rough * 0.003 + grain * 0.002;
+		vec3 dpdx = dFdx(VERTEX);
+		vec3 dpdy = dFdy(VERTEX);
+		vec3 r1 = cross(dpdy, NORMAL);
+		vec3 r2 = cross(NORMAL, dpdx);
+		float det = dot(dpdx, r1);
+		vec3 grad = sign(det) * (dFdx(bump) * r1 + dFdy(bump) * r2);
+		NORMAL = normalize(abs(det) * NORMAL - grad);
+	}
+	ALBEDO = c * (1.0 - 0.25 * wet);
+	ROUGHNESS = mix(0.93, mix(0.25, 0.5, gap), wet);  // mojado brilla, más en las juntas encharcadas
+}
+"
+
+## Cristal: caras planas talladas, lo de detrás desviado y teñido (refracción), velos y vetas por dentro,
+## bordes que brillan y un latido de luz como el resto de lo que brilla.
+const CRYSTAL_SHADER := "
+shader_type spatial;
+render_mode depth_draw_always;
+uniform vec4 tint : source_color = vec4(0.65, 0.45, 0.95, 1.0);
+uniform float glow = 0.8;
+uniform float pulse = 0.35;
+uniform sampler2D screen : hint_screen_texture, filter_linear_mipmap;
+varying vec3 wpos;
+
+float hash13(vec3 p) {
+	p = fract(p * 0.1031);
+	p += dot(p, p.zyx + 31.32);
+	return fract((p.x + p.y) * p.z);
+}
+
+float vnoise(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x),
+			mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
+		mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x),
+			mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+
+void vertex() {
+	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+	vec3 n = normalize(cross(dFdx(VERTEX), dFdy(VERTEX)));  // la malla trae normales suaves
+	if (dot(n, NORMAL) < 0.0) {
+		n = -n;
+	}
+	NORMAL = n;
+	float fres = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 3.0);
+	vec3 behind = textureLod(screen, SCREEN_UV - n.xy * 0.05, 2.0).rgb;
+	float cloud = vnoise(wpos * vec3(14.0, 4.0, 14.0));
+	float vein = smoothstep(0.05, 0.0, abs(vnoise(wpos * 7.0) - 0.5));  // vetas internas
+	float beat = 1.0 + pulse * sin(TIME * 2.2 + NODE_POSITION_WORLD.x * 1.3 + NODE_POSITION_WORLD.z);
+	vec3 deep = tint.rgb * tint.rgb;  // por dentro, más saturado
+	ALBEDO = mix(deep * 0.2, tint.rgb * 0.5, fres);
+	EMISSION = behind * tint.rgb * 0.85 + deep * glow * beat * (0.2 + 0.55 * cloud)
+		+ tint.rgb * (vein * 0.5 + fres * 0.9);
+	ROUGHNESS = 0.05;
+	SPECULAR = 0.9;
+	ALPHA = 1.0;  // va en la pasada transparente, que es la que ve lo de detrás
+}
+"
+
 static var _shaders := {}
 static var _meshes := {}
 
@@ -263,6 +396,20 @@ static func foliage_material(color: Color, sway: float, flutter := 0.0, vcol := 
 	m.set_shader_parameter("sway", sway)
 	m.set_shader_parameter("flutter", flutter)
 	m.set_shader_parameter("vertex_color", vcol)
+	return m
+
+
+static func stone_material(color: Color) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = shader(STONE_SHADER)
+	m.set_shader_parameter("albedo", color)
+	return m
+
+
+static func crystal_material(color: Color) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = shader(CRYSTAL_SHADER)
+	m.set_shader_parameter("tint", color)
 	return m
 
 
@@ -286,9 +433,11 @@ static func side_material(top: Color, bottom: Color) -> ShaderMaterial:
 # Mallas pequeñas con color por vértice, varias variantes de cada una (se reparten por casilla).
 
 const VARIANTS := 4
+## Variantes de roca: `v % 4` elige el estilo (redondeada, tallada, laja, aguja) y `v / 4` la forma concreta.
+const ROCK_VARIANTS := 8
 
 
-## Malla de detalles `kind` ("grass", "flowers", "reeds", "pebbles", "shrub", "mushrooms", "mound",
+## Malla de detalles `kind` ("grass", "flowers", "reeds", "pebbles", "stones", "shrub", "mushrooms", "mound",
 ## "lily", "fern") en su variante `v`, para una casilla de 1×1 centrada en el origen.
 static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 	var key := "%s_%d_%s" % [kind, v, tint.to_html()]
@@ -364,6 +513,12 @@ static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 				var p := _spot(rng, 0.42)
 				var s := rng.randf_range(0.03, 0.07)
 				_box(st, p + Vector3.UP * s * 0.3, Vector3(s * 1.4, s * 0.7, s), tint.darkened(rng.randf_range(0.0, 0.3)), rng.randf() * PI)
+		"stones":
+			# Piedras sueltas de varios tamaños, medio hundidas en el suelo.
+			for i in rng.randi_range(4, 7):
+				var p := _spot(rng, 0.4)
+				var r := rng.randf_range(0.05, 0.13)
+				_stone(st, rng, p, r, tint.lightened(rng.randf_range(0.0, 0.25)), rng.randf_range(0.35, 0.9))
 		"shrub":
 			var p := _spot(rng, 0.25)
 			for b in 12:
@@ -447,6 +602,27 @@ static func _grass_tone(rng: RandomNumberGenerator, tint: Color) -> Color:
 	return c
 
 
+## Piedra suelta: contorno de 5 a 8 puntas a distancias distintas, cima desplazada y algo de aristas;
+## `flat` la aplasta (laja) o la deja alta (canto).
+static func _stone(st: SurfaceTool, rng: RandomNumberGenerator, c: Vector3, r: float, color: Color, flat: float) -> void:
+	var n := rng.randi_range(5, 8)
+	var top := c + Vector3(rng.randf_range(-0.3, 0.3) * r, r * flat, rng.randf_range(-0.3, 0.3) * r)
+	var bottom := c - Vector3.UP * r * 0.2
+	var ring: Array[Vector3] = []
+	var a0 := rng.randf() * TAU
+	for i in n:
+		var a := a0 + TAU * (i + rng.randf_range(-0.25, 0.25)) / n
+		ring.append(c + Vector3(cos(a), rng.randf_range(0.0, 0.35) * flat, sin(a)) * r * rng.randf_range(0.65, 1.2))
+	for i in n:
+		var p0 := ring[i]
+		var p1 := ring[(i + 1) % n]
+		var shade := rng.randf_range(0.0, 0.12)  # cada cara de un tono: aristas marcadas
+		for tri in [[top, p1, p0], [bottom, p0, p1]]:
+			for v: Vector3 in tri:
+				st.set_color(color.darkened(shade) if v != bottom else color.darkened(0.35))
+				st.add_vertex(v)
+
+
 ## Bola facetada pequeña (flor, sombrerillo de seta, montoncito de nieve). `flat` aplasta en vertical.
 static func _blossom(st: SurfaceTool, c: Vector3, r: float, color: Color, flat := 0.7) -> void:
 	var top := c + Vector3.UP * r * flat
@@ -510,15 +686,31 @@ static func rock_mesh(v: int) -> Mesh:
 	var arrays := sphere.get_mesh_arrays()
 	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var idx: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var style := v % 4
 	var noise := FastNoiseLite.new()
 	noise.seed = 31 + v * 17
 	noise.frequency = 1.6
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 977 + v * 131
+	# Cortes planos (caras de roca partida): un plano por corte; lo que sobresale queda aplastado contra él.
+	var cuts: Array[Plane] = []
+	for i in [2, 5, 3, 4][style] + rng.randi_range(0, 2):
+		var n := Vector3(rng.randf_range(-1, 1), rng.randf_range(-0.4, 1.0), rng.randf_range(-1, 1)).normalized()
+		cuts.append(Plane(n, rng.randf_range(0.26, 0.42)))
+	var bumpy: float = [0.35, 0.2, 0.25, 0.3][style]
+	var stretch: Vector3 = [Vector3(1, 0.85, 1), Vector3(1, 1, 0.9), Vector3(1.2, 0.45, 1), Vector3(0.6, 1.5, 0.6)][style]
+	var lean := Vector3(rng.randf_range(-0.12, 0.12), 0, rng.randf_range(-0.12, 0.12)) if style == 3 else Vector3.ZERO
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in idx:
 		var p := verts[i]
-		var d := 1.0 + noise.get_noise_3dv(p * 2.0) * 0.45
-		p *= d
+		p *= 1.0 + noise.get_noise_3dv(p * 2.0) * bumpy
+		for cut in cuts:
+			var over := cut.distance_to(p)
+			if over > 0.0:
+				p -= cut.normal * over
+		p *= stretch
+		p += lean * (p.y + 0.5)  # la aguja se inclina un poco
 		if p.y < -0.15:
 			p.y = -0.15 + (p.y + 0.15) * 0.3  # base aplanada, asentada en el suelo
 		st.add_vertex(p)

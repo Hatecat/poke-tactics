@@ -288,7 +288,10 @@ los troncos tienen textura procedural (racimos de hojas, agujas y corteza con gr
 reflejos y espuma en la orilla; con lluvia el suelo, las rocas y los árboles se ven mojados (más oscuros y
 brillantes), salen charcos y las gotas hacen ondas en el agua; con tormenta de arena hay bruma,
 nubes de polvo que cruzan, ráfagas de arena y polvo que se levanta de las crestas de las dunas; con granizo caen bolitas de hielo
-azuladas que rebotan, se acumulan en el suelo y salpican el agua, con ventisca a ras de suelo; los cristales laten y cada bioma tiene su ambiente (hojas que caen, polen, arena
+azuladas que rebotan, se acumulan en el suelo y salpican el agua, con ventisca a ras de suelo; los cristales (drusas talladas con refracción y vetas) laten e iluminan el suelo de su color, la cueva tiene
+suelo de piedra agrietada con piedras sueltas y sombras suaves; las rocas tienen formas y tamaños distintos
+(redondeadas, talladas, lajas y agujas); el sol gira con la cámara al rotar el mapa, así que la luz y las
+sombras caen siempre desde el mismo lado de la pantalla, y cada bioma tiene su ambiente (hojas que caen, polen, arena
 que corre, copos, motas que brillan).
 
 Los estados, el daño recibido y el debilitado de los 151 salen de `tools/blender/animate_status.py`, que parte del

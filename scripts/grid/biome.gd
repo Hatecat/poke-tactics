@@ -271,7 +271,7 @@ static func _snow(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary
 
 
 ## Cueva: suelo irregular cruzado por crestas de roca, charcas subterráneas en lo más hondo,
-## estalagmitas y grupos de cristales junto a las paredes.
+## estalagmitas y grupos de cristales junto a las paredes y por las vetas de cristal.
 static func _cave(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
 	var hf := _field(grid, rng, 0.08, 3, 10.0)
 	var ridge := _field(grid, rng, 0.07, 3, 12.0, true)
@@ -289,7 +289,9 @@ static func _cave(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary
 		if clear.has(c) or grid.tiles[c] == Tile.WATER:
 			continue
 		var r := rng.randf()
-		if _rise(grid, c) >= 2 and gems[c] > 0.55 and r < 0.35:
+		if _rise(grid, c) >= 2 and gems[c] > 0.45 and r < 0.5:
+			grid.props[c] = Prop.CRYSTAL
+		elif gems[c] > 0.68 and r < 0.12:  # alguna drusa suelta en medio de la vena de cristal
 			grid.props[c] = Prop.CRYSTAL
 		elif r < 0.05:
 			grid.props[c] = Prop.STALAGMITE

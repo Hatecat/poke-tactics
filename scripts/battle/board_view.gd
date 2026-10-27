@@ -18,6 +18,7 @@ var _live_mats := {} # clave -> ShaderMaterial con viento (vegetación, agua)
 var _side_mats := {}
 var _tint_noise := FastNoiseLite.new()
 var _grass_noise := FastNoiseLite.new()  # zonas de hierba alta / corta
+var _crystal_lights: Array[OmniLight3D] = []  # laten al ritmo del brillo de sus cristales
 var _wind := 1.0
 var _wet := 0.0
 var _wet_tween: Tween
@@ -28,6 +29,7 @@ var _hail_piles: Array[MeshInstance3D] = []
 var _hail_bounce: CPUParticles3D
 ## Agua: algo más baja que la tierra, para que se vean las orillas.
 const WATER_DROP := 0.1
+const CRYSTAL_LIGHT := 1.1  # energía media de la luz de cada drusa de cristal
 ## Color del lateral justo bajo cada suelo (la roca madre de debajo depende del bioma).
 const SIDE_TOP := {
 	Biome.Tile.SAND: Color(0.76, 0.62, 0.4), Biome.Tile.ROCK: Color(0.5, 0.48, 0.45),
@@ -50,6 +52,7 @@ func build(p_grid: BoardGrid) -> void:
 	_overlays.clear()
 	_puddles.clear()
 	_hail_piles.clear()
+	_crystal_lights.clear()
 	_hail_bounce = null
 	_tint_noise.seed = 7
 	_tint_noise.frequency = 0.18
@@ -108,7 +111,8 @@ func set_traps(traps: Dictionary) -> void:
 				rock.rotation = Vector3(0.5, 0.8 * i, 0.3)
 
 
-## La hierba y las plantas se apartan alrededor de cada Pokémon (grupo "units"), para que no lo tapen.
+## La hierba y las plantas se apartan alrededor de cada Pokémon (grupo "units"), para que no lo tapen, y
+## la luz de los cristales late.
 func _process(_delta: float) -> void:
 	var pushers := PackedVector4Array()
 	pushers.resize(12)
@@ -125,6 +129,12 @@ func _process(_delta: float) -> void:
 	for key: String in _live_mats:
 		if key.begins_with("decor_"):
 			_live_mats[key].set_shader_parameter("pushers", pushers)
+	var t := Time.get_ticks_msec() / 1000.0
+	for light in _crystal_lights:
+		if not is_instance_valid(light) or not light.is_inside_tree():
+			continue
+		var p := light.global_position
+		light.light_energy = CRYSTAL_LIGHT * (1.0 + 0.35 * sin(t * 2.2 + p.x * 1.3 + p.z))
 
 
 ## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).
@@ -334,7 +344,12 @@ func _build_cell(c: Vector2i) -> void:
 		var top_mesh := MeshInstance3D.new()
 		top_mesh.mesh = _tile_mesh(TOP_THICKNESS, 0.0)
 		top_mesh.position = Vector3(top.x, top.y - TOP_THICKNESS * 0.5, top.z)
-		top_mesh.material_override = _material(_tile_color(c, tile_kind), tile_kind == Biome.Tile.ICE)
+		var col := _tile_color(c, tile_kind)
+		if tile_kind in [Biome.Tile.CAVE, Biome.Tile.ROCK]:
+			top_mesh.material_override = _live("stone_%s" % col.to_html(), func() -> ShaderMaterial:
+				return TerrainFx.stone_material(col))
+		else:
+			top_mesh.material_override = _material(col, tile_kind == Biome.Tile.ICE)
 		root.add_child(top_mesh)
 
 	var side_top := top.y - (WATER_DROP + 0.1 if water else TOP_THICKNESS)  # bajo el seno de las olas
@@ -414,14 +429,30 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				Biome.Kind.DESERT: stone = Color(0.66, 0.47, 0.34)
 				Biome.Kind.CAVE: stone = Color(0.34, 0.31, 0.3)
 				Biome.Kind.SNOW: stone = Color(0.48, 0.5, 0.54)
-			var big := _part(node, TerrainFx.rock_mesh(h % 4), Vector3(0, 0.16, 0), stone)
-			big.scale = Vector3(0.78, 0.55, 0.68)
-			var small := _part(node, TerrainFx.rock_mesh((h + 1) % 4), Vector3(0.3, 0.06, 0.18), stone.darkened(0.08))
-			small.scale = Vector3.ONE * 0.26
+			# Cuatro composiciones (peñasco con canto, roca alta, lajas apiladas, montón de cantos) y tamaño
+			# variable; cada pieza con su forma (TerrainFx.rock_mesh) y su tono.
+			var size := 0.8 + float((h >> 3) % 5) * 0.1
+			var v := (h >> 5) % 2 * 4  # una de las dos formas de cada estilo
+			var layouts := [
+				[[0, Vector3(0, 0.16, 0), Vector3(0.78, 0.6, 0.68)], [1, Vector3(0.3, 0.06, 0.18), Vector3(0.28, 0.24, 0.26)]],
+				[[3, Vector3(0, 0.3, 0), Vector3(0.6, 0.62, 0.55)], [1, Vector3(-0.24, 0.07, 0.16), Vector3(0.3, 0.26, 0.28)],
+					[0, Vector3(0.22, 0.05, -0.18), Vector3(0.2, 0.18, 0.2)]],
+				[[2, Vector3(0, 0.08, 0), Vector3(0.85, 0.5, 0.75)], [2, Vector3(0.05, 0.22, 0.02), Vector3(0.55, 0.42, 0.5)],
+					[1, Vector3(-0.3, 0.06, 0.2), Vector3(0.22, 0.2, 0.2)]],
+				[[1, Vector3(-0.12, 0.13, -0.08), Vector3(0.48, 0.48, 0.44)], [0, Vector3(0.2, 0.1, 0.1), Vector3(0.4, 0.36, 0.38)],
+					[1, Vector3(0.0, 0.07, 0.28), Vector3(0.28, 0.24, 0.26)], [2, Vector3(-0.3, 0.04, 0.22), Vector3(0.26, 0.2, 0.24)]],
+			]
+			var top_y := 0.0
+			for i in layouts[h % 4].size():
+				var piece: Array = layouts[h % 4][i]
+				var mi := _part(node, TerrainFx.rock_mesh(piece[0] + v), piece[1] * size, stone.darkened(0.06 * ((h + i) % 3)))
+				mi.scale = piece[2] * size
+				mi.rotation.y = float((h >> i) % 7)
+				top_y = maxf(top_y, (piece[1].y + piece[2].y * 0.5) * size)
 			if snowy:
-				_part(node, _sphere(0.27, 0.12), Vector3(0, 0.33, 0), snow).scale = Vector3(1.0, 1.0, 0.85)
+				_part(node, _sphere(0.27, 0.12), Vector3(0, top_y - 0.04, 0), snow).scale = Vector3(1.0, 1.0, 0.85) * size
 			elif grid.biome == Biome.Kind.FOREST:
-				_part(node, _sphere(0.25, 0.1), Vector3(-0.03, 0.32, 0), Color(0.3, 0.45, 0.18)).scale = Vector3(1.0, 1.0, 0.8)
+				_part(node, _sphere(0.25, 0.1), Vector3(-0.03, top_y - 0.04, 0), Color(0.3, 0.45, 0.18)).scale = Vector3(1.0, 1.0, 0.8) * size
 		Biome.Prop.CACTUS:
 			var green := Color(0.3, 0.52, 0.27)
 			_part(node, _capsule(0.12, 0.95), Vector3(0, 0.47, 0), green)
@@ -452,25 +483,46 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), Color(0.82, 0.8, 0.76))
 			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), Color(0.7, 0.68, 0.64))
 		Biome.Prop.STALAGMITE:
+			# Estalagmita gastada: bloques de roca redondeados que se funden en una sola roca que se estrecha
+			# hacia arriba, y piedras al pie.
 			var stone := Color(0.42, 0.37, 0.34)
-			var spikes := [[0.2, 0.95, Vector3.ZERO], [0.12, 0.5, Vector3(0.2, 0, 0.1)], [0.09, 0.35, Vector3(-0.15, 0, 0.16)]]
-			for s: Array in spikes:
-				var mi := _part(node, _cyl(0.01, s[0], s[1], 7), s[2] + Vector3.UP * s[1] * 0.5, stone)
+			var pieces := [[Vector3(0, 0.24, 0), Vector3(0.62, 0.52, 0.56)], [Vector3(0.03, 0.47, 0.02), Vector3(0.46, 0.52, 0.42)],
+				[Vector3(0.05, 0.7, 0.02), Vector3(0.3, 0.4, 0.28)], [Vector3(0.27, 0.07, 0.13), Vector3(0.24, 0.17, 0.22)],
+				[Vector3(-0.22, 0.06, 0.2), Vector3(0.19, 0.14, 0.18)]]
+			for i in pieces.size():
+				var mi := _part(node, TerrainFx.rock_mesh([0, 0, 3, 1, 1][i] + (h >> i) % 2 * 4), pieces[i][0], stone.darkened(0.05 * (i % 3)))
+				mi.scale = pieces[i][1]
+				mi.rotation.y = float((h >> i) % 6)
 				var mat: StandardMaterial3D = mi.material_override.duplicate()
-				mat.roughness = 0.35  # roca húmeda
+				mat.roughness = 0.45  # roca húmeda
 				mi.material_override = mat
 		Biome.Prop.CRYSTAL:
-			var shards := [[0.1, 0.75, Vector3.ZERO, Vector3.ZERO], [0.07, 0.45, Vector3(0.14, 0, 0.05), Vector3(0, 0, -0.45)],
-				[0.06, 0.4, Vector3(-0.12, 0, 0.08), Vector3(0.3, 0, 0.4)], [0.05, 0.3, Vector3(0.02, 0, -0.14), Vector3(-0.5, 0, 0)]]
-			for i in shards.size():
-				var s: Array = shards[i]
-				var tint := Color(0.65, 0.45, 0.95) if (h + i) % 3 else Color(0.45, 0.75, 1.0)
+			# Drusa: una punta grande y varias pequeñas que salen inclinadas de una base de roca. Ilumina
+			# el suelo de alrededor con su color.
+			var tint := Color(0.65, 0.45, 0.95) if h % 3 else Color(0.45, 0.75, 1.0)
+			var base := _part(node, TerrainFx.rock_mesh(h % 4), Vector3(0, 0.03, 0), Color(0.24, 0.22, 0.22))
+			base.scale = Vector3(0.6, 0.22, 0.54)
+			var count := 5 + h % 3
+			for i in count:
+				var big := i == 0
+				var r := 0.15 if big else 0.055 + float((h >> i) % 5) * 0.012
+				var tall := 1.15 if big else 0.3 + float((h >> (i + 2)) % 7) * 0.075
+				var a := TAU * i / count + float(h % 11) * 0.3
 				var shard := Node3D.new()
-				shard.position = s[2]
-				shard.rotation = s[3]
+				shard.position = Vector3.ZERO if big else Vector3(cos(a), 0, sin(a)) * 0.19
+				# Inclinada hacia fuera: gira el eje vertical hacia la dirección `a`.
+				shard.basis = Basis(Vector3(sin(a), 0, -cos(a)), 0.06 if big else 0.35 + float((h >> i) % 4) * 0.1)
 				node.add_child(shard)
-				_glow(shard, _cyl(s[0], s[0], s[1], 6), Vector3.UP * s[1] * 0.5, tint)
-				_glow(shard, _cyl(0.0, s[0], s[0] * 2.2, 6), Vector3.UP * (s[1] + s[0] * 1.1), tint.lightened(0.2))
+				var col := tint if i % 3 else tint.lerp(Color(0.85, 0.9, 1.0), 0.3)
+				_crystal(shard, _cyl(r, r * 1.08, tall, 6), Vector3.UP * tall * 0.5, col)
+				_crystal(shard, _cyl(0.0, r, r * 2.4, 6), Vector3.UP * (tall + r * 1.2), col)
+			var light := OmniLight3D.new()
+			light.light_color = tint
+			light.light_energy = CRYSTAL_LIGHT
+			light.omni_range = 2.8
+			light.position = Vector3(0, 0.65, 0)
+			node.add_child(light)
+			_crystal_lights.append(light)
 	node.set_meta("sway_height", height * jitter)
 	return node
 
@@ -499,17 +551,13 @@ func _leaf(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color, sway: float, 
 	return mi
 
 
-## Cristal que brilla con un pulso lento.
-func _glow(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
+## Punta de cristal: facetas, refracción y un pulso lento de luz (TerrainFx.CRYSTAL_SHADER).
+func _crystal(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.position = pos
-	mi.material_override = _live("glow_%s" % color.to_html(), func() -> ShaderMaterial:
-		var m := TerrainFx.foliage_material(color, 0.0)
-		m.set_shader_parameter("glow", 0.9)
-		m.set_shader_parameter("pulse", 0.4)
-		m.set_shader_parameter("roughness", 0.2)
-		return m)
+	mi.material_override = _live("crystal_%s" % color.to_html(), func() -> ShaderMaterial:
+		return TerrainFx.crystal_material(color))
 	parent.add_child(mi)
 	return mi
 
@@ -635,12 +683,14 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			elif r1 < (0.25 if b == Biome.Kind.LAKE else 0.08): list.append(["pebbles", Color(0.7, 0.64, 0.55), 0.0, 0.1])
 		Biome.Tile.ROCK:
 			if r1 < 0.3: list.append(["pebbles", stone, 0.0, 0.1])
+			if r2 > 0.75: list.append(["stones", stone, 0.0, 0.1])
 			if b == Biome.Kind.MOUNTAIN and r2 < 0.15: list.append(["grass", grass.darkened(0.1), 0.6, 0.13])
 		Biome.Tile.SNOW:
 			if r1 < 0.25: list.append(["mound", Color(0.95, 0.97, 1.0), 0.0, 0.1])
 			if r2 < 0.08: list.append(["grass", Color(0.62, 0.55, 0.38), 0.6, 0.13])
 		Biome.Tile.CAVE:
-			if r1 < 0.3: list.append(["pebbles", stone, 0.0, 0.1])
+			if r1 < 0.6: list.append(["pebbles", stone, 0.0, 0.1])
+			if r2 > 0.5: list.append(["stones", stone, 0.0, 0.1])
 			if r2 < 0.07: list.append(["glowshroom", Color(0.4, 0.9, 1.0), 0.0, 0.1])
 		Biome.Tile.WATER:
 			if b != Biome.Kind.CAVE and _shore(c) != Vector4.ZERO and r1 < 0.45:

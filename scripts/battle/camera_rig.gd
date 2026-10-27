@@ -6,10 +6,13 @@ extends Node3D
 const MIN_ZOOM := 5.0
 const MAX_ZOOM := 30.0
 const PAN_SPEED := 12.0
+const START_YAW := 45.0
+## Giro del sol con la vista inicial; al rotar el mapa el sol gira lo mismo (ver `_follow_sun`).
+const SUN_YAW := 35.0
 
 var camera: Camera3D
 var rotation_step := 90.0
-var _yaw := 45.0
+var _yaw := START_YAW
 var _dragging := false
 
 
@@ -84,6 +87,7 @@ func handle_input(event: InputEvent) -> bool:
 
 
 func _process(delta: float) -> void:
+	_follow_sun()
 	var dir := Vector2.ZERO
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		dir.x -= 1
@@ -100,6 +104,14 @@ func _process(delta: float) -> void:
 	# El desplazamiento manual no se frena con la velocidad de combate.
 	var real_delta := delta / maxf(Engine.time_scale, 0.01)
 	position += (right * dir.x + fwd * dir.y).normalized() * PAN_SPEED * real_delta * camera.size / 12.0
+
+
+## El sol (de build_environment, hermano de la cámara) gira con la vista: al rotar el mapa la luz y las
+## sombras caen siempre desde el mismo lado de la pantalla, también durante el giro.
+func _follow_sun() -> void:
+	var sun := get_parent().get_node_or_null("Sun") as DirectionalLight3D
+	if sun:
+		sun.rotation_degrees.y = SUN_YAW + rotation_degrees.y - START_YAW
 
 
 ## Configura el entorno (cielo y luz) del bioma bajo `parent`.
@@ -129,7 +141,12 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sun"
-	sun.rotation_degrees = Vector3(-55, 35, 0)
+	sun.rotation_degrees = Vector3(-55, SUN_YAW, 0)
 	sun.shadow_enabled = true
 	sun.light_energy = sky_info[2]
+	if biome == Biome.Kind.CAVE:
+		# En la cueva la luz llega rebotada: sombras difuminadas y que no llegan a negro.
+		sun.light_angular_distance = 4.0
+		sun.shadow_blur = 2.5
+		sun.shadow_opacity = 0.7
 	parent.add_child(sun)
