@@ -279,7 +279,9 @@ Los terrenos se generan con geografía (`scripts/grid/biome.gd`): relieve de rui
 sueltos), y luego el suelo según altura y pendiente, y los obstáculos donde tendrían sentido. Pradera: lomas, un
 sendero entre los dos bandos, una charca y bosquecillos. Bosque: arboleda con claros, un arroyo y hojarasca bajo la
 espesura (pinos en lo alto). Montaña: macizo central con valles verdes, roca y cumbres nevadas, pedregal al pie de
-los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca y un oasis con palmeras. Lago: cuenca
+los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca, un oasis con palmeras (tronco anillado y curvo,
+hojas con foliolos que cuelgan, cocos) y matorrales de cactus de tres tipos (columnar con brazos, barril con
+flores y nopal con tunas). Lago: cuenca
 central con playa de arena. Nieve: ventisqueros, estanque helado y pinares nevados. Cueva: crestas de roca,
 charcas, estalagmitas y cristales. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
 hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol); la hierba crece en zonas de

@@ -664,11 +664,12 @@ func _member_detail(m: TeamMember) -> Control:
 	top.add_child(_preview)
 	_preview.show_pokemon(m.data)
 	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # el ancho lo pone la ficha, no el texto
 	top.add_child(info)
 	info.add_child(UiKit.label("%s  Nv. %d" % [TeamMember.display(m.data, m.gender), m.level], 24))
 	info.add_child(UiKit.type_row(m.data.types))
 	info.add_child(UiKit.label("Experiencia: %d / %d" % [m.exp, m.exp_to_next()], 15, Color(1, 1, 1, 0.75)))
-	info.add_child(UiKit.label("Habilidad: %s" % Abilities.display_name(m.ability), 15, Color(1, 1, 1, 0.75)))
+	info.add_child(_wrapped(UiKit.label("Habilidad: %s" % Abilities.display_name(m.ability), 15, Color(1, 1, 1, 0.75))))
 	var item_row := HBoxContainer.new()
 	item_row.add_child(UiKit.label("Objeto: %s  " % (m.item.display_name if m.item else "—"), 15, Color(1, 1, 1, 0.75)))
 	if m.item:
@@ -686,10 +687,10 @@ func _member_detail(m: TeamMember) -> Control:
 	info.add_child(item_row)
 	if not m.data.stone_evolutions.is_empty():
 		var stones := ", ".join(m.data.stone_evolutions.keys().map(func(id: String) -> String: return Items.find(id).display_name if Items.find(id) else id))
-		info.add_child(UiKit.label("Evoluciona con: %s" % stones, 15, UiKit.ACCENT))
+		info.add_child(_wrapped(UiKit.label("Evoluciona con: %s" % stones, 15, UiKit.ACCENT)))
 	if m.data.evolve_level > 0:
 		var to := ", ".join(Array(m.data.evolves_to).map(func(id: String) -> String: return Game.find_species(id).species_name if Game.find_species(id) else id))
-		info.add_child(UiKit.label("Evoluciona a %s a nivel %d" % [to, m.data.evolve_level], 15, UiKit.ACCENT))
+		info.add_child(_wrapped(UiKit.label("Evoluciona a %s a nivel %d" % [to, m.data.evolve_level], 15, UiKit.ACCENT)))
 		if m.can_evolve_by_level():
 			info.add_child(UiKit.button("Evolucionar", func() -> void:
 				m.wants_to_evolve = true
@@ -712,6 +713,13 @@ func _member_detail(m: TeamMember) -> Control:
 	if m.known.is_empty():
 		col.add_child(UiKit.label("(sin ataques aprendidos por nivel)", 14, Color(1, 1, 1, 0.5)))
 	return scroll
+
+
+## Texto que baja de línea al llegar al borde en vez de ensanchar su panel (p. ej. las tres piedras de Eevee).
+func _wrapped(l: Label) -> Label:
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return l
 
 
 func _use_bag_item(it: ItemData) -> void:

@@ -29,6 +29,8 @@ window/stretch/aspect="expand"
 [rendering]
 
 anti_aliasing/quality/msaa_3d=2
+lights_and_shadows/directional_shadow/size=4096
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
 
 [editor]
 

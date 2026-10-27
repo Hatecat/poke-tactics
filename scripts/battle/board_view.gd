@@ -29,7 +29,10 @@ var _hail_piles: Array[MeshInstance3D] = []
 var _hail_bounce: CPUParticles3D
 ## Agua: algo más baja que la tierra, para que se vean las orillas.
 const WATER_DROP := 0.1
-const CRYSTAL_LIGHT := 1.1  # energía media de la luz de cada drusa de cristal
+const CRYSTAL_LIGHT := 1.1
+## Detalles del suelo con altura suficiente para dar sombra (el césped corto y los guijarros no).
+const SHADOW_DECOR: PackedStringArray = ["tallgrass", "fern", "reeds", "shrub", "mushrooms", "glowshroom", "stones",
+	"flowers"]  # energía media de la luz de cada drusa de cristal
 ## Color del lateral justo bajo cada suelo (la roca madre de debajo depende del bioma).
 const SIDE_TOP := {
 	Biome.Tile.SAND: Color(0.76, 0.62, 0.4), Biome.Tile.ROCK: Color(0.5, 0.48, 0.45),
@@ -454,30 +457,76 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			elif grid.biome == Biome.Kind.FOREST:
 				_part(node, _sphere(0.25, 0.1), Vector3(-0.03, top_y - 0.04, 0), Color(0.3, 0.45, 0.18)).scale = Vector3(1.0, 1.0, 0.8) * size
 		Biome.Prop.CACTUS:
-			var green := Color(0.3, 0.52, 0.27)
-			_part(node, _capsule(0.12, 0.95), Vector3(0, 0.47, 0), green)
-			for side in [1.0, -1.0]:
-				var y := 0.38 if side > 0 else 0.52
-				var arm := _part(node, _capsule(0.065, 0.2), Vector3(0.14 * side, y, 0), green.darkened(0.05))
-				arm.rotation.z = PI / 2
-				_part(node, _capsule(0.065, 0.3), Vector3(0.22 * side, y + 0.13, 0), green.darkened(0.05))
-			_part(node, _sphere(0.04, 0.05), Vector3(0, 0.95, 0), Color(0.95, 0.45, 0.6))
+			var green := Color(0.3, 0.52, 0.27).lerp(Color(0.42, 0.55, 0.3), float(h % 5) / 8.0)
+			match (h >> 2) % 4:
+				0, 1:
+					# Columnar (saguaro): tronco con costillas y de 0 a 3 brazos que suben a distintas alturas.
+					var tall := 0.75 + float(h % 4) * 0.1
+					_leaf(node, _capsule(0.12, tall), Vector3(0, tall * 0.5, 0), green, 0.0, 0.0, 5)
+					for i in (h >> 4) % 4:
+						var a := TAU * float(i) / 3.0 + float(h % 7)
+						var out := Vector3(cos(a), 0, sin(a))
+						var y := tall * (0.35 + 0.15 * float((h >> (i + 5)) % 3))
+						var reach := 0.16 + 0.04 * float((h >> i) % 2)
+						var up := 0.18 + 0.08 * float((h >> (i + 3)) % 3)
+						var elbow := _leaf(node, _capsule(0.065, reach + 0.1), Vector3(0, y, 0) + out * reach * 0.6, green.darkened(0.05), 0.0, 0.0, 5)
+						elbow.basis = Basis(Vector3(-out.z, 0, out.x), PI / 2)
+						_leaf(node, _capsule(0.065, up + 0.12), Vector3(0, y + up * 0.5, 0) + out * reach, green.darkened(0.05), 0.0, 0.0, 5)
+					if h % 3 == 0:
+						_part(node, _sphere(0.04, 0.05), Vector3(0, tall, 0), Color(0.95, 0.45, 0.6))
+				2:
+					# Barril: bola con costillas, a veces con hijuelos, y una corona de flores amarillas.
+					var r := 0.2 + float(h % 3) * 0.03
+					_leaf(node, _sphere(r, r * 1.6), Vector3(0, r * 0.75, 0), green, 0.0, 0.0, 5)
+					for i in (h >> 4) % 3:
+						var a := float(i) * 2.4 + float(h % 5)
+						var rr := r * 0.45
+						_leaf(node, _sphere(rr, rr * 1.6), Vector3(cos(a), 0, sin(a)) * r * 1.25 + Vector3(0, rr * 0.7, 0), green.lightened(0.05), 0.0, 0.0, 5)
+					for i in 4:
+						_part(node, _sphere(0.03, 0.04), Vector3(cos(i * 1.57), 0, sin(i * 1.57)) * r * 0.25 + Vector3(0, r * 1.5, 0), Color(1.0, 0.82, 0.25))
+				3:
+					# Nopal: palas ovaladas que salen unas de otras, con tunas rojas en el borde.
+					var pads := [[Vector3(0, 0.2, 0), 0.0, 1.0], [Vector3(0.12, 0.44, 0), -0.5, 0.8], [Vector3(-0.12, 0.42, 0.02), 0.45, 0.75],
+						[Vector3(0.22, 0.62, 0.0), -0.8, 0.6], [Vector3(-0.04, 0.66, -0.02), 0.15, 0.6]]
+					for i in 3 + (h >> 4) % 3:
+						var pad: Array = pads[i]
+						var mi := _leaf(node, _sphere(0.16, 0.42), pad[0], green.lightened(0.04 * (i % 2)), 0.0, 0.0, 6)
+						mi.scale = Vector3(1.0, 1.0, 0.28) * pad[2]
+						mi.rotation.z = pad[1]
+						if i >= 3:
+							_part(node, _sphere(0.035, 0.06), pad[0] + Vector3(0, 0.2 * pad[2], 0), Color(0.75, 0.15, 0.25))
 		Biome.Prop.PALM:
+			# Palmera: tronco anillado que se curva y se estrecha, corona de hojas arqueadas con foliolos
+			# que cuelgan (TerrainFx.frond_mesh) y un racimo de cocos bajo la corona.
 			var bark := Color(0.55, 0.42, 0.28)
 			var p := Vector3.ZERO
-			for i in 5:
-				var seg := _leaf(node, _cyl(0.05, 0.065, 0.24, 6), p + Vector3(0, 0.12, 0), bark.darkened(0.04 * (i % 2)), 0.5, 0.0, 3)
-				seg.rotation.z = -0.08 * i
-				p += Vector3(0.03 * i, 0.23, 0)
-			for i in 7:
+			var bend := 0.05 + float(h % 4) * 0.02
+			var segs := 7
+			for i in segs:
+				var r := 0.075 - 0.005 * i
+				var tilt := -bend * i
+				var seg := _leaf(node, _cyl(r * 0.92, r, 0.19, 8), Vector3.ZERO, bark.darkened(0.05 * (i % 2)), 0.5, 0.0, 3)
+				seg.rotation.z = tilt
+				seg.position = p + Vector3(-sin(tilt), cos(tilt), 0) * 0.095
+				var ring := _leaf(node, _cyl(r + 0.01, r + 0.012, 0.03, 8), Vector3.ZERO, bark.darkened(0.25), 0.5, 0.0, 3)
+				ring.rotation.z = tilt
+				ring.position = p + Vector3(-sin(tilt), cos(tilt), 0) * 0.185
+				p += Vector3(-sin(tilt), cos(tilt), 0) * 0.18
+			_leaf(node, _sphere(0.08, 0.12), p + Vector3(0, 0.02, 0), Color(0.42, 0.4, 0.2), 1.0, 0.5)
+			var count := 9 + h % 3
+			for i in count:
 				var pivot := Node3D.new()
-				pivot.position = p
-				pivot.rotation = Vector3(0, TAU * i / 7.0, -0.35 - 0.1 * (i % 3))
+				pivot.position = p + Vector3(0, 0.03, 0)
+				var up := 0.35 if i % 3 == 0 else (0.05 if i % 3 == 1 else -0.2)  # unas suben, otras caen
+				pivot.rotation = Vector3(0, TAU * i / count + float(h % 9) * 0.2, up)
+				pivot.scale = Vector3.ONE * (0.62 + 0.1 * float((h >> i) % 3))
 				node.add_child(pivot)
-				var frond := _leaf(pivot, BoxMesh.new(), Vector3(0.26, 0, 0), Color(0.3, 0.58, 0.22).darkened(0.05 * (i % 3)), 1.0, 1.4)
-				frond.mesh.size = Vector3(0.52, 0.02, 0.13)
-			for i in 3:
-				_part(node, _sphere(0.045, 0.09), p + Vector3(cos(i * 2.1), -0.4, sin(i * 2.1)) * 0.06, Color(0.4, 0.28, 0.14))
+				var frond := _leaf(pivot, TerrainFx.frond_mesh((h + i) % TerrainFx.VARIANTS), Vector3.ZERO, Color.WHITE, 1.0, 1.4)
+				frond.material_override = _live("frond_%.1f" % 1.0, func() -> ShaderMaterial:
+					return TerrainFx.foliage_material(Color.WHITE, 1.0, 1.4, true))
+			for i in 3 + h % 3:
+				var a := float(i) * 2.1
+				_part(node, _sphere(0.045, 0.085), p + Vector3(cos(a) * 0.06, -0.05 - 0.02 * (i % 2), sin(a) * 0.06), Color(0.4, 0.28, 0.14).darkened(0.1 * (i % 2)))
 			height = 1.25
 		Biome.Prop.PILLAR:
 			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), Color(0.82, 0.8, 0.76))
@@ -706,7 +755,8 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			y -= WATER_DROP + 0.02
 		mi.position = Vector3(top.x, y, top.z)
 		mi.rotation.y = rng.randi_range(0, 3) * PI / 2
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if kind in SHADOW_DECOR \
+				else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var sway: float = d[2]
 		if kind == "glowshroom":
 			mi.material_override = _live("glowshroom", func() -> ShaderMaterial:

@@ -7,8 +7,9 @@ const MIN_ZOOM := 5.0
 const MAX_ZOOM := 30.0
 const PAN_SPEED := 12.0
 const START_YAW := 45.0
-## Giro del sol con la vista inicial; al rotar el mapa el sol gira lo mismo (ver `_follow_sun`).
-const SUN_YAW := 35.0
+## Giro del sol con la vista inicial; al rotar el mapa el sol gira lo mismo (ver `_follow_sun`). Va 70° a
+## la izquierda de la cámara: si estuviera detrás de ella, cada sombra quedaría tapada por su objeto.
+const SUN_YAW := -25.0
 
 var camera: Camera3D
 var rotation_step := 90.0
@@ -128,9 +129,20 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	env.ambient_light_energy = sky_info[3]
+	var cave := biome == Biome.Kind.CAVE
+	# Al aire libre el sol directo es varias veces más fuerte que la luz del cielo: así la sombra se ve.
+	env.ambient_light_energy = sky_info[3] * (1.0 if cave else 0.5)
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	if biome == Biome.Kind.CAVE:
+	# Luz realista: sombra de contacto en rincones y al pie de cada objeto (SSAO) y luz que rebota entre
+	# superficies y tiñe lo de al lado (SSIL).
+	env.ssao_enabled = true
+	env.ssao_radius = 0.7
+	env.ssao_intensity = 2.5 if cave else 1.6
+	env.ssao_power = 1.8 if cave else 1.4
+	env.ssil_enabled = true
+	env.ssil_radius = 2.0
+	env.ssil_intensity = 0.8
+	if cave:
 		env.fog_enabled = true
 		env.fog_light_color = Color(0.08, 0.07, 0.09)
 		env.fog_density = 0.015
@@ -141,12 +153,15 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sun"
-	sun.rotation_degrees = Vector3(-55, SUN_YAW, 0)
+	sun.rotation_degrees = Vector3(-48, SUN_YAW, 0)
 	sun.shadow_enabled = true
-	sun.light_energy = sky_info[2]
-	if biome == Biome.Kind.CAVE:
-		# En la cueva la luz llega rebotada: sombras difuminadas y que no llegan a negro.
-		sun.light_angular_distance = 4.0
-		sun.shadow_blur = 2.5
-		sun.shadow_opacity = 0.7
+	sun.light_energy = sky_info[2] if cave else minf(sky_info[2] * 1.4, 1.5)  # tope: la arena y la nieve no se queman
+	# Sombras reales: el sol es un disco, no un punto, así que el borde de la sombra se difumina según la
+	# distancia entre el objeto y el suelo (nítida al pie, suave lejos). Su largo y su forma salen de la
+	# geometría de cada objeto: una piedra da una sombra corta y nítida; un árbol, una larga y difusa.
+	# En la cueva la luz llega rebotada y el disco es más grande.
+	sun.light_angular_distance = 1.5 if cave else 0.8
+	sun.shadow_opacity = 1.0
+	sun.directional_shadow_max_distance = 60.0  # solo el tablero: más resolución donde importa
+	sun.directional_shadow_blend_splits = true
 	parent.add_child(sun)

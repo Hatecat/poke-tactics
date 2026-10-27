@@ -45,7 +45,7 @@ const SKIES := {
 	Kind.DESERT: [Color(0.4, 0.6, 0.9), Color(0.95, 0.85, 0.65), 1.4, 0.9],
 	Kind.LAKE: [Color(0.35, 0.6, 0.9), Color(0.75, 0.88, 0.98), 1.1, 0.85],
 	Kind.SNOW: [Color(0.55, 0.65, 0.8), Color(0.88, 0.9, 0.95), 0.9, 1.0],
-	Kind.CAVE: [Color(0.04, 0.04, 0.06), Color(0.12, 0.1, 0.1), 0.35, 0.45],
+	Kind.CAVE: [Color(0.04, 0.04, 0.06), Color(0.12, 0.1, 0.1), 0.7, 0.3],
 	Kind.GYM: [Color(0.25, 0.25, 0.32), Color(0.5, 0.48, 0.5), 1.0, 0.9],
 }
 
@@ -184,6 +184,7 @@ static func _desert(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictiona
 	var warp := _field(grid, rng, 0.05, 2)
 	var amp := _field(grid, rng, 0.04, 2)
 	var mesa := _field(grid, rng, 0.08, 3, 8.0)
+	var thicket := _field(grid, rng, 0.14, 2)  # zonas donde los cactus crecen juntos
 	var angle := rng.randf() * TAU
 	var dir := Vector2(cos(angle), sin(angle))
 	for c in grid.all_cells():
@@ -202,7 +203,7 @@ static func _desert(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictiona
 		if clear.has(c) or grid.props[c] != Prop.NONE:
 			continue
 		var r := rng.randf()
-		if grid.tiles[c] == Tile.SAND and _slope(grid, c) == 0 and r < 0.035:
+		if grid.tiles[c] == Tile.SAND and _slope(grid, c) <= 1 and r < 0.05 + 0.18 * smoothstep(0.55, 0.85, thicket[c]):
 			grid.props[c] = Prop.CACTUS
 		elif grid.tiles[c] == Tile.ROCK and _rise(grid, c) == 0 and _slope(grid, c) > 0 and r < 0.12:
 			grid.props[c] = Prop.BOULDER

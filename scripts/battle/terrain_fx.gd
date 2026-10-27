@@ -20,7 +20,8 @@ uniform float roughness = 0.85;
 uniform float wet = 0.0;
 uniform float push = 0.0;  // 1 en la hierba: se aparta y se aplasta alrededor de los Pokémon
 uniform vec4 pushers[12];  // xyz = pies de cada Pokémon, w = radio (0 = libre)
-uniform int pattern = 0;  // textura procedural: 0 lisa, 1 copa de hojas, 2 agujas de pino, 3 corteza, 4 corteza con musgo
+uniform int pattern = 0;  // textura procedural: 0 lisa, 1 copa de hojas, 2 agujas de pino, 3 corteza, 4 corteza con musgo,
+                          // 5 cactus con costillas, 6 pala de nopal
 instance uniform float base_y = 0.0;
 instance uniform float height = 1.0;
 varying vec3 rest_pos;  // posición en el mundo sin viento: la textura no resbala al mecerse
@@ -132,6 +133,22 @@ void fragment() {
 				discard;
 			}
 			BACKLIGHT = c * 0.4;  // el sol atraviesa las hojas
+		} else if (pattern == 5) {
+			// Cactus: costillas verticales (arista clara, surco oscuro) con espinas claras en fila sobre
+			// cada arista.
+			float ang = atan(q.z, q.x);
+			float rib = 0.5 + 0.5 * cos(ang * 10.0);
+			float row = fract(rest_pos.y * 14.0 + floor(ang * 10.0 / 6.2832 + 0.5) * 0.5);
+			float spine = smoothstep(0.8, 1.0, rib) * smoothstep(0.14, 0.0, abs(row - 0.5));
+			c *= mix(0.7, 1.1, rib) * mix(0.86, 1.06, vnoise(rest_pos * 12.0)) * mix(0.8, 1.0, up);
+			c = mix(c, vec3(0.95, 0.92, 0.78), spine * 0.85);
+			bump = rib * 0.012;
+		} else if (pattern == 6) {
+			// Nopal: pala lisa con areolas (puntos con espinas) repartidas y el borde algo más claro.
+			float areola = smoothstep(0.16, 0.08, leaves(rest_pos * 13.0));
+			c *= mix(0.88, 1.08, vnoise(rest_pos * 6.0));
+			c = mix(c, vec3(0.9, 0.86, 0.66), areola * 0.8);
+			bump = areola * 0.006;
 		} else {
 			// Corteza: grietas verticales irregulares, veta fina, nudos y la base más oscura; con
 			// `pattern` 4 sale musgo en la parte baja.
@@ -674,6 +691,51 @@ static func _box(st: SurfaceTool, c: Vector3, size: Vector3, color: Color, rot :
 # --- Obstáculos ----------------------------------------------------------------
 
 ## Roca irregular: esfera de pocos polígonos deformada con ruido (estable por variante).
+## Hoja de palmera a lo largo de +X (mide 1): el nervio sube y cae en arco y a cada lado salen foliolos
+## que cuelgan, largos en el centro y cortos en la base y la punta. Dos caras; normales hacia arriba.
+static func frond_mesh(v: int) -> Mesh:
+	var key := "frond_%d" % v
+	if _meshes.has(key):
+		return _meshes[key]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4241 + v * 613
+	var n := 14
+	var rise := rng.randf_range(0.3, 0.5)
+	var droop := rng.randf_range(0.6, 0.85)
+	var spine: Array[Vector3] = []
+	for i in n + 1:
+		var t := float(i) / n
+		spine.append(Vector3(t, rise * t - droop * t * t, 0.0))
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var green := Color(0.34, 0.6, 0.24)
+	for i in n:
+		var t := (i + 0.5) / n
+		var a := spine[i]
+		var b := spine[i + 1]
+		# Nervio: tira fina.
+		_double_tri(st, a + Vector3(0, 0, -0.008), b + Vector3(0, 0, -0.004), b + Vector3(0, 0, 0.004), green.darkened(0.25))
+		_double_tri(st, a + Vector3(0, 0, -0.008), b + Vector3(0, 0, 0.004), a + Vector3(0, 0, 0.008), green.darkened(0.25))
+		if t < 0.1:
+			continue
+		var length := 0.2 * sin(PI * clampf((t - 0.05) * 1.05, 0.0, 1.0)) * rng.randf_range(0.85, 1.1)
+		for side in [-1.0, 1.0]:
+			var tip := b.lerp(a, 0.2) + Vector3(0.06, -length * 0.55, side * length)
+			var col := green.darkened(rng.randf_range(0.0, 0.2)).lerp(Color(0.62, 0.62, 0.3), rng.randf() * 0.25 * t)
+			_double_tri(st, a, b, tip, col)
+	var mesh := st.commit()
+	_meshes[key] = mesh
+	return mesh
+
+
+## Triángulo con sus dos caras, normal hacia arriba (luz suave, como la hierba).
+static func _double_tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
+	for v in [a, b, c, a, c, b]:
+		st.set_normal(Vector3.UP)
+		st.set_color(color)
+		st.add_vertex(v)
+
+
 static func rock_mesh(v: int) -> Mesh:
 	var key := "rock_%d" % v
 	if _meshes.has(key):
