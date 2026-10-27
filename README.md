@@ -69,9 +69,10 @@ Si retocas un `.tres` a mano, ten en cuenta que volver a ejecutar `build_data.py
 
 ## Campos
 
-Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva, Gimnasio, Pantano, Ciudad, Laboratorio, Volcán y Playa.
+Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva, Gimnasio, Pantano, Ciudad, Laboratorio, Volcán, Playa,
+Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina.
 Cada uno genera alturas, suelos y obstáculos (árboles, rocas, cactus, columnas, cristales, edificios, farolas,
-máquinas, incubadoras, fumarolas, sombrillas) al azar, garantizando un camino entre
+máquinas, incubadoras, fumarolas, sombrillas, lápidas, estanterías, focos, cámaras, aviones, corales) al azar, garantizando un camino entre
 las dos zonas para todos: también para los que no pueden entrar al agua (Roca, Acero, Tierra) y para los de talla
 grande (hasta 3×3, como Onix). Los ríos se cruzan por vados o puentes de madera. Los obstáculos bloquean el paso.
 La **lava** solo la pisan los de tipo Fuego y los que vuelan, y potencia los ataques de Fuego desde ella.
@@ -297,7 +298,13 @@ secos, luciérnagas y bruma verdosa. Ciudad: calles de dos carriles con línea d
 elevada, bancos de consolas con pantallas y pilotos, e incubadoras de cristal con líquido que brilla. Volcán: crestas
 de basalto, río y pozas de lava (costra agrietada que se desliza sobre roca fundida que late y alumbra) con dos pasos
 de roca, ceniza, fumarolas humeantes, troncos calcinados, brasas que suben y calima. Playa: el mar en un costado con
-orilla irregular, muelle de madera, sombrillas, palmeras, conchas y dunas con hierba tierra adentro. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
+orilla irregular, muelle de madera, sombrillas, palmeras, conchas y dunas con hierba tierra adentro. Cementerio:
+noche con neblina, hierba oscura, caminos de tierra, hileras de lápidas (losa o cruz), árboles secos, faroles y
+fuegos fatuos. Estudio: plató a oscuras con escenario elevado de madera, cinta amarilla alrededor, focos que lo
+alumbran y cámaras con piloto rojo que lo enfocan. Librería: parqué, alfombras granates en los pasillos y filas de
+estanterías llenas de libros de colores, con polvo al trasluz. Aeropuerto: pista de dos carriles con línea central,
+calle de rodaje, plataforma con aviones aparcados (ocupan 3×3), terminal y farolas. Cueva submarina: caverna
+inundada en azul con islotes de roca y arena, corales que se mecen, algas, cristales y burbujas que suben. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
 puente con barandilla), y al final de la generación se abre, si hace falta, un paso sin agua y uno de 3 casillas
 de ancho (quitando obstáculos y suavizando cuestas) entre los dos bandos. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
 hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol); la hierba crece en zonas de

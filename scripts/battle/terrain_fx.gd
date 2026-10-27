@@ -876,7 +876,8 @@ static func puddle_mesh(v: int) -> Mesh:
 ## Partículas de ambiente del bioma sobre un tablero de `size` (ancho, fondo) centrado en `center`:
 ## hojas que caen en el bosque, polen en la pradera, arena que corre por el desierto, copos sueltos
 ## en la nieve, motas que brillan en la cueva, luciérnagas en el pantano, brasas que suben en el volcán,
-## motas de luz en el laboratorio. null si el bioma no tiene.
+## motas de luz en el laboratorio, fuegos fatuos en el cementerio, burbujas en la cueva submarina, polvo
+## al trasluz en la librería. null si el bioma no tiene.
 static func ambient(kind: Biome.Kind, center: Vector3, size: Vector2) -> CPUParticles3D:
 	var p := CPUParticles3D.new()
 	p.local_coords = false
@@ -998,6 +999,43 @@ static func ambient(kind: Biome.Kind, center: Vector3, size: Vector2) -> CPUPart
 			p.gravity = Vector3.ZERO
 			p.color = Color(0.45, 0.9, 1.0, 0.8)
 			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		Biome.Kind.CEMETERY:
+			p.amount = 14
+			p.lifetime = 7.0
+			ext.y = 0.4
+			p.position.y += 0.7
+			quad.size = Vector2(0.06, 0.06)
+			p.direction = Vector3(0.3, 0.3, 0.2)
+			p.spread = 180.0
+			p.initial_velocity_min = 0.05
+			p.initial_velocity_max = 0.18
+			p.gravity = Vector3.ZERO
+			p.color = Color(0.5, 0.95, 0.9, 0.85)
+			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		Biome.Kind.UNDERWATER:
+			p.amount = 50
+			p.lifetime = 5.0
+			ext.y = 0.2
+			p.position.y += 0.1
+			quad.size = Vector2(0.05, 0.05)
+			p.direction = Vector3.UP
+			p.spread = 8.0
+			p.initial_velocity_min = 0.4
+			p.initial_velocity_max = 0.8
+			p.gravity = Vector3(0.05, 0.05, 0.0)
+			p.color = Color(0.75, 0.95, 1.0, 0.7)
+		Biome.Kind.LIBRARY:
+			p.amount = 30
+			p.lifetime = 8.0
+			ext.y = 0.8
+			p.position.y += 1.2
+			quad.size = Vector2(0.025, 0.025)
+			p.direction = Vector3(0.2, -0.1, 0.1)
+			p.spread = 180.0
+			p.initial_velocity_min = 0.02
+			p.initial_velocity_max = 0.06
+			p.gravity = Vector3.ZERO
+			p.color = Color(1.0, 0.9, 0.7, 0.6)
 		_:
 			p.free()
 			return null

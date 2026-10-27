@@ -30,6 +30,10 @@ Ver README.md para las reglas y la estructura de carpetas.
   `effects.lava_blocked`; shader `TerrainFx.LAVA_SHADER`) y obstáculos `PARASOL`, `MACHINE`, `TANK`, `VENT`.
   **Gimnasio por tipo:** `Biome.GYM_STYLES` / `gym_style()`, guardado en `BoardGrid.gym_type` y `MapData.gym_type`;
   battle.gd lo toma del líder (`trainer.types[0]`) o al azar.
+- **Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina** (`CEMETERY`, `STUDIO`, `LIBRARY`, `AIRPORT`,
+  `UNDERWATER`), suelo `WOOD` y obstáculos `GRAVE`, `SHELF`, `SPOTLIGHT`, `CAMERA`, `CORAL` y el avión: `PLANE` en
+  la casilla ancla (lo dibuja entero) y `PLANE_PART` en el resto de su huella 3×3. Para quitar obstáculos usa
+  `Biome._clear_prop`, que quita el avión completo.
 - **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
   agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la

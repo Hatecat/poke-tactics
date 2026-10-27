@@ -129,7 +129,7 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	var cave := biome == Biome.Kind.CAVE
+	var cave := biome in [Biome.Kind.CAVE, Biome.Kind.UNDERWATER]
 	# Al aire libre el sol directo es varias veces más fuerte que la luz del cielo: así la sombra se ve.
 	env.ambient_light_energy = sky_info[3] * (1.0 if cave else 0.5)
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
@@ -142,10 +142,18 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 	env.ssil_enabled = true
 	env.ssil_radius = 2.0
 	env.ssil_intensity = 0.8
-	if cave:
+	if biome == Biome.Kind.UNDERWATER:
+		env.fog_enabled = true  # agua azul que apaga lo lejano
+		env.fog_light_color = Color(0.05, 0.2, 0.3)
+		env.fog_density = 0.02
+	elif cave:
 		env.fog_enabled = true
 		env.fog_light_color = Color(0.08, 0.07, 0.09)
 		env.fog_density = 0.015
+	elif biome == Biome.Kind.CEMETERY:
+		env.fog_enabled = true  # neblina nocturna
+		env.fog_light_color = Color(0.32, 0.32, 0.42)
+		env.fog_density = 0.01
 	elif biome == Biome.Kind.SWAMP:
 		env.fog_enabled = true  # bruma verdosa del pantano
 		env.fog_light_color = Color(0.5, 0.58, 0.48)

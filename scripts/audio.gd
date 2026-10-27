@@ -24,7 +24,7 @@ const TILE_STEPS := {
 	Biome.Tile.GRASS: "step_grass", Biome.Tile.DIRT: "step_soft", Biome.Tile.SAND: "step_soft",
 	Biome.Tile.SNOW: "step_snow", Biome.Tile.ICE: "step_snow", Biome.Tile.WATER: "step_water",
 	Biome.Tile.MUD: "step_water", Biome.Tile.BRIDGE: "step_stone", Biome.Tile.ROAD: "step_stone",
-	Biome.Tile.FLOOR: "step_stone",
+	Biome.Tile.FLOOR: "step_stone", Biome.Tile.WOOD: "step_stone",
 }
 
 var _sfx := {} # nombre -> [AudioStream]
@@ -161,7 +161,7 @@ func ambience(name: String) -> void:
 ## Pista para el combate según el campo.
 func battle_music(biome: int) -> String:
 	match biome:
-		Biome.Kind.CAVE: return "cave"
+		Biome.Kind.CAVE, Biome.Kind.UNDERWATER, Biome.Kind.CEMETERY: return "cave"
 		Biome.Kind.GYM: return "gym"
 		Biome.Kind.MEADOW, Biome.Kind.LAKE, Biome.Kind.BEACH: return "battle_heroic"
 	return "battle"

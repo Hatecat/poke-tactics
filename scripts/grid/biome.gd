@@ -3,32 +3,37 @@ extends RefCounted
 ## Tipos de campo: aspecto (suelo, obstáculos, cielo) y generador procedural.
 ## Por ahora son solo visuales; los efectos (p. ej. potenciar Agua en el lago) vendrán después.
 
-enum Kind { MEADOW, FOREST, MOUNTAIN, DESERT, LAKE, SNOW, CAVE, GYM, SWAMP, CITY, LAB, VOLCANO, BEACH }
-enum Tile { GRASS, DIRT, SAND, ROCK, WATER, SNOW, ICE, FLOOR, FLOOR_LINE, CAVE, BRIDGE, MUD, ROAD, LAVA }
+enum Kind { MEADOW, FOREST, MOUNTAIN, DESERT, LAKE, SNOW, CAVE, GYM, SWAMP, CITY, LAB, VOLCANO, BEACH, CEMETERY, STUDIO, LIBRARY, AIRPORT, UNDERWATER }
+enum Tile { GRASS, DIRT, SAND, ROCK, WATER, SNOW, ICE, FLOOR, FLOOR_LINE, CAVE, BRIDGE, MUD, ROAD, LAVA, WOOD }
 ## Obstáculos: bloquean el paso y no se puede estar encima.
-enum Prop { NONE, TREE, PINE, BOULDER, CACTUS, PILLAR, CRYSTAL, STALAGMITE, PALM, DEAD_TREE, BUILDING, LAMP, PARASOL, MACHINE, TANK, VENT }
+enum Prop { NONE, TREE, PINE, BOULDER, CACTUS, PILLAR, CRYSTAL, STALAGMITE, PALM, DEAD_TREE, BUILDING, LAMP, PARASOL, MACHINE, TANK, VENT, GRAVE, SHELF,
+	SPOTLIGHT, CAMERA, PLANE, PLANE_PART, CORAL }
 
 const NAMES := {
 	Kind.MEADOW: "Pradera", Kind.FOREST: "Bosque", Kind.MOUNTAIN: "Montaña", Kind.DESERT: "Desierto",
 	Kind.LAKE: "Lago", Kind.SNOW: "Nieve", Kind.CAVE: "Cueva", Kind.GYM: "Gimnasio", Kind.SWAMP: "Pantano",
 	Kind.CITY: "Ciudad", Kind.LAB: "Laboratorio", Kind.VOLCANO: "Volcán", Kind.BEACH: "Playa",
+	Kind.CEMETERY: "Cementerio", Kind.STUDIO: "Estudio", Kind.LIBRARY: "Librería", Kind.AIRPORT: "Aeropuerto",
+	Kind.UNDERWATER: "Cueva submarina",
 }
 const ICONS := {
 	Kind.MEADOW: "🌼", Kind.FOREST: "🌲", Kind.MOUNTAIN: "⛰", Kind.DESERT: "🌵",
 	Kind.LAKE: "🌊", Kind.SNOW: "❄", Kind.CAVE: "🪨", Kind.GYM: "★", Kind.SWAMP: "🐸", Kind.CITY: "🏙",
-	Kind.LAB: "⚗", Kind.VOLCANO: "🌋", Kind.BEACH: "🏖",
+	Kind.LAB: "⚗", Kind.VOLCANO: "🌋", Kind.BEACH: "🏖", Kind.CEMETERY: "🪦", Kind.STUDIO: "🎬", Kind.LIBRARY: "📚",
+	Kind.AIRPORT: "✈", Kind.UNDERWATER: "🐚",
 }
 const TILE_NAMES := {
 	Tile.GRASS: "Hierba", Tile.DIRT: "Tierra", Tile.SAND: "Arena", Tile.ROCK: "Roca", Tile.WATER: "Agua",
 	Tile.SNOW: "Nieve", Tile.ICE: "Hielo", Tile.FLOOR: "Suelo", Tile.FLOOR_LINE: "Línea", Tile.CAVE: "Cueva",
-	Tile.BRIDGE: "Puente", Tile.MUD: "Lodo", Tile.ROAD: "Calzada", Tile.LAVA: "Lava",
+	Tile.BRIDGE: "Puente", Tile.MUD: "Lodo", Tile.ROAD: "Calzada", Tile.LAVA: "Lava", Tile.WOOD: "Madera",
 }
 const PROP_NAMES := {
 	Prop.NONE: "Nada", Prop.TREE: "Árbol", Prop.PINE: "Pino", Prop.BOULDER: "Roca",
 	Prop.CACTUS: "Cactus", Prop.PILLAR: "Columna", Prop.CRYSTAL: "Cristal",
 	Prop.STALAGMITE: "Estalagmita", Prop.PALM: "Palmera", Prop.DEAD_TREE: "Árbol seco", Prop.BUILDING: "Edificio",
 	Prop.LAMP: "Farola", Prop.PARASOL: "Sombrilla", Prop.MACHINE: "Máquina", Prop.TANK: "Incubadora",
-	Prop.VENT: "Fumarola",
+	Prop.VENT: "Fumarola", Prop.GRAVE: "Lápida", Prop.SHELF: "Estantería", Prop.SPOTLIGHT: "Foco",
+	Prop.CAMERA: "Cámara", Prop.PLANE: "Avión", Prop.PLANE_PART: "Avión", Prop.CORAL: "Coral",
 }
 const TILE_COLORS := {
 	Tile.GRASS: Color(0.4, 0.66, 0.34), Tile.DIRT: Color(0.58, 0.45, 0.3), Tile.SAND: Color(0.88, 0.78, 0.52),
@@ -36,6 +41,7 @@ const TILE_COLORS := {
 	Tile.ICE: Color(0.68, 0.85, 0.95), Tile.FLOOR: Color(0.78, 0.75, 0.68), Tile.FLOOR_LINE: Color(0.85, 0.32, 0.26),
 	Tile.CAVE: Color(0.36, 0.33, 0.31), Tile.BRIDGE: Color(0.55, 0.4, 0.26), Tile.MUD: Color(0.36, 0.29, 0.2),
 	Tile.ROAD: Color(0.3, 0.3, 0.32), Tile.LAVA: Color(0.95, 0.4, 0.1),
+	Tile.WOOD: Color(0.6, 0.42, 0.26),
 }
 ## Color de los laterales de las casillas.
 const SIDE_COLORS := {
@@ -43,7 +49,8 @@ const SIDE_COLORS := {
 	Kind.DESERT: Color(0.7, 0.58, 0.38), Kind.LAKE: Color(0.42, 0.34, 0.24), Kind.SNOW: Color(0.6, 0.64, 0.72),
 	Kind.CAVE: Color(0.22, 0.2, 0.19), Kind.GYM: Color(0.45, 0.45, 0.5), Kind.SWAMP: Color(0.3, 0.25, 0.17),
 	Kind.CITY: Color(0.5, 0.5, 0.52), Kind.LAB: Color(0.55, 0.58, 0.62), Kind.VOLCANO: Color(0.2, 0.17, 0.16),
-	Kind.BEACH: Color(0.8, 0.7, 0.5),
+	Kind.BEACH: Color(0.8, 0.7, 0.5), Kind.CEMETERY: Color(0.32, 0.27, 0.22), Kind.STUDIO: Color(0.16, 0.16, 0.18),
+	Kind.LIBRARY: Color(0.42, 0.28, 0.18), Kind.AIRPORT: Color(0.45, 0.45, 0.47), Kind.UNDERWATER: Color(0.2, 0.26, 0.32),
 }
 ## Cielo (arriba, horizonte), energía del sol y luz ambiente.
 const SKIES := {
@@ -60,6 +67,11 @@ const SKIES := {
 	Kind.LAB: [Color(0.1, 0.12, 0.16), Color(0.32, 0.36, 0.42), 0.9, 0.95],
 	Kind.VOLCANO: [Color(0.25, 0.12, 0.1), Color(0.78, 0.42, 0.26), 1.0, 0.7],
 	Kind.BEACH: [Color(0.3, 0.6, 0.95), Color(0.8, 0.92, 1.0), 1.3, 0.9],
+	Kind.CEMETERY: [Color(0.12, 0.13, 0.24), Color(0.42, 0.4, 0.52), 0.65, 0.75],
+	Kind.STUDIO: [Color(0.04, 0.04, 0.06), Color(0.14, 0.13, 0.16), 0.8, 0.6],
+	Kind.LIBRARY: [Color(0.22, 0.15, 0.1), Color(0.55, 0.42, 0.3), 0.85, 0.9],
+	Kind.AIRPORT: [Color(0.35, 0.58, 0.9), Color(0.82, 0.9, 0.98), 1.2, 0.85],
+	Kind.UNDERWATER: [Color(0.02, 0.08, 0.16), Color(0.08, 0.28, 0.4), 0.6, 0.5],
 }
 ## Tipos con estilo propio de gimnasio ("" = neutral).
 const GYM_TYPES: PackedStringArray = ["", "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
@@ -125,6 +137,9 @@ static func default_tile(kind: Kind) -> Tile:
 		Kind.CITY, Kind.LAB: return Tile.FLOOR
 		Kind.VOLCANO: return Tile.ROCK
 		Kind.BEACH: return Tile.SAND
+		Kind.STUDIO: return Tile.FLOOR
+		Kind.LIBRARY: return Tile.WOOD
+		Kind.UNDERWATER: return Tile.CAVE
 	return Tile.GRASS
 
 
@@ -157,8 +172,14 @@ static func generate(grid: BoardGrid, kind: Kind, rng: RandomNumberGenerator,
 		Kind.LAB: _lab(grid, rng, clear)
 		Kind.VOLCANO: _volcano(grid, rng, clear)
 		Kind.BEACH: _beach(grid, rng, clear)
+		Kind.CEMETERY: _cemetery(grid, rng, clear)
+		Kind.STUDIO: _studio(grid, rng, clear)
+		Kind.LIBRARY: _library(grid, rng, clear)
+		Kind.AIRPORT: _airport(grid, rng, clear)
+		Kind.UNDERWATER: _underwater(grid, rng, clear)
 	for c in keep_clear:
-		grid.props[c] = Prop.NONE
+		if grid.is_blocked(c):
+			_clear_prop(grid, c)
 	_ensure_path(grid, from_cells, to_cells, rng)
 	_ensure_dry_path(grid, from_cells, to_cells, kind)
 	if kind != Kind.GYM:
@@ -532,6 +553,145 @@ static func _beach(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionar
 			grid.props[c] = Prop.PALM
 
 
+## Cementerio: lomas suaves de hierba oscura, un camino de tierra entre los bandos y otro que lo cruza,
+## hileras de lápidas, árboles secos y faroles junto al camino.
+static func _cemetery(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
+	var hf := _field(grid, rng, 0.07, 3, 10.0)
+	for c in grid.all_cells():
+		grid.heights[c] = _levels(hf[c], 1.8, 1)
+	_smooth(grid, 2)
+	var path := _trail(grid, rng)
+	var cross := grid.height / 2 + rng.randi_range(-1, 1)
+	for c in grid.all_cells():
+		if c.y == cross:
+			path[c] = true
+	for c in path:
+		grid.tiles[c] = Tile.DIRT
+	for c in grid.all_cells():
+		if clear.has(c) or path.has(c):
+			continue
+		var by_path := grid.neighbors(c).any(func(n: Vector2i) -> bool: return path.has(n))
+		var r := rng.randf()
+		if c.x % 2 == 1 and c.y % 3 != 0 and r < 0.55:
+			grid.props[c] = Prop.GRAVE  # hileras con pasillos entre ellas
+		elif by_path and r < 0.6 and r > 0.55:
+			grid.props[c] = Prop.LAMP
+		elif r > 0.96:
+			grid.props[c] = Prop.DEAD_TREE
+
+
+## Librería: suelo de parqué con alfombras en los pasillos centrales y estanterías en filas paralelas, con
+## huecos para pasar, iguales en las dos mitades.
+static func _library(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
+	var mx := grid.width / 2
+	var my := grid.height / 2
+	for c in grid.all_cells():
+		if absi(c.x - mx) <= 1 and c.x != mx + 1 or absi(c.y - my) <= 0:
+			grid.tiles[c] = Tile.FLOOR_LINE  # alfombra
+	var put := func(c: Vector2i) -> void:
+		for m in [c, Vector2i(grid.width - 1 - c.x, grid.height - 1 - c.y)]:
+			if grid.is_inside(m) and not clear.has(m) and grid.tiles[m] == Tile.WOOD:
+				grid.props[m] = Prop.SHELF
+	for y in range(my - 6, my, 2):
+		var x := rng.randi_range(1, 2)
+		while x < grid.width - 1:
+			var run := rng.randi_range(3, 5)
+			for i in run:
+				put.call(Vector2i(x + i, y))
+			x += run + rng.randi_range(1, 2)
+
+
+## Estudio: plató a oscuras con un escenario elevado de madera en el centro rodeado de cinta de marcas,
+## focos en las esquinas del escenario y cámaras que lo enfocan desde los dos lados.
+static func _studio(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
+	var mx := grid.width / 2
+	var my := grid.height / 2
+	var half := Vector2i(rng.randi_range(3, 4), 2)
+	for c in grid.all_cells():
+		var d := (c - Vector2i(mx, my)).abs()
+		if d.x < half.x and d.y < half.y:
+			grid.tiles[c] = Tile.WOOD
+			grid.heights[c] = 1
+		elif d.x <= half.x and d.y <= half.y:
+			grid.tiles[c] = Tile.FLOOR_LINE
+	var put := func(c: Vector2i, prop: Prop) -> void:
+		for m in [c, Vector2i(grid.width - 1 - c.x, grid.height - 1 - c.y)]:
+			if grid.is_inside(m) and not clear.has(m) and grid.heights[m] == 0:
+				grid.props[m] = prop
+	put.call(Vector2i(mx - half.x - 1, my - half.y - 1), Prop.SPOTLIGHT)
+	put.call(Vector2i(mx + half.x + 1, my - half.y - 1), Prop.SPOTLIGHT)
+	for x in [mx - 4, mx + 1, mx + 5]:
+		if rng.randf() < 0.8:
+			put.call(Vector2i(x, my - half.y - 3), Prop.CAMERA)
+	for y in [my - 1, my + 1]:
+		put.call(Vector2i(2, y), Prop.SPOTLIGHT)
+
+
+## Aeropuerto: pista de dos carriles que cruza el tablero, una calle de rodaje, hierba entre ellas, una
+## plataforma de hormigón con aviones aparcados (3×3) y la terminal al fondo.
+static func _airport(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
+	var my := grid.height / 2 - 1
+	var taxi := rng.randi_range(3, 5) if rng.randf() < 0.5 else rng.randi_range(grid.width - 7, grid.width - 5)
+	for c in grid.all_cells():
+		if c.y == my or c.y == my + 1 or c.x == taxi or c.x == taxi + 1:
+			grid.tiles[c] = Tile.ROAD
+	# Plataforma a un lado de la pista, lejos de la calle de rodaje, con 1 o 2 aviones
+	var apron_x := grid.width - 8 if taxi < grid.width / 2 else 1
+	var apron_y := my - 6 if rng.randf() < 0.5 else my + 3
+	for c in grid.all_cells():
+		if c.x >= apron_x and c.x < apron_x + 7 and c.y >= apron_y and c.y < apron_y + 4:
+			grid.tiles[c] = Tile.FLOOR
+	for i in rng.randi_range(1, 2):
+		var a := Vector2i(apron_x + i * 4, apron_y)
+		var cells := grid.footprint(a, 3)
+		if cells.all(func(c: Vector2i) -> bool: return grid.is_inside(c) and not clear.has(c) and not grid.is_blocked(c)):
+			for c in cells:
+				grid.props[c] = Prop.PLANE_PART
+			grid.props[a] = Prop.PLANE
+	# Terminal: un bloque de edificios en el otro lado de la pista
+	var term_y := my + 4 if apron_y < my else my - 4
+	for x in range(grid.width / 2 - 3, grid.width / 2 + 3):
+		var c := Vector2i(x, term_y)
+		if grid.is_inside(c) and not clear.has(c) and grid.tiles[c] != Tile.ROAD:
+			grid.tiles[c] = Tile.FLOOR
+			grid.props[c] = Prop.BUILDING
+	for c in grid.all_cells():
+		if clear.has(c) or grid.props[c] != Prop.NONE or grid.tiles[c] != Tile.GRASS:
+			continue
+		if grid.neighbors(c).any(func(n: Vector2i) -> bool: return grid.tiles[n] == Tile.ROAD) and rng.randf() < 0.06:
+			grid.props[c] = Prop.LAMP
+
+
+## Cueva submarina: caverna inundada con mucha agua entre islotes de roca y arena, corales, estalagmitas y
+## cristales que alumbran el azul.
+static func _underwater(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
+	var hf := _field(grid, rng, 0.08, 3, 10.0)
+	var wet := _field(grid, rng, 0.1, 3, 8.0)
+	var gems := _field(grid, rng, 0.15, 2)
+	for c in grid.all_cells():
+		grid.heights[c] = _levels(hf[c], 2.2, 2)
+	_smooth(grid, 1)
+	for c in grid.all_cells():
+		if clear.has(c):
+			continue
+		if wet[c] > 0.55:
+			grid.tiles[c] = Tile.WATER
+			grid.heights[c] = 0
+		elif wet[c] > 0.45:
+			grid.tiles[c] = Tile.SAND
+			grid.heights[c] = mini(grid.heights[c], 1)
+	for c in grid.all_cells():
+		if clear.has(c) or grid.tiles[c] == Tile.WATER:
+			continue
+		var r := rng.randf()
+		if grid.tiles[c] == Tile.SAND and r < 0.2 or r < 0.05:
+			grid.props[c] = Prop.CORAL
+		elif gems[c] > 0.7 and r < 0.15:
+			grid.props[c] = Prop.CRYSTAL
+		elif r < 0.09:
+			grid.props[c] = Prop.STALAGMITE
+
+
 ## Gimnasio: suelo plano, líneas de la arena y columnas simétricas, con el estilo del tipo del gimnasio
 ## (`grid.gym_type`): suelo de hierba, arena o roca, piscinas o lava a los lados de la arena, placas de
 ## hielo, y árboles, rocas o cristales en lugar de columnas.
@@ -756,7 +916,7 @@ static func _ensure_path(grid: BoardGrid, from_cells: Array[Vector2i], to_cells:
 				grid.heights[c] = mini(grid.get_height(c), lowest + 1)
 		var blocked := grid.all_cells().filter(func(c: Vector2i) -> bool: return grid.is_blocked(c))
 		for i in mini(blocked.size(), 6):
-			grid.props[blocked[rng.randi_range(0, blocked.size() - 1)]] = Prop.NONE
+			_clear_prop(grid, blocked[rng.randi_range(0, blocked.size() - 1)])
 
 
 ## Garantiza un paso para los Pokémon más grandes (3 casillas) que no pueden entrar al agua: busca el
@@ -780,7 +940,7 @@ static func _ensure_wide_path(grid: BoardGrid, from_cells: Array[Vector2i], to_c
 				lo = mini(lo, grid.get_height(c))
 			for c in cells:
 				if grid.is_blocked(c):
-					grid.props[c] = Prop.NONE
+					_clear_prop(grid, c)
 					touched = true
 				if grid.tiles[c] == Tile.WATER:
 					grid.tiles[c] = ford
@@ -894,8 +1054,20 @@ static func _ensure_dry_path(grid: BoardGrid, from_cells: Array[Vector2i], to_ce
 			grid.tiles[c] = ford
 		elif grid.tiles[c] == Tile.LAVA:
 			grid.tiles[c] = Tile.ROCK  # lava enfriada
-		grid.props[c] = Prop.NONE
+		if grid.is_blocked(c):
+			_clear_prop(grid, c)
 		c = prev[c]
+
+
+## Quita el obstáculo de `c`; si es parte de un avión (3×3), quita el avión entero.
+static func _clear_prop(grid: BoardGrid, c: Vector2i) -> void:
+	if grid.props[c] in [Prop.PLANE, Prop.PLANE_PART]:
+		for a in grid.all_cells():
+			if grid.props[a] == Prop.PLANE and c in grid.footprint(a, 3):
+				for p in grid.footprint(a, 3):
+					if grid.is_inside(p):
+						grid.props[p] = Prop.NONE
+	grid.props[c] = Prop.NONE
 
 
 ## Agua o lava: lo que no pisan los Pokémon de Roca, Acero o Tierra (agua) o los que no son de Fuego (lava).

@@ -47,7 +47,9 @@ const BEDROCK := {
 	Biome.Kind.CAVE: Color(0.16, 0.15, 0.15), Biome.Kind.GYM: Color(0.4, 0.4, 0.45),
 	Biome.Kind.SWAMP: Color(0.27, 0.23, 0.17), Biome.Kind.CITY: Color(0.42, 0.41, 0.42),
 	Biome.Kind.LAB: Color(0.36, 0.38, 0.42), Biome.Kind.VOLCANO: Color(0.14, 0.11, 0.1),
-	Biome.Kind.BEACH: Color(0.62, 0.5, 0.36),
+	Biome.Kind.BEACH: Color(0.62, 0.5, 0.36), Biome.Kind.CEMETERY: Color(0.24, 0.21, 0.19),
+	Biome.Kind.STUDIO: Color(0.1, 0.1, 0.11), Biome.Kind.LIBRARY: Color(0.3, 0.2, 0.13),
+	Biome.Kind.AIRPORT: Color(0.36, 0.33, 0.3), Biome.Kind.UNDERWATER: Color(0.12, 0.16, 0.2),
 }
 
 
@@ -736,6 +738,123 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			smoke.preprocess = smoke.lifetime
 			node.add_child(smoke)
 			height = 0.5
+		Biome.Prop.GRAVE:
+			# Lápida: losa de piedra con remate redondo o en cruz, algo torcida y con musgo al pie.
+			node.rotation.y = float(h % 3 - 1) * 0.12
+			node.scale = Vector3.ONE * (0.9 + float(h % 3) * 0.08)
+			var granite := Color(0.52, 0.52, 0.55).darkened(0.08 * (h % 3))
+			if h % 4 == 0:
+				_part(node, BoxMesh.new(), Vector3(0, 0.36, 0), granite).scale = Vector3(0.1, 0.72, 0.1)
+				_part(node, BoxMesh.new(), Vector3(0, 0.52, 0), granite).scale = Vector3(0.4, 0.1, 0.1)
+			else:
+				_part(node, BoxMesh.new(), Vector3(0, 0.25, 0), granite).scale = Vector3(0.44, 0.5, 0.1)
+				var cap := _part(node, _cyl(0.22, 0.22, 0.1, 12), Vector3(0, 0.5, 0), granite)
+				cap.rotation.x = PI / 2
+			_part(node, BoxMesh.new(), Vector3(0, 0.03, 0.12), granite.darkened(0.2)).scale = Vector3(0.56, 0.06, 0.4)
+			_part(node, _sphere(0.12, 0.06), Vector3(-0.15, 0.06, 0.1), Color(0.28, 0.38, 0.2))
+			node.rotation.x = float(h % 5 - 2) * 0.04
+			height = 0.6
+		Biome.Prop.SHELF:
+			# Estantería: mueble de madera con cuatro baldas llenas de libros de colores y alturas distintas.
+			node.rotation.y = 0.0
+			node.scale = Vector3.ONE
+			var wood := Color(0.42, 0.26, 0.15)
+			_part(node, BoxMesh.new(), Vector3(0, 0.75, 0), wood.darkened(0.25)).scale = Vector3(0.94, 1.5, 0.5)
+			var spines := [Color(0.6, 0.15, 0.15), Color(0.15, 0.3, 0.55), Color(0.2, 0.45, 0.25), Color(0.75, 0.6, 0.25), Color(0.4, 0.2, 0.45)]
+			for side in [-1, 1]:
+				for shelf in 4:
+					var y := 0.12 + shelf * 0.36
+					_part(node, BoxMesh.new(), Vector3(0, y - 0.02, side * 0.18), wood).scale = Vector3(0.92, 0.03, 0.16)
+					var x := -0.42
+					var i := 0
+					while x < 0.38:
+						var w := 0.05 + float((h >> (i % 8)) % 3) * 0.02
+						var tall := 0.2 + float((h + i * 7 + shelf) % 4) * 0.025
+						var book := _part(node, BoxMesh.new(), Vector3(x + w * 0.5, y + tall * 0.5, side * 0.2), spines[(h + i + shelf * 3) % 5])
+						book.scale = Vector3(w * 0.9, tall, 0.14)
+						x += w
+						i += 1
+			height = 1.5
+		Biome.Prop.SPOTLIGHT:
+			# Foco de plató: trípode, caja negra con viseras y la lente encendida; alumbra el escenario.
+			var black := Color(0.1, 0.1, 0.11)
+			for i in 3:
+				var leg := _part(node, _cyl(0.015, 0.02, 1.0), Vector3(cos(i * 2.1) * 0.15, 0.48, sin(i * 2.1) * 0.15), black)
+				leg.basis = Basis(Vector3(-sin(i * 2.1), 0, cos(i * 2.1)), 0.18)
+			var head := Node3D.new()
+			head.position = Vector3(0, 1.05, 0)
+			head.rotation.x = -0.6
+			node.add_child(head)
+			_part(head, _cyl(0.13, 0.11, 0.3, 12), Vector3.ZERO, black).rotation.x = PI / 2
+			var lens := _part(head, _cyl(0.1, 0.1, 0.02, 12), Vector3(0, 0, 0.16), Color.WHITE)
+			lens.rotation.x = PI / 2
+			_glow(lens, Color(1.0, 0.95, 0.8), 4.0)
+			var light := OmniLight3D.new()
+			light.light_color = Color(1.0, 0.92, 0.78)
+			light.light_energy = 1.4
+			light.omni_range = 3.5
+			light.position = Vector3(0, 0.9, 0.5)
+			node.add_child(light)
+			height = 1.2
+		Biome.Prop.CAMERA:
+			# Cámara de televisión sobre trípode con ruedas, objetivo largo y piloto rojo de grabación.
+			var dark := Color(0.16, 0.16, 0.18)
+			for i in 3:
+				var leg := _part(node, _cyl(0.015, 0.02, 0.8), Vector3(cos(i * 2.1) * 0.13, 0.38, sin(i * 2.1) * 0.13), dark)
+				leg.basis = Basis(Vector3(-sin(i * 2.1), 0, cos(i * 2.1)), 0.2)
+			_part(node, BoxMesh.new(), Vector3(0, 0.88, -0.04), Color(0.25, 0.26, 0.28)).scale = Vector3(0.24, 0.24, 0.4)
+			_part(node, _cyl(0.07, 0.09, 0.26, 12), Vector3(0, 0.88, 0.28), dark).rotation.x = PI / 2
+			_glow(_part(node, _sphere(0.025, 0.05), Vector3(0.08, 1.02, 0.1), Color.WHITE), Color(1.0, 0.1, 0.1), 3.0)
+			# Mira al centro del tablero
+			var to_center := -grid.to_world(c)
+			node.rotation.y = atan2(to_center.x, to_center.z)
+			height = 1.0
+		Biome.Prop.PLANE:
+			# Avión aparcado sobre su huella de 3×3: fuselaje blanco con ventanillas, alas, motores y cola.
+			node.scale = Vector3.ONE
+			var cells := grid.footprint(c, 3)
+			var mid := grid.footprint_center(cells) - grid.to_world(c)
+			node.rotation.y = 0.0
+			var body := Node3D.new()
+			body.position = Vector3(mid.x, 0, mid.z)
+			body.rotation.y = PI / 2 if h % 2 else 0.0
+			node.add_child(body)
+			var white := Color(0.94, 0.95, 0.97)
+			var stripe: Color = [Color(0.85, 0.2, 0.2), Color(0.2, 0.4, 0.8), Color(0.95, 0.65, 0.15)][h % 3]
+			var fus := _part(body, _capsule(0.32, 2.8), Vector3(0, 0.62, 0), white)
+			fus.rotation.x = PI / 2
+			var band := _part(body, _cyl(0.325, 0.325, 2.0, 16), Vector3(0, 0.62, 0), stripe)
+			band.rotation.x = PI / 2
+			band.scale = Vector3(1.0, 1.0, 0.25)
+			_part(body, BoxMesh.new(), Vector3(0, 0.74, 0.2), Color(0.15, 0.2, 0.28)).scale = Vector3(0.66, 0.08, 1.8)
+			_part(body, BoxMesh.new(), Vector3(0, 0.55, 0.05), white.darkened(0.05)).scale = Vector3(2.9, 0.06, 0.55)
+			_part(body, BoxMesh.new(), Vector3(0, 0.66, -1.2), white.darkened(0.05)).scale = Vector3(1.1, 0.05, 0.3)
+			_part(body, BoxMesh.new(), Vector3(0, 1.0, -1.22), stripe).scale = Vector3(0.05, 0.6, 0.4)
+			for k in [-0.75, 0.75]:
+				var engine := _part(body, _cyl(0.13, 0.13, 0.42, 12), Vector3(k, 0.4, 0.15), Color(0.7, 0.72, 0.76))
+				engine.rotation.x = PI / 2
+			for k in [-0.35, 0.35]:
+				_part(body, _cyl(0.06, 0.06, 0.2, 8), Vector3(k, 0.1, -0.2), Color(0.12, 0.12, 0.12)).rotation.z = PI / 2
+			_part(body, _cyl(0.06, 0.06, 0.2, 8), Vector3(0, 0.1, 1.0), Color(0.12, 0.12, 0.12)).rotation.z = PI / 2
+			height = 1.3
+		Biome.Prop.PLANE_PART:
+			pass  # lo dibuja el avión de la casilla ancla
+		Biome.Prop.CORAL:
+			# Coral: ramas que se abren desde la base, de un color vivo, con puntas más claras; se mecen
+			# con la corriente.
+			var tint: Color = [Color(0.95, 0.45, 0.55), Color(0.98, 0.6, 0.3), Color(0.65, 0.4, 0.85), Color(0.3, 0.8, 0.75)][h % 4]
+			_part(node, TerrainFx.rock_mesh(h % 4), Vector3(0, 0.04, 0), Color(0.35, 0.33, 0.3)).scale = Vector3(0.4, 0.12, 0.36)
+			for i in 5 + h % 3:
+				var a := TAU * i / 5.0 + float(h % 7)
+				var tilt := 0.25 + float((h >> i) % 3) * 0.15
+				var reach := 0.35 + float((h >> (i + 2)) % 4) * 0.08
+				var branch := Node3D.new()
+				branch.basis = Basis(Vector3(-sin(a), 0, cos(a)), tilt)
+				branch.position = Vector3(cos(a), 0, sin(a)) * 0.06
+				node.add_child(branch)
+				_leaf(branch, _cyl(0.025, 0.045, reach, 6), Vector3(0, reach * 0.5, 0), tint, 0.5, 0.2)
+				_leaf(branch, _sphere(0.04, 0.08), Vector3(0, reach, 0), tint.lightened(0.3), 0.5, 0.2)
+			height = 0.6
 	node.set_meta("sway_height", height * jitter)
 	return node
 
@@ -856,6 +975,16 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 		color = Color(0.24, 0.21, 0.2) if tile_kind == Biome.Tile.ROCK else Color(0.46, 0.43, 0.41)  # basalto y ceniza
 	elif grid.biome == Biome.Kind.LAB and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Color(0.84, 0.88, 0.92) if tile_kind == Biome.Tile.FLOOR else Color(0.3, 0.78, 0.92)
+	elif grid.biome == Biome.Kind.CEMETERY and tile_kind == Biome.Tile.GRASS:
+		color = Color(0.3, 0.42, 0.26)  # hierba oscura
+	elif grid.biome == Biome.Kind.LIBRARY and tile_kind == Biome.Tile.FLOOR_LINE:
+		color = Color(0.55, 0.14, 0.16)  # alfombra granate
+	elif grid.biome == Biome.Kind.STUDIO and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+		color = Color(0.2, 0.2, 0.22) if tile_kind == Biome.Tile.FLOOR else Color(0.95, 0.8, 0.2)  # suelo negro y cinta
+	elif grid.biome == Biome.Kind.AIRPORT and tile_kind == Biome.Tile.FLOOR:
+		color = Color(0.68, 0.67, 0.64)  # hormigón de la plataforma
+	elif grid.biome == Biome.Kind.UNDERWATER and tile_kind in [Biome.Tile.CAVE, Biome.Tile.ROCK, Biome.Tile.SAND]:
+		color = Biome.TILE_COLORS[tile_kind].lerp(Color(0.25, 0.45, 0.6), 0.35)  # todo teñido de azul
 	elif grid.biome == Biome.Kind.GYM and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Biome.gym_style(grid.gym_type).floor if tile_kind == Biome.Tile.FLOOR else Biome.gym_style(grid.gym_type).line
 	var w := grid.to_world(c)
@@ -929,6 +1058,8 @@ func _tall_grass(c: Vector2i) -> bool:
 		Biome.Kind.MOUNTAIN, Biome.Kind.DESERT: threshold = 0.35
 		Biome.Kind.CITY: threshold = 1.0  # césped cortado en el parque
 		Biome.Kind.BEACH: threshold = 0.3
+		Biome.Kind.CEMETERY: threshold = 0.25
+		Biome.Kind.AIRPORT: threshold = 1.0  # hierba segada junto a la pista
 	return _grass_noise.get_noise_2d(w.x, w.z) > threshold
 
 
@@ -984,7 +1115,9 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			if r2 < 0.2: list.append(["reeds", Color(0.45, 0.52, 0.26), 0.9, 0.45])
 			elif r2 > 0.92: list.append(["mushrooms", Color(0.75, 0.68, 0.5), 0.0, 0.1])
 		Biome.Tile.WATER:
-			if b not in [Biome.Kind.CAVE, Biome.Kind.CITY, Biome.Kind.BEACH, Biome.Kind.LAB, Biome.Kind.GYM] and _shore(c) != Vector4.ZERO and r1 < (0.7 if b == Biome.Kind.SWAMP else 0.45):
+			if b == Biome.Kind.UNDERWATER and r1 < 0.3:
+				list.append(["reeds", Color(0.2, 0.45, 0.32), 0.9, 0.45])  # algas
+			elif b not in [Biome.Kind.CAVE, Biome.Kind.CITY, Biome.Kind.BEACH, Biome.Kind.LAB, Biome.Kind.GYM, Biome.Kind.UNDERWATER, Biome.Kind.AIRPORT] and _shore(c) != Vector4.ZERO and r1 < (0.7 if b == Biome.Kind.SWAMP else 0.45):
 				list.append(["reeds", Color(0.4, 0.6, 0.28), 0.9, 0.45])
 			if b in [Biome.Kind.LAKE, Biome.Kind.MEADOW, Biome.Kind.SWAMP] and r2 < (0.45 if b == Biome.Kind.SWAMP else 0.25):
 				list.append(["lily", Color(0.3, 0.58, 0.25), 0.15, 0.3])
