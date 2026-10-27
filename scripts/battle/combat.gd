@@ -2,6 +2,7 @@ class_name Combat
 extends RefCounted
 ## Reglas puras de combate: celdas apuntables, área de efecto y cálculo de daño.
 
+const CATEGORY_NAMES := ["Físico", "Especial", "Estado"] # i18n
 const AREA_NAMES := { # i18n
 	MoveData.AreaShape.SINGLE: "individual",
 	MoveData.AreaShape.CIRCLE: "círculo",
@@ -201,7 +202,7 @@ static func hit_chance(attacker: Unit, defender: Unit, move: MoveData) -> int:
 	return clampi(roundi(base * mult), 1, 100)
 
 
-const VOLATILE_DESC := {
+const VOLATILE_DESC := { # i18n
 	"confusion": "Confunde (2-5 turnos; 1/3 de herirse y perder el turno)",
 	"leechseed": "Drenadoras: le roba 1/8 de PS cada turno",
 	"yawn": "Bostezo: se dormirá al turno siguiente",
@@ -220,7 +221,7 @@ const VOLATILE_DESC := {
 	"charge": "Su próximo ataque eléctrico hace el doble",
 	"magnetrise": "Levita 5 turnos: inmune a Tierra y a las púas",
 }
-const FIELD_DESC := {
+const FIELD_DESC := { # i18n
 	"reflect": "Zona de radio 2: los aliados reciben la mitad de daño físico (5 rondas)",
 	"lightscreen": "Zona de radio 2: los aliados reciben la mitad de daño especial (5 rondas)",
 	"auroraveil": "Solo con granizo. Zona: mitad de daño físico y especial (5 rondas)",
@@ -251,85 +252,85 @@ static func can_receive_status(target: Unit, status: MoveData.Status) -> bool:
 
 
 static func describe(move: MoveData) -> String:
-	var cat: String = ["Físico", "Especial", "Estado"][move.category]
+	var cat: String = TranslationServer.translate(CATEGORY_NAMES[move.category])
 	var lines := PackedStringArray()
-	lines.append("%s · %s" % [TYPE_NAMES.get(move.type, move.type), cat])
+	lines.append("%s · %s" % [TranslationServer.translate(TYPE_NAMES.get(move.type, move.type)), cat])
 	if move.fixed_damage > 0:
-		lines.append("Daño fijo %d · Precisión %d" % [move.fixed_damage, move.accuracy])
+		lines.append(TranslationServer.translate("Daño fijo %d · Precisión %d") % [move.fixed_damage, move.accuracy])
 	elif move.power > 0:
-		lines.append("Potencia %d · Precisión %d" % [move.power, move.accuracy])
+		lines.append(TranslationServer.translate("Potencia %d · Precisión %d") % [move.power, move.accuracy])
 	if move.hits_max > 1:
-		var hits_text := "%d golpes" % move.hits_max if move.hits_min == move.hits_max else "%d-%d golpes (Encadenado: siempre %d)" % [move.hits_min, move.hits_max, move.hits_max]
-		lines.append(hits_text + (" · potencia 20, 40 y 60" if move.id == "tripleaxel" else ""))
+		var hits_text: String = TranslationServer.translate("%d golpes") % move.hits_max if move.hits_min == move.hits_max else TranslationServer.translate("%d-%d golpes (Encadenado: siempre %d)") % [move.hits_min, move.hits_max, move.hits_max]
+		lines.append(hits_text + (TranslationServer.translate(" · potencia 20, 40 y 60") if move.id == "tripleaxel" else ""))
 	else:
-		lines.append("Precisión %d" % move.accuracy)
+		lines.append(TranslationServer.translate("Precisión %d") % move.accuracy)
 	if move.targets_self:
-		lines.append("Sobre sí mismo")
+		lines.append(TranslationServer.translate("Sobre sí mismo"))
 	else:
-		var area: String = AREA_NAMES[move.area_shape]
+		var area: String = TranslationServer.translate(AREA_NAMES[move.area_shape])
 		if move.area_shape != MoveData.AreaShape.SINGLE:
 			area += " %d" % maxi(move.area_size, move.range_max if move.area_shape == MoveData.AreaShape.LINE else 0)
-		var reach := "alrededor de sí" if move.range_max == 0 else "Alcance %d-%d" % [move.range_min, move.range_max]
-		lines.append("%s · Área: %s" % [reach, area])
+		var reach: String = TranslationServer.translate("alrededor de sí") if move.range_max == 0 else TranslationServer.translate("Alcance %d-%d") % [move.range_min, move.range_max]
+		lines.append(TranslationServer.translate("%s · Área: %s") % [reach, area])
 		if move.projectile:
-			lines.append("Proyectil: choca con lo primero que encuentre")
+			lines.append(TranslationServer.translate("Proyectil: choca con lo primero que encuentre"))
 		elif move.area_shape == MoveData.AreaShape.LINE:
-			lines.append("Rayo: atraviesa Pokémon, no obstáculos")
+			lines.append(TranslationServer.translate("Rayo: atraviesa Pokémon, no obstáculos"))
 	if move.special == "splash":
-		lines.append("No hace nada")
+		lines.append(TranslationServer.translate("No hace nada"))
 	elif move.special == "teleport":
-		lines.append("Salta a una casilla libre (ignora obstáculos y desniveles)")
+		lines.append(TranslationServer.translate("Salta a una casilla libre (ignora obstáculos y desniveles)"))
 	elif move.special == "transform":
-		lines.append("Copia al objetivo: tipos, stats salvo PS, habilidad y ataques (con la mitad de PP)")
+		lines.append(TranslationServer.translate("Copia al objetivo: tipos, stats salvo PS, habilidad y ataques (con la mitad de PP)"))
 	if move.status != MoveData.Status.NONE:
-		lines.append("%d%% de dejar %s" % [move.status_chance, STATUS_NAMES[move.status]])
+		lines.append(TranslationServer.translate("%d%% de dejar %s") % [move.status_chance, TranslationServer.translate(STATUS_NAMES[move.status])])
 	if move.volatile:
-		var vol_text: String = VOLATILE_DESC.get(move.volatile, move.volatile)
+		var vol_text: String = TranslationServer.translate(VOLATILE_DESC.get(move.volatile, move.volatile))
 		lines.append(vol_text if move.volatile_chance >= 100 else "%d%%: %s" % [move.volatile_chance, vol_text.to_lower()])
 	if move.self_volatile:
-		lines.append(VOLATILE_DESC.get(move.self_volatile, move.self_volatile))
+		lines.append(TranslationServer.translate(VOLATILE_DESC.get(move.self_volatile, move.self_volatile)))
 	if move.field_effect:
-		lines.append(FIELD_DESC.get(move.field_effect, move.field_effect))
+		lines.append(TranslationServer.translate(FIELD_DESC.get(move.field_effect, move.field_effect)))
 	var weather_note := Weather.describe(move)
 	if weather_note:
 		lines.append(weather_note)
 	if move.opposite_gender:
-		lines.append("Solo contra el sexo opuesto")
+		lines.append(TranslationServer.translate("Solo contra el sexo opuesto"))
 	if move.always_crit:
-		lines.append("Siempre es crítico")
+		lines.append(TranslationServer.translate("Siempre es crítico"))
 	elif move.crit_stage > 0:
-		lines.append("Alta probabilidad de crítico (%d%%)" % roundi(CRIT_CHANCES[mini(move.crit_stage, 3)] * 100))
+		lines.append(TranslationServer.translate("Alta probabilidad de crítico (%d%%)") % roundi(CRIT_CHANCES[mini(move.crit_stage, 3)] * 100))
 	if move.flinch_chance > 0:
-		lines.append("%d%% de hacer retroceder (retrasa su turno)" % move.flinch_chance)
+		lines.append(TranslationServer.translate("%d%% de hacer retroceder (retrasa su turno)") % move.flinch_chance)
 	if move.always_hits and not move.targets_self:
-		lines.append("No falla nunca")
+		lines.append(TranslationServer.translate("No falla nunca"))
 	if move.attack_stat == "defense":
-		lines.append("Ataca con su Defensa")
+		lines.append(TranslationServer.translate("Ataca con su Defensa"))
 	if move.hp_cost > 0.0:
-		lines.append("Cuesta %d%% de sus PS" % int(move.hp_cost * 100))
+		lines.append(TranslationServer.translate("Cuesta %d%% de sus PS") % int(move.hp_cost * 100))
 	if move.knockback > 0:
-		lines.append("Empuja %d casilla(s)" % move.knockback)
+		lines.append(TranslationServer.translate_plural("Empuja %d casilla", "Empuja %d casillas", move.knockback) % move.knockback)
 	if move.drain > 0.0:
-		lines.append("Absorbe %d%% del daño" % int(move.drain * 100))
+		lines.append(TranslationServer.translate("Absorbe %d%% del daño") % int(move.drain * 100))
 	if move.heal > 0.0:
-		lines.append("Recupera %d%% de sus PS" % int(move.heal * 100))
+		lines.append(TranslationServer.translate("Recupera %d%% de sus PS") % int(move.heal * 100))
 	if move.recoil > 0.0:
-		lines.append("Sufre %d%% del daño causado" % int(move.recoil * 100))
+		lines.append(TranslationServer.translate("Sufre %d%% del daño causado") % int(move.recoil * 100))
 	if move.self_ko:
-		lines.append("¡El usuario se debilita!")
+		lines.append(TranslationServer.translate("¡El usuario se debilita!"))
 	if not move.stat_changes.is_empty():
-		lines.append("%s al objetivo%s" % [_stages_text(move.stat_changes), "" if move.stat_chance >= 100 else " (%d%%)" % move.stat_chance])
+		lines.append(TranslationServer.translate("%s al objetivo%s") % [_stages_text(move.stat_changes), "" if move.stat_chance >= 100 else " (%d%%)" % move.stat_chance])
 	if not move.self_stat_changes.is_empty():
-		lines.append("%s al usuario (%d turnos)" % [_stages_text(move.self_stat_changes), Unit.STAGE_TURNS])
+		lines.append(TranslationServer.translate("%s al usuario (%d turnos)") % [_stages_text(move.self_stat_changes), Unit.STAGE_TURNS])
 	if move.extra_ct > 0:
-		lines.append("Turno más lento (+%d CT)" % move.extra_ct)
+		lines.append(TranslationServer.translate("Turno más lento (+%d CT)") % move.extra_ct)
 	if move.id != "struggle":
-		lines.append("PP: %d usos por combate" % move.pp)
+		lines.append(TranslationServer.translate("PP: %d usos por combate") % move.pp)
 	return "\n".join(lines)
 
 
 static func _stages_text(changes: Dictionary) -> String:
 	var parts := PackedStringArray()
 	for key: String in changes:
-		parts.append("%s %s%d" % [Unit.STAT_LABELS.get(key, key), "+" if changes[key] > 0 else "", changes[key]])
+		parts.append("%s %s%d" % [TranslationServer.translate(Unit.STAT_LABELS.get(key, key)), "+" if changes[key] > 0 else "", changes[key]])
 	return ", ".join(parts)

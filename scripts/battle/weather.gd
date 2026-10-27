@@ -127,14 +127,14 @@ static func move_penalty(kind: Kind, types: PackedStringArray) -> int:
 static func effects_text(kind: Kind) -> String:
 	match kind:
 		Kind.SUN:
-			return "Fuego ×1,5 · Agua ×0,5 · Rayo Solar sin carga · no se puede congelar"
+			return TranslationServer.translate("Fuego ×1,5 · Agua ×0,5 · Rayo Solar sin carga · no se puede congelar")
 		Kind.RAIN:
-			return "Agua ×1,5 · Fuego ×0,5 · Trueno y Vendaval no fallan"
+			return TranslationServer.translate("Agua ×1,5 · Fuego ×0,5 · Trueno y Vendaval no fallan")
 		Kind.SAND:
-			return "Daña 1/16 por turno (salvo Roca, Tierra y Acero) · Roca: Def. Esp. ×1,5"
+			return TranslationServer.translate("Daña 1/16 por turno (salvo Roca, Tierra y Acero) · Roca: Def. Esp. ×1,5")
 		Kind.HAIL:
-			return "Daña 1/16 por turno (salvo Hielo) · Hielo: Defensa ×1,5 · Ventisca no falla\nLos de tipo Volador pierden 1 casilla de movimiento (salvo Hielo)"
-	return "Sin efectos"
+			return TranslationServer.translate("Daña 1/16 por turno (salvo Hielo) · Hielo: Defensa ×1,5 · Ventisca no falla\nLos de tipo Volador pierden 1 casilla de movimiento (salvo Hielo)")
+	return TranslationServer.translate("Sin efectos")
 
 
 ## Daño al terminar el turno (arena y granizo), como fracción de los PS máximos.
@@ -153,12 +153,12 @@ static func can_freeze(kind: Kind) -> bool:
 ## Texto para la ficha de un ataque, o "" si el clima no le afecta.
 static func describe(move: MoveData) -> String:
 	if move.sets_weather:
-		return "Cambia el clima a %s (%d rondas)" % [NAMES[move.sets_weather], MOVE_ROUNDS]
+		return TranslationServer.translate("Cambia el clima a %s (%d rondas)") % [TranslationServer.translate(NAMES[move.sets_weather]), MOVE_ROUNDS]
 	match move.weather_tag:
-		"weather_ball": return "Con clima: doble potencia y cambia de tipo"
-		"storm": return "No falla con lluvia; 50% de precisión con sol"
-		"blizzard": return "No falla con granizo"
-		"solar": return "Sin carga con sol; mitad de potencia con lluvia, arena o granizo"
-		"solar_heal": return "Cura 2/3 con sol y 1/4 con otros climas"
-		"growth": return "Con sol, sube el doble"
+		"weather_ball": return TranslationServer.translate("Con clima: doble potencia y cambia de tipo")
+		"storm": return TranslationServer.translate("No falla con lluvia; 50% de precisión con sol")
+		"blizzard": return TranslationServer.translate("No falla con granizo")
+		"solar": return TranslationServer.translate("Sin carga con sol; mitad de potencia con lluvia, arena o granizo")
+		"solar_heal": return TranslationServer.translate("Cura 2/3 con sol y 1/4 con otros climas")
+		"growth": return TranslationServer.translate("Con sol, sube el doble")
 	return ""

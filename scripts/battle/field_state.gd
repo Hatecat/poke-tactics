@@ -11,7 +11,7 @@ const TAILWIND_ROUNDS := 4
 const ZONE_RADIUS := 2
 const MAX_SPIKES := 3
 
-const NAMES := {
+const NAMES := { # i18n
 	"reflect": "Reflejo", "lightscreen": "Pantalla de Luz", "auroraveil": "Velo Aurora",
 	"safeguard": "Velo Sagrado", "mist": "Neblina", "tailwind": "Viento Afín",
 	"electricterrain": "Campo Eléctrico", "grassyterrain": "Campo de Hierba",
@@ -54,25 +54,25 @@ func tick() -> PackedStringArray:
 		z.turns -= 1
 		if z.turns <= 0:
 			zones.erase(z)
-			ended.append(NAMES[z.kind])
+			ended.append(tr(NAMES[z.kind]))
 	if terrain_turns > 0:
 		terrain_turns -= 1
 		if terrain_turns == 0:
-			ended.append(NAMES[terrain])
+			ended.append(tr(NAMES[terrain]))
 			terrain = ""
 	if trick_room > 0:
 		trick_room -= 1
 		if trick_room == 0:
-			ended.append(NAMES.trickroom)
+			ended.append(tr(NAMES.trickroom))
 	if gravity > 0:
 		gravity -= 1
 		if gravity == 0:
-			ended.append(NAMES.gravity)
+			ended.append(tr(NAMES.gravity))
 	for team in 2:
 		if tailwind[team] > 0:
 			tailwind[team] -= 1
 			if tailwind[team] == 0:
-				ended.append(NAMES.tailwind)
+				ended.append(tr(NAMES.tailwind))
 	return ended
 
 
@@ -87,9 +87,9 @@ func grounded(u: Unit) -> bool:
 func summary(alive: int) -> String:
 	var parts := PackedStringArray()
 	if terrain:
-		parts.append("%s (~%d)" % [NAMES[terrain], ceili(float(terrain_turns) / alive)])
+		parts.append("%s (~%d)" % [tr(NAMES[terrain]), ceili(float(terrain_turns) / alive)])
 	if trick_room:
-		parts.append("%s (~%d)" % [NAMES.trickroom, ceili(float(trick_room) / alive)])
+		parts.append("%s (~%d)" % [tr(NAMES.trickroom), ceili(float(trick_room) / alive)])
 	if gravity:
-		parts.append("%s (~%d)" % [NAMES.gravity, ceili(float(gravity) / alive)])
+		parts.append("%s (~%d)" % [tr(NAMES.gravity), ceili(float(gravity) / alive)])
 	return "\n".join(parts)

@@ -15,7 +15,7 @@ static func all() -> Array[ItemData]:
 			if file.ends_with(".tres"):
 				_all.append(load(ITEMS_DIR + file))
 		_all.sort_custom(func(a: ItemData, b: ItemData) -> bool:
-			return a.category < b.category or (a.category == b.category and a.display_name < b.display_name))
+			return a.category < b.category or (a.category == b.category and TranslationServer.translate(a.display_name) < TranslationServer.translate(b.display_name)))
 	return _all
 
 

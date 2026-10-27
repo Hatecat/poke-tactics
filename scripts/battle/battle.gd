@@ -217,16 +217,16 @@ func _start_battle() -> void:
 			_spawn(enemy_team[i], 1, e_anchor + Vector2i((i - enemy_team.size() / 2) * 3, 0))
 	_banner_box.visible = false
 	_log_label.clear()
-	var where: String = map.map_name if map else Biome.NAMES[grid.biome]
+	var where: String = map.map_name if map else tr(Biome.NAMES[grid.biome])
 	if _story():
 		where = _story_step.get("lugar", {}).get("nombre", where)
-	_log("%s · tablero %s · %s %s. Coloca a tu equipo en la zona azul." % [where,
-		"cuadrado" if grid.topology == BoardGrid.Topology.SQUARE else "hexagonal",
-		Weather.ICONS[weather], Weather.NAMES[weather]])
+	_log(tr("%s · %s · %s %s. Coloca a tu equipo en la zona azul.") % [where,
+		tr("tablero cuadrado") if grid.topology == BoardGrid.Topology.SQUARE else tr("tablero hexagonal"),
+		Weather.ICONS[weather], tr(Weather.NAMES[weather])])
 	if _trainer_battle():
 		var t: Dictionary = Game.tower.trainer
-		_log("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar." % [Trainers.full_name(t), Trainers.types_text(t.types)])
-		_flash_turn("¡%s quiere luchar!" % Trainers.full_name(t), Color(1.0, 0.8, 0.3) if t.leader else Color(1.0, 0.6, 0.5))
+		_log(tr("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar.") % [Trainers.full_name(t), Trainers.types_text(t.types)])
+		_flash_turn(tr("¡%s quiere luchar!") % Trainers.full_name(t), Color(1.0, 0.8, 0.3) if t.leader else Color(1.0, 0.6, 0.5))
 	elif _story() and _story_step.has("rival"):
 		_log("[b]%s[/b]" % _story_step.rival)
 		_flash_turn(_story_step.rival, Color(1.0, 0.6, 0.5))
@@ -284,8 +284,8 @@ func _refresh_weather_label() -> void:
 	var left := ""
 	if _weather_turns > 0:
 		var alive := maxi(1, units.filter(func(u: Unit) -> bool: return u.is_alive()).size())
-		left = "  [color=#aaaaaa](~%d rondas)[/color]" % ceili(float(_weather_turns) / alive)
-	var shown: String = Weather.NAMES[weather] if Combat.weather == weather else "%s (anulado)" % Weather.NAMES[weather]
+		left = tr("  [color=#aaaaaa](~%d rondas)[/color]") % ceili(float(_weather_turns) / alive)
+	var shown: String = tr(Weather.NAMES[weather]) if Combat.weather == weather else tr("%s (anulado)") % tr(Weather.NAMES[weather])
 	var extra := ""
 	if effects:
 		var alive := maxi(1, units.filter(func(u: Unit) -> bool: return u.is_alive()).size())
@@ -294,7 +294,7 @@ func _refresh_weather_label() -> void:
 			extra = "\n[font_size=14]%s[/font_size]" % summary
 		for team in 2:
 			if effects.field.tailwind[team] > 0:
-				extra += "\n[font_size=14]Viento Afín (%s)[/font_size]" % ("tuyo" if team == 0 else "rival")
+				extra += "\n[font_size=14]%s[/font_size]" % (tr("Viento Afín (tuyo)") if team == 0 else tr("Viento Afín (rival)"))
 	_weather_label.text = "%s %s%s%s" % [Weather.ICONS[weather], shown, left, extra]
 	_weather_label.tooltip_text = Weather.effects_text(Combat.weather)
 
@@ -335,7 +335,7 @@ func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> v
 	u.face_towards(grid.to_world(Vector2i(grid.width / 2, grid.height / 2)))
 	u.ct = rng.randf_range(0.0, 20.0)
 	u.fainted.connect(func(x: Unit) -> void:
-		_log("¡%s se debilitó!" % x.display_name())
+		_log(tr("¡%s se debilitó!") % x.display_name())
 		Audio.sfx("faint", -4.0)
 		Audio.cry(x.data, 0.7, -6.0))
 	u.add_to_group("units")  # la hierba se aparta a su alrededor (BoardView)
@@ -373,7 +373,7 @@ func _begin_deploy() -> void:
 	_actions_box.visible = false
 	_deploy_box.visible = true
 	UiKit.clear(_order_box)
-	_hint_label.text = "Despliegue: clic en uno de tus Pokémon y luego en una casilla de la zona azul"
+	_hint_label.text = tr("Despliegue: clic en uno de tus Pokémon y luego en una casilla de la zona azul")
 	_focus_camera(grid.to_world(_zone_center(0)))
 	_refresh_deploy()
 
@@ -418,7 +418,7 @@ func _finish_deploy() -> void:
 	_deploy_box.visible = false
 	_actions_box.visible = true
 	_board.clear_highlights()
-	_log("¡Comienza el combate!")
+	_log(tr("¡Comienza el combate!"))
 	_next_turn.call_deferred()
 
 
@@ -479,12 +479,12 @@ func _next_turn() -> void:
 	if _weather_turns > 0:
 		_weather_turns -= 1
 		if _weather_turns == 0:
-			_log("El %s terminó." % Weather.NAMES[weather].to_lower())
+			_log(tr("El %s terminó.") % tr(Weather.NAMES[weather]).to_lower())
 			_set_weather(base_weather, 0)
 		_refresh_weather_label()
 	var ended := effects.field.tick()
 	if not ended.is_empty():
-		_log("Terminó: %s." % ", ".join(ended))
+		_log(tr("Terminó: %s.") % ", ".join(ended))
 		effects.refresh_visuals()
 	Combat.weather = effects.effective_weather(weather)
 	moved = false
@@ -493,8 +493,8 @@ func _next_turn() -> void:
 	_refresh_turn_order()
 	_focus_camera(active.position)
 	var again := active == previous
-	_log("[b]— Turno de %s%s —[/b]" % [active.display_name(), " (otra vez)" if again else ""])
-	_flash_turn("¡%s vuelve a actuar!" % active.display_name() if again else "Turno de %s" % active.display_name(),
+	_log(tr("[b]— Turno de %s%s —[/b]") % [active.display_name(), tr(" (otra vez)") if again else ""])
+	_flash_turn(tr("¡%s vuelve a actuar!") % active.display_name() if again else tr("Turno de %s") % active.display_name(),
 		Unit.TEAM_COLORS[active.team].lightened(0.4))
 	Audio.sfx("turn_player" if active.team == 0 else "turn_enemy", -6.0, 1.0, 0.0)
 	Audio.cry(active.data, 1.0, -12.0)
@@ -521,32 +521,32 @@ func _next_turn() -> void:
 func _start_of_turn(u: Unit) -> bool:
 	var expired := u.tick_stages()
 	if not expired.is_empty():
-		_log("Los cambios de %s de %s se disiparon." % [", ".join(expired), u.display_name()])
+		_log(tr("Los cambios de {0} de {1} se disiparon.").format([", ".join(expired), u.display_name()]))
 	if not await effects.start_of_turn(u):
 		return false
 	match u.status:
 		MoveData.Status.SLEEP:
 			if u.status_turns > 0:
 				u.status_turns -= 1
-				_popup(u, "Zzz", Color(0.7, 0.8, 1.0))
-				_log("%s está dormido." % u.display_name())
+				_popup(u, tr("Zzz"), Color(0.7, 0.8, 1.0))
+				_log(tr("%s está dormido.") % u.display_name())
 				return false
 			u.status = MoveData.Status.NONE
 			u.refresh_label()
-			_log("%s se despertó." % u.display_name())
+			_log(tr("%s se despertó.") % u.display_name())
 		MoveData.Status.FREEZE:
 			if rng.randf() < 0.2:
 				u.status = MoveData.Status.NONE
 				u.refresh_label()
-				_log("¡%s se descongeló!" % u.display_name())
+				_log(tr("¡%s se descongeló!") % u.display_name())
 			else:
 				_popup(u, "❄", Color(0.7, 0.9, 1.0))
-				_log("%s está congelado." % u.display_name())
+				_log(tr("%s está congelado.") % u.display_name())
 				return false
 		MoveData.Status.PARALYSIS:
 			if rng.randf() < 0.25:
-				_popup(u, "¡PAR!", Color(1.0, 0.9, 0.2))
-				_log("%s está paralizado y no puede moverse." % u.display_name())
+				_popup(u, tr("¡PAR!"), Color(1.0, 0.9, 0.2))
+				_log(tr("%s está paralizado y no puede moverse.") % u.display_name())
 				return false
 	return true
 
@@ -564,7 +564,7 @@ func _end_of_turn(u: Unit) -> void:
 		var dmg := maxi(1, int(u.max_hp * chip))
 		u.take_damage(dmg)
 		_popup(u, str(dmg), Color(0.85, 0.75, 0.55))
-		_log("%s sufre por el %s." % [u.display_name(), Weather.NAMES[weather].to_lower()])
+		_log(tr("%s sufre por el %s.") % [u.display_name(), tr(Weather.NAMES[weather]).to_lower()])
 		await _wait(0.4)
 		if not u.is_alive():
 			return
@@ -575,7 +575,7 @@ func _end_of_turn(u: Unit) -> void:
 			Fx.burst(self, u.global_position + Vector3.UP * u.data.model_height * 0.5, "fire", 0.8)
 		u.take_damage(dmg)
 		_popup(u, str(dmg), Color(0.75, 0.4, 1.0))
-		_log("%s sufre por estar %s." % [u.display_name(), Combat.STATUS_NAMES[u.status]])
+		_log(tr("%s sufre por estar %s.") % [u.display_name(), tr(Combat.STATUS_NAMES[u.status])])
 		await _wait(0.5)
 
 
@@ -589,7 +589,7 @@ func _end_turn() -> void:
 	turns.end_turn(active, moved, acted, _extra_ct)
 	if active.is_alive() and Items.effect(active) == "quick_claw" and rng.randf() < Items.param(active, "chance", 0.2):
 		active.ct += Items.param(active, "ct", 30)
-		_log("¡La Garra Rápida de %s le hará actuar antes!" % active.display_name())
+		_log(tr("¡La Garra Rápida de %s le hará actuar antes!") % active.display_name())
 	_board.clear_highlights()
 	_next_turn.call_deferred()
 
@@ -622,7 +622,7 @@ func _choose_facing() -> void:
 			if n not in active.footprint and n not in around:
 				around.append(n)
 	_board.highlight(around, COLOR_MOVE)
-	_hint_label.text = "¿Hacia dónde mira %s? Clic en una casilla · Enter: dejarlo así" % active.data.species_name
+	_hint_label.text = tr("¿Hacia dónde mira %s? Clic en una casilla · Enter: dejarlo así") % active.data.species_name
 
 
 func _face_cell(u: Unit, c: Vector2i) -> void:
@@ -643,11 +643,11 @@ func _check_game_over() -> bool:
 		if not units.any(func(u: Unit) -> bool: return u.team == team and u.is_alive() and not u.ally_ai):
 			state = State.GAME_OVER
 			_set_actions_enabled(false)
-			_banner.text = "¡Victoria!" if team == 1 else "Derrota..."
+			_banner.text = tr("¡Victoria!") if team == 1 else tr("Derrota...")
 			if _tower():
-				_banner.text = ("¡Piso %d superado!" if team == 1 else "Derrota en el piso %d...") % Game.tower.floor_number
+				_banner.text = (tr("¡Piso %d superado!") if team == 1 else tr("Derrota en el piso %d...")) % Game.tower.floor_number
 				if team == 1 and _trainer_battle():
-					_banner.text = "¡Has vencido a %s!" % Trainers.full_name(Game.tower.trainer)
+					_banner.text = tr("¡Has vencido a %s!") % Trainers.full_name(Game.tower.trainer)
 			_fill_banner_buttons(team == 1)
 			_banner_box.visible = true
 			Audio.music("")
@@ -667,7 +667,7 @@ func _show_menu() -> void:
 	_board.clear_highlights()
 	_board.highlight(active.footprint, COLOR_ACTIVE)
 	_set_actions_enabled(true)
-	_hint_label.text = "Elige una acción para %s" % active.data.species_name
+	_hint_label.text = tr("Elige una acción para %s") % active.data.species_name
 	_refresh_info(active)
 
 
@@ -680,7 +680,7 @@ func _begin_pick_move() -> void:
 	_compute_reach(active)
 	_board.clear_highlights()
 	_board.highlight(_destinations, COLOR_MOVE)
-	_hint_label.text = "Elige una casilla de destino (clic derecho: cancelar)"
+	_hint_label.text = tr("Elige una casilla de destino (clic derecho: cancelar)")
 
 
 func _begin_pick_target(move: MoveData) -> void:
@@ -694,7 +694,7 @@ func _begin_pick_target(move: MoveData) -> void:
 	_targets = _move_targets(active, move, active.footprint)
 	_board.clear_highlights()
 	_board.highlight(_targets, COLOR_RANGE)
-	_hint_label.text = "%s: elige el objetivo (clic derecho: cancelar)" % move.display_name
+	_hint_label.text = tr("%s: elige el objetivo (clic derecho: cancelar)") % tr(move.display_name)
 
 
 func _on_cell_clicked(c: Vector2i) -> void:
@@ -758,7 +758,7 @@ func _on_hover(c: Vector2i) -> void:
 				var t := _unit_at(c)
 				if t:
 					_board.highlight(t.footprint, COLOR_AREA)
-					_preview_label.text = "%s: %d%% de captura · %s: %d" % [t.display_name(), roundi(TowerRun.catch_chance(t, _ball_kind) * 100),
+					_preview_label.text = tr("%s: %d%% de captura · %s: %d") % [t.display_name(), roundi(TowerRun.catch_chance(t, _ball_kind) * 100),
 						TowerRun.BALLS[_ball_kind].name, _balls_left(_ball_kind)]
 			elif c in _targets:
 				var res := _resolve(active, active.footprint, selected_move, c)
@@ -798,10 +798,10 @@ func _resolve(u: Unit, from: Array[Vector2i], move: MoveData, target: Vector2i) 
 
 func _blocker_note(res: Dictionary, target: Vector2i) -> String:
 	if res.blocker == "obstacle":
-		return "[color=#ffb060]¡Hay algo en medio! El ataque chocará antes.[/color]\n"
+		return tr("[color=#ffb060]¡Hay algo en medio! El ataque chocará antes.[/color]\n")
 	if res.blocker == "unit" and res.impact != target:
 		var who := _unit_at(res.impact)
-		return "[color=#ffb060]¡%s está en la línea de tiro![/color]\n" % (who.display_name() if who else "Alguien")
+		return tr("[color=#ffb060]¡%s está en la línea de tiro![/color]\n") % (who.display_name() if who else tr("Alguien"))
 	return ""
 
 
@@ -813,21 +813,21 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 		var who := "[color=#%s]%s[/color]" % [Unit.TEAM_COLORS[t.team].lightened(0.4).to_html(false), t.display_name()]
 		var chance := _hit_chance(active, t, move)
 		if t.volatiles.has("protect"):
-			lines.append("%s: [color=#99ccff]está protegido[/color]" % who)
+			lines.append(tr("%s: [color=#99ccff]está protegido[/color]") % who)
 			continue
 		var absorbed := Abilities.absorb(active, t, move, Combat.move_type(move))
 		if absorbed:
-			lines.append("%s: [color=#999999]su %s lo anula[/color]" % [who, Abilities.display_name(t.ability)])
+			lines.append(tr("%s: [color=#999999]su %s lo anula[/color]") % [who, Abilities.display_name(t.ability)])
 			continue
 		if move.power <= 0 and move.fixed_damage <= 0:
 			if move.volatile and not (move.volatile == "curse" and "ghost" not in active.data.types):
-				lines.append("%s: %s (%d%% de acierto)" % [who, Unit.VOLATILE_SHORT.get(move.volatile, move.volatile), chance])
+				lines.append(tr("%s: %s (%d%% de acierto)") % [who, tr(Unit.VOLATILE_SHORT.get(move.volatile, move.volatile)), chance])
 				continue
 			if not move.stat_changes.is_empty():
-				lines.append("%s: %s (%d%% de acierto)" % [who, Combat._stages_text(move.stat_changes), chance])
+				lines.append(tr("%s: %s (%d%% de acierto)") % [who, Combat._stages_text(move.stat_changes), chance])
 				continue
 			var why := effects.can_status(active, t, move.status) if move.status else ""
-			lines.append("%s: %s" % [who, "%d%% de acierto" % chance if why == "" else "[color=#999999]%s[/color]" % why])
+			lines.append("%s: %s" % [who, tr("%d%% de acierto") % chance if why == "" else "[color=#999999]%s[/color]" % why])
 			continue
 		var eff := Abilities.effectiveness(active, Combat.move_type(move), t.data.types)
 		var lo := _damage(active, t, move, 0.85)
@@ -843,45 +843,45 @@ func _effect_preview(move: MoveData, area: Array[Vector2i]) -> String:
 		elif hits_max > 1:
 			lo *= hits_min
 			hi *= hits_max
-		var tag := "[color=#888888]sin efecto[/color]" if eff == 0.0 else \
-			("[color=#7ee07e]×%s muy eficaz[/color]" % ("4" if eff >= 4.0 else "2") if eff > 1.0 else \
-			("[color=#e08a7e]×%s poco eficaz[/color]" % ("¼" if eff <= 0.25 else "½") if eff < 1.0 else "×1"))
-		var ko := "  [color=#ffcc44]¡puede debilitarlo![/color]" if hi >= t.hp else ""
-		var ally := "  [color=#ff7070](¡aliado!)[/color]" if t.team == active.team else ""
+		var tag := tr("[color=#888888]sin efecto[/color]") if eff == 0.0 else \
+			(tr("[color=#7ee07e]×%s muy eficaz[/color]") % ("4" if eff >= 4.0 else "2") if eff > 1.0 else \
+			(tr("[color=#e08a7e]×%s poco eficaz[/color]") % ("¼" if eff <= 0.25 else "½") if eff < 1.0 else "×1"))
+		var ko := tr("  [color=#ffcc44]¡puede debilitarlo![/color]") if hi >= t.hp else ""
+		var ally := tr("  [color=#ff7070](¡aliado!)[/color]") if t.team == active.team else ""
 		var acc := "" if chance >= 100 else " · %d%%" % chance
 		var crit_p := Combat.crit_chance(active, move, t)
 		if crit_p > 0.05:
-			acc += " · crít. %d%%" % roundi(crit_p * 100)
+			acc += tr(" · crít. %d%%") % roundi(crit_p * 100)
 		if move.flinch_chance > 0:
-			acc += " · retroceso %d%%" % move.flinch_chance
+			acc += tr(" · retroceso %d%%") % move.flinch_chance
 		var side := effects.flank(active, t)
 		if side > 0:
-			acc += " · [color=#ffcc66]%s[/color]" % Effects.FLANK_NAMES[side]
+			acc += " · [color=#ffcc66]%s[/color]" % tr(Effects.FLANK_NAMES[side])
 		var dh := effects.height_diff(active, t)
 		if dh != 0:
-			acc += " · %s" % ("desde arriba" if dh > 0 else "desde abajo")
+			acc += " · %s" % (tr("desde arriba") if dh > 0 else tr("desde abajo"))
 		if hits_max > 1:
-			acc += " · %s golpes" % (str(hits_max) if hits_min == hits_max else "%d-%d" % [hits_min, hits_max])
-		lines.append("%s: %s · %d-%d de daño (PS %d)%s%s%s" % [who, tag, lo, hi, t.hp, acc, ko, ally])
+			acc += tr(" · %s golpes") % (str(hits_max) if hits_min == hits_max else "%d-%d" % [hits_min, hits_max])
+		lines.append(tr("%s: %s · %d-%d de daño (PS %d)%s%s%s") % [who, tag, lo, hi, t.hp, acc, ko, ally])
 	if move.targets_self:
 		var parts := PackedStringArray()
 		var heal := Weather.heal_fraction(weather, move)
 		if heal > 0.0:
-			parts.append("recupera %d PS" % mini(int(active.max_hp * heal), active.max_hp - active.hp))
+			parts.append(tr("recupera %d PS") % mini(int(active.max_hp * heal), active.max_hp - active.hp))
 		var stages := Weather.self_stages(weather, move)
 		if not stages.is_empty():
 			parts.append(Combat._stages_text(stages))
 		if move.hp_cost > 0.0:
-			parts.append("pierde %d PS" % int(active.max_hp * move.hp_cost))
+			parts.append(tr("pierde %d PS") % int(active.max_hp * move.hp_cost))
 		if move.sets_weather:
-			parts.append("el clima pasa a %s" % Weather.NAMES[move.sets_weather])
+			parts.append(tr("el clima pasa a %s") % tr(Weather.NAMES[move.sets_weather]))
 		if move.self_volatile:
-			parts.append(Unit.VOLATILE_SHORT.get(move.self_volatile, move.self_volatile))
+			parts.append(tr(Unit.VOLATILE_SHORT.get(move.self_volatile, move.self_volatile)))
 		if move.field_effect:
-			parts.append(FieldState.NAMES.get(move.field_effect, move.display_name))
+			parts.append(tr(FieldState.NAMES.get(move.field_effect, tr(move.display_name))))
 		return "%s: %s" % [active.display_name(), ", ".join(parts)]
 	if lines.is_empty():
-		return "[color=#aaaaaa]Nadie en el área[/color]"
+		return tr("[color=#aaaaaa]Nadie en el área[/color]")
 	return "\n".join(lines)
 
 
@@ -927,7 +927,7 @@ func _compute_reach(u: Unit) -> void:
 
 
 func _move_text(u: Unit) -> String:
-	return "%d (%d nadando)" % [u.move_range(), u.swim_range()] if u.swim_range() > 0 else str(u.move_range())
+	return tr("%d (%d nadando)") % [u.move_range(), u.swim_range()] if u.swim_range() > 0 else str(u.move_range())
 
 
 func _path_to(c: Vector2i) -> Array[Vector2i]:
@@ -968,7 +968,7 @@ func _move_unit(u: Unit, path: Array[Vector2i]) -> void:
 func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	if move.item_effect == "fling":
 		if user.item == null:
-			_log("%s no tiene nada que lanzar." % user.display_name())
+			_log(tr("%s no tiene nada que lanzar.") % user.display_name())
 			await _end_move(user)
 			return
 		move = move.duplicate()
@@ -981,7 +981,7 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	var area: Array[Vector2i] = res.area
 	if not move.targets_self and not self_curse:
 		user.face_towards(grid.to_world(target))
-	_log("%s usó [b]%s[/b]." % [user.display_name(), move.display_name])
+	_log(tr("%s usó [b]%s[/b].") % [user.display_name(), tr(move.display_name)])
 	_board.clear_highlights()
 	_board.highlight(area, COLOR_AREA)
 	var anim_len := user.play(move.animation, move.anim_variant, move.id)
@@ -996,13 +996,13 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	if hp_cost > 0.0:
 		var cost := int(user.max_hp * hp_cost)
 		if user.hp <= cost:
-			_log("¡Pero %s no tiene PS suficientes!" % user.display_name())
+			_log(tr("¡Pero %s no tiene PS suficientes!") % user.display_name())
 			await _end_move(user)
 			return
 		user.take_damage(cost)
 		_popup(user, str(cost), Color(1.0, 0.6, 0.4))
 	if move.self_ko and units.any(func(u: Unit) -> bool: return u.is_alive() and u.ability == "damp"):
-		_log("¡Humedad impide %s!" % move.display_name)
+		_log(tr("¡Humedad impide %s!") % tr(move.display_name))
 		await _end_move(user)
 		return
 	if move.self_volatile and not effects.apply_self_volatile(user, move.self_volatile):
@@ -1012,11 +1012,11 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 	await _play_move_fx(user, move, res)
 	if res.blocker == "obstacle":
 		Audio.sfx("hit_rock", -4.0)
-		_log("¡El ataque chocó contra un obstáculo!")
+		_log(tr("¡El ataque chocó contra un obstáculo!"))
 	elif res.blocker == "unit" and res.impact != target:
 		var who := _unit_at(res.impact)
 		if who:
-			_log("¡%s se interpuso en la trayectoria!" % who.display_name())
+			_log(tr("¡%s se interpuso en la trayectoria!") % who.display_name())
 
 	var type := Combat.move_type(move)
 	var dealt := 0
@@ -1032,11 +1032,11 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 		var block := effects.blocks_move(user, t, move)
 		if block == "protect":
 			Audio.sfx("protect", -4.0)
-			_popup(t, "¡Protegido!", Color(0.6, 0.9, 1.0))
-			_log("¡%s se protegió!" % t.display_name())
+			_popup(t, tr("¡Protegido!"), Color(0.6, 0.9, 1.0))
+			_log(tr("¡%s se protegió!") % t.display_name())
 			continue
 		if block == "substitute":
-			_log("¡El sustituto de %s lo bloqueó!" % t.display_name())
+			_log(tr("¡El sustituto de %s lo bloqueó!") % t.display_name())
 			continue
 		var absorbed := Abilities.absorb(user, t, move, type)
 		if absorbed == "" and Items.floats(t) and type == "ground" and move.category != MoveData.Category.STATUS:
@@ -1046,8 +1046,8 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 			continue
 		if t != user and rng.randi_range(1, 100) > _hit_chance(user, t, move):
 			Audio.sfx("miss", -4.0)
-			_popup(t, "Falló", Color.WHITE)
-			_log("¡%s esquivó el ataque!" % t.display_name())
+			_popup(t, tr("Falló"), Color.WHITE)
+			_log(tr("¡%s esquivó el ataque!") % t.display_name())
 			continue
 		var damaging := move.power > 0 or move.fixed_damage > 0
 		if damaging:
@@ -1073,9 +1073,9 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 				await effects.eat_pending()
 			dealt += total
 			if hits > 1:
-				_log("¡Golpeó %d %s! %s recibe %d de daño en total." % [landed, "vez" if landed == 1 else "veces", t.display_name(), total])
+				_log(tr_n("¡Golpeó %d vez! %s recibe %d de daño en total.", "¡Golpeó %d veces! %s recibe %d de daño en total.", landed) % [landed, t.display_name(), total])
 				await _wait(MULTIHIT_DELAY * 2.0)
-				_popup(t, "¡%d golpes!" % landed if landed > 1 else "1 golpe", Color(1.0, 0.8, 0.5), 1.2)
+				_popup(t, tr("¡%d golpes!") % landed if landed > 1 else tr("1 golpe"), Color(1.0, 0.8, 0.5), 1.2)
 			if type == "electric":
 				user.volatiles.erase("charge")
 		var chance_of := func(c: int) -> int: return Abilities.secondary_chance(user, t, c) if damaging else c
@@ -1085,13 +1085,13 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 				Fx.aura(self, t.position, TypeChart.color(move.type), t.data.model_height)
 				effects.set_status(user, t, move.status)
 			elif move.category == MoveData.Category.STATUS:
-				_log("No tiene efecto en %s: %s." % [t.display_name(), why])
+				_log(tr("No tiene efecto en %s: %s.") % [t.display_name(), why])
 		if t.is_alive() and move.volatile and not self_curse and rng.randi_range(1, 100) <= chance_of.call(move.volatile_chance):
 			if not effects.apply_volatile(user, t, move.volatile) and move.category == MoveData.Category.STATUS:
-				_log("No tiene efecto en %s." % t.display_name())
+				_log(tr("No tiene efecto en %s.") % t.display_name())
 		if t.is_alive() and t != user and not move.stat_changes.is_empty() and rng.randi_range(1, 100) <= chance_of.call(move.stat_chance):
 			if move.opposite_gender and not user.opposite_gender(t):
-				_log("No afecta a %s (mismo sexo o sin género)." % t.display_name())
+				_log(tr("No afecta a %s (mismo sexo o sin género).") % t.display_name())
 			else:
 				effects.drop_stats(user, t, move.stat_changes)
 		if move.item_effect and t != user:
@@ -1099,27 +1099,27 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 		if t.is_alive() and t != user and move.knockback > 0:
 			await _knockback(user, t, move.knockback)
 	if targets.is_empty() and not move.field_effect:
-		_log("...pero no había nadie.")
+		_log(tr("...pero no había nadie."))
 
 	# Efectos sobre el propio usuario.
 	if move.item_effect == "fling" and user.item:
-		_log("%s lanzó su %s." % [user.display_name(), user.item.display_name])
+		_log(tr("%s lanzó su %s.") % [user.display_name(), tr(user.item.display_name)])
 		user.lose_item(false)
 	if move.item_effect == "recycle":
 		if user.item == null and user.consumed_item:
 			user.item = user.consumed_item
 			user.consumed_item = null
-			_log("¡%s recuperó su %s!" % [user.display_name(), user.item.display_name])
+			_log(tr("¡%s recuperó su %s!") % [user.display_name(), tr(user.item.display_name)])
 		else:
-			_log("¡Pero falló!")
+			_log(tr("¡Pero falló!"))
 	if dealt > 0 and Items.effect(user) == "shell_bell":
 		_heal(user, maxi(1, int(dealt * Items.param(user, "amount", 0.125))))
 	if dealt > 0 and Items.effect(user) == "life_orb" and Abilities.takes_indirect(user):
-		effects._hurt(user, maxi(1, int(user.max_hp * Items.param(user, "cost", 0.1))), "La Vidasfera daña a %s." % user.display_name(), Color(0.9, 0.4, 0.6))
+		effects._hurt(user, maxi(1, int(user.max_hp * Items.param(user, "cost", 0.1))), tr("La Vidasfera daña a %s.") % user.display_name(), Color(0.9, 0.4, 0.6))
 	if move.drain > 0.0 and dealt > 0:
 		var drained := maxi(1, int(dealt * move.drain * (Items.param(user, "mult", 1.0) if Items.effect(user) == "big_root" else 1.0)))
 		if targets.any(func(t: Unit) -> bool: return t.ability == "liquidooze"):
-			effects._hurt(user, drained, "¡%s absorbió Viscosecreción!" % user.display_name(), Color(0.7, 0.4, 0.9))
+			effects._hurt(user, drained, tr("¡%s absorbió Viscosecreción!") % user.display_name(), Color(0.7, 0.4, 0.9))
 		else:
 			_heal(user, drained)
 	var heal := Weather.heal_fraction(Combat.weather, move)
@@ -1131,14 +1131,14 @@ func _use_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 		effects.drop_stats(user, user, self_stages)
 	if move.recoil > 0.0 and dealt > 0 and user.ability != "rockhead" and Abilities.takes_indirect(user):
 		var recoil := maxi(1, int(dealt * move.recoil))
-		effects._hurt(user, recoil, "%s sufre %d de daño por el retroceso." % [user.display_name(), recoil], Color(1.0, 0.6, 0.4))
+		effects._hurt(user, recoil, tr("%s sufre %d de daño por el retroceso.") % [user.display_name(), recoil], Color(1.0, 0.6, 0.4))
 	if move.self_ko and user.is_alive():
 		Audio.sfx("explosion")
 		user.take_damage(user.hp)
 	if move.sets_weather:
 		var alive := units.filter(func(u: Unit) -> bool: return u.is_alive()).size()
 		_set_weather(move.sets_weather, Items.weather_rounds(user, move.sets_weather, Weather.MOVE_ROUNDS) * alive)
-		_log("¡El clima cambió: %s %s!" % [Weather.ICONS[weather], Weather.NAMES[weather]])
+		_log(tr("¡El clima cambió: %s %s!") % [Weather.ICONS[weather], tr(Weather.NAMES[weather])])
 	if move.field_effect:
 		effects.apply_field(user, move, area)
 	await _end_move(user)
@@ -1173,11 +1173,11 @@ func _move_targets(u: Unit, move: MoveData, origin: Array[Vector2i]) -> Array[Ve
 
 func _special_preview(move: MoveData, c: Vector2i) -> String:
 	if move.special == "splash":
-		return "No pasará nada."
+		return tr("No pasará nada.")
 	if move.special == "transform":
 		var t := _unit_at(c)
-		return "Se transformará en %s: tipos, stats, habilidad y ataques." % TeamMember.display(t.data, t.gender) if t else ""
-	return "Aparecerá aquí al instante."
+		return tr("Se transformará en %s: tipos, stats, habilidad y ataques.") % TeamMember.display(t.data, t.gender) if t else ""
+	return tr("Aparecerá aquí al instante.")
 
 
 func _special_move(user: Unit, move: MoveData, target: Vector2i) -> void:
@@ -1189,7 +1189,7 @@ func _special_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 				tw.tween_property(user, "position:y", base.y + 0.45, 0.16).set_ease(Tween.EASE_OUT)
 				tw.tween_property(user, "position:y", base.y, 0.16).set_ease(Tween.EASE_IN)
 			await tw.finished
-			_log("¡Pero no pasó nada!")
+			_log(tr("¡Pero no pasó nada!"))
 		"teleport":
 			var color := TypeChart.color(move.type)
 			Fx.aura(self, user.position, color, user.data.model_height)
@@ -1204,13 +1204,13 @@ func _special_move(user: Unit, move: MoveData, target: Vector2i) -> void:
 			tw = create_tween()
 			tw.tween_property(user, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			await tw.finished
-			_log("¡%s se teletransportó!" % user.display_name())
+			_log(tr("¡%s se teletransportó!") % user.display_name())
 			effects.enter_cells(user, user.footprint)
 			effects.check_binds()
 		"transform":
 			var t := _unit_at(target)
 			if t == null or t == user or t.volatiles.has("substitute"):
-				_log("¡Pero falló!")
+				_log(tr("¡Pero falló!"))
 				return
 			await _transform(user, t)
 
@@ -1227,7 +1227,7 @@ func _transform(user: Unit, t: Unit) -> void:
 	tw = create_tween()
 	tw.tween_property(user, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw.finished
-	_log("¡%s se transformó en %s!" % [user.display_name(), TeamMember.display(t.data, t.gender)])
+	_log(tr("¡%s se transformó en %s!") % [user.display_name(), TeamMember.display(t.data, t.gender)])
 	if user == active:
 		_rebuild_attack_buttons(user)
 		_refresh_info(user)
@@ -1269,20 +1269,20 @@ func _ability_absorb(t: Unit, kind: String) -> void:
 	match kind:
 		"immune":
 			_popup(t, name, Color(0.8, 0.9, 1.0))
-			_log("¡%s de %s lo hace inmune!" % [name, t.display_name()])
+			_log(tr("¡{0} de {1} lo hace inmune!").format([name, t.display_name()]))
 		"heal":
-			_log("¡%s de %s absorbe el ataque!" % [name, t.display_name()])
+			_log(tr("¡{0} de {1} absorbe el ataque!").format([name, t.display_name()]))
 			_heal(t, maxi(1, t.max_hp / 4))
 		"flashfire":
 			t.volatiles["flashfire"] = {}
 			t.refresh_label()
-			_log("¡%s de %s potencia sus ataques de fuego!" % [name, t.display_name()])
+			_log(tr("¡{0} de {1} potencia sus ataques de fuego!").format([name, t.display_name()]))
 		"spa_up":
-			_log("¡%s de %s atrae el ataque!" % [name, t.display_name()])
+			_log(tr("¡{0} de {1} atrae el ataque!").format([name, t.display_name()]))
 			effects.drop_stats(t, t, {"sp_attack": 1})
 		"balloon":
-			_popup(t, "Globo Helio", Color(0.8, 0.9, 1.0))
-			_log("¡%s flota con su Globo Helio!" % t.display_name())
+			_popup(t, tr("Globo Helio"), Color(0.8, 0.9, 1.0))
+			_log(tr("¡%s flota con su Globo Helio!") % t.display_name())
 
 
 ## Precisión con los modificadores de posición (flanqueo, altura, arena).
@@ -1323,18 +1323,18 @@ func _hit_once(user: Unit, t: Unit, move: MoveData, type: String, index: int, mu
 	var eff := Abilities.effectiveness(user, type, t.data.types)
 	dmg = int(dmg * effects.resist_berry(user, t, type, eff))
 	if crit and dmg > 0:
-		_log("¡Golpe crítico!")
+		_log(tr("¡Golpe crítico!"))
 	if eff == 0.0:
-		_log("No afecta a %s..." % t.display_name())
+		_log(tr("No afecta a %s...") % t.display_name())
 	elif multi:
 		if index == 0 and move.fixed_damage == 0 and eff != 1.0:
-			_log("¡Es muy eficaz!" if eff > 1.0 else "No es muy eficaz...")
+			_log(tr("¡Es muy eficaz!") if eff > 1.0 else tr("No es muy eficaz..."))
 	elif eff > 1.0 and move.fixed_damage == 0:
-		_log("¡Es muy eficaz! (%d)" % dmg)
+		_log(tr("¡Es muy eficaz! (%d)") % dmg)
 	elif eff < 1.0 and move.fixed_damage == 0:
-		_log("No es muy eficaz... (%d)" % dmg)
+		_log(tr("No es muy eficaz... (%d)") % dmg)
 	else:
-		_log("%s recibe %d de daño." % [t.display_name(), dmg])
+		_log(tr("%s recibe %d de daño.") % [t.display_name(), dmg])
 	var real := 0
 	if dmg > 0:
 		real = effects.absorb_damage(user, t, dmg)
@@ -1349,8 +1349,8 @@ func _hit_once(user: Unit, t: Unit, move: MoveData, type: String, index: int, mu
 			var flinch := effects.flinch_chance(user, t, move)
 			if t.is_alive() and t != user and flinch > 0 and rng.randi_range(1, 100) <= flinch:
 				t.ct -= TurnManager.FLINCH_DELAY
-				_log("¡%s retrocedió! Su turno se retrasa." % t.display_name())
-				_popup(t, "¡Retrocede!", Color(0.8, 0.85, 1.0))
+				_log(tr("¡%s retrocedió! Su turno se retrasa.") % t.display_name())
+				_popup(t, tr("¡Retrocede!"), Color(0.8, 0.85, 1.0))
 				if t.ability == "steadfast":
 					effects.drop_stats(t, t, {"speed": 1})
 		effects.after_hit(user, t, move, crit)
@@ -1368,12 +1368,12 @@ func _item_move(user: Unit, t: Unit, move: MoveData) -> void:
 	match move.item_effect:
 		"steal":
 			if user.item == null and t.item and not sticky and user.is_alive():
-				_log("¡%s robó la %s de %s!" % [user.display_name(), t.item.display_name, t.display_name()])
+				_log(tr("¡{0} robó la {1} de {2}!").format([user.display_name(), tr(t.item.display_name), t.display_name()]))
 				user.item = t.item
 				t.lose_item(false)
 		"knockoff":
 			if t.item and not sticky:
-				_log("¡%s perdió su %s!" % [t.display_name(), t.item.display_name])
+				_log(tr("¡%s perdió su %s!") % [t.display_name(), tr(t.item.display_name)])
 				t.lose_item(false)
 		"swap":
 			if (user.item or t.item) and not sticky and user.ability != "stickyhold":
@@ -1382,12 +1382,12 @@ func _item_move(user: Unit, t: Unit, move: MoveData) -> void:
 				t.item = mine
 				user.choice_lock = null
 				t.choice_lock = null
-				_log("¡%s intercambió objetos con %s!" % [user.display_name(), t.display_name()])
+				_log(tr("¡%s intercambió objetos con %s!") % [user.display_name(), t.display_name()])
 			else:
-				_log("¡Pero falló!")
+				_log(tr("¡Pero falló!"))
 		"eatberry":
 			if t.item and t.item.category == ItemData.Category.BERRY and not sticky:
-				_log("¡%s se comió la %s de %s!" % [user.display_name(), t.item.display_name, t.display_name()])
+				_log(tr("¡{0} se comió la {1} de {2}!").format([user.display_name(), tr(t.item.display_name), t.display_name()]))
 				var berry := t.item
 				t.lose_item(false)
 				var saved := user.item
@@ -1404,7 +1404,7 @@ func _item_move(user: Unit, t: Unit, move: MoveData) -> void:
 						user.item = saved
 		"burnberry":
 			if t.item and t.item.category == ItemData.Category.BERRY and not sticky:
-				_log("¡La %s de %s se quemó!" % [t.item.display_name, t.display_name()])
+				_log(tr("¡La {0} de {1} se quemó!").format([tr(t.item.display_name), t.display_name()]))
 				t.lose_item(false)
 	t.refresh_label()
 	user.refresh_label()
@@ -1449,12 +1449,12 @@ func _heal(u: Unit, amount: int) -> void:
 	u.heal(amount)
 	Fx.aura(self, u.position, Fx.HEAL_COLOR, u.data.model_height)
 	_popup(u, "+%d" % amount, Color(0.4, 1.0, 0.5))
-	_log("%s recupera %d PS." % [u.display_name(), amount])
+	_log(tr("%s recupera %d PS.") % [u.display_name(), amount])
 
 
 func _knockback(src: Unit, t: Unit, cells: int) -> void:
 	if t.volatiles.has("ingrain"):
-		_log("¡%s está arraigado y no se mueve!" % t.display_name())
+		_log(tr("¡%s está arraigado y no se mueve!") % t.display_name())
 		return
 	var dir := grid.direction_towards(src.cell, t.cell)
 	var dest := t.cell
@@ -1847,18 +1847,18 @@ func _build_ui() -> void:
 	left_box.add_child(HSeparator.new())
 	_actions_box = VBoxContainer.new()
 	left_box.add_child(_actions_box)
-	_move_button = _button("Mover", _begin_pick_move)
+	_move_button = _button(tr("Mover"), _begin_pick_move)
 	_actions_box.add_child(_move_button)
-	_wait_button = _button("Terminar turno", func() -> void:
+	_wait_button = _button(tr("Terminar turno"), func() -> void:
 		if state == State.MENU: _choose_facing())
 
 	_deploy_box = VBoxContainer.new()
 	_deploy_box.add_theme_constant_override("separation", 8)
 	_deploy_box.visible = false
 	left_box.add_child(_deploy_box)
-	var deploy_help := UiKit.label("Elige un Pokémon tuyo y luego\nuna casilla azul para moverlo.", 15, Color(1, 1, 1, 0.75))
+	var deploy_help := UiKit.label(tr("Elige un Pokémon tuyo y luego\nuna casilla azul para moverlo."), 15, Color(1, 1, 1, 0.75))
 	_deploy_box.add_child(deploy_help)
-	var go := UiKit.button("¡Comenzar combate!", _finish_deploy, 20)
+	var go := UiKit.button(tr("¡Comenzar combate!"), _finish_deploy, 20)
 	go.custom_minimum_size.y = 48
 	_deploy_box.add_child(go)
 	# Diálogos de la historia: en su propia capa, por encima de los paneles del combate.
@@ -1869,8 +1869,8 @@ func _build_ui() -> void:
 	_dialogue.theme = UiKit.theme()
 	talk.add_child(_dialogue)
 	_pause = PauseMenu.new()
-	_pause.quit_text = "Volver al editor" if Game.testing_map else \
-		("Salir (el piso se reintenta después)" if _tower() else "Abandonar (volver al menú)")
+	_pause.quit_text = tr("Volver al editor") if Game.testing_map else \
+		(tr("Salir (el piso se reintenta después)") if _tower() else tr("Abandonar (volver al menú)"))
 	_pause.quit_requested.connect(_go_to_menu)
 	add_child(_pause)
 
@@ -1890,7 +1890,7 @@ func _build_ui() -> void:
 	right_box.add_child(_weather_label)
 	right_box.add_child(HSeparator.new())
 	var title := Label.new()
-	title.text = "Orden si terminas ahora"
+	title.text = tr("Orden si terminas ahora")
 	right_box.add_child(title)
 	right_box.add_child(HSeparator.new())
 	_order_box = VBoxContainer.new()
@@ -1950,7 +1950,7 @@ func _build_ui() -> void:
 	root.add_child(_hint_label)
 
 	var keys := Label.new()
-	keys.text = "Clic: seleccionar · Clic der.: cancelar · Esc: pausa · Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
+	keys.text = tr("Clic: seleccionar · Clic der.: cancelar · Esc: pausa · Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara")
 	keys.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	keys.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	keys.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -1998,21 +1998,21 @@ func _tower() -> bool:
 func _fill_banner_buttons(victory: bool) -> void:
 	UiKit.clear(_banner_buttons)
 	if _tower():
-		_banner_buttons.add_child(UiKit.button("Continuar", _finish_tower.bind(victory), 22))
+		_banner_buttons.add_child(UiKit.button(tr("Continuar"), _finish_tower.bind(victory), 22))
 		return
 	if _story():
 		if victory:
-			_banner_buttons.add_child(UiKit.button("Continuar", _finish_story, 22))
+			_banner_buttons.add_child(UiKit.button(tr("Continuar"), _finish_story, 22))
 		else:
-			_banner_buttons.add_child(UiKit.button("Reintentar", _start_battle, 22))
-			_banner_buttons.add_child(UiKit.button("Menú principal", _go_to_menu, 22))
+			_banner_buttons.add_child(UiKit.button(tr("Reintentar"), _start_battle, 22))
+			_banner_buttons.add_child(UiKit.button(tr("Menú principal"), _go_to_menu, 22))
 		return
-	_banner_buttons.add_child(UiKit.button("Revancha", _start_battle, 22))
-	_banner_buttons.add_child(UiKit.button("Nuevo rival", func() -> void:
+	_banner_buttons.add_child(UiKit.button(tr("Revancha"), _start_battle, 22))
+	_banner_buttons.add_child(UiKit.button(tr("Nuevo rival"), func() -> void:
 		Game.roll_enemy_team()
 		enemy_team = Game.enemy_team.duplicate()
 		_start_battle(), 22))
-	_banner_buttons.add_child(UiKit.button("Volver al editor" if Game.testing_map else "Menú principal", _go_to_menu, 22))
+	_banner_buttons.add_child(UiKit.button(tr("Volver al editor") if Game.testing_map else tr("Menú principal"), _go_to_menu, 22))
 
 
 ## Torre: experiencia, capturas y vuelta a la pantalla de gestión.
@@ -2071,7 +2071,7 @@ func _story_events() -> bool:
 				await _wait(0.4)
 				await u.materialize(u.global_position + Vector3.DOWN * 0.6, 0.9, Color(0.45, 0.2, 0.7))
 				Audio.cry(u.data)
-				_log("¡%s se une al combate de tu lado!" % u.display_name())
+				_log(tr("¡%s se une al combate de tu lado!") % u.display_name())
 				_refresh_turn_order()
 		await _story_dialogue(ev.get("guion", []))
 	return fired
@@ -2153,14 +2153,14 @@ func _begin_pick_ball(kind: String) -> void:
 	_board.clear_highlights()
 	_board.highlight(_ball_reach, COLOR_BALL_RANGE)
 	_board.highlight(_targets, COLOR_RANGE)
-	_hint_label.text = "%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)" % [TowerRun.BALLS[kind].name, BALL_RANGE]
+	_hint_label.text = tr("%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)") % [tr(TowerRun.BALLS[kind].name), BALL_RANGE]
 
 
 func _throw_ball(target: Vector2i) -> void:
 	var kind := _ball_kind
-	var ball_name: String = TowerRun.BALLS[kind].name
+	var ball_name: String = tr(TowerRun.BALLS[kind].name)
 	_balls_used[kind] = _balls_used.get(kind, 0) + 1
-	_log("¡%s lanza una %s!" % [active.display_name(), ball_name])
+	_log(tr("¡%s lanza una %s!") % [active.display_name(), ball_name])
 	var origin := active.footprint
 	var hit := Combat.trace(grid, origin, target, func(c: Vector2i) -> Unit:
 		var o := _unit_at(c)
@@ -2185,7 +2185,7 @@ func _throw_ball(target: Vector2i) -> void:
 	await BallFx.throw_path(self, pokeball, points, 0.4 + 0.12 * dist, clampf(dist * 0.09, 0.3, 0.9))
 	active.show_label(thrower_label)
 	if not on_target:
-		_log("La %s no llegó a ningún Pokémon salvaje..." % ball_name)
+		_log(tr("La %s no llegó a ningún Pokémon salvaje...") % ball_name)
 		Audio.sfx("ui_error", -6.0)
 		Fx.smoke(self, pokeball.global_position)
 		pokeball.queue_free()
@@ -2204,14 +2204,14 @@ func _throw_ball(target: Vector2i) -> void:
 			break
 	if escaped:
 		await BallFx.escape(self, pokeball, t)
-		_popup(t, "¡Se escapó!", Color(1.0, 0.6, 0.5))
-		_log("¡%s se escapó de la %s!" % [t.display_name(), ball_name])
+		_popup(t, tr("¡Se escapó!"), Color(1.0, 0.6, 0.5))
+		_log(tr("¡%s se escapó de la %s!") % [t.display_name(), ball_name])
 		Audio.sfx("ui_error", -6.0)
 		Audio.cry(t.data, 1.1, -8.0)
 		return
 	await BallFx.caught(self, pokeball)
-	_log("¡%s ha sido capturado!" % t.display_name())
-	_popup(t, "¡Capturado!", Color(1.0, 0.9, 0.4), 1.3)
+	_log(tr("¡%s ha sido capturado!") % t.display_name())
+	_popup(t, tr("¡Capturado!"), Color(1.0, 0.9, 0.4), 1.3)
 	Audio.sfx("ui_confirm")
 	var fade := create_tween()
 	fade.tween_interval(0.6)
@@ -2271,9 +2271,9 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		list = u.usable_moves()
 	for move in list:
 		var left: int = u.pp.get(move, move.pp)
-		var pp_text := "" if move.id == "struggle" else "   PP %d/%d" % [left, move.pp]
+		var pp_text := "" if move.id == "struggle" else tr("   PP %d/%d") % [left, move.pp]
 		var shown_type := Combat.move_type(move)
-		var b := _button("%s  [%s]%s" % [move.display_name, Combat.TYPE_NAMES.get(shown_type, shown_type), pp_text],
+		var b := _button("%s  [%s]%s" % [tr(move.display_name), tr(Combat.TYPE_NAMES.get(shown_type, shown_type)), pp_text],
 			_begin_pick_target.bind(move))
 		b.set_meta("no_pp", left <= 0)
 		var accent := StyleBoxFlat.new()
@@ -2297,7 +2297,7 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 			ball.icon = TowerRun.BALLS[kind].icon
 			ball.add_theme_constant_override("icon_max_width", 24)
 			ball.set_meta("no_pp", _balls_left(kind) <= 0)
-			ball.tooltip_text = "Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s" % TowerRun.BALLS[kind].desc
+			ball.tooltip_text = tr("Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s") % tr(TowerRun.BALLS[kind].desc)
 			_actions_box.add_child(ball)
 			_attack_buttons.append(ball)
 	_add_action_separator()
@@ -2316,12 +2316,12 @@ func _set_actions_enabled(enabled: bool) -> void:
 		_rebuild_attack_buttons(active)
 	var stuck := active != null and not active.can_move()
 	_move_button.disabled = not enabled or moved or stuck
-	_move_button.text = "Mover  (inmovilizado)" if stuck else "Mover"
+	_move_button.text = tr("Mover  (inmovilizado)") if stuck else tr("Mover")
 	for b in _attack_buttons:
 		b.disabled = not enabled or acted or b.get_meta("no_pp", false) or (active != null and not active.can_attack())
 	_wait_button.disabled = not enabled
 	if not enabled:
-		_hint_label.text = "" if state == State.GAME_OVER else "Turno rival..." if active and active.team == 1 else ""
+		_hint_label.text = "" if state == State.GAME_OVER else tr("Turno rival...") if active and active.team == 1 else ""
 
 
 func _refresh_info(u: Unit) -> void:
@@ -2335,19 +2335,19 @@ func _refresh_info(u: Unit) -> void:
 	for t: String in profile:
 		if profile[t] > 1.0:
 			weak.append(UiKit.type_bbcode(t) + (" ×4" if profile[t] >= 4.0 else ""))
-	var st: String = Combat.STATUS_NAMES.get(u.status, "")
+	var st: String = tr(Combat.STATUS_NAMES.get(u.status, ""))
 	var boosts := PackedStringArray()
 	for key: String in u.stages:
 		if u.stages[key] != 0:
-			boosts.append("[color=#%s]%s %+d[/color] (%d t.)" % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
-				Unit.STAT_SHORT[key], u.stages[key], u.stage_turns.get(key, 0)])
+			boosts.append(tr("[color=#%s]%s %+d[/color] (%d t.)") % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
+				tr(Unit.STAT_SHORT[key]), u.stages[key], u.stage_turns.get(key, 0)])
 	var vols := u.volatiles_text()
-	_info_label.text = "[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Talla %s\n%s[font_size=14]Débil a: %s[/font_size]" % [
-		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), u.item.display_name if u.item else "—", u.hp, u.max_hp,
+	_info_label.text = tr("[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Talla %s\n%s[font_size=14]Débil a: %s[/font_size]") % [
+		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), tr(u.item.display_name) if u.item else "—", u.hp, u.max_hp,
 		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
 		u.stats.attack, u.stats.defense, u.stats.sp_attack, u.stats.sp_defense,
 		u.stats.speed, int(u.ct), _move_text(u), u.data.jump, u.data.size_label(),
-		("Mejoras: " + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",
+		(tr("Mejoras: ") + ", ".join(boosts) + "\n") if not boosts.is_empty() else "",
 		", ".join(weak) if not weak.is_empty() else "—",
 	]
 

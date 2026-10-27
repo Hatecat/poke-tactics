@@ -297,8 +297,8 @@ traduzca: `locale/LEEME.md`.
   `tr_n(...)`, `TranslationServer.translate("...")` y las constantes marcadas con el comentario `# i18n`, rehace
   las plantillas y fusiona los `.po` (lo nuevo queda vacío; `--faltan en` lista lo que falta). Ejecútalo después de
   añadir o cambiar textos.
-- Hechos: menús, editores, Torre, tabla de tipos y nombres de tipos, campos y climas. Faltan los mensajes del
-  combate y los diálogos de la historia.
+- Hechos: menús, editores, Torre, tabla de tipos, y el combate entero (registro, panel del Pokémon, avisos,
+  descripción de ataques, campos y climas). Faltan los diálogos de la historia.
 
 ## Velocidad de combate
 

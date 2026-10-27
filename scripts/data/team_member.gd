@@ -184,7 +184,7 @@ func _learn(id: String, events: PackedStringArray, pending_hint := true) -> void
 		return
 	known.append(mv)
 	var who := TeamMember.display(data, gender)
-	var move_name := TranslationServer.translate(mv.display_name)
+	var move_name: String = TranslationServer.translate(mv.display_name)
 	if moves.size() < MAX_MOVES:
 		moves.append(mv)
 		learned.append(mv)

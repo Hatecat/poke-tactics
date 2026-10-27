@@ -63,8 +63,8 @@ Ver README.md para las reglas y la estructura de carpetas.
 - **Idiomas** (en curso, por tandas): `Game.language` / `apply_language()`, selector en Opciones; gettext en
   `locale/<tema>/<idioma>.po` + `<tema>.pot` (ataques/objetos/habilidades con `tools/build_translations.py`; los textos del código con
   `tools/extract_texts.py`), cargados en `Game._load_translations()`. La clave es el texto en español.
-  Hechas las tandas 1 (sistema, selector, datos) y 2 (menús, editores, Torre); faltan combate (battle.gd,
-  effects.gd, combat.gd `describe`...) e historia (cutscene y data/story/*.json).
+  Hechas las tandas 1 (sistema, selector, datos), 2 (menús, editores, Torre) y 3 (combate); falta la historia
+  (cutscene, story_run y los diálogos de data/story/*.json).
 
 ## Cómo trabajar
 

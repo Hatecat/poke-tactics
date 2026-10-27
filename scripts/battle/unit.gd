@@ -28,9 +28,9 @@ const RING_SCALE := [1.0, 1.0, 2.1, 2.9]
 const STAGE_TURNS := 3
 const MAX_STAGE := 6
 const STRUGGLE_PATH := "res://data/moves/struggle.tres"
-const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_defense": "DfE", "speed": "Vel",
+const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_defense": "DfE", "speed": "Vel", # i18n
 	"accuracy": "Pre", "evasion": "Eva", "crit": "Crít"}
-const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.",
+const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.", # i18n
 	"speed": "Velocidad", "accuracy": "Precisión", "evasion": "Evasión", "crit": "Índice crítico"}
 ## El índice de crítico va de 0 a 3 (no se puede bajar).
 const MAX_CRIT_STAGE := 3
@@ -174,11 +174,12 @@ func apply_stages(changes: Dictionary) -> String:
 		stages[key] = after
 		stage_turns[key] = STAGE_TURNS
 		if after == before:
-			parts.append("%s no puede %s más" % [STAT_LABELS.get(key, key), "subir" if changes[key] > 0 else "bajar"])
+			parts.append((tr("%s no puede subir más") if changes[key] > 0 else tr("%s no puede bajar más")) % tr(STAT_LABELS.get(key, key)))
 		else:
 			var amount := absi(after - before)
-			var verb := "subió" if after > before else "bajó"
-			parts.append("%s %s%s" % [STAT_LABELS.get(key, key), verb, " mucho" if amount >= 2 else ""])
+			var text := (tr("%s subió mucho") if amount >= 2 else tr("%s subió")) if after > before \
+				else (tr("%s bajó mucho") if amount >= 2 else tr("%s bajó"))
+			parts.append(text % tr(STAT_LABELS.get(key, key)))
 	refresh_label()
 	return ", ".join(parts)
 
@@ -233,7 +234,7 @@ func stages_text() -> String:
 	var parts := PackedStringArray()
 	for key: String in stages:
 		if stages[key] != 0:
-			parts.append("%s%s%d" % [STAT_SHORT.get(key, key), "+" if stages[key] > 0 else "", stages[key]])
+			parts.append("%s%s%d" % [tr(STAT_SHORT.get(key, key)), "+" if stages[key] > 0 else "", stages[key]])
 	return " ".join(parts)
 
 
@@ -274,7 +275,7 @@ func can_move() -> bool:
 
 
 func display_name() -> String:
-	return "%s%s" % [TeamMember.display(base_data, gender), "" if team == 0 else " (rival)"]
+	return "%s%s" % [TeamMember.display(base_data, gender), "" if team == 0 else tr(" (rival)")]
 
 
 ## ¿Son de sexos opuestos? (los sin género no cuentan).
@@ -297,7 +298,7 @@ func status_text() -> String:
 	return ""
 
 
-const VOLATILE_SHORT := {
+const VOLATILE_SHORT := { # i18n
 	"confusion": "Confuso", "leechseed": "Drenadoras", "yawn": "Somnoliento", "taunt": "Mofa",
 	"nightmare": "Pesadilla", "curse": "Maldito", "perish": "Canto Mortal", "protect": "Protegido",
 	"endure": "Aguante", "substitute": "Sustituto", "ingrain": "Arraigado", "aquaring": "Acua Aro",
@@ -312,7 +313,7 @@ func volatiles_text() -> String:
 		# Las marcas internas (ability_used, protect_used) no tienen nombre y no se muestran.
 		if not VOLATILE_SHORT.has(key):
 			continue
-		var label: String = VOLATILE_SHORT[key]
+		var label: String = tr(VOLATILE_SHORT[key])
 		if key == "perish":
 			label += " %d" % volatiles[key].turns
 		parts.append(label)
