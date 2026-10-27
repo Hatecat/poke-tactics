@@ -219,7 +219,7 @@ func _start_battle() -> void:
 	_log_label.clear()
 	var where: String = map.map_name if map else tr(Biome.NAMES[grid.biome])
 	if _story():
-		where = _story_step.get("lugar", {}).get("nombre", where)
+		where = tr(_story_step.get("lugar", {}).get("nombre", where))
 	_log(tr("%s · %s · %s %s. Coloca a tu equipo en la zona azul.") % [where,
 		tr("tablero cuadrado") if grid.topology == BoardGrid.Topology.SQUARE else tr("tablero hexagonal"),
 		Weather.ICONS[weather], tr(Weather.NAMES[weather])])
@@ -228,8 +228,8 @@ func _start_battle() -> void:
 		_log(tr("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar.") % [Trainers.full_name(t), Trainers.types_text(t.types)])
 		_flash_turn(tr("¡%s quiere luchar!") % Trainers.full_name(t), Color(1.0, 0.8, 0.3) if t.leader else Color(1.0, 0.6, 0.5))
 	elif _story() and _story_step.has("rival"):
-		_log("[b]%s[/b]" % _story_step.rival)
-		_flash_turn(_story_step.rival, Color(1.0, 0.6, 0.5))
+		_log("[b]%s[/b]" % tr(_story_step.rival))
+		_flash_turn(tr(_story_step.rival), Color(1.0, 0.6, 0.5))
 	await _send_out_intro()
 	_begin_deploy()
 

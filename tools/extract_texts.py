@@ -7,6 +7,9 @@ Busca en los scripts:
     se toman sus textos, salvo las claves de diccionario, las rutas y los identificadores en minúsculas que no
     son valores de un diccionario (["idle", "Reposo"] → solo "Reposo").
 
+En los capítulos de la historia (data/story/*.json) se toman los campos de texto (JSON_FIELDS): diálogos,
+narración, nombres de personajes y lugares, rótulos.
+
 Cada carpeta de scripts va a un tema (THEMES); un texto que aparece en varios temas queda en el primero.
 Se rehace locale/<tema>/<tema>.pot y se fusiona cada <idioma>.po: lo ya traducido se conserva, lo nuevo queda
 vacío para traducir y lo que ya no existe se quita.
@@ -17,6 +20,7 @@ Uso:
 """
 import argparse
 import ast
+import json
 import re
 from pathlib import Path
 
@@ -29,8 +33,10 @@ THEMES = {
     "interfaz": ["scripts/ui/*.gd", "scripts/game.gd", "scripts/audio.gd", "scripts/tower_run.gd", "scripts/data/*.gd",
                  "scripts/grid/*.gd"],
     "combate": ["scripts/battle/*.gd"],
-    "historia": ["scripts/story/*.gd"],
+    "historia": ["scripts/story/*.gd", "data/story/*.json"],
 }
+# Campos de los capítulos que se muestran al jugador.
+JSON_FIELDS = {"texto", "narrar", "nombre", "titulo", "subtitulo", "rival"}
 CALLS = re.compile(r"(?:\btr|\btr_n|TranslationServer\.translate|TranslationServer\.translate_plural)\(\s*$")
 PLACEHOLDER = re.compile(r"%[-0-9.]*[sdf]|\{\w*\}")
 
@@ -143,6 +149,33 @@ def extract(path):
     return found
 
 
+def extract_json(path):
+    """[(texto, None, ruta dentro del JSON, nota)] de un capítulo."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    names = {k: v.get("nombre", k) for k, v in data.get("personajes", {}).items()}
+    found = []
+
+    def walk(node, where):
+        if isinstance(node, list):
+            for i, v in enumerate(node):
+                walk(v, f"{where}[{i}]")
+        elif isinstance(node, dict):
+            speaker = node.get("decir") or node.get("siente")
+            for k, v in node.items():
+                if k in JSON_FIELDS and isinstance(v, str) and useful(v):
+                    note = ""
+                    if k == "texto" and speaker:
+                        note = ("Lo que siente " if "siente" in node else "Habla: ") + names.get(speaker, speaker)
+                    elif k == "narrar":
+                        note = "Narración"
+                    found.append((v, None, f"{where}.{k}", note))
+                else:
+                    walk(v, f"{where}.{k}" if where else k)
+
+    walk(data, "")
+    return found
+
+
 def collect():
     """{tema: [entradas]} de todos los scripts."""
     seen, out = set(), {}
@@ -151,13 +184,16 @@ def collect():
         for g in globs:
             for path in sorted(PROJECT.glob(g)):
                 rel = path.relative_to(PROJECT)
-                for text, plural, line in extract(path):
+                found = extract_json(path) if path.suffix == ".json" else [(*f, "") for f in extract(path)]
+                for text, plural, line, note in found:
                     key = (text, plural)
                     if key in seen and key not in entries:
                         continue
                     seen.add(key)
                     e = entries.setdefault(key, {"id": text, "plural": plural, "refs": [], "notes": []})
                     e["refs"].append(f"{rel}:{line}")
+                    if note and note not in e["notes"]:
+                        e["notes"].append(note)
                     if PLACEHOLDER.search(text) and not e["notes"]:
                         e["notes"].append("%s, %d y {...} se rellenan con datos del juego: déjalos tal cual.")
         out[theme] = list(entries.values())

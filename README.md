@@ -286,19 +286,20 @@ la que está en uso sale al pasar el ratón por el desplegable.
 
 Español (el original) e inglés, en *Opciones → Idioma* (por defecto, el del sistema). Las traducciones son
 archivos gettext en `locale/<tema>/<idioma>.po`, con el texto en español como clave (msgid), una carpeta por tema
-(`ataques`, `objetos`, `habilidades`, `interfaz`, `combate`; luego `historia`) para poder traducir varios temas a
+(`ataques`, `objetos`, `habilidades`, `interfaz`, `combate`, `historia`) para poder traducir varios temas a
 la vez. El juego carga todos los `.po` al arrancar y ofrece cada idioma que tenga alguno. Guía para quien
 traduzca: `locale/LEEME.md`.
 
 - Ataques, objetos y habilidades: `python3 tools/build_translations.py <dir_datos>` rehace las plantillas `.pot`
   y fusiona los `.po` (conserva lo traducido, rellena lo nuevo con PokeAPI; `--nuevo fr` crea un idioma). Los
   textos propios del juego van en su lista `MANUAL`. Vuelve a ejecutarlo después de `build_data.py` o `build_items.py`.
-- Textos del código (interfaz, combate, historia): `python3 tools/extract_texts.py` busca los `tr("...")`,
-  `tr_n(...)`, `TranslationServer.translate("...")` y las constantes marcadas con el comentario `# i18n`, rehace
+- Textos del código y de la historia: `python3 tools/extract_texts.py` busca los `tr("...")`,
+  `tr_n(...)`, `TranslationServer.translate("...")`, las constantes marcadas con el comentario `# i18n` y los
+  textos de los capítulos (`data/story/*.json`: diálogos, narración, nombres, lugares, rótulos), rehace
   las plantillas y fusiona los `.po` (lo nuevo queda vacío; `--faltan en` lista lo que falta). Ejecútalo después de
   añadir o cambiar textos.
-- Hechos: menús, editores, Torre, tabla de tipos, y el combate entero (registro, panel del Pokémon, avisos,
-  descripción de ataques, campos y climas). Faltan los diálogos de la historia.
+- Todo el juego está en inglés: menús, editores, Torre, tabla de tipos, el combate entero y el modo historia
+  (diálogos y rótulos del capítulo 1). Al añadir un capítulo o escena, vuelve a ejecutar `extract_texts.py`.
 
 ## Velocidad de combate
 

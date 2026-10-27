@@ -109,7 +109,7 @@ func _build_place() -> void:
 	_cam_rig.position = _point(center) if center != null else _actors_center()
 	_cam_rig.position.y = 0.0
 	if place.has("nombre"):
-		_place_label.text = place.nombre
+		_place_label.text = tr(place.nombre)
 		var tw := create_tween()
 		tw.tween_property(_place_label, "modulate:a", 1.0, 0.6)
 		tw.tween_interval(3.0)
@@ -480,15 +480,15 @@ func _learn_moves() -> void:
 		var who := TeamMember.display(m.data, m.gender)
 		var options := PackedStringArray()
 		for old in m.moves:
-			options.append("Olvidar %s" % old.display_name)
-		options.append("No aprender %s" % mv.display_name)
-		var pick := await _dialogue.choose({}, "%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?" % [who, mv.display_name], options)
+			options.append(tr("Olvidar %s") % tr(old.display_name))
+		options.append(tr("No aprender %s") % tr(mv.display_name))
+		var pick := await _dialogue.choose({}, tr("%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?") % [who, tr(mv.display_name)], options)
 		if pick < m.moves.size():
 			var old := m.moves[pick]
 			m.moves[pick] = mv
-			await _dialogue.say({}, "1, 2 y... ¡listo! %s olvidó %s y aprendió %s." % [who, old.display_name, mv.display_name])
+			await _dialogue.say({}, tr("1, 2 y... ¡listo! %s olvidó %s y aprendió %s.") % [who, tr(old.display_name), tr(mv.display_name)])
 		else:
-			await _dialogue.say({}, "%s no aprendió %s." % [who, mv.display_name])
+			await _dialogue.say({}, tr("%s no aprendió %s.") % [who, tr(mv.display_name)])
 	_story.pending_moves = []
 	_dialogue.close()
 
@@ -505,7 +505,7 @@ func _title_card() -> void:
 	for line: Array in [[_step.get("titulo", ""), 54, UiKit.ACCENT], [_step.get("subtitulo", ""), 26, Color(1, 1, 1, 0.85)]]:
 		if line[0] == "":
 			continue
-		var l := UiKit.label(line[0], line[1], line[2])
+		var l := UiKit.label(tr(line[0]), line[1], line[2])
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.add_theme_constant_override("outline_size", 10)
 		l.add_theme_color_override("font_outline_color", Color.BLACK)
@@ -542,7 +542,7 @@ func _build_ui() -> void:
 	root.add_child(_place_label)
 	_dialogue = DialogueBox.new()
 	root.add_child(_dialogue)
-	var skip := UiKit.button("Saltar escena ▸▸", _finish, 16)
+	var skip := UiKit.button(tr("Saltar escena ▸▸"), _finish, 16)
 	skip.anchor_left = 1.0
 	skip.anchor_right = 1.0
 	skip.offset_left = -200

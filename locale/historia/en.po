@@ -1,0 +1,692 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/story/cutscene.gd:483
+msgid "Olvidar %s"
+msgstr "Forget %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/story/cutscene.gd:484
+msgid "No aprender %s"
+msgstr "Don't learn %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/story/cutscene.gd:485
+msgid "%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?"
+msgstr "%s wants to learn %s, but it already knows four moves. Which one should it forget?"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/story/cutscene.gd:489
+msgid "1, 2 y... ¡listo! %s olvidó %s y aprendió %s."
+msgstr "1, 2 and... poof! %s forgot %s and learned %s."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/story/cutscene.gd:491
+msgid "%s no aprendió %s."
+msgstr "%s did not learn %s."
+
+#: scripts/story/cutscene.gd:545
+msgid "Saltar escena ▸▸"
+msgstr "Skip scene ▸▸"
+
+#: data/story/capitulo1.json:.titulo
+msgid "Capítulo 1: Huellas en la niebla"
+msgstr "Chapter 1: Footprints in the Fog"
+
+#: data/story/capitulo1.json:personajes.cristina.nombre
+msgid "Cristina"
+msgstr "Cristina"
+
+#: data/story/capitulo1.json:personajes.papa.nombre
+msgid "Papá"
+msgstr "Dad"
+
+#: data/story/capitulo1.json:personajes.mama.nombre
+msgid "Mamá"
+msgstr "Mom"
+
+#: data/story/capitulo1.json:personajes.rufian.nombre
+msgid "Rufián"
+msgstr "Thug"
+
+#: data/story/capitulo1.json:personajes.rufiana.nombre
+msgid "Rufiana"
+msgstr "Thug"
+
+#: data/story/capitulo1.json:personajes.eevee.nombre
+msgid "Eevee"
+msgstr "Eevee"
+
+#: data/story/capitulo1.json:personajes.pidgey.nombre
+msgid "Pidgey"
+msgstr "Pidgey"
+
+#: data/story/capitulo1.json:personajes.gengar.nombre
+msgid "Gengar"
+msgstr "Gengar"
+
+#: data/story/capitulo1.json:personajes.hermano.nombre
+msgid "Hermano"
+msgstr "Brother"
+
+#: data/story/capitulo1.json:personajes.tentacool.nombre
+msgid "Tentacool"
+msgstr "Tentacool"
+
+#: data/story/capitulo1.json:personajes.krabby.nombre
+msgid "Krabby"
+msgstr "Krabby"
+
+#: data/story/capitulo1.json:pasos[0].titulo
+#: data/story/capitulo1.json:pasos[6].titulo
+msgid "Capítulo 1"
+msgstr "Chapter 1"
+
+#: data/story/capitulo1.json:pasos[0].subtitulo
+msgid "Huellas en la niebla · Primera parte"
+msgstr "Footprints in the Fog · Part One"
+
+#: data/story/capitulo1.json:pasos[1].lugar.nombre
+msgid "Pueblo Lavanda"
+msgstr "Lavender Town"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[1].guion[0].narrar
+msgid "Pueblo Lavanda. Han pasado muchos años desde que los grandes campeones recorrieron Kanto, pero la niebla sigue bajando cada mañana desde la Torre Pokémon."
+msgstr "Lavender Town. Many years have passed since the great champions traveled across Kanto, but the fog still rolls down from the Pokémon Tower every morning."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[3].texto
+msgid "¡Mamá, mira! Eevee ya aprendió Ataque Rápido. Bueno... casi."
+msgstr "Mom, look! Eevee learned Quick Attack. Well... almost."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[1].guion[7].texto
+msgid "Qué Eevee tan bonito. ¿Es tuyo, cielo?"
+msgstr "What a pretty Eevee. Is it yours, sweetie?"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[9].texto
+msgid "...Sí, mamá. Me lo regaló papá. Hace dos años."
+msgstr "...Yes, Mom. Dad gave it to me. Two years ago."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[1].guion[10].texto
+msgid "Ah... claro. Claro que sí."
+msgstr "Oh... of course. Of course it is."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[14].texto
+msgid "Cristina, ¿me ayudas a preparar el té de tu madre? Le gusta mirar la niebla un rato antes."
+msgstr "Cristina, will you help me make your mother's tea? She likes to watch the fog for a while first."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[17].texto
+msgid "Papá... cada día se acuerda de menos cosas."
+msgstr "Dad... every day she remembers less."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[18].texto
+msgid "Hay días buenos y días malos. Hoy es de los malos, nada más."
+msgstr "There are good days and bad days. Today's just one of the bad ones."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[19].texto
+msgid "Ayer se rió con tu Pidgey toda la tarde. ¿Te acuerdas? Eso también cuenta."
+msgstr "Yesterday she laughed with your Pidgey all afternoon. Remember? That counts too."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[23].texto
+msgid "¡Pidgey! Ya vuela casi sin cojear. Cuando lo encontré con el ala rota pensé que no lo lograría."
+msgstr "Pidgey! It flies with barely a wobble now. When I found it with a broken wing, I didn't think it would make it."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[24].texto
+msgid "Lo cuidaste todo el invierno. Tienes buena mano con los Pokémon."
+msgstr "You looked after it all winter. You have a gift with Pokémon."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[26].texto
+msgid "Entonces déjame empezar mi viaje. Tengo quince años. ¡Mi hermano se fue a Johto con catorce!"
+msgstr "Then let me start my journey. I'm fifteen. My brother left for Johto when he was fourteen!"
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[27].texto
+msgid "Tu hermano se fue cuando tu madre estaba bien."
+msgstr "Your brother left when your mother was well."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[29].texto
+msgid "No puedo cuidarla a ella y además pasarme las noches preguntándome dónde estás tú."
+msgstr "I can't look after her and also spend every night wondering where you are."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[30].texto
+msgid "¡Pero yo no soy una niña! Puedo cuidarme sola."
+msgstr "But I'm not a little girl! I can take care of myself."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[31].texto
+msgid "No es un no para siempre, Cristina. Es un no para ahora."
+msgstr "It's not a no forever, Cristina. It's a no for now."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[1].guion[33].texto
+msgid "Siempre es «ahora». Me voy a entrenar a la Ruta 8. ¡Ya verás que puedo!"
+msgstr "It's always \"now\". I'm going to train on Route 8. You'll see I can do it!"
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[1].guion[41].texto
+msgid "No te acerques a la niebla, cariño... Ahí es donde se pierden las cosas."
+msgstr "Stay away from the fog, dear... That's where things get lost."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[1].guion[42].texto
+msgid "...¿Qué has dicho, amor?"
+msgstr "...What did you say, love?"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[1].guion[44].narrar
+msgid "Pero ella ya había vuelto a mirar hacia la Torre, en silencio."
+msgstr "But she had already turned back toward the Tower, in silence."
+
+#: data/story/capitulo1.json:pasos[2].lugar.nombre
+#: data/story/capitulo1.json:pasos[3].lugar.nombre
+#: data/story/capitulo1.json:pasos[4].lugar.nombre
+msgid "Ruta 8"
+msgstr "Route 8"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[2].guion[0].texto
+msgid "Muy bien, equipo. ¡Otra vez! Eevee, Placaje contra ese tronco. Pidgey, desde arriba."
+msgstr "All right, team. Again! Eevee, Tackle that log. Pidgey, from above."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[2].guion[3].texto
+msgid "Así... Así se hace. Si papá nos viera ahora..."
+msgstr "That's it... That's how it's done. If Dad could see us now..."
+
+#. Habla: Rufián
+#: data/story/capitulo1.json:pasos[2].guion[8].texto
+msgid "Vaya, vaya. Una entrenadora novata, solita en la Ruta 8."
+msgstr "Well, well. A rookie Trainer, all alone on Route 8."
+
+#. Habla: Rufiana
+#: data/story/capitulo1.json:pasos[2].guion[9].texto
+msgid "Mira ese Eevee. En Ciudad Azulona pagan muy bien por uno así de sano."
+msgstr "Look at that Eevee. They pay a lot for a healthy one like that in Celadon City."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[2].guion[11].texto
+msgid "¡No se acerquen!"
+msgstr "Stay back!"
+
+#. Habla: Rufián
+#: data/story/capitulo1.json:pasos[2].guion[12].texto
+msgid "Tranquila, nadie tiene que salir herido. Danos al Eevee y la mochila, y te vas a casa."
+msgstr "Relax, nobody has to get hurt. Give us the Eevee and your bag, and you can go home."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[2].guion[14].texto
+msgid "Ni lo sueñes. ¡Eevee, Pidgey, adelante!"
+msgstr "Not a chance. Eevee, Pidgey, let's go!"
+
+#. Habla: Rufiana
+#: data/story/capitulo1.json:pasos[2].guion[15].texto
+msgid "Como quieras, niña. ¡A por ellos!"
+msgstr "Have it your way, kid. Get them!"
+
+#: data/story/capitulo1.json:pasos[3].rival
+msgid "¡Los rufianes de la Ruta 8 atacan!"
+msgstr "The Route 8 thugs attack!"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[3].eventos[0].antes[0].narrar
+msgid "De pronto, una sombra se alarga sobre la hierba, aunque no hay nada que pueda proyectarla..."
+msgstr "Suddenly, a shadow stretches across the grass, though there is nothing there to cast it..."
+
+#. Habla: Rufián
+#: data/story/capitulo1.json:pasos[3].eventos[0].guion[0].texto
+msgid "¿¡Un Gengar!? ¿De dónde ha salido eso?"
+msgstr "A Gengar?! Where did that come from?"
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[3].eventos[0].guion[1].texto
+msgid "No son palabras. Es una sensación cálida y firme, como una mano en el hombro: «No tengas miedo. Estoy contigo»."
+msgstr "It isn't words. It's a warm, steady feeling, like a hand on her shoulder: \"Don't be afraid. I'm with you.\""
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[3].eventos[0].guion[2].texto
+msgid "¿Tú... me estás ayudando?"
+msgstr "Are you... helping me?"
+
+#. Habla: Rufiana
+#: data/story/capitulo1.json:pasos[4].guion[0].texto
+msgid "¡Esto no se queda así, niña!"
+msgstr "This isn't over, kid!"
+
+#. Habla: Rufián
+#: data/story/capitulo1.json:pasos[4].guion[1].texto
+msgid "¡Corre, corre! ¡Ese bicho no es normal!"
+msgstr "Run, run! That thing isn't normal!"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[6].texto
+msgid "Se fueron... Gracias. De verdad."
+msgstr "They're gone... Thank you. Really."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[7].texto
+msgid "Pero ¿por qué me ayudaste? Los Gengar no suelen acercarse a la gente."
+msgstr "But why did you help me? Gengar don't usually come near people."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[4].guion[8].texto
+msgid "Una nostalgia enorme, de esas que aprietan el pecho. Y debajo, algo parecido a un reconocimiento."
+msgstr "A huge longing, the kind that squeezes your chest. And beneath it, something like recognition."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[10].texto
+msgid "¿Me... conoces?"
+msgstr "Do you... know me?"
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[4].guion[12].texto
+msgid "Ganas de ir hacia allí. Hacia Lavanda."
+msgstr "A pull to go that way. Toward Lavender."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[13].texto
+msgid "Ese es el camino a mi casa."
+msgstr "That's the way to my house."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[15].texto
+msgid "¿Quieres venir conmigo? Supongo que papá va a gritar un poco..."
+msgstr "Do you want to come with me? I guess Dad is going to yell a little..."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[4].guion[18].texto
+msgid "Lo tomaré como un sí."
+msgstr "I'll take that as a yes."
+
+#: data/story/capitulo1.json:pasos[5].lugar.nombre
+msgid "Pueblo Lavanda · Al atardecer"
+msgstr "Lavender Town · At dusk"
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[5].guion[5].texto
+msgid "¡Cristina! ¿Dónde estabas? ...¿Qué es eso? ¡Apártate de ese Gengar!"
+msgstr "Cristina! Where were you? ...What is that? Get away from that Gengar!"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[5].guion[6].texto
+msgid "¡Espera, papá! Me salvó. Unos rufianes intentaron robarme a Eevee en la Ruta 8 y él apareció de la nada."
+msgstr "Wait, Dad! It saved me. Some thugs tried to steal Eevee on Route 8 and it appeared out of nowhere."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[5].guion[7].texto
+msgid "¿Rufianes? ¿Estás bien? ¿Te hicieron algo?"
+msgstr "Thugs? Are you okay? Did they do anything to you?"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[5].guion[8].texto
+msgid "Estoy bien. Gracias a él."
+msgstr "I'm fine. Thanks to it."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[5].guion[15].texto
+msgid "Todo se detiene. Una alegría tan grande que duele... y miedo. Miedo de que ella no lo recuerde."
+msgstr "Everything stops. A joy so great it hurts... and fear. Fear that she won't remember."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[5].guion[18].texto
+msgid "...¿Eres tú?"
+msgstr "...Is that you?"
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[5].guion[19].texto
+msgid "¿Amor?"
+msgstr "Love?"
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[5].guion[20].texto
+msgid "Esos ojos... Yo conozco esos ojos. Tú estabas... estabas en la Torre, con ella..."
+msgstr "Those eyes... I know those eyes. You were... you were at the Tower, with her..."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[5].guion[22].texto
+msgid "¿Con quién, mamá? ¿De qué estás hablando?"
+msgstr "With who, Mom? What are you talking about?"
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[5].guion[25].texto
+msgid "¿Cristina? ¿Qué hace este Pokémon en el jardín? Vamos a asustar a los vecinos..."
+msgstr "Cristina? What is this Pokémon doing in the yard? We'll scare the neighbors..."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[5].guion[27].texto
+msgid "Tristeza. Una tristeza vieja y cansada, como la de quien lleva mucho tiempo esperando."
+msgstr "Sadness. An old, tired sadness, like that of someone who has been waiting a very long time."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[5].guion[33].texto
+msgid "Cristina... entra. Y trae a tu amigo."
+msgstr "Cristina... come inside. And bring your friend."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[5].guion[34].texto
+msgid "Hay cosas de tu madre que nunca te conté. Creo que ya es hora."
+msgstr "There are things about your mother I never told you. I think it's time."
+
+#. Narración
+#: data/story/capitulo1.json:pasos[5].guion[36].narrar
+msgid "Fin de la primera parte del Capítulo 1."
+msgstr "End of Chapter 1, Part One."
+
+#: data/story/capitulo1.json:pasos[6].subtitulo
+msgid "Huellas en la niebla · Segunda parte"
+msgstr "Footprints in the Fog · Part Two"
+
+#: data/story/capitulo1.json:pasos[7].lugar.nombre
+msgid "Casa de Cristina · Esa noche"
+msgstr "Cristina's house · That night"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[7].guion[0].narrar
+msgid "Esa noche, cuando su madre por fin se quedó dormida, el padre de Cristina preparó dos tazas de té y se sentó frente a ella."
+msgstr "That night, when her mother had finally fallen asleep, Cristina's father made two cups of tea and sat down across from her."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[1].texto
+msgid "Tu madre era entrenadora, Cristina. Y por lo que dicen, de las mejores."
+msgstr "Your mother was a Trainer, Cristina. And from what people say, one of the best."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[7].guion[3].texto
+msgid "¿Mamá? Pero si nunca... Ni siquiera tiene Pokémon."
+msgstr "Mom? But she never... She doesn't even have Pokémon."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[4].texto
+msgid "Cuando llegué a Lavanda, los mayores del pueblo todavía hablaban de ella. Una chica que subía sola a la Torre de noche y que no perdía un combate."
+msgstr "When I came to Lavender, the town elders still talked about her. A girl who climbed the Tower alone at night and never lost a battle."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[5].texto
+msgid "Si ese Gengar la reconoce, tuvo que conocerla en esa época. Antes de que yo apareciera."
+msgstr "If that Gengar recognizes her, it must have known her back then. Before I came along."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[7].guion[7].texto
+msgid "Una calidez antigua. Noches en la Torre. Pasos que suben la escalera, uno detrás de otro."
+msgstr "An old warmth. Nights in the Tower. Footsteps climbing the stairs, one after another."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[7].guion[8].texto
+msgid "¿Y por qué lo dejó?"
+msgstr "And why did she quit?"
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[9].texto
+msgid "No lo sé. Cuando la conocí ya no entrenaba, y nunca quiso hablar de esos años. Nunca."
+msgstr "I don't know. By the time I met her she no longer trained, and she never wanted to talk about those years. Never."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[10].texto
+msgid "Lo único que nombró alguna vez fue a una amiga. «La mejor amiga que tuve», decía. Y se le perdía la mirada."
+msgstr "The only thing she ever mentioned was a friend. \"The best friend I ever had,\" she'd say. And her eyes would drift away."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[16].texto
+msgid "Guardaba esto en el fondo del armario. La encontré cuando nos mudamos."
+msgstr "She kept this at the back of the closet. I found it when we moved."
+
+#. Narración
+#: data/story/capitulo1.json:pasos[7].guion[17].narrar
+msgid "Es una fotografía vieja, doblada por las esquinas. Dos chicas sonríen frente a la Torre Pokémon. Una es su madre, con quince o dieciséis años. La otra tiene la cara medio borrada por una mancha de humedad."
+msgstr "It's an old photograph, creased at the corners. Two girls smile in front of the Pokémon Tower. One is her mother, fifteen or sixteen years old. The other's face is half erased by a water stain."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[7].guion[21].texto
+msgid "Un vuelco. Conoce a las dos. Y debajo, una pena tan honda que Cristina tiene que apartar la mirada."
+msgstr "A jolt. It knows them both. And beneath it, a grief so deep that Cristina has to look away."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[7].guion[23].texto
+msgid "Gengar... ¿también la conoces a ella? ¿Quién es?"
+msgstr "Gengar... do you know her too? Who is she?"
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[7].guion[24].texto
+msgid "Silencio. No es que no quiera contarlo: es que no sabe cómo."
+msgstr "Silence. It's not that it doesn't want to tell: it doesn't know how."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[7].guion[26].texto
+msgid "Papá. Quiero saber quién fue mamá. Quién es esa chica. Qué pasó en la Torre."
+msgstr "Dad. I want to know who Mom was. Who that girl is. What happened at the Tower."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[7].guion[27].texto
+msgid "Si ella ya no puede contármelo... lo voy a descubrir yo."
+msgstr "If she can't tell me anymore... I'll find out myself."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[28].texto
+msgid "Cristina..."
+msgstr "Cristina..."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[7].guion[29].texto
+msgid "Lo sé. Lo sé. Pero no esta noche."
+msgstr "I know. I know. But not tonight."
+
+#: data/story/capitulo1.json:pasos[8].lugar.nombre
+msgid "Pueblo Lavanda · A la mañana siguiente"
+msgstr "Lavender Town · The next morning"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[8].guion[0].narrar
+msgid "A la mañana siguiente, Cristina se levanta antes que nadie."
+msgstr "The next morning, Cristina gets up before everyone else."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[1].texto
+msgid "Venga, contesta... Contesta..."
+msgstr "Come on, pick up... Pick up..."
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[4].texto
+msgid "¿Cris? ¿Sabes qué hora es? Aquí es la misma que allí, pero yo estaba durmiendo."
+msgstr "Cris? Do you know what time it is? It's the same here as there, but I was sleeping."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[5].texto
+msgid "Necesito tu ayuda."
+msgstr "I need your help."
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[6].texto
+msgid "Eso ya lo veo. Tienes la misma cara que cuando escondiste mis medallas debajo de la cama."
+msgstr "I can see that. You have the same face as when you hid my badges under the bed."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[7].texto
+msgid "Quiero empezar mi viaje y papá no me deja. Y anoche me contó cosas de mamá... Era entrenadora. Una de las mejores. ¿Tú lo sabías?"
+msgstr "I want to start my journey and Dad won't let me. And last night he told me things about Mom... She was a Trainer. One of the best. Did you know?"
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[8].texto
+msgid "...No. Nunca nos dijo nada. ¿Mamá?"
+msgstr "...No. She never told us anything. Mom?"
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[9].texto
+msgid "Espera. ¿Eso que tienes detrás es un Gengar?"
+msgstr "Wait. Is that a Gengar behind you?"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[11].texto
+msgid "Me salvó de unos rufianes en la Ruta 8. Conoce a mamá, estoy segura. Y creo que sabe qué pasó."
+msgstr "It saved me from some thugs on Route 8. It knows Mom, I'm sure of it. And I think it knows what happened."
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[12].texto
+msgid "...Vale. Pásame con papá."
+msgstr "...Okay. Put Dad on."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[8].guion[15].texto
+msgid "¿Con quién hablas tan temprano?"
+msgstr "Who are you talking to so early?"
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[16].texto
+msgid "Hola, papá."
+msgstr "Hi, Dad."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[8].guion[17].texto
+msgid "¡Hijo! ¿Pasa algo? ¿Estás bien?"
+msgstr "Son! Is something wrong? Are you okay?"
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[18].texto
+msgid "Estoy bien. Escucha. Cuando me fui de casa, mamá me dijo una cosa en la puerta: «Lo que importa no se encuentra quedándose quieto»."
+msgstr "I'm fine. Listen. When I left home, Mom told me something at the door: \"What matters isn't found by standing still.\""
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[8].guion[20].texto
+msgid "...Sí. Eso decía."
+msgstr "...Yes. She used to say that."
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[21].texto
+msgid "Cris ya no es una niña. Y no va a ir sola: tiene a Eevee, a Pidgey... y a un Gengar bastante raro, por lo que veo."
+msgstr "Cris isn't a little girl anymore. And she won't be alone: she has Eevee, Pidgey... and a pretty strange Gengar, from what I can see."
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[22].texto
+msgid "Papá, si mamá pudiera elegir, ¿qué crees que diría?"
+msgstr "Dad, if Mom could choose, what do you think she would say?"
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[8].guion[25].texto
+msgid "Diría que sí. Lo diría sin pensarlo dos veces."
+msgstr "She'd say yes. She'd say it without a second thought."
+
+#. Habla: Papá
+#: data/story/capitulo1.json:pasos[8].guion[27].texto
+msgid "Está bien, Cristina. Con una condición: me llamas cada noche. Cada noche."
+msgstr "All right, Cristina. On one condition: you call me every night. Every night."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[30].texto
+msgid "¡Gracias, papá! ¡Te llamaré todas las noches, te lo prometo!"
+msgstr "Thank you, Dad! I'll call you every night, I promise!"
+
+#. Habla: Hermano
+#: data/story/capitulo1.json:pasos[8].guion[31].texto
+msgid "Y a mí también. Quiero saber todo lo que descubras."
+msgstr "Me too. I want to know everything you find out."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[8].guion[36].texto
+msgid "¿Te vas de viaje, cielo?"
+msgstr "Are you going on a trip, sweetie?"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[8].guion[37].texto
+msgid "Sí, mamá."
+msgstr "Yes, Mom."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[8].guion[38].texto
+msgid "Abrígate. La niebla de la Ruta 12 es muy fría por las mañanas."
+msgstr "Dress warmly. The fog on Route 12 is very cold in the mornings."
+
+#. Narración
+#: data/story/capitulo1.json:pasos[8].guion[40].narrar
+msgid "Su madre nunca había hablado de la Ruta 12."
+msgstr "Her mother had never talked about Route 12."
+
+#. Habla: Mamá
+#: data/story/capitulo1.json:pasos[8].guion[42].texto
+msgid "Y cuida bien de él."
+msgstr "And take good care of it."
+
+#: data/story/capitulo1.json:pasos[9].lugar.nombre
+#: data/story/capitulo1.json:pasos[10].lugar.nombre
+#: data/story/capitulo1.json:pasos[11].lugar.nombre
+msgid "Ruta 12"
+msgstr "Route 12"
+
+#. Narración
+#: data/story/capitulo1.json:pasos[9].guion[0].narrar
+msgid "Ruta 12. Al sur de Lavanda, el camino bordea el mar hasta Ciudad Fucsia."
+msgstr "Route 12. South of Lavender, the path runs along the sea all the way to Fuchsia City."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[9].guion[1].texto
+msgid "Bueno, equipo. Primera parada: Ciudad Fucsia."
+msgstr "Okay, team. First stop: Fuchsia City."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[9].guion[2].texto
+msgid "No sé qué vamos a encontrar, pero... lo vamos a hacer juntos."
+msgstr "I don't know what we're going to find, but... we'll do it together."
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[9].guion[3].texto
+msgid "Inquietud. Algo se mueve cerca del agua."
+msgstr "Unease. Something is moving near the water."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[9].guion[9].texto
+msgid "¡Pokémon salvajes! Eevee, Pidgey, ¡preparaos! Gengar... ¿nos echas una mano otra vez?"
+msgstr "Wild Pokémon! Eevee, Pidgey, get ready! Gengar... will you lend us a hand again?"
+
+#: data/story/capitulo1.json:pasos[10].rival
+msgid "¡Unos Pokémon salvajes cortan el paso!"
+msgstr "Wild Pokémon block the way!"
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[11].guion[0].texto
+msgid "¡Lo logramos! Nuestro primer combate del viaje... ¡los cuatro juntos!"
+msgstr "We did it! Our first battle of the journey... all four of us together!"
+
+#. Lo que siente Gengar
+#: data/story/capitulo1.json:pasos[11].guion[2].texto
+msgid "Orgullo. Y algo que se parece mucho a una sonrisa."
+msgstr "Pride. And something that looks a lot like a smile."
+
+#. Habla: Cristina
+#: data/story/capitulo1.json:pasos[11].guion[4].texto
+msgid "Mamá... voy a descubrir quién eras. Te lo prometo."
+msgstr "Mom... I'm going to find out who you were. I promise."
+
+#. Narración
+#: data/story/capitulo1.json:pasos[11].guion[10].narrar
+msgid "Y así, con la niebla de Lavanda a la espalda, Cristina emprende su viaje."
+msgstr "And so, with the fog of Lavender at her back, Cristina sets out on her journey."
+
+#. Narración
+#: data/story/capitulo1.json:pasos[11].guion[12].narrar
+msgid "Fin del Capítulo 1."
+msgstr "End of Chapter 1."
+
+#: data/story/capitulo1.json:pasos[12].titulo
+msgid "Continuará..."
+msgstr "To be continued..."
+
+#: data/story/capitulo1.json:pasos[12].subtitulo
+msgid "Capítulo 2 · Ciudad Fucsia"
+msgstr "Chapter 2 · Fuchsia City"

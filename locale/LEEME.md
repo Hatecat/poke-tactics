@@ -10,8 +10,10 @@ puedan traducir temas distintos a la vez sin pisarse.
 | `habilidades/` | nombres y descripciones de las habilidades | `tools/build_translations.py` (rellena con PokeAPI) |
 | `interfaz/` | menús, editores, Torre de Batallas | `tools/extract_texts.py` (desde el código) |
 | `combate/` | combate: tipos, climas, estados y mensajes | `tools/extract_texts.py` (desde el código) |
+| `historia/` | modo historia: diálogos, narración, personajes, lugares | `tools/extract_texts.py` (código y `data/story/*.json`) |
 
-Próximamente: `historia/` (diálogos del modo historia).
+En `historia/`, el comentario de cada texto dice quién habla («Habla: Cristina»), si es narración o lo que
+Cristina siente de Gengar, para que el tono encaje.
 
 **Traducir a un idioma nuevo:** copia la plantilla `<tema>.pot` de cada carpeta como `<idioma>.po` (código de
 Godot: `fr`, `de`, `pt_BR`...) y tradúcela con [Poedit](https://poedit.net) o cualquier editor de `.po`. El juego

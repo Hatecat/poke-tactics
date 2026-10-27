@@ -115,13 +115,15 @@ func _ready() -> void:
 
 ## Muestra una línea y espera a que el jugador la pase. `who` = datos del personaje (nombre, color, id) o
 ## {} para la narración. `feeling`: lo que Cristina percibe de Gengar (cursiva y color propio).
+## Los textos del capítulo llegan en español y se traducen aquí (los ya traducidos quedan igual).
 func say(who: Dictionary, text: String, feeling := false) -> void:
+	text = tr(text) if text else text
 	visible = true
 	var narration := who.is_empty()
 	_portrait_frame.visible = not narration
 	_box_style.content_margin_left = 40 if narration else PORTRAIT_SIZE.x + 48
 	_name.visible = not narration
-	_name.text = who.get("nombre", "")
+	_name.text = tr(who.get("nombre", "")) if who.get("nombre", "") else ""
 	if not narration:
 		_set_portrait(who)
 	var body := text
@@ -162,7 +164,7 @@ func _set_portrait(who: Dictionary) -> void:
 	var tex: Texture2D = load(path) if ResourceLoader.exists(path) else null
 	_portrait.texture = tex
 	_initial.visible = tex == null
-	_initial.text = String(who.get("nombre", "?")).left(1)
+	_initial.text = tr(String(who.get("nombre", "?"))).left(1)
 	var color := Color(who.get("color", "#5a6278"))
 	var style := StyleBoxFlat.new()
 	style.bg_color = color.darkened(0.25) if tex == null else Color(0.05, 0.05, 0.08)
