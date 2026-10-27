@@ -9,7 +9,7 @@ enum Tile { GRASS, DIRT, SAND, ROCK, WATER, SNOW, ICE, FLOOR, FLOOR_LINE, CAVE, 
 enum Prop { NONE, TREE, PINE, BOULDER, CACTUS, PILLAR, CRYSTAL, STALAGMITE, PALM, DEAD_TREE, BUILDING, LAMP, PARASOL, MACHINE, TANK, VENT, GRAVE, SHELF,
 	SPOTLIGHT, CAMERA, PLANE, PLANE_PART, CORAL }
 
-const NAMES := {
+const NAMES := { # i18n
 	Kind.MEADOW: "Pradera", Kind.FOREST: "Bosque", Kind.MOUNTAIN: "Montaña", Kind.DESERT: "Desierto",
 	Kind.LAKE: "Lago", Kind.SNOW: "Nieve", Kind.CAVE: "Cueva", Kind.GYM: "Gimnasio", Kind.SWAMP: "Pantano",
 	Kind.CITY: "Ciudad", Kind.LAB: "Laboratorio", Kind.VOLCANO: "Volcán", Kind.BEACH: "Playa",
@@ -22,12 +22,12 @@ const ICONS := {
 	Kind.LAB: "⚗", Kind.VOLCANO: "🌋", Kind.BEACH: "🏖", Kind.CEMETERY: "🪦", Kind.STUDIO: "🎬", Kind.LIBRARY: "📚",
 	Kind.AIRPORT: "✈", Kind.UNDERWATER: "🐚",
 }
-const TILE_NAMES := {
+const TILE_NAMES := { # i18n
 	Tile.GRASS: "Hierba", Tile.DIRT: "Tierra", Tile.SAND: "Arena", Tile.ROCK: "Roca", Tile.WATER: "Agua",
 	Tile.SNOW: "Nieve", Tile.ICE: "Hielo", Tile.FLOOR: "Suelo", Tile.FLOOR_LINE: "Línea", Tile.CAVE: "Cueva",
 	Tile.BRIDGE: "Puente", Tile.MUD: "Lodo", Tile.ROAD: "Calzada", Tile.LAVA: "Lava", Tile.WOOD: "Madera",
 }
-const PROP_NAMES := {
+const PROP_NAMES := { # i18n
 	Prop.NONE: "Nada", Prop.TREE: "Árbol", Prop.PINE: "Pino", Prop.BOULDER: "Roca",
 	Prop.CACTUS: "Cactus", Prop.PILLAR: "Columna", Prop.CRYSTAL: "Cristal",
 	Prop.STALAGMITE: "Estalagmita", Prop.PALM: "Palmera", Prop.DEAD_TREE: "Árbol seco", Prop.BUILDING: "Edificio",

@@ -5,10 +5,10 @@ extends Node
 const MAX_TEAM := 6
 const MAX_TEAMS := 6
 enum Difficulty { EASY, NORMAL, HARD }
-const DIFFICULTY_NAMES := ["Fácil", "Normal", "Difícil"]
+const DIFFICULTY_NAMES := ["Fácil", "Normal", "Difícil"] # i18n
 ## Nivel de los rivales en cada dificultad (los tuyos siempre son 50).
 const DIFFICULTY_LEVELS := [45, 50, 55]
-const DIFFICULTY_DESC := [
+const DIFFICULTY_DESC := [ # i18n
 	"Rivales a nivel 45; a veces eligen mal.",
 	"Rivales a nivel 50.",
 	"Rivales a nivel 55; evitan exponerse y rematan a los débiles.",
@@ -47,7 +47,7 @@ var battle_speed := BATTLE_SPEED_MAX
 ## cascadas). Media: sin SSIL y sombras algo menos suaves. Baja: además sin SSAO, FXAA en vez de MSAA y
 ## sombras más simples, para gráficas integradas.
 enum Quality { LOW, MEDIUM, HIGH }
-const QUALITY_NAMES := ["Baja", "Media", "Alta"]
+const QUALITY_NAMES := ["Baja", "Media", "Alta"] # i18n
 var graphics_quality := Quality.HIGH
 ## Idiomas. El español es el original: los textos del juego son las claves (msgid) de las traducciones,
 ## locale/<tema>/<idioma>.po. Un idioma está disponible si hay algún .po suyo; aquí solo su nombre en ese idioma.
@@ -80,8 +80,9 @@ var rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	rng.randomize()
 	_load_roster()
-	_load_save()
+	# Antes de leer el guardado, para que los equipos que se crean al empezar ya salgan en el idioma del sistema.
 	_load_translations()
+	_load_save()
 	apply_language()
 	apply_graphics()
 
@@ -107,7 +108,7 @@ func add_team(team_name := "") -> int:
 	if teams.size() >= MAX_TEAMS:
 		return -1
 	var slot := TeamSlot.new()
-	slot.name = team_name if team_name else "Equipo %d" % (teams.size() + 1)
+	slot.name = team_name if team_name else tr("Equipo %d") % (teams.size() + 1)
 	teams.append(slot)
 	save()
 	return teams.size() - 1
@@ -233,9 +234,9 @@ func language_picker() -> OptionButton:
 func quality_picker() -> OptionButton:
 	var pick := OptionButton.new()
 	for i in QUALITY_NAMES.size():
-		pick.add_item(QUALITY_NAMES[i], i)
+		pick.add_item(tr(QUALITY_NAMES[i]), i)
 	pick.select(graphics_quality)
-	pick.tooltip_text = "Baja o Media van más fluidas en gráficas integradas.\nGráfica en uso: %s" % RenderingServer.get_video_adapter_name()
+	pick.tooltip_text = tr("Baja o Media van más fluidas en gráficas integradas.\nGráfica en uso: %s") % RenderingServer.get_video_adapter_name()
 	pick.item_selected.connect(func(i: int) -> void:
 		graphics_quality = i as Quality
 		apply_graphics())
@@ -295,7 +296,7 @@ func _load_save() -> void:
 	if loaded:
 		for t: Dictionary in cfg.get_value("teams", "list", []):
 			var slot := TeamSlot.new()
-			slot.name = t.get("name", "Equipo %d" % (teams.size() + 1))
+			slot.name = t.get("name", tr("Equipo %d") % (teams.size() + 1))
 			for d: Dictionary in t.get("members", []):
 				var m := TeamMember.from_dict(d, find_species)
 				if m and slot.members.size() < MAX_TEAM:
@@ -305,7 +306,7 @@ func _load_save() -> void:
 		if teams.is_empty():
 			# Formatos antiguos: un solo equipo (con ataques, o solo nombres de especie).
 			var slot := TeamSlot.new()
-			slot.name = "Equipo 1"
+			slot.name = tr("Equipo %d") % 1
 			for d: Dictionary in cfg.get_value("team", "members", []):
 				var m := TeamMember.from_dict(d, find_species)
 				if m and slot.members.size() < MAX_TEAM:
@@ -330,7 +331,7 @@ func _load_save() -> void:
 			story = StoryRun.from_dict(story_run)
 	if teams.is_empty():
 		var slot := TeamSlot.new()
-		slot.name = "Equipo 1"
+		slot.name = tr("Equipo %d") % 1
 		teams.append(slot)
 	if loaded:
 		topology = cfg.get_value("options", "topology", BoardGrid.Topology.SQUARE)

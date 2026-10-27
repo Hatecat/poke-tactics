@@ -20,6 +20,9 @@ var known: Array[MoveData] = []
 var item: ItemData
 ## Torre: ha alcanzado su nivel de evolución y espera la animación (se puede cancelar).
 var wants_to_evolve := false
+## Ataques del último gain_exp / evolve_into: aprendidos (`learned`) y que no cabían (`pending`, ya conoce 4).
+var learned: Array[MoveData] = []
+var pending: Array[MoveData] = []
 
 const MAX_LEVEL := 100
 ## Experiencia para pasar de nivel N a N+1: N × EXP_PER_LEVEL.
@@ -126,16 +129,19 @@ func exp_to_next() -> int:
 
 ## Suma experiencia. Devuelve lo ocurrido (subidas de nivel, ataques nuevos). Al subir de nivel con el
 ## nivel de evolución alcanzado no evoluciona aún: queda `wants_to_evolve` (ver evolve_into).
-func gain_exp(amount: int) -> PackedStringArray:
+## `pending_hint`: añade "cámbialo en su ficha" a los ataques que no caben (la historia los pregunta aparte).
+func gain_exp(amount: int, pending_hint := true) -> PackedStringArray:
 	var events := PackedStringArray()
+	learned.clear()
+	pending.clear()
 	exp += amount
 	while level < MAX_LEVEL and exp >= exp_to_next():
 		exp -= exp_to_next()
 		level += 1
-		events.append("%s subió a nivel %d." % [TeamMember.display(data, gender), level])
+		events.append(TranslationServer.translate("%s subió a nivel %d.") % [TeamMember.display(data, gender), level])
 		for id: String in data.level_moves:
 			if data.level_moves[id] == level:
-				_learn(id, events)
+				_learn(id, events, pending_hint)
 		if can_evolve_by_level():
 			wants_to_evolve = true
 	if level >= MAX_LEVEL:
@@ -150,7 +156,9 @@ func can_evolve_by_level() -> bool:
 
 ## Evoluciona a `target`. Devuelve lo ocurrido (la evolución y los ataques nuevos).
 func evolve_into(target: PokemonData) -> PackedStringArray:
-	var events := PackedStringArray(["¡%s evolucionó a %s!" % [TeamMember.display(data, gender), target.species_name]])
+	var events := PackedStringArray([TranslationServer.translate("¡%s evolucionó a %s!") % [TeamMember.display(data, gender), target.species_name]])
+	learned.clear()
+	pending.clear()
 	var slot := data.abilities.find(ability)
 	data = target
 	wants_to_evolve = false
@@ -168,18 +176,23 @@ func evolve_into(target: PokemonData) -> PackedStringArray:
 	return events
 
 
-func _learn(id: String, events: PackedStringArray) -> void:
+func _learn(id: String, events: PackedStringArray, pending_hint := true) -> void:
 	if not ResourceLoader.exists(MOVES_DIR + id + ".tres"):
 		return
 	var mv: MoveData = load(MOVES_DIR + id + ".tres")
 	if mv in known:
 		return
 	known.append(mv)
+	var who := TeamMember.display(data, gender)
+	var move_name := TranslationServer.translate(mv.display_name)
 	if moves.size() < MAX_MOVES:
 		moves.append(mv)
-		events.append("%s aprendió %s." % [TeamMember.display(data, gender), mv.display_name])
+		learned.append(mv)
+		events.append(TranslationServer.translate("%s aprendió %s.") % [who, move_name])
 	else:
-		events.append("%s puede aprender %s (cámbialo en su ficha)." % [TeamMember.display(data, gender), mv.display_name])
+		pending.append(mv)
+		if pending_hint:
+			events.append(TranslationServer.translate("%s puede aprender %s (cámbialo en su ficha).") % [who, move_name])
 
 
 func to_dict() -> Dictionary:

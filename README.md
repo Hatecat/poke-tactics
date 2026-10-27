@@ -286,14 +286,19 @@ la que está en uso sale al pasar el ratón por el desplegable.
 
 Español (el original) e inglés, en *Opciones → Idioma* (por defecto, el del sistema). Las traducciones son
 archivos gettext en `locale/<tema>/<idioma>.po`, con el texto en español como clave (msgid), una carpeta por tema
-(`ataques`, `objetos`, `habilidades`, `interfaz`; luego `combate` e `historia`) para poder traducir varios temas a
+(`ataques`, `objetos`, `habilidades`, `interfaz`, `combate`; luego `historia`) para poder traducir varios temas a
 la vez. El juego carga todos los `.po` al arrancar y ofrece cada idioma que tenga alguno. Guía para quien
 traduzca: `locale/LEEME.md`.
 
 - Ataques, objetos y habilidades: `python3 tools/build_translations.py <dir_datos>` rehace las plantillas `.pot`
   y fusiona los `.po` (conserva lo traducido, rellena lo nuevo con PokeAPI; `--nuevo fr` crea un idioma). Los
   textos propios del juego van en su lista `MANUAL`. Vuelve a ejecutarlo después de `build_data.py` o `build_items.py`.
-- Interfaz: a mano. Por ahora solo Opciones; el resto se va traduciendo por partes (menús, combate, historia).
+- Textos del código (interfaz, combate, historia): `python3 tools/extract_texts.py` busca los `tr("...")`,
+  `tr_n(...)`, `TranslationServer.translate("...")` y las constantes marcadas con el comentario `# i18n`, rehace
+  las plantillas y fusiona los `.po` (lo nuevo queda vacío; `--faltan en` lista lo que falta). Ejecútalo después de
+  añadir o cambiar textos.
+- Hechos: menús, editores, Torre, tabla de tipos y nombres de tipos, campos y climas. Faltan los mensajes del
+  combate y los diálogos de la historia.
 
 ## Velocidad de combate
 

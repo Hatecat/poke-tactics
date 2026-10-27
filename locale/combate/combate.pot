@@ -1,0 +1,126 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: scripts/battle/abilities.gd:45
+msgid "[Sin efecto en el tablero (todavía).]"
+msgstr ""
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/battle/battle.gd:2110
+msgid "¡Victoria! Cada Pokémon de Cristina gana %d de experiencia."
+msgstr ""
+
+#: scripts/battle/combat.gd:6
+msgid "individual"
+msgstr ""
+
+#: scripts/battle/combat.gd:7
+msgid "círculo"
+msgstr ""
+
+#: scripts/battle/combat.gd:8
+msgid "cruz"
+msgstr ""
+
+#: scripts/battle/combat.gd:9
+msgid "línea"
+msgstr ""
+
+#: scripts/battle/combat.gd:12
+msgid "Fuego"
+msgstr ""
+
+#: scripts/battle/combat.gd:12
+msgid "Eléctrico"
+msgstr ""
+
+#: scripts/battle/combat.gd:13
+msgid "Planta"
+msgstr ""
+
+#: scripts/battle/combat.gd:13
+msgid "Lucha"
+msgstr ""
+
+#: scripts/battle/combat.gd:13
+msgid "Veneno"
+msgstr ""
+
+#: scripts/battle/combat.gd:14
+msgid "Volador"
+msgstr ""
+
+#: scripts/battle/combat.gd:14
+msgid "Bicho"
+msgstr ""
+
+#: scripts/battle/combat.gd:15
+msgid "Fantasma"
+msgstr ""
+
+#: scripts/battle/combat.gd:15
+msgid "Dragón"
+msgstr ""
+
+#: scripts/battle/combat.gd:15
+msgid "Siniestro"
+msgstr ""
+
+#: scripts/battle/combat.gd:16
+msgid "Acero"
+msgstr ""
+
+#: scripts/battle/combat.gd:16
+msgid "Hada"
+msgstr ""
+
+#: scripts/battle/combat.gd:19
+msgid "envenenado"
+msgstr ""
+
+#: scripts/battle/combat.gd:20
+msgid "dormido"
+msgstr ""
+
+#: scripts/battle/combat.gd:21
+msgid "paralizado"
+msgstr ""
+
+#: scripts/battle/combat.gd:22
+msgid "quemado"
+msgstr ""
+
+#: scripts/battle/combat.gd:23
+msgid "congelado"
+msgstr ""
+
+#: scripts/battle/weather.gd:8
+#: scripts/battle/weather.gd:12
+msgid "Despejado"
+msgstr ""
+
+#: scripts/battle/weather.gd:8
+msgid "Sol intenso"
+msgstr ""
+
+#: scripts/battle/weather.gd:8
+#: scripts/battle/weather.gd:12
+msgid "Lluvia"
+msgstr ""
+
+#: scripts/battle/weather.gd:9
+msgid "Tormenta de arena"
+msgstr ""
+
+#: scripts/battle/weather.gd:9
+#: scripts/battle/weather.gd:12
+msgid "Granizo"
+msgstr ""
+
+#: scripts/battle/weather.gd:12
+msgid "Sol"
+msgstr ""

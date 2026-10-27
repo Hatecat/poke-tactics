@@ -2,20 +2,20 @@ class_name Combat
 extends RefCounted
 ## Reglas puras de combate: celdas apuntables, área de efecto y cálculo de daño.
 
-const AREA_NAMES := {
+const AREA_NAMES := { # i18n
 	MoveData.AreaShape.SINGLE: "individual",
 	MoveData.AreaShape.CIRCLE: "círculo",
 	MoveData.AreaShape.CROSS: "cruz",
 	MoveData.AreaShape.LINE: "línea",
 }
-const TYPE_NAMES := {
+const TYPE_NAMES := { # i18n
 	"normal": "Normal", "fire": "Fuego", "water": "Agua", "electric": "Eléctrico",
 	"grass": "Planta", "ice": "Hielo", "fighting": "Lucha", "poison": "Veneno",
 	"ground": "Tierra", "flying": "Volador", "psychic": "Psíquico", "bug": "Bicho",
 	"rock": "Roca", "ghost": "Fantasma", "dragon": "Dragón", "dark": "Siniestro",
 	"steel": "Acero", "fairy": "Hada",
 }
-const STATUS_NAMES := {
+const STATUS_NAMES := { # i18n
 	MoveData.Status.POISON: "envenenado",
 	MoveData.Status.SLEEP: "dormido",
 	MoveData.Status.PARALYSIS: "paralizado",

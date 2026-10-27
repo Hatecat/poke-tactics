@@ -29,7 +29,7 @@ const STONE_PRICE := 1500
 ## Tipos de Ball: nombre, precio, multiplicador de captura (0 = captura segura), piso tras el cual se venden
 ## siempre (0 = nunca: solo en el lote al azar) y probabilidad de salir en el lote al azar de cada piso.
 const BALL_KINDS := ["poke", "great", "ultra", "master"]
-const BALLS := {
+const BALLS := { # i18n
 	"poke": {"name": "Poké Ball", "price": 200, "mult": 1.0, "unlock": 0, "shop_chance": 0.0,
 		"desc": "Para capturar Pokémon salvajes durante el combate.",
 		"icon": preload("res://assets/items/pokeball.png"), "color": Color(0.85, 0.12, 0.12)},
@@ -168,10 +168,10 @@ func floor_preview() -> String:
 	match floor_kind(floor_number):
 		"leader":
 			var l := Trainers.leader_for(floor_number)
-			return "%s (%s)%s" % [Trainers.full_name(l), Trainers.types_text(l.types), " · revancha" if l.rematch else ""]
+			return "%s (%s)%s" % [Trainers.full_name(l), Trainers.types_text(l.types), " · " + tr("revancha") if l.rematch else ""]
 		"trainer":
-			return "Combate contra un entrenador"
-	return "Pokémon salvajes" + (" · ¡se siente algo poderoso!" if legendary_floor(floor_number) else "")
+			return tr("Combate contra un entrenador")
+	return tr("Pokémon salvajes") + (" · " + tr("¡se siente algo poderoso!") if legendary_floor(floor_number) else "")
 
 
 ## Genera el piso actual: salvajes, entrenador o líder; campo y clima.
@@ -307,45 +307,46 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	news.clear()
 	for m in caught:
 		box.append(m)
-		last_report.append("¡%s (Nv. %d) capturado! Está en la caja." % [TeamMember.display(m.data, m.gender), m.level])
-		news.append({"kind": "catch", "text": "¡%s capturado! (Nv. %d)" % [TeamMember.display(m.data, m.gender), m.level]})
+		last_report.append(tr("¡%s (Nv. %d) capturado! Está en la caja.") % [TeamMember.display(m.data, m.gender), m.level])
+		news.append({"kind": "catch", "text": tr("¡%s capturado! (Nv. %d)") % [TeamMember.display(m.data, m.gender), m.level]})
 	if not victory:
 		finished = true
 		Game.tower_best = maxi(Game.tower_best, floor_number)
-		last_report.append("Tu equipo fue derrotado en el piso %d." % floor_number)
+		last_report.append(tr("Tu equipo fue derrotado en el piso %d.") % floor_number)
 		return
 	var total := 0
 	for lv in beaten:
 		total += lv * EXP_PER_ENEMY_LEVEL
 	if not trainer.is_empty():
 		total = int(total * TRAINER_EXP_MULT)
-		last_report.append("¡Has vencido a %s!" % Trainers.full_name(trainer))
+		last_report.append(tr("¡Has vencido a %s!") % Trainers.full_name(trainer))
 		if trainer.leader and trainer.badge and trainer.badge not in badges:
 			badges.append(trainer.badge)
-			last_report.append("¡Consigues la %s! (%d medalla%s)" % [trainer.badge, badges.size(), "" if badges.size() == 1 else "s"])
-			news.append({"kind": "badge", "text": "¡%s! Ya tienes %d." % [trainer.badge, badges.size()]})
-	last_report.append("¡Piso %d superado! Cada Pokémon gana %d de experiencia." % [floor_number, total])
+			last_report.append(tr_n("¡Consigues la %s! (%d medalla)", "¡Consigues la %s! (%d medallas)", badges.size()) % [tr(trainer.badge), badges.size()])
+			news.append({"kind": "badge", "text": tr("¡%s! Ya tienes %d.") % [tr(trainer.badge), badges.size()]})
+	last_report.append(tr("¡Piso %d superado! Cada Pokémon gana %d de experiencia.") % [floor_number, total])
 	for m in party:
 		var before := m.level
 		var who := TeamMember.display(m.data, m.gender)
 		var events := m.gain_exp(total)
 		last_report.append_array(events)
 		if m.level > before:
-			news.append({"kind": "level", "text": "%s subió al nivel %d" % [who, m.level]})
-		for e in events:
-			if "aprend" in e:
-				news.append({"kind": "move", "text": e})
+			news.append({"kind": "level", "text": tr("%s subió al nivel %d") % [who, m.level]})
+		for mv in m.learned:
+			news.append({"kind": "move", "text": tr("%s aprendió %s.") % [who, tr(mv.display_name)]})
+		for mv in m.pending:
+			news.append({"kind": "move", "text": tr("%s puede aprender %s (cámbialo en su ficha).") % [who, tr(mv.display_name)]})
 		if m.wants_to_evolve and m.level > before:
-			news.append({"kind": "evolve", "text": "¡%s está a punto de evolucionar!" % who})
+			news.append({"kind": "evolve", "text": tr("¡%s está a punto de evolucionar!") % who})
 	balls.poke = balls.get("poke", 0) + BALLS_PER_WIN
-	last_report.append("Recibes %d Poké Ball. Tienes %d." % [BALLS_PER_WIN, balls.poke])
+	last_report.append(tr("Recibes %d Poké Ball. Tienes %d.") % [BALLS_PER_WIN, balls.poke])
 	var earned := MONEY_BASE + MONEY_PER_FLOOR * floor_number
 	for lv in beaten:
 		earned += lv * MONEY_PER_ENEMY_LEVEL
 	if not trainer.is_empty():
 		earned = int(earned * (LEADER_MONEY_MULT if trainer.leader else TRAINER_MONEY_MULT))
 	money += earned
-	last_report.append("Ganas %d ₽ (tienes %d ₽)." % [earned, money])
+	last_report.append(tr("Ganas %d ₽ (tienes %d ₽).") % [earned, money])
 	news.push_front({"kind": "money", "text": "+%d ₽  ·  +%d Poké Ball" % [earned, BALLS_PER_WIN]})
 	# Recompensas: a veces un objeto, y cada 5 pisos uno seguro (poco común o raro).
 	var rewards: Array[ItemData] = []
@@ -358,12 +359,12 @@ func finish_floor(victory: bool, beaten: Array[int], caught: Array[TeamMember]) 
 	for m in party:
 		if m.ability == "pickup" and rng.randf() < PICKUP_CHANCE:
 			rewards.append(_random_item(0))
-			last_report.append("¡%s encontró algo con Recogida!" % TeamMember.display(m.data, m.gender))
+			last_report.append(tr("¡%s encontró algo con Recogida!") % TeamMember.display(m.data, m.gender))
 	for it in rewards:
 		if it:
 			add_item(it)
-			last_report.append("Obtienes: %s." % it.display_name)
-			news.append({"kind": "item", "text": "Obtienes: %s" % it.display_name, "item": it.id})
+			last_report.append(tr("Obtienes: %s.") % tr(it.display_name))
+			news.append({"kind": "item", "text": tr("Obtienes: %s") % tr(it.display_name), "item": it.id})
 	floor_number += 1
 	Game.tower_best = maxi(Game.tower_best, floor_number - 1)
 	if shop_locked:
@@ -483,7 +484,7 @@ func evolve(m: TeamMember, target: PokemonData, stone: ItemData = null) -> Packe
 ## El jugador cancela la evolución: lo volverá a intentar al subir de nivel (o con «Evolucionar» en su ficha).
 func cancel_evolution(m: TeamMember) -> void:
 	m.wants_to_evolve = false
-	last_report.append("%s no evolucionó." % TeamMember.display(m.data, m.gender))
+	last_report.append(tr("%s no evolucionó.") % TeamMember.display(m.data, m.gender))
 
 
 func _roll_rarity() -> int:

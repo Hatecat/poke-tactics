@@ -3,7 +3,7 @@ extends Control
 ## a la derecha. Al elegir un miembro del equipo se editan sus 4 ataques.
 
 const STAT_MAX := 160.0
-const CATEGORY_SHORT := ["Fís", "Esp", "Est"]
+const CATEGORY_SHORT := ["Fís", "Esp", "Est"] # i18n
 
 var _species: PokemonData
 ## Miembro del equipo que se está editando (null = viendo una especie del roster).
@@ -46,7 +46,7 @@ func _ready() -> void:
 	var top := HBoxContainer.new()
 	root.add_child(top)
 	top.add_child(UiKit.button("← Menú", func() -> void: get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label("  Editor de equipo", 30, UiKit.ACCENT))
+	top.add_child(UiKit.label(tr("  Editor de equipo"), 30, UiKit.ACCENT))
 
 	var columns := HBoxContainer.new()
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -60,9 +60,9 @@ func _ready() -> void:
 	var roster_col := VBoxContainer.new()
 	roster_col.add_theme_constant_override("separation", 8)
 	roster_panel.add_child(roster_col)
-	roster_col.add_child(UiKit.label("Pokémon disponibles (%d)" % Game.roster.size(), 20))
+	roster_col.add_child(UiKit.label(tr("Pokémon disponibles (%d)") % Game.roster.size(), 20))
 	_roster_search = LineEdit.new()
-	_roster_search.placeholder_text = "Buscar por nombre, número o tipo…"
+	_roster_search.placeholder_text = tr("Buscar por nombre, número o tipo…")
 	_roster_search.clear_button_enabled = true
 	_roster_search.text_changed.connect(func(_t: String) -> void: _filter_roster())
 	roster_col.add_child(_roster_search)
@@ -98,14 +98,14 @@ func _ready() -> void:
 	_preview = PokemonPreview.new()
 	_preview.custom_minimum_size = Vector2(240, 240)
 	preview_col.add_child(_preview)
-	var anim_button := UiKit.button("Ver animaciones", _open_viewer, 15)
-	anim_button.tooltip_text = "Reproduce sus animaciones y las de cada ataque"
+	var anim_button := UiKit.button(tr("Ver animaciones"), _open_viewer, 15)
+	anim_button.tooltip_text = tr("Reproduce sus animaciones y las de cada ataque")
 	preview_col.add_child(anim_button)
 	_detail = VBoxContainer.new()
 	_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_detail.add_theme_constant_override("separation", 6)
 	preview_row.add_child(_detail)
-	_add_button = UiKit.button("Agregar al equipo", _add_selected, 20)
+	_add_button = UiKit.button(tr("Agregar al equipo"), _add_selected, 20)
 	detail_col.add_child(_add_button)
 	_moves_box = VBoxContainer.new()
 	_moves_box.add_theme_constant_override("separation", 6)
@@ -127,13 +127,13 @@ func _ready() -> void:
 	name_row.add_theme_constant_override("separation", 6)
 	team_col.add_child(name_row)
 	_team_name = LineEdit.new()
-	_team_name.placeholder_text = "Nombre del equipo"
+	_team_name.placeholder_text = tr("Nombre del equipo")
 	_team_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_team_name.text_submitted.connect(func(_t: String) -> void: _rename_team())
 	_team_name.focus_exited.connect(_rename_team)
 	name_row.add_child(_team_name)
-	_delete_team = UiKit.button("Borrar", _confirm_delete_team)
-	_delete_team.tooltip_text = "Borrar este equipo"
+	_delete_team = UiKit.button(tr("Borrar"), _confirm_delete_team)
+	_delete_team.tooltip_text = tr("Borrar este equipo")
 	name_row.add_child(_delete_team)
 	team_col.add_child(HSeparator.new())
 	_team_title = UiKit.label("", 20)
@@ -141,7 +141,7 @@ func _ready() -> void:
 	_team_box = VBoxContainer.new()
 	_team_box.add_theme_constant_override("separation", 8)
 	team_col.add_child(_team_box)
-	team_col.add_child(UiKit.label("Clic en un miembro del equipo para\nelegir sus ataques. El orden del equipo\nes el orden de despliegue.", 14, Color(1, 1, 1, 0.55)))
+	team_col.add_child(UiKit.label(tr("Clic en un miembro del equipo para\nelegir sus ataques. El orden del equipo\nes el orden de despliegue."), 14, Color(1, 1, 1, 0.55)))
 
 	_viewer = AnimationViewer.new()
 	add_child(_viewer)
@@ -169,15 +169,15 @@ func _build_learnset_box(parent: Control) -> void:
 	filters.add_theme_constant_override("separation", 8)
 	_learn_box.add_child(filters)
 	_learn_search = LineEdit.new()
-	_learn_search.placeholder_text = "Buscar ataque…"
+	_learn_search.placeholder_text = tr("Buscar ataque…")
 	_learn_search.clear_button_enabled = true
 	_learn_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_learn_search.text_changed.connect(func(_t: String) -> void: _refresh_learnset())
 	filters.add_child(_learn_search)
 	_learn_type = OptionButton.new()
-	_learn_type.add_item("Todos los tipos")
+	_learn_type.add_item(tr("Todos los tipos"))
 	for t in TypeChart.TYPES:
-		_learn_type.add_item(Combat.TYPE_NAMES[t])
+		_learn_type.add_item(tr(Combat.TYPE_NAMES[t]))
 	_learn_type.item_selected.connect(func(_i: int) -> void: _refresh_learnset())
 	filters.add_child(_learn_type)
 	_learn_list = ItemList.new()
@@ -211,7 +211,7 @@ func _filter_roster() -> void:
 	var q := _roster_search.text.strip_edges().to_lower()
 	for card in _roster_grid.get_children():
 		var p: PokemonData = card.get_meta("species")
-		var types := " ".join(Array(p.types).map(func(t: String) -> String: return Combat.TYPE_NAMES[t].to_lower()))
+		var types := " ".join(Array(p.types).map(func(t: String) -> String: return Combat.TYPE_NAMES[t].to_lower() + " " + tr(Combat.TYPE_NAMES[t]).to_lower()))
 		card.visible = q.is_empty() or q in p.species_name.to_lower() or q in str(p.dex_number) or q in types
 
 
@@ -244,7 +244,7 @@ func _show(p: PokemonData) -> void:
 	grid.add_theme_constant_override("h_separation", 10)
 	_detail.add_child(grid)
 	for i in stats.size():
-		grid.add_child(UiKit.label(UiKit.STAT_NAMES[i], 15, Color(1, 1, 1, 0.75)))
+		grid.add_child(UiKit.label(tr(UiKit.STAT_NAMES[i]), 15, Color(1, 1, 1, 0.75)))
 		var bar := ProgressBar.new()
 		bar.max_value = STAT_MAX
 		bar.value = stats[i]
@@ -260,11 +260,11 @@ func _show(p: PokemonData) -> void:
 	var tiles := clampi(2 + roundi(p.base_speed / 45.0), 2, 6) + p.move_modifier
 	var swim := ""
 	if "water" in p.types:
-		swim = " (%d nadando)" % ((tiles - mini(p.move_modifier, 0)) * 2)
-	_detail.add_child(UiKit.label("Movimiento %d%s · Salto %d · Talla %s" % [tiles, swim, p.jump, p.size_label()], 15, UiKit.ACCENT))
+		swim = " " + tr("(%d nadando)") % ((tiles - mini(p.move_modifier, 0)) * 2)
+	_detail.add_child(UiKit.label(tr("Movimiento %d%s · Salto %d · Talla %s") % [tiles, swim, p.jump, p.size_label()], 15, UiKit.ACCENT))
 
 	var profile := TypeChart.defensive_profile(p.types)
-	for group in [["Débil a", [4.0, 2.0]], ["Resiste", [0.5, 0.25]], ["Inmune a", [0.0]]]:
+	for group in [[tr("Débil a"), [4.0, 2.0]], [tr("Resiste"), [0.5, 0.25]], [tr("Inmune a"), [0.0]]]:
 		var row := HFlowContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_theme_constant_override("h_separation", 4)
@@ -289,10 +289,10 @@ func _show(p: PokemonData) -> void:
 func _gender_row(p: PokemonData) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label("Género:", 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Género:"), 15, Color(1, 1, 1, 0.75)))
 	var options := TeamMember.genders_for(p)
 	if options == [0]:
-		row.add_child(UiKit.label("sin género", 15))
+		row.add_child(UiKit.label(tr("sin género"), 15))
 		return row
 	if p.male_ratio > 0.0 and p.male_ratio < 1.0:
 		row.add_child(UiKit.label("(%d%% ♂ / %d%% ♀)" % [roundi(p.male_ratio * 100), roundi((1.0 - p.male_ratio) * 100)], 13, Color(1, 1, 1, 0.5)))
@@ -315,12 +315,12 @@ func _gender_row(p: PokemonData) -> Control:
 func _item_row() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label("Objeto:", 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Objeto:"), 15, Color(1, 1, 1, 0.75)))
 	var pick := OptionButton.new()
 	# Algunos sprites son grandes: se limita el icono en el botón y en la lista.
 	pick.add_theme_constant_override("icon_max_width", 24)
 	pick.get_popup().add_theme_constant_override("icon_max_width", 24)
-	pick.add_item("— ninguno —")
+	pick.add_item(tr("— ninguno —"))
 	var items := Items.holdable()
 	for i in items.size():
 		var it := items[i]
@@ -344,12 +344,12 @@ func _item_row() -> Control:
 func _abilities_row(p: PokemonData) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label("Habilidad:", 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Habilidad:"), 15, Color(1, 1, 1, 0.75)))
 	if _member:
 		var pick := OptionButton.new()
 		for i in p.abilities.size():
 			var id := p.abilities[i]
-			pick.add_item(Abilities.display_name(id) + ("  (oculta)" if i == p.abilities.size() - 1 and p.abilities.size() > 1 else ""))
+			pick.add_item(Abilities.display_name(id) + ("  " + tr("(oculta)") if i == p.abilities.size() - 1 and p.abilities.size() > 1 else ""))
 			pick.set_item_tooltip(i, Abilities.describe(id))
 			if id == _member.ability:
 				pick.select(i)
@@ -371,25 +371,25 @@ func _abilities_row(p: PokemonData) -> Control:
 func _refresh_moves() -> void:
 	UiKit.clear(_moves_box)
 	var moves: Array[MoveData] = _member.moves if _member else _species.moves
-	var caption := "Ataques de tu %s (%d/%d)" % [_species.species_name, moves.size(), TeamMember.MAX_MOVES] \
-		if _member else "Ataques por defecto"
+	var caption := tr("Ataques de tu %s (%d/%d)") % [_species.species_name, moves.size(), TeamMember.MAX_MOVES] \
+		if _member else tr("Ataques por defecto")
 	_moves_box.add_child(UiKit.label(caption, 20, UiKit.ACCENT))
 	for m in moves:
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		var head := VBoxContainer.new()
 		head.custom_minimum_size.x = 150
-		head.add_child(UiKit.label(m.display_name, 17))
+		head.add_child(UiKit.label(tr(m.display_name), 17))
 		head.add_child(UiKit.type_chip(m.type, true))
 		row.add_child(head)
 		var desc := UiKit.label(Combat.describe(m), 14, Color(1, 1, 1, 0.8))
 		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		desc.tooltip_text = m.flavor
+		desc.tooltip_text = tr(m.flavor)
 		desc.mouse_filter = Control.MOUSE_FILTER_PASS
 		row.add_child(desc)
 		if _member:
 			var remove := UiKit.button("✕", _forget_move.bind(m))
-			remove.tooltip_text = "Olvidar este ataque"
+			remove.tooltip_text = tr("Olvidar este ataque")
 			remove.custom_minimum_size = Vector2(44, 44)
 			remove.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			row.add_child(remove)
@@ -408,18 +408,18 @@ func _refresh_learnset() -> void:
 	for m in _species.learnset:
 		if type_filter and m.type != type_filter:
 			continue
-		if q and q not in m.display_name.to_lower():
+		if q and q not in m.display_name.to_lower() and q not in tr(m.display_name).to_lower():
 			continue
 		var known := m in _member.moves
 		var power := str(m.fixed_damage) + "*" if m.fixed_damage else (str(m.power) if m.power > 0 else "—")
-		var idx := _learn_list.add_item("%s%s   ·  %s · %s · %s" % ["✓ " if known else "", m.display_name,
-			Combat.TYPE_NAMES[m.type], CATEGORY_SHORT[m.category], power])
+		var idx := _learn_list.add_item("%s%s   ·  %s · %s · %s" % ["✓ " if known else "", tr(m.display_name),
+			tr(Combat.TYPE_NAMES[m.type]), tr(CATEGORY_SHORT[m.category]), power])
 		_learn_list.set_item_custom_fg_color(idx, TypeChart.color(m.type).lightened(0.35) if not known else Color(1, 1, 1, 0.4))
-		_learn_list.set_item_tooltip(idx, Combat.describe(m) + ("\n\n" + m.flavor if m.flavor else ""))
+		_learn_list.set_item_tooltip(idx, Combat.describe(m) + ("\n\n" + tr(m.flavor) if m.flavor else ""))
 		_learn_items.append(m)
 	var full := _member.moves.size() >= TeamMember.MAX_MOVES
-	_learn_hint.text = "Puede aprender %d ataques%s" % [_species.learnset.size(),
-		" — quita uno (✕) para elegir otro" if full else " — clic para enseñárselo"]
+	_learn_hint.text = (tr("Puede aprender %d ataques: quita uno (✕) para elegir otro") if full \
+		else tr("Puede aprender %d ataques: clic para enseñárselo")) % _species.learnset.size()
 
 
 func _learn_move(m: MoveData) -> void:
@@ -451,7 +451,7 @@ func _refresh_team_tabs() -> void:
 		b.button_pressed = i == Game.current_team
 		_team_tabs.add_child(b)
 	if Game.teams.size() < Game.MAX_TEAMS:
-		var add := UiKit.button("+ Nuevo", func() -> void:
+		var add := UiKit.button(tr("+ Nuevo"), func() -> void:
 			_switch_team(Game.add_team()), 14)
 		_team_tabs.add_child(add)
 	_team_name.text = Game.teams[Game.current_team].name
@@ -479,12 +479,12 @@ func _rename_team() -> void:
 
 ## Borrar pide confirmación con un segundo clic.
 func _confirm_delete_team() -> void:
-	if _delete_team.text != "¿Seguro?":
-		_delete_team.text = "¿Seguro?"
+	if _delete_team.text != tr("¿Seguro?"):
+		_delete_team.text = tr("¿Seguro?")
 		get_tree().create_timer(2.5).timeout.connect(func() -> void:
-			if is_instance_valid(_delete_team): _delete_team.text = "Borrar")
+			if is_instance_valid(_delete_team): _delete_team.text = tr("Borrar"))
 		return
-	_delete_team.text = "Borrar"
+	_delete_team.text = tr("Borrar")
 	Game.remove_team(Game.current_team)
 	_switch_team(Game.current_team)
 
@@ -492,7 +492,7 @@ func _confirm_delete_team() -> void:
 func _refresh_team() -> void:
 	_refresh_team_tabs()
 	UiKit.clear(_team_box)
-	_team_title.text = "Tu equipo (%d/%d)" % [Game.player_team.size(), Game.MAX_TEAM]
+	_team_title.text = tr("Tu equipo (%d/%d)") % [Game.player_team.size(), Game.MAX_TEAM]
 	for i in Game.MAX_TEAM:
 		if i < Game.player_team.size():
 			var m := Game.player_team[i]
@@ -509,7 +509,7 @@ func _refresh_team() -> void:
 				if _member == m:
 					_select_species(m.data)
 				_refresh_team())
-			remove.tooltip_text = "Quitar del equipo"
+			remove.tooltip_text = tr("Quitar del equipo")
 			remove.custom_minimum_size = Vector2(52, 62)
 			row.add_child(remove)
 			_team_box.add_child(row)
@@ -517,7 +517,7 @@ func _refresh_team() -> void:
 			var empty := UiKit.panel()
 			empty.custom_minimum_size = Vector2(320, 62)
 			empty.self_modulate = Color(1, 1, 1, 0.35)
-			var l := UiKit.label("— vacío —", 15, Color(1, 1, 1, 0.5))
+			var l := UiKit.label(tr("— vacío —"), 15, Color(1, 1, 1, 0.5))
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			empty.add_child(l)
 			_team_box.add_child(empty)
@@ -530,4 +530,4 @@ func _refresh_add_button() -> void:
 	var full := Game.player_team.size() >= Game.MAX_TEAM
 	_add_button.visible = _member == null
 	_add_button.disabled = full
-	_add_button.text = "Equipo completo (6/6)" if full else "Agregar %s al equipo" % _species.species_name
+	_add_button.text = tr("Equipo completo (6/6)") if full else tr("Agregar %s al equipo") % _species.species_name

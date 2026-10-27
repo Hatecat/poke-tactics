@@ -4,7 +4,7 @@ extends CanvasLayer
 
 signal quit_requested
 
-var quit_text := "Abandonar (volver al menú)"
+var quit_text := tr("Abandonar (volver al menú)")
 var _root: Control
 
 
@@ -25,17 +25,17 @@ func _ready() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
-	var title := UiKit.label("Pausa", 32, UiKit.ACCENT)
+	var title := UiKit.label(tr("Pausa"), 32, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
-	var resume := UiKit.button("Continuar", close, 20)
+	var resume := UiKit.button(tr("Continuar"), close, 20)
 	resume.custom_minimum_size = Vector2(380, 48)
 	box.add_child(resume)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 12)
 	box.add_child(grid)
-	for item in [["master", "General"], ["music", "Música"], ["sfx", "Efectos"]]:
+	for item in [["master", tr("General")], ["music", tr("Música")], ["sfx", tr("Efectos")]]:
 		grid.add_child(UiKit.label(item[1], 16))
 		var slider := HSlider.new()
 		slider.min_value = 0.0
@@ -48,9 +48,9 @@ func _ready() -> void:
 			Game.volumes[item[0]] = v
 			Audio.apply_volumes())
 		grid.add_child(slider)
-	grid.add_child(UiKit.label("Velocidad", 16))
+	grid.add_child(UiKit.label(tr("Velocidad"), 16))
 	grid.add_child(Game.speed_slider(func(_v: int) -> void: Engine.time_scale = Game.battle_time_scale()))
-	grid.add_child(UiKit.label("Gráficos", 16))
+	grid.add_child(UiKit.label(tr("Gráficos"), 16))
 	grid.add_child(Game.quality_picker())
 	box.add_child(HSeparator.new())
 	var quit := UiKit.button(quit_text, func() -> void:

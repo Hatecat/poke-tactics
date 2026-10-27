@@ -7,7 +7,7 @@ enum Tool { HEIGHT, TILE, PROP, PLAYER_ZONE, ENEMY_ZONE, ENEMY }
 const COLOR_PLAYER_ZONE := Color(0.3, 0.6, 1.0, 0.4)
 const COLOR_ENEMY_ZONE := Color(1.0, 0.35, 0.3, 0.4)
 const COLOR_BRUSH := Color(1.0, 1.0, 1.0, 0.55)
-const TOOL_HELP := {
+const TOOL_HELP := { # i18n
 	Tool.HEIGHT: "Clic izq.: subir · Clic der.: bajar (arrastra para pintar)",
 	Tool.TILE: "Clic izq.: pintar el suelo elegido",
 	Tool.PROP: "Clic izq.: colocar obstáculo · Clic der.: quitarlo",
@@ -68,7 +68,7 @@ func _ready() -> void:
 
 func _new_map(generate: bool) -> void:
 	var m := MapData.new()
-	m.map_name = _name_edit.text if _name_edit.text else "Nuevo escenario"
+	m.map_name = _name_edit.text if _name_edit.text else tr("Nuevo escenario")
 	m.width = int(_width.value)
 	m.height = int(_height.value)
 	m.topology = _topology.selected
@@ -88,7 +88,7 @@ func _new_map(generate: bool) -> void:
 			g.tiles[c] = Biome.default_tile(m.biome)
 	m.store_grid(g)
 	_open(m)
-	_set_status("Escenario %s." % ("generado" if generate else "vacío creado"))
+	_set_status(tr("Escenario generado.") if generate else tr("Escenario vacío creado."))
 
 
 func _open(m: MapData) -> void:
@@ -118,7 +118,7 @@ func _open(m: MapData) -> void:
 
 ## Vuelca el tablero editado en el MapData.
 func _commit() -> void:
-	map.map_name = _name_edit.text.strip_edges() if _name_edit.text.strip_edges() else "Sin nombre"
+	map.map_name = _name_edit.text.strip_edges() if _name_edit.text.strip_edges() else tr("Sin nombre")
 	map.store_grid(grid)
 	map.weather = _weather.selected
 
@@ -195,7 +195,7 @@ func _edit_enemy(c: Vector2i, button: int) -> void:
 		if p and c in grid.footprint(e.cell, p.size):
 			map.enemies.erase(e)
 			_rebuild_enemies()
-			_set_status("Rival quitado.")
+			_set_status(tr("Rival quitado."))
 			return
 	if button < 0:
 		return
@@ -203,11 +203,11 @@ func _edit_enemy(c: Vector2i, button: int) -> void:
 	var cells := grid.footprint(c, species.size)
 	for cell in cells:
 		if not grid.is_inside(cell) or grid.is_blocked(cell):
-			_set_status("%s no cabe ahí." % species.species_name)
+			_set_status(tr("%s no cabe ahí.") % species.species_name)
 			return
 	map.enemies.append(TeamMember.create(species).to_dict().merged({"cell": c}))
 	_rebuild_enemies()
-	_set_status("%s colocado (%d rivales)." % [species.species_name, map.enemies.size()])
+	_set_status(tr("%s colocado (%d rivales).") % [species.species_name, map.enemies.size()])
 
 
 func _refresh_highlights() -> void:
@@ -262,16 +262,16 @@ func _save() -> void:
 	if not _validate():
 		return
 	var path := Game.save_map(map)
-	_set_status("Guardado en %s" % path if path else "No se pudo guardar.")
+	_set_status(tr("Guardado en %s") % path if path else tr("No se pudo guardar."))
 	_refresh_load_list()
 
 
 func _validate() -> bool:
 	if map.player_zone.is_empty():
-		_set_status("Falta la zona azul (despliegue del jugador).")
+		_set_status(tr("Falta la zona azul (despliegue del jugador)."))
 		return false
 	if map.enemy_zone.is_empty() and map.enemies.is_empty():
-		_set_status("Falta la zona roja o algún rival colocado.")
+		_set_status(tr("Falta la zona roja o algún rival colocado."))
 		return false
 	return true
 
@@ -281,7 +281,7 @@ func _load_selected() -> void:
 		return
 	var m: MapData = load(_map_paths[_load_pick.selected]).duplicate(true)
 	_open(m)
-	_set_status("Cargado: %s" % m.map_name)
+	_set_status(tr("Cargado: %s") % m.map_name)
 
 
 func _refresh_load_list() -> void:
@@ -321,20 +321,20 @@ func _build_ui() -> void:
 	top.position = Vector2(16, 16)
 	top.add_theme_constant_override("separation", 8)
 	root.add_child(top)
-	top.add_child(UiKit.button("← Menú", func() -> void:
+	top.add_child(UiKit.button(tr("← Menú"), func() -> void:
 		Game.editor_map = null
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label("  Editor de escenarios  ", 26, UiKit.ACCENT))
+	top.add_child(UiKit.label(tr("  Editor de escenarios  "), 26, UiKit.ACCENT))
 	_name_edit = LineEdit.new()
-	_name_edit.placeholder_text = "Nombre del escenario"
+	_name_edit.placeholder_text = tr("Nombre del escenario")
 	_name_edit.custom_minimum_size.x = 260
 	top.add_child(_name_edit)
-	top.add_child(UiKit.button("💾 Guardar", _save))
+	top.add_child(UiKit.button(tr("💾 Guardar"), _save))
 	_load_pick = OptionButton.new()
 	_load_pick.custom_minimum_size.x = 200
 	top.add_child(_load_pick)
-	top.add_child(UiKit.button("Cargar", _load_selected))
-	top.add_child(UiKit.button("▶ Probar", _test))
+	top.add_child(UiKit.button(tr("Cargar"), _load_selected))
+	top.add_child(UiKit.button(tr("▶ Probar"), _test))
 
 	var panel := UiKit.panel()
 	panel.position = Vector2(16, 76)
@@ -344,27 +344,27 @@ func _build_ui() -> void:
 	col.add_theme_constant_override("separation", 8)
 	panel.add_child(col)
 
-	col.add_child(UiKit.label("Tablero", 18, UiKit.ACCENT))
+	col.add_child(UiKit.label(tr("Tablero"), 18, UiKit.ACCENT))
 	var size_row := HBoxContainer.new()
 	col.add_child(size_row)
 	_width = _spin(10, 30, 20)
 	_height = _spin(10, 30, 20)
-	size_row.add_child(UiKit.label("Ancho ", 15))
+	size_row.add_child(UiKit.label(tr("Ancho "), 15))
 	size_row.add_child(_width)
-	size_row.add_child(UiKit.label("  Alto ", 15))
+	size_row.add_child(UiKit.label(tr("  Alto "), 15))
 	size_row.add_child(_height)
 	_topology = OptionButton.new()
-	_topology.add_item("▦ Cuadrícula")
-	_topology.add_item("⬢ Hexágonos")
+	_topology.add_item(tr("▦ Cuadrícula"))
+	_topology.add_item(tr("⬢ Hexágonos"))
 	col.add_child(_topology)
 	_biome = OptionButton.new()
 	for kind: int in Biome.NAMES:
-		_biome.add_item("%s %s" % [Biome.ICONS[kind], Biome.NAMES[kind]])
+		_biome.add_item("%s %s" % [Biome.ICONS[kind], tr(Biome.NAMES[kind])])
 	col.add_child(_biome)
 	_gym = OptionButton.new()
 	for type in Biome.GYM_TYPES:
-		_gym.add_item("Gimnasio: %s" % (Combat.TYPE_NAMES[type] if type else "neutral"))
-	_gym.tooltip_text = "Estilo del gimnasio (solo cuenta en el campo Gimnasio)"
+		_gym.add_item(tr("Gimnasio: %s") % (tr(Combat.TYPE_NAMES[type]) if type else tr("neutral")))
+	_gym.tooltip_text = tr("Estilo del gimnasio (solo cuenta en el campo Gimnasio)")
 	# Cambia el estilo del escenario abierto al momento
 	_gym.item_selected.connect(func(i: int) -> void:
 		if grid:
@@ -374,20 +374,20 @@ func _build_ui() -> void:
 	col.add_child(_gym)
 	_weather = OptionButton.new()
 	for kind: int in Weather.NAMES:
-		_weather.add_item("%s %s" % [Weather.ICONS[kind], Weather.NAMES[kind]])
+		_weather.add_item("%s %s" % [Weather.ICONS[kind], tr(Weather.NAMES[kind])])
 	col.add_child(_weather)
 	var gen_row := HBoxContainer.new()
 	gen_row.add_theme_constant_override("separation", 6)
 	col.add_child(gen_row)
-	gen_row.add_child(UiKit.button("Generar al azar", _new_map.bind(true)))
-	gen_row.add_child(UiKit.button("Vacío", _new_map.bind(false)))
-	col.add_child(UiKit.label("Cambiar tamaño o tablero rehace el mapa.", 13, Color(1, 1, 1, 0.5)))
+	gen_row.add_child(UiKit.button(tr("Generar al azar"), _new_map.bind(true)))
+	gen_row.add_child(UiKit.button(tr("Vacío"), _new_map.bind(false)))
+	col.add_child(UiKit.label(tr("Cambiar tamaño o tablero rehace el mapa."), 13, Color(1, 1, 1, 0.5)))
 
 	col.add_child(HSeparator.new())
-	col.add_child(UiKit.label("Herramienta", 18, UiKit.ACCENT))
+	col.add_child(UiKit.label(tr("Herramienta"), 18, UiKit.ACCENT))
 	var group := ButtonGroup.new()
-	var tools := [[Tool.HEIGHT, "⛰ Altura"], [Tool.TILE, "🟩 Suelo"], [Tool.PROP, "🌲 Obstáculo"],
-		[Tool.PLAYER_ZONE, "🔵 Zona jugador"], [Tool.ENEMY_ZONE, "🔴 Zona rival"], [Tool.ENEMY, "👾 Rival"]]
+	var tools := [[Tool.HEIGHT, tr("⛰ Altura")], [Tool.TILE, tr("🟩 Suelo")], [Tool.PROP, tr("🌲 Obstáculo")],
+		[Tool.PLAYER_ZONE, tr("🔵 Zona jugador")], [Tool.ENEMY_ZONE, tr("🔴 Zona rival")], [Tool.ENEMY, tr("👾 Rival")]]
 	var tool_grid := GridContainer.new()
 	tool_grid.columns = 2
 	col.add_child(tool_grid)
@@ -398,12 +398,12 @@ func _build_ui() -> void:
 		b.custom_minimum_size.x = 136
 		tool_grid.add_child(b)
 		_tool_buttons[t[0]] = b
-	_brush_pick = _option(col, "Pincel", ["1 casilla", "Radio 1", "Radio 2"])
+	_brush_pick = _option(col, tr("Pincel"), [tr("1 casilla"), tr("Radio 1"), tr("Radio 2")])
 	_brush_pick.item_selected.connect(func(i: int) -> void: _brush = i)
-	_tile_pick = _option(col, "Suelo", Biome.TILE_NAMES.values())
+	_tile_pick = _option(col, tr("Suelo"), Biome.TILE_NAMES.values().map(tr))
 	var props: Array = Biome.PROP_NAMES.values().slice(1)
-	_prop_pick = _option(col, "Obstáculo", props)
-	_enemy_pick = _option(col, "Rival", Game.roster.map(func(p: PokemonData) -> String: return "#%03d %s" % [p.dex_number, p.species_name]))
+	_prop_pick = _option(col, tr("Obstáculo"), props.map(tr))
+	_enemy_pick = _option(col, tr("Rival"), Game.roster.map(func(p: PokemonData) -> String: return "#%03d %s" % [p.dex_number, p.species_name]))
 	_enemy_pick.item_selected.connect(func(_i: int) -> void: _set_tool(Tool.ENEMY))
 
 	_help = UiKit.label("", 15)
@@ -420,7 +420,7 @@ func _build_ui() -> void:
 	_status.add_theme_constant_override("outline_size", 6)
 	_status.add_theme_color_override("font_outline_color", Color.BLACK)
 	root.add_child(_status)
-	var keys := UiKit.label("Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara", 14, Color(1, 1, 1, 0.8))
+	var keys := UiKit.label(tr("Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"), 14, Color(1, 1, 1, 0.8))
 	keys.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	keys.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	keys.grow_vertical = Control.GROW_DIRECTION_BEGIN
@@ -460,6 +460,6 @@ func _option(parent: Control, caption: String, items: Array) -> OptionButton:
 func _set_tool(t: Tool) -> void:
 	_tool = t
 	_tool_buttons[t].button_pressed = true
-	_help.text = TOOL_HELP[t]
+	_help.text = tr(TOOL_HELP[t])
 	if grid:
 		_refresh_highlights()

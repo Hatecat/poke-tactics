@@ -24,7 +24,7 @@ func _ready() -> void:
 	var top := HBoxContainer.new()
 	root.add_child(top)
 	top.add_child(UiKit.button("← Menú", func() -> void: get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label("  Tabla de tipos", 30, UiKit.ACCENT))
+	top.add_child(UiKit.label(tr("  Tabla de tipos"), 30, UiKit.ACCENT))
 
 	var columns := HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 16)
@@ -35,14 +35,14 @@ func _ready() -> void:
 	columns.add_child(chart_panel)
 	var chart_col := VBoxContainer.new()
 	chart_panel.add_child(chart_col)
-	chart_col.add_child(UiKit.label("Filas: tipo del ataque · Columnas: tipo del Pokémon que lo recibe · Clic en un tipo para ver su ficha", 14, Color(1, 1, 1, 0.65)))
+	chart_col.add_child(UiKit.label(tr("Filas: tipo del ataque · Columnas: tipo del Pokémon que lo recibe · Clic en un tipo para ver su ficha"), 14, Color(1, 1, 1, 0.65)))
 	var grid := GridContainer.new()
 	grid.columns = TypeChart.TYPES.size() + 1
 	grid.add_theme_constant_override("h_separation", 2)
 	grid.add_theme_constant_override("v_separation", 2)
 	chart_col.add_child(grid)
 
-	grid.add_child(UiKit.label("ATQ \\ DEF", 11, Color(1, 1, 1, 0.6)))
+	grid.add_child(UiKit.label(tr("ATQ \\ DEF"), 11, Color(1, 1, 1, 0.6)))
 	for t in TypeChart.TYPES:
 		grid.add_child(_type_header(t))
 	for a in TypeChart.TYPES.size():
@@ -52,7 +52,7 @@ func _ready() -> void:
 			var cell := ColorRect.new()
 			cell.custom_minimum_size = Vector2(CELL, CELL * 0.75)
 			cell.color = _mult_color(mult)
-			cell.tooltip_text = "%s → %s: ×%s" % [Combat.TYPE_NAMES[TypeChart.TYPES[a]], Combat.TYPE_NAMES[TypeChart.TYPES[d]], _mult_text(mult)]
+			cell.tooltip_text = "%s → %s: ×%s" % [tr(Combat.TYPE_NAMES[TypeChart.TYPES[a]]), tr(Combat.TYPE_NAMES[TypeChart.TYPES[d]]), _mult_text(mult)]
 			var l := UiKit.label(_mult_text(mult) if mult != 1.0 else "", 14)
 			l.set_anchors_preset(Control.PRESET_FULL_RECT)
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -65,12 +65,12 @@ func _ready() -> void:
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 14)
 	chart_col.add_child(legend)
-	for item in [[2.0, "Muy eficaz"], [0.5, "Poco eficaz"], [0.0, "Sin efecto"]]:
+	for item in [[2.0, tr("Muy eficaz")], [0.5, tr("Poco eficaz")], [0.0, tr("Sin efecto")]]:
 		var swatch := ColorRect.new()
 		swatch.custom_minimum_size = Vector2(18, 18)
 		swatch.color = _mult_color(item[0])
 		legend.add_child(swatch)
-		legend.add_child(UiKit.label("×%s %s" % [_mult_text(item[0]), item[1]], 14))
+		legend.add_child(UiKit.label("×%s %s" % [_mult_text(item[0]), tr(item[1])], 14))
 
 	var info_panel := UiKit.panel()
 	info_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -84,7 +84,7 @@ func _ready() -> void:
 func _type_header(t: String) -> Button:
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(CELL + 6, CELL * 0.75)
-	b.text = UiKit.TYPE_ABBR[t]
+	b.text = tr(UiKit.TYPE_ABBR[t])
 	b.add_theme_font_size_override("font_size", 12)
 	var box := StyleBoxFlat.new()
 	box.bg_color = TypeChart.color(t)
@@ -93,7 +93,7 @@ func _type_header(t: String) -> Button:
 		b.add_theme_stylebox_override(state, box)
 	b.add_theme_constant_override("outline_size", 4)
 	b.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
-	b.tooltip_text = Combat.TYPE_NAMES[t]
+	b.tooltip_text = tr(Combat.TYPE_NAMES[t])
 	b.pressed.connect(_show_type.bind(t))
 	return b
 
@@ -103,23 +103,23 @@ func _show_type(t: String) -> void:
 	var chip := UiKit.type_chip(t)
 	chip.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_info.add_child(chip)
-	var title := UiKit.label(Combat.TYPE_NAMES[t], 34, TypeChart.color(t).lightened(0.3))
+	var title := UiKit.label(tr(Combat.TYPE_NAMES[t]), 34, TypeChart.color(t).lightened(0.3))
 	_info.add_child(title)
 
-	_info.add_child(UiKit.label("Atacando", 20, UiKit.ACCENT))
-	_group("Muy eficaz contra", func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) > 1.0)
-	_group("Poco eficaz contra", func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) == 0.5)
-	_group("No afecta a", func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) == 0.0)
+	_info.add_child(UiKit.label(tr("Atacando"), 20, UiKit.ACCENT))
+	_group(tr("Muy eficaz contra"), func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) > 1.0)
+	_group(tr("Poco eficaz contra"), func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) == 0.5)
+	_group(tr("No afecta a"), func(o: String) -> bool: return TypeChart.effectiveness(t, [o]) == 0.0)
 	_info.add_child(HSeparator.new())
-	_info.add_child(UiKit.label("Defendiendo", 20, UiKit.ACCENT))
-	_group("Débil a", func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) > 1.0)
-	_group("Resiste", func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) == 0.5)
-	_group("Inmune a", func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) == 0.0)
+	_info.add_child(UiKit.label(tr("Defendiendo"), 20, UiKit.ACCENT))
+	_group(tr("Débil a"), func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) > 1.0)
+	_group(tr("Resiste"), func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) == 0.5)
+	_group(tr("Inmune a"), func(o: String) -> bool: return TypeChart.effectiveness(o, [t]) == 0.0)
 
 	var users := Game.roster.filter(func(p: PokemonData) -> bool: return t in p.types)
 	if not users.is_empty():
 		_info.add_child(HSeparator.new())
-		_info.add_child(UiKit.label("En el roster: " + ", ".join(users.map(func(p: PokemonData) -> String: return p.species_name)), 15, Color(1, 1, 1, 0.75)))
+		_info.add_child(UiKit.label(tr("En el roster:") + " " + ", ".join(users.map(func(p: PokemonData) -> String: return p.species_name)), 15, Color(1, 1, 1, 0.75)))
 
 	var idx := TypeChart.TYPES.find(t)
 	for key: Vector2i in _cells:

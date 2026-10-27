@@ -1,0 +1,128 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: scripts/battle/abilities.gd:45
+msgid "[Sin efecto en el tablero (todavía).]"
+msgstr "[No effect on the board (yet).]"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/battle/battle.gd:2110
+msgid "¡Victoria! Cada Pokémon de Cristina gana %d de experiencia."
+msgstr "Victory! Each of Cristina's Pokémon gains %d experience."
+
+#: scripts/battle/combat.gd:6
+msgid "individual"
+msgstr "single"
+
+#: scripts/battle/combat.gd:7
+msgid "círculo"
+msgstr "circle"
+
+#: scripts/battle/combat.gd:8
+msgid "cruz"
+msgstr "cross"
+
+#: scripts/battle/combat.gd:9
+msgid "línea"
+msgstr "line"
+
+#: scripts/battle/combat.gd:12
+msgid "Fuego"
+msgstr "Fire"
+
+#: scripts/battle/combat.gd:12
+msgid "Eléctrico"
+msgstr "Electric"
+
+#: scripts/battle/combat.gd:13
+msgid "Planta"
+msgstr "Grass"
+
+#: scripts/battle/combat.gd:13
+msgid "Lucha"
+msgstr "Fighting"
+
+#: scripts/battle/combat.gd:13
+msgid "Veneno"
+msgstr "Poison"
+
+#: scripts/battle/combat.gd:14
+msgid "Volador"
+msgstr "Flying"
+
+#: scripts/battle/combat.gd:14
+msgid "Bicho"
+msgstr "Bug"
+
+#: scripts/battle/combat.gd:15
+msgid "Fantasma"
+msgstr "Ghost"
+
+#: scripts/battle/combat.gd:15
+msgid "Dragón"
+msgstr "Dragon"
+
+#: scripts/battle/combat.gd:15
+msgid "Siniestro"
+msgstr "Dark"
+
+#: scripts/battle/combat.gd:16
+msgid "Acero"
+msgstr "Steel"
+
+#: scripts/battle/combat.gd:16
+msgid "Hada"
+msgstr "Fairy"
+
+#: scripts/battle/combat.gd:19
+msgid "envenenado"
+msgstr "poisoned"
+
+#: scripts/battle/combat.gd:20
+msgid "dormido"
+msgstr "asleep"
+
+#: scripts/battle/combat.gd:21
+msgid "paralizado"
+msgstr "paralyzed"
+
+#: scripts/battle/combat.gd:22
+msgid "quemado"
+msgstr "burned"
+
+#: scripts/battle/combat.gd:23
+msgid "congelado"
+msgstr "frozen"
+
+#: scripts/battle/weather.gd:8
+#: scripts/battle/weather.gd:12
+msgid "Despejado"
+msgstr "Clear"
+
+#: scripts/battle/weather.gd:8
+msgid "Sol intenso"
+msgstr "Harsh sunlight"
+
+#: scripts/battle/weather.gd:8
+#: scripts/battle/weather.gd:12
+msgid "Lluvia"
+msgstr "Rain"
+
+#: scripts/battle/weather.gd:9
+msgid "Tormenta de arena"
+msgstr "Sandstorm"
+
+#: scripts/battle/weather.gd:9
+#: scripts/battle/weather.gd:12
+msgid "Granizo"
+msgstr "Hail"
+
+#: scripts/battle/weather.gd:12
+msgid "Sol"
+msgstr "Sun"

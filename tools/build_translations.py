@@ -25,6 +25,8 @@ import json
 import re
 from pathlib import Path
 
+import po
+
 PROJECT = Path(__file__).resolve().parent.parent
 LOCALE = PROJECT / "locale"
 SPANISH = 7
@@ -115,100 +117,33 @@ THEMES = {
 }
 
 
-# --- Formato .po -----------------------------------------------------------------
-
-def quote(text):
-    return '"' + text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
-
-
-def unquote(text):
-    return json.loads(text)
-
-
-def read_po(path):
-    """{msgid: (msgstr, fuzzy)} de un .po existente."""
-    out = {}
-    if not path.exists():
-        return out
-    msgid = msgstr = None
-    fuzzy = False
-    target = None
-    for line in path.read_text(encoding="utf-8").splitlines() + [""]:
-        if line.startswith("#,"):
-            fuzzy = "fuzzy" in line
-        elif line.startswith("msgid "):
-            msgid, target = unquote(line[6:]), "id"
-        elif line.startswith("msgstr "):
-            msgstr, target = unquote(line[7:]), "str"
-        elif line.startswith('"') and target:
-            if target == "id":
-                msgid += unquote(line)
-            else:
-                msgstr += unquote(line)
-        elif not line.strip():
-            if msgid:
-                out[msgid] = (msgstr or "", fuzzy)
-            msgid = msgstr = target = None
-            fuzzy = False
-    return out
-
-
-def header(lang):
-    lines = ["Project-Id-Version: Poké Tactics", "MIME-Version: 1.0", "Content-Type: text/plain; charset=UTF-8",
-             "Content-Transfer-Encoding: 8bit"]
-    if lang:
-        lines.append(f"Language: {lang}")
-    return 'msgid ""\nmsgstr ""\n' + "".join(quote(l + "\n") + "\n" for l in lines)
-
-
-def write_po(path, lang, entries, translations):
-    """entries: {texto: [(referencia, nota)]}; translations: {texto: (traducción, fuzzy)} (vacío en el .pot)."""
-    parts = [header(lang)]
-    for text, refs in entries.items():
-        block = ""
-        notes = sorted({note for _, note in refs})
-        block += "#. " + ", ".join(notes) + "\n"
-        block += "".join(f"#: {ref}\n" for ref, _ in refs[:5])
-        msgstr, fuzzy = translations.get(text, ("", False))
-        if fuzzy:
-            block += "#, fuzzy\n"
-        block += f"msgid {quote(text)}\nmsgstr {quote(msgstr)}\n"
-        parts.append(block)
-    path.write_text("\n".join(parts), encoding="utf-8")
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("src", type=Path)
     ap.add_argument("--nuevo", action="append", default=[], help="crea el .po de este idioma (código de Godot, p. ej. fr)")
     args = ap.parse_args()
     filled = {}
+
+    def fill(lang):
+        if lang not in filled:
+            filled[lang] = dict(pokeapi(args.src, POKEAPI_LANGS[lang])) if lang in POKEAPI_LANGS else {}
+            filled[lang].update(MANUAL.get(lang, {}))
+        return filled[lang]
+
     for theme, collect in THEMES.items():
         folder = LOCALE / theme
         folder.mkdir(parents=True, exist_ok=True)
         entries = {}
         for text, ref, note in collect():
-            entries.setdefault(text, []).append((ref, note))
-        write_po(folder / f"{theme}.pot", None, entries, {})
-        langs = {p.stem for p in folder.glob("*.po")} | set(args.nuevo)
-        for lang in sorted(langs):
-            path = folder / f"{lang}.po"
-            old = read_po(path)
-            if lang not in filled:
-                filled[lang] = dict(pokeapi(args.src, POKEAPI_LANGS[lang])) if lang in POKEAPI_LANGS else {}
-                filled[lang].update(MANUAL.get(lang, {}))
-            known = filled[lang]
-            translations, missing = {}, 0
-            for text in entries:
-                if old.get(text, ("", False))[0]:
-                    translations[text] = old[text]
-                elif text in known:
-                    translations[text] = (known[text], False)
-                else:
-                    missing += 1
-            write_po(path, lang, entries, translations)
-            print(f"{path.relative_to(PROJECT)}: {len(entries)} textos, {missing} sin traducir")
-
+            e = entries.setdefault(text, {"id": text, "plural": None, "refs": [], "notes": []})
+            e["refs"].append(ref)
+            if note not in e["notes"]:
+                e["notes"].append(note)
+        for lang in args.nuevo:
+            if not (folder / f"{lang}.po").exists():
+                po.write(folder / f"{lang}.po", lang, [], {})
+        for lang, n in po.merge(folder, theme, list(entries.values()), fill).items():
+            print(f"locale/{theme}/{lang}.po: {len(entries)} textos, {n} sin traducir")
 
 if __name__ == "__main__":
     main()

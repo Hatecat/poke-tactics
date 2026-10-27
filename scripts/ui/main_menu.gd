@@ -41,25 +41,25 @@ func _ready() -> void:
 	title.add_theme_constant_override("outline_size", 14)
 	title.add_theme_color_override("font_outline_color", Color(0.1, 0.15, 0.35))
 	left.add_child(title)
-	left.add_child(UiKit.label("Prototipo · Godot 4 · %d Pokémon" % Game.roster.size(), 18, Color(1, 1, 1, 0.6)))
+	left.add_child(UiKit.label(tr("Prototipo · Godot 4 · %d Pokémon") % Game.roster.size(), 18, Color(1, 1, 1, 0.6)))
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 20
 	left.add_child(spacer)
 	if Game.story and not Game.story.finished():
-		_menu_button(left, "Historia  (continuar)", _story.bind(false))
+		_menu_button(left, tr("Historia  (continuar)"), _story.bind(false))
 	else:
-		_menu_button(left, "Historia", _story.bind(true))
-	_play_button = _menu_button(left, "Partida rápida", _open_map_dialog)
-	var tower_text := "Torre de Batallas" + ("  (piso %d)" % Game.tower.floor_number if Game.tower and not Game.tower.finished and Game.tower.picks_left == 0 else "")
+		_menu_button(left, tr("Historia"), _story.bind(true))
+	_play_button = _menu_button(left, tr("Partida rápida"), _open_map_dialog)
+	var tower_text := tr("Torre de Batallas") + ("  " + tr("(piso %d)") % Game.tower.floor_number if Game.tower and not Game.tower.finished and Game.tower.picks_left == 0 else "")
 	_menu_button(left, tower_text, _go.bind("tower"))
-	_menu_button(left, "Editor de equipo", _go.bind("team_editor"))
-	_menu_button(left, "Editor de escenarios", _go.bind("map_editor"))
-	_menu_button(left, "Tabla de tipos", _go.bind("type_chart"))
-	_menu_button(left, "Opciones", func() -> void: _options_dialog.visible = true)
-	_menu_button(left, "Acerca de", func() -> void: _about_dialog.visible = true)
-	_menu_button(left, "Salir", func() -> void: get_tree().quit())
+	_menu_button(left, tr("Editor de equipo"), _go.bind("team_editor"))
+	_menu_button(left, tr("Editor de escenarios"), _go.bind("map_editor"))
+	_menu_button(left, tr("Tabla de tipos"), _go.bind("type_chart"))
+	_menu_button(left, tr("Opciones"), func() -> void: _options_dialog.visible = true)
+	_menu_button(left, tr("Acerca de"), func() -> void: _about_dialog.visible = true)
+	_menu_button(left, tr("Salir"), func() -> void: get_tree().quit())
 	var team_info := UiKit.label("", 16, Color(1, 1, 1, 0.7))
-	team_info.text = "%s: %s" % [Game.teams[Game.current_team].name, ", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else "vacío"]
+	team_info.text = "%s: %s" % [Game.teams[Game.current_team].name, ", ".join(Game.player_team.map(func(m: TeamMember) -> String: return m.data.species_name)) if not Game.player_team.is_empty() else tr("vacío")]
 	left.add_child(team_info)
 
 	_preview = PokemonPreview.new()
@@ -129,13 +129,13 @@ func _build_map_dialog() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	var title := UiKit.label("Partida rápida", 30, UiKit.ACCENT)
+	var title := UiKit.label(tr("Partida rápida"), 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
 	var team_row := HBoxContainer.new()
 	team_row.add_theme_constant_override("separation", 8)
-	var team_caption := UiKit.label("Tu equipo:", 18)
+	var team_caption := UiKit.label(tr("Tu equipo:"), 18)
 	team_caption.custom_minimum_size.x = 110
 	team_row.add_child(team_caption)
 	_team_select = OptionButton.new()
@@ -150,11 +150,11 @@ func _build_map_dialog() -> void:
 
 	var diff_row := HBoxContainer.new()
 	diff_row.add_theme_constant_override("separation", 8)
-	var diff_caption := UiKit.label("Dificultad:", 18)
+	var diff_caption := UiKit.label(tr("Dificultad:"), 18)
 	diff_caption.custom_minimum_size.x = 110
 	diff_row.add_child(diff_caption)
 	for i in Game.DIFFICULTY_NAMES.size():
-		var b := UiKit.button(Game.DIFFICULTY_NAMES[i], func() -> void:
+		var b := UiKit.button(tr(Game.DIFFICULTY_NAMES[i]), func() -> void:
 			Game.difficulty = i
 			_refresh_dialog(), 18)
 		b.toggle_mode = true
@@ -167,7 +167,7 @@ func _build_map_dialog() -> void:
 	box.add_child(HSeparator.new())
 
 	var map_row := HBoxContainer.new()
-	var map_caption := UiKit.label("Escenario:", 18)
+	var map_caption := UiKit.label(tr("Escenario:"), 18)
 	map_caption.custom_minimum_size.x = 110
 	map_row.add_child(map_caption)
 	_map_select = OptionButton.new()
@@ -179,11 +179,11 @@ func _build_map_dialog() -> void:
 	_random_options = VBoxContainer.new()
 	_random_options.add_theme_constant_override("separation", 12)
 	box.add_child(_random_options)
-	_random_options.add_child(UiKit.label("Tablero", 18, Color(1, 1, 1, 0.75)))
+	_random_options.add_child(UiKit.label(tr("Tablero"), 18, Color(1, 1, 1, 0.75)))
 	var topo_row := HBoxContainer.new()
 	topo_row.add_theme_constant_override("separation", 12)
 	_random_options.add_child(topo_row)
-	for item in [["▦  Cuadrícula", BoardGrid.Topology.SQUARE], ["⬢  Hexágonos", BoardGrid.Topology.HEX]]:
+	for item in [[tr("▦  Cuadrícula"), BoardGrid.Topology.SQUARE], [tr("⬢  Hexágonos"), BoardGrid.Topology.HEX]]:
 		var b := UiKit.button(item[0], func() -> void:
 			Game.topology = item[1]
 			_refresh_dialog(), 20)
@@ -192,15 +192,15 @@ func _build_map_dialog() -> void:
 		topo_row.add_child(b)
 		_topology_buttons.append(b)
 
-	_random_options.add_child(UiKit.label("Campo", 18, Color(1, 1, 1, 0.75)))
+	_random_options.add_child(UiKit.label(tr("Campo"), 18, Color(1, 1, 1, 0.75)))
 	var biome_grid := GridContainer.new()
 	biome_grid.columns = 3
 	biome_grid.add_theme_constant_override("h_separation", 8)
 	biome_grid.add_theme_constant_override("v_separation", 8)
 	_random_options.add_child(biome_grid)
-	var options: Array = [[RANDOM_BIOME, "🎲  Aleatorio"]]
+	var options: Array = [[RANDOM_BIOME, tr("🎲  Aleatorio")]]
 	for kind: int in Biome.NAMES:
-		options.append([kind, "%s  %s" % [Biome.ICONS[kind], Biome.NAMES[kind]]])
+		options.append([kind, "%s  %s" % [Biome.ICONS[kind], tr(Biome.NAMES[kind])]])
 	for item in options:
 		var b := UiKit.button(item[1], func() -> void:
 			_selected_biome = item[0]
@@ -210,13 +210,13 @@ func _build_map_dialog() -> void:
 		biome_grid.add_child(b)
 		_biome_buttons[item[0]] = b
 
-	_random_options.add_child(UiKit.label("Clima", 18, Color(1, 1, 1, 0.75)))
+	_random_options.add_child(UiKit.label(tr("Clima"), 18, Color(1, 1, 1, 0.75)))
 	var weather_row := HBoxContainer.new()
 	weather_row.add_theme_constant_override("separation", 8)
 	_random_options.add_child(weather_row)
-	var weathers: Array = [[RANDOM_WEATHER, "🎲 Aleatorio"]]
+	var weathers: Array = [[RANDOM_WEATHER, tr("🎲 Aleatorio")]]
 	for kind: int in Weather.NAMES:
-		weathers.append([kind, "%s %s" % [Weather.ICONS[kind], Weather.NAMES[kind].split(" ")[0] if kind != Weather.Kind.SAND else "Arena"]])
+		weathers.append([kind, "%s %s" % [Weather.ICONS[kind], tr(Weather.SHORT_NAMES[kind])]])
 	for item in weathers:
 		var b := UiKit.button(item[1], func() -> void:
 			Game.weather = item[0]
@@ -226,42 +226,42 @@ func _build_map_dialog() -> void:
 		weather_row.add_child(b)
 		_weather_buttons[item[0]] = b
 
-	box.add_child(UiKit.label("El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo.", 14, Color(1, 1, 1, 0.6)))
+	box.add_child(UiKit.label(tr("El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo."), 14, Color(1, 1, 1, 0.6)))
 	var actions := HBoxContainer.new()
 	actions.add_theme_constant_override("separation", 12)
 	actions.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_child(actions)
-	actions.add_child(UiKit.button("Cancelar", func() -> void: _map_dialog.visible = false))
-	_go_button = UiKit.button("¡A combatir!", _start_game, 22)
+	actions.add_child(UiKit.button(tr("Cancelar"), func() -> void: _map_dialog.visible = false))
+	_go_button = UiKit.button(tr("¡A combatir!"), _start_game, 22)
 	_go_button.custom_minimum_size.x = 260
 	actions.add_child(_go_button)
 
 
 func _open_map_dialog() -> void:
 	if Game.teams.all(func(t) -> bool: return t.members.is_empty()):
-		_play_button.text = "Partida rápida (¡arma tu equipo!)"
+		_play_button.text = tr("Partida rápida (¡arma tu equipo!)")
 		return
 	_team_select.clear()
 	for t in Game.teams:
-		_team_select.add_item("%s  (%d Pokémon)" % [t.name, t.members.size()])
+		_team_select.add_item(tr("%s  (%d Pokémon)") % [t.name, t.members.size()])
 	_team_select.select(Game.current_team)
 	_map_select.clear()
-	_map_select.add_item("Generado al azar")
+	_map_select.add_item(tr("Generado al azar"))
 	_map_paths = Game.list_maps()
 	for path in _map_paths:
 		var m: MapData = load(path)
-		_map_select.add_item("%s  (%s, %s)" % [m.map_name, Biome.NAMES[m.biome], Weather.NAMES[m.weather]])
+		_map_select.add_item("%s  (%s, %s)" % [m.map_name, tr(Biome.NAMES[m.biome]), tr(Weather.NAMES[m.weather])])
 	_refresh_dialog()
 	_map_dialog.visible = true
 
 
 func _refresh_dialog() -> void:
 	var members: Array = Game.player_team.map(func(m: TeamMember) -> String: return TeamMember.display(m.data, m.gender))
-	_team_hint.text = ", ".join(members) if not members.is_empty() else "Este equipo está vacío: elige otro o complétalo en el editor."
+	_team_hint.text = ", ".join(members) if not members.is_empty() else tr("Este equipo está vacío: elige otro o complétalo en el editor.")
 	_go_button.disabled = members.is_empty()
 	for i in _difficulty_buttons.size():
 		_difficulty_buttons[i].button_pressed = i == Game.difficulty
-	_difficulty_hint.text = Game.DIFFICULTY_DESC[Game.difficulty]
+	_difficulty_hint.text = tr(Game.DIFFICULTY_DESC[Game.difficulty])
 	_random_options.modulate.a = 1.0 if _map_select.selected <= 0 else 0.35
 	for b in _topology_buttons:
 		b.button_pressed = _topology_buttons.find(b) == Game.topology
@@ -297,7 +297,7 @@ func _build_options_dialog() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	var title := UiKit.label("Opciones", 30, UiKit.ACCENT)
+	var title := UiKit.label(tr("Opciones"), 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var grid := GridContainer.new()
@@ -305,7 +305,7 @@ func _build_options_dialog() -> void:
 	grid.add_theme_constant_override("h_separation", 14)
 	grid.add_theme_constant_override("v_separation", 12)
 	box.add_child(grid)
-	for item in [["master", "General"], ["music", "Música"], ["sfx", "Efectos"]]:
+	for item in [["master", tr("General")], ["music", tr("Música")], ["sfx", tr("Efectos")]]:
 		grid.add_child(UiKit.label(item[1], 18))
 		var slider := HSlider.new()
 		slider.min_value = 0.0
@@ -324,18 +324,18 @@ func _build_options_dialog() -> void:
 				Audio.sfx("hit_punch", -4.0))
 		grid.add_child(slider)
 		grid.add_child(pct)
-	grid.add_child(UiKit.label("Velocidad de combate", 18))
+	grid.add_child(UiKit.label(tr("Velocidad de combate"), 18))
 	var speed := Game.speed_slider()
 	speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_child(speed)
 	grid.add_child(Control.new())
-	grid.add_child(UiKit.label("Calidad gráfica", 18))
+	grid.add_child(UiKit.label(tr("Calidad gráfica"), 18))
 	grid.add_child(Game.quality_picker())
 	grid.add_child(Control.new())
-	grid.add_child(UiKit.label("Idioma", 18))
+	grid.add_child(UiKit.label(tr("Idioma"), 18))
 	grid.add_child(Game.language_picker())
 	grid.add_child(Control.new())
-	var close := UiKit.button("Listo", func() -> void:
+	var close := UiKit.button(tr("Listo"), func() -> void:
 		Game.save()
 		_options_dialog.visible = false, 20)
 	box.add_child(close)
@@ -343,6 +343,7 @@ func _build_options_dialog() -> void:
 
 # --- Acerca de -----------------------------------------------------------------
 
+# i18n
 const ABOUT := """[center][b]Poké Tactics[/b] es un proyecto de fans, gratuito y sin ánimo de lucro.
 No está afiliado a Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.[/center]
 
@@ -377,7 +378,7 @@ func _build_about_dialog() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	var title := UiKit.label("Acerca de", 30, UiKit.ACCENT)
+	var title := UiKit.label(tr("Acerca de"), 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var text := RichTextLabel.new()
@@ -386,10 +387,10 @@ func _build_about_dialog() -> void:
 	text.custom_minimum_size.x = 760
 	text.add_theme_font_size_override("normal_font_size", 16)
 	text.add_theme_font_size_override("bold_font_size", 17)
-	text.text = ABOUT
+	text.text = tr(ABOUT)
 	text.meta_clicked.connect(func(meta: Variant) -> void: OS.shell_open(str(meta)))
 	box.add_child(text)
-	box.add_child(UiKit.button("Cerrar", func() -> void: _about_dialog.visible = false, 20))
+	box.add_child(UiKit.button(tr("Cerrar"), func() -> void: _about_dialog.visible = false, 20))
 
 
 func _unhandled_input(event: InputEvent) -> void:

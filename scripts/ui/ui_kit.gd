@@ -4,12 +4,12 @@ extends RefCounted
 
 const BG := Color(0.08, 0.1, 0.14, 0.88)
 const ACCENT := Color(1.0, 0.8, 0.25)
-const TYPE_ABBR := {
+const TYPE_ABBR := { # i18n
 	"normal": "NOR", "fire": "FUE", "water": "AGU", "electric": "ELÉ", "grass": "PLA", "ice": "HIE",
 	"fighting": "LUC", "poison": "VEN", "ground": "TIE", "flying": "VOL", "psychic": "PSÍ", "bug": "BIC",
 	"rock": "ROC", "ghost": "FAN", "dragon": "DRA", "dark": "SIN", "steel": "ACE", "fairy": "HAD",
 }
-const STAT_NAMES := ["PS", "Ataque", "Defensa", "At. Esp.", "Def. Esp.", "Velocidad"]
+const STAT_NAMES := ["PS", "Ataque", "Defensa", "At. Esp.", "Def. Esp.", "Velocidad"] # i18n
 
 
 static func theme() -> Theme:
@@ -68,7 +68,7 @@ static func button(text: String, callback: Callable, size := 17) -> Button:
 static func type_chip(type: String, short := false, suffix := "") -> PanelContainer:
 	var chip := PanelContainer.new()
 	chip.add_theme_stylebox_override("panel", _box(TypeChart.color(type), 4, 2))
-	var l := label((TYPE_ABBR.get(type, type) if short else Combat.TYPE_NAMES.get(type, type)) + suffix, 14)
+	var l := label(TranslationServer.translate(TYPE_ABBR.get(type, type) if short else Combat.TYPE_NAMES.get(type, type)) + suffix, 14)
 	l.add_theme_constant_override("outline_size", 4)
 	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.6))
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -88,7 +88,7 @@ static func type_row(types: PackedStringArray, short := false) -> HBoxContainer:
 
 
 static func type_bbcode(type: String) -> String:
-	return "[color=#%s]%s[/color]" % [TypeChart.color(type).to_html(false), Combat.TYPE_NAMES.get(type, type)]
+	return "[color=#%s]%s[/color]" % [TypeChart.color(type).to_html(false), TranslationServer.translate(Combat.TYPE_NAMES.get(type, type))]
 
 
 static func base_stats(p: PokemonData) -> Array[int]:

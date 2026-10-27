@@ -4,7 +4,7 @@ extends RefCounted
 ## de gimnasio de Kanto, seguidos del Alto Mando y el Campeón.
 
 ## Clase de entrenador: título, tipos de sus Pokémon y sexo (para elegir el nombre).
-const CLASSES: Array[Dictionary] = [
+const CLASSES: Array[Dictionary] = [ # i18n
 	{"title": "Cazabichos", "types": ["bug"], "gender": 1},
 	{"title": "Nadador", "types": ["water"], "gender": 1},
 	{"title": "Nadadora", "types": ["water"], "gender": 2},
@@ -40,7 +40,7 @@ const NAMES_F: PackedStringArray = [
 
 ## Líderes en orden (uno cada 10 pisos); al terminar la lista se vuelve a empezar (revancha).
 ## `team`: su equipo clásico; si la Torre pide más Pokémon se completa con su tipo.
-const LEADERS: Array[Dictionary] = [
+const LEADERS: Array[Dictionary] = [ # i18n
 	{"name": "Brock", "title": "Líder de gimnasio", "types": ["rock", "ground"], "badge": "Medalla Roca",
 		"team": ["geodude", "onix"]},
 	{"name": "Misty", "title": "Líder de gimnasio", "types": ["water"], "badge": "Medalla Cascada",
@@ -69,12 +69,6 @@ const LEADERS: Array[Dictionary] = [
 		"team": ["pidgeot", "alakazam", "rhydon", "gyarados", "arcanine", "charizard"]},
 ]
 
-const TYPE_NAMES := {
-	"normal": "Normal", "fire": "Fuego", "water": "Agua", "electric": "Eléctrico", "grass": "Planta",
-	"ice": "Hielo", "fighting": "Lucha", "poison": "Veneno", "ground": "Tierra", "flying": "Volador",
-	"psychic": "Psíquico", "bug": "Bicho", "rock": "Roca", "ghost": "Fantasma", "dragon": "Dragón",
-	"steel": "Acero", "dark": "Siniestro", "fairy": "Hada",
-}
 
 
 ## Entrenador al azar: {"title", "name", "types", "leader": false}.
@@ -96,10 +90,10 @@ static func leader_for(floor_number: int) -> Dictionary:
 
 ## "Cazabichos Pedro", "Líder de gimnasio Brock"...
 static func full_name(t: Dictionary) -> String:
-	return "%s %s" % [t.title, t.name]
+	return "%s %s" % [TranslationServer.translate(t.title), TranslationServer.translate(t.name)]
 
 
 static func types_text(types: Array) -> String:
 	if types.is_empty():
-		return "variado"
-	return "/".join(types.map(func(t: String) -> String: return TYPE_NAMES.get(t, t)))
+		return TranslationServer.translate("variado")
+	return "/".join(types.map(func(t: String) -> String: return TranslationServer.translate(Combat.TYPE_NAMES.get(t, t))))

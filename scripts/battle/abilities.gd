@@ -36,13 +36,13 @@ static func _load() -> void:
 
 static func display_name(id: String) -> String:
 	_load()
-	return _info.get(id, {}).get("name", id.capitalize()) if id else "—"
+	return TranslationServer.translate(_info.get(id, {}).get("name", id.capitalize())) if id else "—"
 
 
 static func describe(id: String) -> String:
 	_load()
-	var text: String = _info.get(id, {}).get("desc", "")
-	return text if id in IMPLEMENTED else text + " [Sin efecto en el tablero (todavía).]"
+	var text := TranslationServer.translate(_info.get(id, {}).get("desc", ""))
+	return text if id in IMPLEMENTED else text + " " + TranslationServer.translate("[Sin efecto en el tablero (todavía).]")
 
 
 static func has(u: Unit, id: String) -> bool:

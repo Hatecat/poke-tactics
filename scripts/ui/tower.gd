@@ -31,10 +31,10 @@ func _ready() -> void:
 	add_child(root)
 	var top := HBoxContainer.new()
 	root.add_child(top)
-	top.add_child(UiKit.button("← Menú", func() -> void:
+	top.add_child(UiKit.button(tr("← Menú"), func() -> void:
 		Game.save()
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label("  Torre de Batallas", 30, UiKit.ACCENT))
+	top.add_child(UiKit.label(tr("  Torre de Batallas"), 30, UiKit.ACCENT))
 	_content = MarginContainer.new()
 	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(_content)
@@ -70,14 +70,14 @@ func _show_start() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 14)
 	panel.add_child(box)
-	box.add_child(UiKit.label("Nueva subida a la Torre", 28, UiKit.ACCENT))
-	box.add_child(UiKit.label("Elige 4 Pokémon básicos (de 6 al azar cada vez), empiezan a nivel 5.\nCada piso es un combate contra Pokémon salvajes: captúralos con Poké Balls,\nsube de nivel, evoluciona y llega lo más alto posible.", 16, Color(1, 1, 1, 0.8)))
-	box.add_child(UiKit.label("Récord: piso %d" % Game.tower_best, 18, UiKit.ACCENT))
-	box.add_child(UiKit.label("Tablero", 16, Color(1, 1, 1, 0.7)))
+	box.add_child(UiKit.label(tr("Nueva subida a la Torre"), 28, UiKit.ACCENT))
+	box.add_child(UiKit.label(tr("Elige 4 Pokémon básicos (de 6 al azar cada vez), empiezan a nivel 5.\nCada piso es un combate contra Pokémon salvajes: captúralos con Poké Balls,\nsube de nivel, evoluciona y llega lo más alto posible."), 16, Color(1, 1, 1, 0.8)))
+	box.add_child(UiKit.label(tr("Récord: piso %d") % Game.tower_best, 18, UiKit.ACCENT))
+	box.add_child(UiKit.label(tr("Tablero"), 16, Color(1, 1, 1, 0.7)))
 	var topo_row := HBoxContainer.new()
 	box.add_child(topo_row)
 	var topo_buttons: Array[Button] = []
-	for item in [["▦ Cuadrícula", BoardGrid.Topology.SQUARE], ["⬢ Hexágonos", BoardGrid.Topology.HEX]]:
+	for item in [[tr("▦ Cuadrícula"), BoardGrid.Topology.SQUARE], [tr("⬢ Hexágonos"), BoardGrid.Topology.HEX]]:
 		var b := UiKit.button(item[0], func() -> void:
 			_topology = item[1]
 			for x in topo_buttons:
@@ -87,12 +87,12 @@ func _show_start() -> void:
 		b.custom_minimum_size = Vector2(220, 44)
 		topo_row.add_child(b)
 		topo_buttons.append(b)
-	box.add_child(UiKit.label("Dificultad", 16, Color(1, 1, 1, 0.7)))
+	box.add_child(UiKit.label(tr("Dificultad"), 16, Color(1, 1, 1, 0.7)))
 	var diff_row := HBoxContainer.new()
 	box.add_child(diff_row)
 	var diff_buttons: Array[Button] = []
 	for i in Game.DIFFICULTY_NAMES.size():
-		var b := UiKit.button(Game.DIFFICULTY_NAMES[i], func() -> void:
+		var b := UiKit.button(tr(Game.DIFFICULTY_NAMES[i]), func() -> void:
 			_difficulty = i
 			for x in diff_buttons:
 				x.button_pressed = diff_buttons.find(x) == _difficulty, 18)
@@ -101,7 +101,7 @@ func _show_start() -> void:
 		b.custom_minimum_size = Vector2(146, 44)
 		diff_row.add_child(b)
 		diff_buttons.append(b)
-	var go := UiKit.button("¡Empezar!", func() -> void:
+	var go := UiKit.button(tr("¡Empezar!"), func() -> void:
 		_run = TowerRun.new()
 		_run.topology = _topology
 		_run.difficulty = _difficulty
@@ -119,9 +119,9 @@ func _show_draft() -> void:
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 14)
 	_content.add_child(col)
-	col.add_child(UiKit.label("Elige tu Pokémon (%d de %d)" % [TowerRun.DRAFT_PICKS - _run.picks_left + 1, TowerRun.DRAFT_PICKS], 26))
+	col.add_child(UiKit.label(tr("Elige tu Pokémon (%d de %d)") % [TowerRun.DRAFT_PICKS - _run.picks_left + 1, TowerRun.DRAFT_PICKS], 26))
 	if not _run.party.is_empty():
-		col.add_child(UiKit.label("Tu equipo: " + ", ".join(_run.party.map(func(m: TeamMember) -> String: return TeamMember.display(m.data, m.gender))), 16, UiKit.ACCENT))
+		col.add_child(UiKit.label(tr("Tu equipo:") + " " + ", ".join(_run.party.map(func(m: TeamMember) -> String: return TeamMember.display(m.data, m.gender))), 16, UiKit.ACCENT))
 	var row := HBoxContainer.new()
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	row.add_theme_constant_override("separation", 16)
@@ -151,9 +151,9 @@ func _show_draft() -> void:
 		box.add_theme_constant_override("separation", 4)
 		b.add_child(box)
 		for c in [UiKit.label("#%03d %s" % [p.dex_number, p.species_name], 20), UiKit.type_row(p.types),
-				UiKit.label("Total de stats: %d · Mov %d" % [UiKit.base_stats(p).reduce(func(a, v): return a + v, 0), clampi(2 + roundi(p.base_speed / 45.0), 2, 6) + p.move_modifier], 14, Color(1, 1, 1, 0.75)),
-				UiKit.label("Ataques a nivel 5: " + ", ".join(TeamMember.moves_up_to(p, TowerRun.START_LEVEL).map(func(m: MoveData) -> String: return m.display_name)), 13, Color(1, 1, 1, 0.65)),
-				UiKit.label(("Evoluciona a nivel %d" % p.evolve_level) if p.evolve_level > 0 else "No evoluciona", 13, UiKit.ACCENT)]:
+				UiKit.label(tr("Total de stats: %d · Mov %d") % [UiKit.base_stats(p).reduce(func(a, v): return a + v, 0), clampi(2 + roundi(p.base_speed / 45.0), 2, 6) + p.move_modifier], 14, Color(1, 1, 1, 0.75)),
+				UiKit.label(tr("Ataques a nivel 5:") + " " + ", ".join(TeamMember.moves_up_to(p, TowerRun.START_LEVEL).map(func(m: MoveData) -> String: return tr(m.display_name))), 13, Color(1, 1, 1, 0.65)),
+				UiKit.label((tr("Evoluciona a nivel %d") % p.evolve_level) if p.evolve_level > 0 else tr("No evoluciona"), 13, UiKit.ACCENT)]:
 			c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			if c is Label:
 				c.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -173,19 +173,19 @@ func _show_hub() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 24)
 	col.add_child(header)
-	header.add_child(UiKit.label("Piso %d" % _run.floor_number, 28, UiKit.ACCENT))
+	header.add_child(UiKit.label(tr("Piso %d") % _run.floor_number, 28, UiKit.ACCENT))
 	header.add_child(_ball_counts())
-	var badges := UiKit.label("Medallas: %d" % _run.badges.size(), 20, Color(1.0, 0.85, 0.4))
-	badges.tooltip_text = "\n".join(_run.badges) if not _run.badges.is_empty() else "Vence a los líderes de gimnasio (cada 10 pisos)."
+	var badges := UiKit.label(tr("Medallas: %d") % _run.badges.size(), 20, Color(1.0, 0.85, 0.4))
+	badges.tooltip_text = "\n".join(Array(_run.badges).map(tr)) if not _run.badges.is_empty() else tr("Vence a los líderes de gimnasio (cada 10 pisos).")
 	badges.mouse_filter = Control.MOUSE_FILTER_PASS
 	header.add_child(badges)
 	header.add_child(UiKit.label("%d ₽" % _run.money, 20, UiKit.ACCENT))
-	header.add_child(UiKit.label("Récord: piso %d" % Game.tower_best, 18, Color(1, 1, 1, 0.7)))
-	header.add_child(UiKit.label("Dificultad: %s" % Game.DIFFICULTY_NAMES[_run.difficulty], 18, Color(1, 1, 1, 0.7)))
+	header.add_child(UiKit.label(tr("Récord: piso %d") % Game.tower_best, 18, Color(1, 1, 1, 0.7)))
+	header.add_child(UiKit.label(tr("Dificultad: %s") % tr(Game.DIFFICULTY_NAMES[_run.difficulty]), 18, Color(1, 1, 1, 0.7)))
 
 	var kind := TowerRun.floor_kind(_run.floor_number)
 	var next_color := Color(1.0, 0.8, 0.3) if kind == "leader" else (Color(1.0, 0.6, 0.5) if kind == "trainer" else Color(0.7, 0.9, 0.7))
-	col.add_child(UiKit.label("Próximo piso: %s" % _run.floor_preview(), 18, next_color))
+	col.add_child(UiKit.label(tr("Próximo piso: %s") % _run.floor_preview(), 18, next_color))
 
 	var columns := HBoxContainer.new()
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -199,11 +199,11 @@ func _show_hub() -> void:
 	var lists_col := VBoxContainer.new()
 	lists_col.add_theme_constant_override("separation", 6)
 	lists.add_child(lists_col)
-	lists_col.add_child(UiKit.label("Equipo (%d/%d)" % [_run.party.size(), TowerRun.MAX_PARTY], 20))
+	lists_col.add_child(UiKit.label(tr("Equipo (%d/%d)") % [_run.party.size(), TowerRun.MAX_PARTY], 20))
 	for m in _run.party:
 		lists_col.add_child(_member_card(m, true))
 	lists_col.add_child(HSeparator.new())
-	lists_col.add_child(UiKit.label("Caja (%d)" % _run.box.size(), 20))
+	lists_col.add_child(UiKit.label(tr("Caja (%d)") % _run.box.size(), 20))
 	var box_scroll := ScrollContainer.new()
 	box_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -212,7 +212,7 @@ func _show_hub() -> void:
 	box_col.add_theme_constant_override("separation", 6)
 	box_scroll.add_child(box_col)
 	if _run.box.is_empty():
-		box_col.add_child(UiKit.label("Captura Pokémon salvajes con Poké Balls\ndurante los combates.", 14, Color(1, 1, 1, 0.5)))
+		box_col.add_child(UiKit.label(tr("Captura Pokémon salvajes con Poké Balls\ndurante los combates."), 14, Color(1, 1, 1, 0.5)))
 	for m in _run.box:
 		box_col.add_child(_member_card(m, false))
 
@@ -232,17 +232,17 @@ func _show_hub() -> void:
 	columns.add_child(report)
 	var report_col := VBoxContainer.new()
 	report.add_child(report_col)
-	report_col.add_child(UiKit.label("Último combate" if not _run.last_report.is_empty() else "Antes de subir", 20))
+	report_col.add_child(UiKit.label(tr("Último combate") if not _run.last_report.is_empty() else tr("Antes de subir"), 20))
 	var text := RichTextLabel.new()
 	text.bbcode_enabled = true
 	text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text.add_theme_font_size_override("normal_font_size", 15)
 	text.text = "\n".join(_run.last_report) if not _run.last_report.is_empty() else \
-		"Tu equipo se cura por completo antes de cada piso.\n\nElige los 4 ataques de cada Pokémon entre los que ha aprendido, y cambia miembros del equipo por los capturados."
+		tr("Tu equipo se cura por completo antes de cada piso.\n\nElige los 4 ataques de cada Pokémon entre los que ha aprendido, y cambia miembros del equipo por los capturados.")
 	report_col.add_child(text)
 	report_col.add_child(HSeparator.new())
-	report_col.add_child(UiKit.label("Mochila", 20))
-	var bag_hint := UiKit.label("Clic: equipar a %s (o usar la piedra)." % TeamMember.display(_selected.data, _selected.gender), 13, Color(1, 1, 1, 0.55))
+	report_col.add_child(UiKit.label(tr("Mochila"), 20))
+	var bag_hint := UiKit.label(tr("Clic: equipar a %s (o usar la piedra).") % TeamMember.display(_selected.data, _selected.gender), 13, Color(1, 1, 1, 0.55))
 	bag_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	report_col.add_child(bag_hint)
 	var bag_scroll := ScrollContainer.new()
@@ -252,7 +252,7 @@ func _show_hub() -> void:
 	var bag := VBoxContainer.new()
 	bag_scroll.add_child(bag)
 	if _run.bag.is_empty():
-		var empty := UiKit.label("Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda.", 14, Color(1, 1, 1, 0.5))
+		var empty := UiKit.label(tr("Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda."), 14, Color(1, 1, 1, 0.5))
 		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		empty.custom_minimum_size.x = 320
 		bag.add_child(empty)
@@ -260,7 +260,7 @@ func _show_hub() -> void:
 		var it := Items.find(id)
 		if it == null:
 			continue
-		var b := UiKit.button("%s  ×%d" % [it.display_name, _run.bag[id]], _use_bag_item.bind(it), 15)
+		var b := UiKit.button("%s  ×%d" % [tr(it.display_name), _run.bag[id]], _use_bag_item.bind(it), 15)
 		b.icon = it.icon
 		b.add_theme_constant_override("icon_max_width", 24)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -271,8 +271,8 @@ func _show_hub() -> void:
 	actions.alignment = BoxContainer.ALIGNMENT_END
 	actions.add_theme_constant_override("separation", 12)
 	col.add_child(actions)
-	actions.add_child(UiKit.button("Abandonar la torre", _confirm_abandon, 16))
-	var go := UiKit.button("¡Subir al piso %d!" % _run.floor_number, _next_floor, 22)
+	actions.add_child(UiKit.button(tr("Abandonar la torre"), _confirm_abandon, 16))
+	var go := UiKit.button(tr("¡Subir al piso %d!") % _run.floor_number, _next_floor, 22)
 	go.custom_minimum_size = Vector2(320, 54)
 	actions.add_child(go)
 	if not _run.news.is_empty():
@@ -319,7 +319,7 @@ func _build_news() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
-	var title := UiKit.label("¡Piso %d superado!" % (_run.floor_number - 1), 30, UiKit.ACCENT)
+	var title := UiKit.label(tr("¡Piso %d superado!") % (_run.floor_number - 1), 30, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var scroll := ScrollContainer.new()
@@ -350,7 +350,7 @@ func _build_news() -> void:
 		if n.kind != "money":
 			tw.tween_callback(Audio.sfx.bind("heal" if n.kind == "level" else ("buff" if n.kind in ["evolve", "badge"] else "ui_confirm"), -8.0))
 		delay += 0.18
-	var ok := UiKit.button("¡Genial!", func() -> void:
+	var ok := UiKit.button(tr("¡Genial!"), func() -> void:
 		_run.news.clear()
 		_refresh(), 20)
 	ok.custom_minimum_size.y = 46
@@ -390,7 +390,7 @@ func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
 	panel.add_child(box)
-	var title := UiKit.label("¿Eh? ¡%s está evolucionando!" % who, 26, UiKit.ACCENT)
+	var title := UiKit.label(tr("¿Eh? ¡%s está evolucionando!") % who, 26, UiKit.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	var preview := PokemonPreview.new()
@@ -403,7 +403,7 @@ func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(details)
 	var button := Button.new()
-	button.text = "Cancelar"
+	button.text = tr("Cancelar")
 	button.add_theme_font_size_override("font_size", 20)
 	button.custom_minimum_size.y = 46
 	box.add_child(button)
@@ -424,9 +424,9 @@ func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null
 		phase.value = "done"
 		preview.show_pokemon(target)
 		var events := _run.evolve(m, target, stone)
-		title.text = "¡Enhorabuena! ¡%s evolucionó a %s!" % [who, target.species_name]
+		title.text = tr("¡Enhorabuena! ¡%s evolucionó a %s!") % [who, target.species_name]
 		details.text = "\n".join(events.slice(1))
-		button.text = "¡Genial!"
+		button.text = tr("¡Genial!")
 		Audio.sfx("buff")
 		Audio.cry(target))
 	tw.tween_property(preview, "self_modulate", Color.WHITE, 0.6)
@@ -440,9 +440,9 @@ func _build_evolution(m: TeamMember, target: PokemonData, stone: ItemData = null
 			preview.self_modulate = Color.WHITE
 			if stone == null:
 				_run.cancel_evolution(m)
-			title.text = "¿Eh? %s dejó de evolucionar." % who
-			details.text = "Puedes evolucionarlo luego desde su ficha." if stone == null else "La %s no se ha gastado." % stone.display_name
-			button.text = "Vale"
+			title.text = tr("¿Eh? %s dejó de evolucionar.") % who
+			details.text = tr("Puedes evolucionarlo luego desde su ficha.") if stone == null else tr("No se ha gastado: %s.") % tr(stone.display_name)
+			button.text = tr("Vale")
 			Audio.sfx("ui_error", -6.0)
 		else:
 			Game.save()
@@ -496,10 +496,10 @@ func _build_shop() -> Control:
 	panel.add_child(col)
 	var title_row := HBoxContainer.new()
 	col.add_child(title_row)
-	var title := UiKit.label("Tienda", 20)
+	var title := UiKit.label(tr("Tienda"), 20)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_row.add_child(title)
-	var lock := UiKit.button("Bloqueada" if _run.shop_locked else "Bloquear", func() -> void:
+	var lock := UiKit.button(tr("Bloqueada") if _run.shop_locked else tr("Bloquear"), func() -> void:
 		_run.shop_locked = not _run.shop_locked
 		Audio.sfx("ui_place" if _run.shop_locked else "ui_hover", -4.0)
 		Game.save()
@@ -507,13 +507,13 @@ func _build_shop() -> Control:
 	lock.icon = LOCK_CLOSED if _run.shop_locked else LOCK_OPEN
 	lock.toggle_mode = true
 	lock.button_pressed = _run.shop_locked
-	lock.tooltip_text = "Con el candado puesto, al superar el piso la tienda conserva lo que queda a la venta (el candado se quita solo al llegar)."
+	lock.tooltip_text = tr("Con el candado puesto, al superar el piso la tienda conserva lo que queda a la venta (el candado se quita solo al llegar).")
 	if _run.shop_locked:
 		lock.add_theme_color_override("font_color", UiKit.ACCENT)
 		lock.add_theme_color_override("font_pressed_color", UiKit.ACCENT)
 		lock.add_theme_color_override("icon_pressed_color", UiKit.ACCENT)
 	title_row.add_child(lock)
-	col.add_child(UiKit.label("Tienes %d ₽ · %s" % [_run.money, "se guarda para el próximo piso." if _run.shop_locked else "los objetos cambian en cada piso."], 13,
+	col.add_child(UiKit.label((tr("Tienes %d ₽ · se guarda para el próximo piso.") if _run.shop_locked else tr("Tienes %d ₽ · los objetos cambian en cada piso.")) % _run.money, 13,
 		UiKit.ACCENT if _run.shop_locked else Color(1, 1, 1, 0.6)))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -528,7 +528,7 @@ func _build_shop() -> Control:
 			box.add_child(_ball_row(kind))
 	box.add_child(HSeparator.new())
 	if _run.shop.is_empty():
-		box.add_child(UiKit.label("No queda nada más a la venta en este piso.", 14, Color(1, 1, 1, 0.5)))
+		box.add_child(UiKit.label(tr("No queda nada más a la venta en este piso."), 14, Color(1, 1, 1, 0.5)))
 	for id in _run.shop:
 		if id.begins_with(TowerRun.SHOP_BALL_PREFIX):
 			box.add_child(_ball_row(id.trim_prefix(TowerRun.SHOP_BALL_PREFIX)))
@@ -546,7 +546,7 @@ func _build_shop() -> Control:
 
 func _ball_row(kind: String) -> Control:
 	var ball: Dictionary = TowerRun.BALLS[kind]
-	return _shop_row(ball.icon, ball.name, "%s Tienes %d." % [ball.desc, _run.ball_count(kind)], ball.price, func() -> void:
+	return _shop_row(ball.icon, tr(ball.name), tr("%s Tienes %d.") % [tr(ball.desc), _run.ball_count(kind)], ball.price, func() -> void:
 		if _run.buy_ball(kind):
 			Audio.sfx("ui_confirm", -4.0)
 			Game.save()
@@ -598,7 +598,7 @@ func _shop_row(texture: Texture2D, title: String, desc: String, cost: int, buy: 
 	var price := UiKit.label("%d ₽" % cost, 16, UiKit.ACCENT)
 	price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	buy_col.add_child(price)
-	var b := UiKit.button("Comprar", buy, 14)
+	var b := UiKit.button(tr("Comprar"), buy, 14)
 	b.disabled = _run.money < cost
 	buy_col.add_child(b)
 	row.add_child(buy_col)
@@ -621,7 +621,7 @@ func _member_card(m: TeamMember, in_party: bool) -> Control:
 	box.offset_top = 4
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(box)
-	var title := UiKit.label("%s  Nv. %d" % [TeamMember.display(m.data, m.gender), m.level], 16)
+	var title := UiKit.label(tr("%s  Nv. %d") % [TeamMember.display(m.data, m.gender), m.level], 16)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
 	var bar := ProgressBar.new()
@@ -643,7 +643,7 @@ func _member_card(m: TeamMember, in_party: bool) -> Control:
 			_run.party.append(m)
 		Game.save()
 		_refresh(), 18)
-	move.tooltip_text = "Mandar a la caja" if in_party else "Pasar al equipo"
+	move.tooltip_text = tr("Mandar a la caja") if in_party else tr("Pasar al equipo")
 	move.custom_minimum_size = Vector2(48, 72)
 	move.disabled = (in_party and _run.party.size() <= 1) or (not in_party and _run.party.size() >= TowerRun.MAX_PARTY)
 	row.add_child(move)
@@ -666,12 +666,12 @@ func _member_detail(m: TeamMember) -> Control:
 	var info := VBoxContainer.new()
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # el ancho lo pone la ficha, no el texto
 	top.add_child(info)
-	info.add_child(UiKit.label("%s  Nv. %d" % [TeamMember.display(m.data, m.gender), m.level], 24))
+	info.add_child(UiKit.label(tr("%s  Nv. %d") % [TeamMember.display(m.data, m.gender), m.level], 24))
 	info.add_child(UiKit.type_row(m.data.types))
-	info.add_child(UiKit.label("Experiencia: %d / %d" % [m.exp, m.exp_to_next()], 15, Color(1, 1, 1, 0.75)))
-	info.add_child(_wrapped(UiKit.label("Habilidad: %s" % Abilities.display_name(m.ability), 15, Color(1, 1, 1, 0.75))))
+	info.add_child(UiKit.label(tr("Experiencia: %d / %d") % [m.exp, m.exp_to_next()], 15, Color(1, 1, 1, 0.75)))
+	info.add_child(_wrapped(UiKit.label(tr("Habilidad: %s") % Abilities.display_name(m.ability), 15, Color(1, 1, 1, 0.75))))
 	var item_row := HBoxContainer.new()
-	item_row.add_child(UiKit.label("Objeto: %s  " % (m.item.display_name if m.item else "—"), 15, Color(1, 1, 1, 0.75)))
+	item_row.add_child(UiKit.label(tr("Objeto: %s") % (tr(m.item.display_name) if m.item else "—") + "  ", 15, Color(1, 1, 1, 0.75)))
 	if m.item:
 		var icon := TextureRect.new()
 		icon.texture = m.item.icon
@@ -680,26 +680,26 @@ func _member_detail(m: TeamMember) -> Control:
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.tooltip_text = m.item.description
 		item_row.add_child(icon)
-		item_row.add_child(UiKit.button("Quitar", func() -> void:
+		item_row.add_child(UiKit.button(tr("Quitar"), func() -> void:
 			_run.unequip(m)
 			Game.save()
 			_refresh(), 13))
 	info.add_child(item_row)
 	if not m.data.stone_evolutions.is_empty():
-		var stones := ", ".join(m.data.stone_evolutions.keys().map(func(id: String) -> String: return Items.find(id).display_name if Items.find(id) else id))
-		info.add_child(_wrapped(UiKit.label("Evoluciona con: %s" % stones, 15, UiKit.ACCENT)))
+		var stones := ", ".join(m.data.stone_evolutions.keys().map(func(id: String) -> String: return tr(Items.find(id).display_name) if Items.find(id) else id))
+		info.add_child(_wrapped(UiKit.label(tr("Evoluciona con: %s") % stones, 15, UiKit.ACCENT)))
 	if m.data.evolve_level > 0:
 		var to := ", ".join(Array(m.data.evolves_to).map(func(id: String) -> String: return Game.find_species(id).species_name if Game.find_species(id) else id))
-		info.add_child(_wrapped(UiKit.label("Evoluciona a %s a nivel %d" % [to, m.data.evolve_level], 15, UiKit.ACCENT)))
+		info.add_child(_wrapped(UiKit.label(tr("Evoluciona a %s a nivel %d") % [to, m.data.evolve_level], 15, UiKit.ACCENT)))
 		if m.can_evolve_by_level():
-			info.add_child(UiKit.button("Evolucionar", func() -> void:
+			info.add_child(UiKit.button(tr("Evolucionar"), func() -> void:
 				m.wants_to_evolve = true
 				_refresh(), 15))
-	col.add_child(UiKit.label("Ataques (%d/4) — clic para quitar o añadir" % m.moves.size(), 18, UiKit.ACCENT))
+	col.add_child(UiKit.label(tr("Ataques (%d/4) — clic para quitar o añadir") % m.moves.size(), 18, UiKit.ACCENT))
 	for mv in m.known:
 		var on := mv in m.moves
-		var b := UiKit.button("%s %s  [%s]%s" % ["✓" if on else "  ", mv.display_name, Combat.TYPE_NAMES[mv.type],
-			("  · Pot %d" % mv.power) if mv.power > 0 else ""], func() -> void:
+		var b := UiKit.button("%s %s  [%s]%s" % ["✓" if on else "  ", tr(mv.display_name), tr(Combat.TYPE_NAMES[mv.type]),
+			("  · " + tr("Pot %d") % mv.power) if mv.power > 0 else ""], func() -> void:
 			if on and m.moves.size() > 1:
 				m.moves.erase(mv)
 			elif not on and m.moves.size() < TeamMember.MAX_MOVES:
@@ -711,7 +711,7 @@ func _member_detail(m: TeamMember) -> Control:
 		b.modulate = Color.WHITE if on else Color(1, 1, 1, 0.6)
 		col.add_child(b)
 	if m.known.is_empty():
-		col.add_child(UiKit.label("(sin ataques aprendidos por nivel)", 14, Color(1, 1, 1, 0.5)))
+		col.add_child(UiKit.label(tr("(sin ataques aprendidos por nivel)"), 14, Color(1, 1, 1, 0.5)))
 	return scroll
 
 
@@ -728,7 +728,7 @@ func _use_bag_item(it: ItemData) -> void:
 		if target:
 			_build_evolution(_selected, target, it)
 			return
-		_run.last_report.append("%s no reacciona a la %s." % [TeamMember.display(_selected.data, _selected.gender), it.display_name])
+		_run.last_report.append(tr("%s no reacciona: %s.") % [TeamMember.display(_selected.data, _selected.gender), tr(it.display_name)])
 		Audio.sfx("ui_error", -6.0)
 	else:
 		_run.equip(_selected, it)
@@ -748,9 +748,9 @@ func _next_floor() -> void:
 
 func _confirm_abandon() -> void:
 	var dialog := ConfirmationDialog.new()
-	dialog.dialog_text = "¿Abandonar esta subida? Se pierde el equipo (el récord se conserva)."
-	dialog.ok_button_text = "Abandonar"
-	dialog.cancel_button_text = "Seguir"
+	dialog.dialog_text = tr("¿Abandonar esta subida? Se pierde el equipo (el récord se conserva).")
+	dialog.ok_button_text = tr("Abandonar")
+	dialog.cancel_button_text = tr("Seguir")
 	dialog.confirmed.connect(func() -> void:
 		Game.tower_best = maxi(Game.tower_best, _run.floor_number - 1)
 		Game.tower = null
@@ -771,12 +771,12 @@ func _show_game_over() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
-	box.add_child(UiKit.label("Fin de la subida", 32, UiKit.ACCENT))
-	box.add_child(UiKit.label("Llegaste al piso %d. Récord: piso %d." % [_run.floor_number, Game.tower_best], 20))
+	box.add_child(UiKit.label(tr("Fin de la subida"), 32, UiKit.ACCENT))
+	box.add_child(UiKit.label(tr("Llegaste al piso %d. Récord: piso %d.") % [_run.floor_number, Game.tower_best], 20))
 	for line in _run.last_report:
 		box.add_child(UiKit.label(line, 15, Color(1, 1, 1, 0.75)))
-	box.add_child(UiKit.label("Tu equipo final: " + ", ".join(_run.party.map(func(m: TeamMember) -> String: return "%s Nv.%d" % [TeamMember.display(m.data, m.gender), m.level])), 15))
-	var again := UiKit.button("Nueva subida", func() -> void:
+	box.add_child(UiKit.label(tr("Tu equipo final:") + " " + ", ".join(_run.party.map(func(m: TeamMember) -> String: return tr("%s Nv.%d") % [TeamMember.display(m.data, m.gender), m.level])), 15))
+	var again := UiKit.button(tr("Nueva subida"), func() -> void:
 		Game.tower = null
 		_run = null
 		Game.save()

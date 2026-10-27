@@ -4,6 +4,7 @@ extends ColorRect
 ## Cada ataque dice qué clip usaría en combate: el suyo propio (anim_map o variante), el genérico
 ## (fight_b / fight_d) o la animación procedural si el modelo no trae ninguno.
 
+# i18n
 const ACTIONS := [["idle", "Reposo"], ["walk", "Caminar"], ["fight_b", "Ataque físico"],
 	["fight_d", "Ataque especial"], ["hit", "Recibe daño"], ["ko", "Debilitado"],
 	["status_confusion", "Confuso"], ["status_paralysis", "Paralizado"], ["status_sleep", "Dormido"],
@@ -69,12 +70,12 @@ func _ready() -> void:
 	var view_row := HBoxContainer.new()
 	view_row.add_theme_constant_override("separation", 6)
 	left.add_child(view_row)
-	view_row.add_child(UiKit.button("Frente", _preview.turn_to.bind(0.0), 15))
-	view_row.add_child(UiKit.button("Perfil", _preview.turn_to.bind(90.0), 15))
-	view_row.add_child(UiKit.button("Espalda", _preview.turn_to.bind(180.0), 15))
-	var spin := UiKit.button("Girar", func() -> void: _preview.spin = not _preview.spin, 15)
+	view_row.add_child(UiKit.button(tr("Frente"), _preview.turn_to.bind(0.0), 15))
+	view_row.add_child(UiKit.button(tr("Perfil"), _preview.turn_to.bind(90.0), 15))
+	view_row.add_child(UiKit.button(tr("Espalda"), _preview.turn_to.bind(180.0), 15))
+	var spin := UiKit.button(tr("Girar"), func() -> void: _preview.spin = not _preview.spin, 15)
 	view_row.add_child(spin)
-	left.add_child(UiKit.label("Arrastra el modelo para girarlo. ← → cambian de Pokémon.", 13, Color(1, 1, 1, 0.5)))
+	left.add_child(UiKit.label(tr("Arrastra el modelo para girarlo. ← → cambian de Pokémon."), 13, Color(1, 1, 1, 0.5)))
 	_status = UiKit.label("", 15)
 	left.add_child(_status)
 
@@ -88,27 +89,27 @@ func _ready() -> void:
 	_clip_count = UiKit.label("", 15, Color(1, 1, 1, 0.7))
 	_clip_count.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(_clip_count)
-	top.add_child(UiKit.button("Cerrar", close, 16))
-	right.add_child(UiKit.label("Acciones", 20, UiKit.ACCENT))
+	top.add_child(UiKit.button(tr("Cerrar"), close, 16))
+	right.add_child(UiKit.label(tr("Acciones"), 20, UiKit.ACCENT))
 	_actions_row = HFlowContainer.new()
 	_actions_row.add_theme_constant_override("h_separation", 6)
 	_actions_row.add_theme_constant_override("v_separation", 6)
 	right.add_child(_actions_row)
 	right.add_child(HSeparator.new())
-	right.add_child(UiKit.label("Sus ataques", 20, UiKit.ACCENT))
+	right.add_child(UiKit.label(tr("Sus ataques"), 20, UiKit.ACCENT))
 	_own_box = VBoxContainer.new()
 	_own_box.add_theme_constant_override("separation", 4)
 	right.add_child(_own_box)
 	right.add_child(HSeparator.new())
-	right.add_child(UiKit.label("Todos los que puede aprender", 20, UiKit.ACCENT))
+	right.add_child(UiKit.label(tr("Todos los que puede aprender"), 20, UiKit.ACCENT))
 	var legend := HBoxContainer.new()
 	legend.add_theme_constant_override("separation", 14)
 	right.add_child(legend)
-	legend.add_child(UiKit.label("■ clip propio", 13, OWN_CLIP))
-	legend.add_child(UiKit.label("■ clip genérico", 13, BASE_CLIP))
-	legend.add_child(UiKit.label("■ procedural", 13, NO_CLIP))
+	legend.add_child(UiKit.label(tr("■ clip propio"), 13, OWN_CLIP))
+	legend.add_child(UiKit.label(tr("■ clip genérico"), 13, BASE_CLIP))
+	legend.add_child(UiKit.label(tr("■ procedural"), 13, NO_CLIP))
 	_search = LineEdit.new()
-	_search.placeholder_text = "Buscar ataque o clip…"
+	_search.placeholder_text = tr("Buscar ataque o clip…")
 	_search.clear_button_enabled = true
 	_search.text_changed.connect(func(_t: String) -> void: _refresh_list())
 	right.add_child(_search)
@@ -123,14 +124,14 @@ func theme_get_panel() -> StyleBox:
 	return UiKit.theme().get_stylebox("panel", "PanelContainer")
 
 
-## moves: los ataques que se muestran como "Sus ataques"; roster: Pokémon entre los que navegar.
+## moves: los ataques que se muestran como tr("Sus ataques"); roster: Pokémon entre los que navegar.
 func open(species: PokemonData, moves: Array[MoveData], roster: Array[PokemonData] = []) -> void:
 	_species = species
 	_moves = moves
 	if not roster.is_empty():
 		_roster = roster
 	visible = true
-	_title.text = "#%03d %s — animaciones" % [species.dex_number, species.species_name]
+	_title.text = tr("#%03d %s — animaciones") % [species.dex_number, species.species_name]
 	_preview.spin = false
 	_preview.show_pokemon(species)
 	_preview.turn_to(30.0)
@@ -168,25 +169,25 @@ func _step(delta: int) -> void:
 
 func _refresh() -> void:
 	var clips := _preview.clips()
-	_clip_count.text = "El modelo trae %d clips" % clips.size() if clips.size() > 0 \
-		else "El modelo no trae animaciones: todo es procedural"
+	_clip_count.text = tr("El modelo trae %d clips") % clips.size() if clips.size() > 0 \
+		else tr("El modelo no trae animaciones: todo es procedural")
 	UiKit.clear(_actions_row)
 	for a in ACTIONS:
-		var b := UiKit.button(a[1], _play.bind(a[1], a[0]), 15)
+		var b := UiKit.button(tr(a[1]), _play.bind(tr(a[1]), a[0]), 15)
 		var clip := _clip(a[0])
-		b.tooltip_text = clip if clip else "procedural"
+		b.tooltip_text = clip if clip else tr("procedural")
 		b.add_theme_color_override("font_color", BASE_CLIP if clip else NO_CLIP)
 		_actions_row.add_child(b)
 	# Con Poké Ball (animaciones del juego, no clips del modelo).
-	var capture := UiKit.button("Captura", _play_ball.bind("Captura", _preview.play_capture), 15)
-	capture.tooltip_text = "Lo captura con una Poké Ball, como en los juegos"
+	var capture := UiKit.button(tr("Captura"), _play_ball.bind(tr("Captura"), _preview.play_capture), 15)
+	capture.tooltip_text = tr("Lo captura con una Poké Ball, como en los juegos")
 	_actions_row.add_child(capture)
-	var send := UiKit.button("Salida", _play_ball.bind("Salida", _preview.play_send_out), 15)
-	send.tooltip_text = "Sale de su Poké Ball, como al empezar el combate"
+	var send := UiKit.button(tr("Salida"), _play_ball.bind(tr("Salida"), _preview.play_send_out), 15)
+	send.tooltip_text = tr("Sale de su Poké Ball, como al empezar el combate")
 	_actions_row.add_child(send)
 	UiKit.clear(_own_box)
 	for m in _moves:
-		var b := UiKit.button("%s  ·  %s" % [m.display_name, _clip_text(m)], _play_move.bind(m), 15)
+		var b := UiKit.button("%s  ·  %s" % [tr(m.display_name), _clip_text(m)], _play_move.bind(m), 15)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_color_override("font_color", _clip_color(m))
 		_own_box.add_child(b)
@@ -201,7 +202,7 @@ func _refresh_list() -> void:
 		var clip_text := _clip_text(m)
 		if q and q not in m.display_name.to_lower() and q not in clip_text.to_lower():
 			continue
-		var idx := _list.add_item("%s   ·  %s · %s" % [m.display_name, Combat.TYPE_NAMES[m.type], clip_text])
+		var idx := _list.add_item("%s   ·  %s · %s" % [tr(m.display_name), tr(Combat.TYPE_NAMES[m.type]), clip_text])
 		_list.set_item_custom_fg_color(idx, _clip_color(m))
 		_list.set_item_tooltip(idx, Combat.describe(m))
 		_list_moves.append(m)
@@ -215,7 +216,7 @@ func _clip(key: String, variant := "", move_id := "") -> String:
 ## Nombre corto del clip que usaría el ataque, sin el prefijo de los rips ("skeleton|fight_b").
 func _clip_text(m: MoveData) -> String:
 	var clip := _clip(m.animation, m.anim_variant, m.id)
-	return clip.get_slice("|", clip.get_slice_count("|") - 1) if clip else "procedural (%s)" % m.animation
+	return clip.get_slice("|", clip.get_slice_count("|") - 1) if clip else tr("procedural (%s)") % m.animation
 
 
 func _clip_color(m: MoveData) -> Color:
@@ -226,15 +227,15 @@ func _clip_color(m: MoveData) -> Color:
 
 
 func _play_move(m: MoveData) -> void:
-	_play(m.display_name, m.animation, m.anim_variant, m.id)
+	_play(tr(m.display_name), m.animation, m.anim_variant, m.id)
 
 
 func _play_ball(label: String, action: Callable) -> void:
-	_status.text = "%s → con Poké Ball" % label
+	_status.text = tr("%s → con Poké Ball") % label
 	action.call()
 
 
 func _play(label: String, key: String, variant := "", move_id := "") -> void:
 	var clip := _preview.play_action(key, variant, move_id)
-	var shown := clip.get_slice("|", clip.get_slice_count("|") - 1) if clip else "procedural"
-	_status.text = "%s → %s%s" % [label, shown, "  (variante: %s)" % variant if variant else ""]
+	var shown := clip.get_slice("|", clip.get_slice_count("|") - 1) if clip else tr("procedural")
+	_status.text = "%s → %s%s" % [label, shown, "  " + tr("(variante: %s)") % variant if variant else ""]

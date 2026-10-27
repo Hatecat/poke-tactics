@@ -5,58 +5,1805 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. título y botón
-#: scripts/ui/main_menu.gd
+#: scripts/ui/animation_viewer.gd:73
+msgid "Frente"
+msgstr "Front"
+
+#: scripts/ui/animation_viewer.gd:74
+msgid "Perfil"
+msgstr "Side"
+
+#: scripts/ui/animation_viewer.gd:75
+msgid "Espalda"
+msgstr "Back"
+
+#: scripts/ui/animation_viewer.gd:76
+msgid "Girar"
+msgstr "Spin"
+
+#: scripts/ui/animation_viewer.gd:78
+msgid "Arrastra el modelo para girarlo. ← → cambian de Pokémon."
+msgstr "Drag the model to rotate it. ← → switch Pokémon."
+
+#: scripts/ui/animation_viewer.gd:92
+#: scripts/ui/main_menu.gd:393
+msgid "Cerrar"
+msgstr "Close"
+
+#: scripts/ui/animation_viewer.gd:93
+msgid "Acciones"
+msgstr "Actions"
+
+#: scripts/ui/animation_viewer.gd:99
+msgid "Sus ataques"
+msgstr "Its moves"
+
+#: scripts/ui/animation_viewer.gd:104
+msgid "Todos los que puede aprender"
+msgstr "Everything it can learn"
+
+#: scripts/ui/animation_viewer.gd:108
+msgid "■ clip propio"
+msgstr "■ own clip"
+
+#: scripts/ui/animation_viewer.gd:109
+msgid "■ clip genérico"
+msgstr "■ generic clip"
+
+#: scripts/ui/animation_viewer.gd:110
+msgid "■ procedural"
+msgstr "■ procedural"
+
+#: scripts/ui/animation_viewer.gd:112
+msgid "Buscar ataque o clip…"
+msgstr "Search move or clip…"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/animation_viewer.gd:134
+msgid "#%03d %s — animaciones"
+msgstr "#%03d %s — animations"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/animation_viewer.gd:172
+msgid "El modelo trae %d clips"
+msgstr "The model has %d clips"
+
+#: scripts/ui/animation_viewer.gd:173
+msgid "El modelo no trae animaciones: todo es procedural"
+msgstr "The model has no animations: everything is procedural"
+
+#: scripts/ui/animation_viewer.gd:178
+#: scripts/ui/animation_viewer.gd:240
+msgid "procedural"
+msgstr "procedural"
+
+#: scripts/ui/animation_viewer.gd:182
+#: scripts/ui/animation_viewer.gd:182
+msgid "Captura"
+msgstr "Capture"
+
+#: scripts/ui/animation_viewer.gd:183
+msgid "Lo captura con una Poké Ball, como en los juegos"
+msgstr "Catches it with a Poké Ball, like in the games"
+
+#: scripts/ui/animation_viewer.gd:185
+#: scripts/ui/animation_viewer.gd:185
+msgid "Salida"
+msgstr "Send out"
+
+#: scripts/ui/animation_viewer.gd:186
+msgid "Sale de su Poké Ball, como al empezar el combate"
+msgstr "Comes out of its Poké Ball, like at the start of a battle"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/animation_viewer.gd:219
+msgid "procedural (%s)"
+msgstr "procedural (%s)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/animation_viewer.gd:234
+msgid "%s → con Poké Ball"
+msgstr "%s → with Poké Ball"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/animation_viewer.gd:241
+msgid "(variante: %s)"
+msgstr "(variant: %s)"
+
+#: scripts/ui/animation_viewer.gd:8
+msgid "Reposo"
+msgstr "Idle"
+
+#: scripts/ui/animation_viewer.gd:8
+msgid "Caminar"
+msgstr "Walk"
+
+#: scripts/ui/animation_viewer.gd:8
+msgid "Ataque físico"
+msgstr "Physical attack"
+
+#: scripts/ui/animation_viewer.gd:9
+msgid "Ataque especial"
+msgstr "Special attack"
+
+#: scripts/ui/animation_viewer.gd:9
+msgid "Recibe daño"
+msgstr "Takes damage"
+
+#: scripts/ui/animation_viewer.gd:9
+msgid "Debilitado"
+msgstr "Fainted"
+
+#: scripts/ui/animation_viewer.gd:10
+msgid "Confuso"
+msgstr "Confused"
+
+#: scripts/ui/animation_viewer.gd:10
+msgid "Paralizado"
+msgstr "Paralyzed"
+
+#: scripts/ui/animation_viewer.gd:10
+msgid "Dormido"
+msgstr "Asleep"
+
+#: scripts/ui/animation_viewer.gd:11
+msgid "Envenenado"
+msgstr "Poisoned"
+
+#: scripts/ui/animation_viewer.gd:11
+msgid "Quemado"
+msgstr "Burned"
+
+#: scripts/ui/animation_viewer.gd:11
+msgid "Congelado"
+msgstr "Frozen"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/main_menu.gd:44
+msgid "Prototipo · Godot 4 · %d Pokémon"
+msgstr "Prototype · Godot 4 · %d Pokémon"
+
+#: scripts/ui/main_menu.gd:49
+msgid "Historia  (continuar)"
+msgstr "Story  (continue)"
+
+#: scripts/ui/main_menu.gd:51
+msgid "Historia"
+msgstr "Story"
+
+#: scripts/ui/main_menu.gd:52
+#: scripts/ui/main_menu.gd:132
+msgid "Partida rápida"
+msgstr "Quick battle"
+
+#: scripts/ui/main_menu.gd:53
+msgid "Torre de Batallas"
+msgstr "Battle Tower"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/main_menu.gd:53
+msgid "(piso %d)"
+msgstr "(floor %d)"
+
+#: scripts/ui/main_menu.gd:55
+msgid "Editor de equipo"
+msgstr "Team editor"
+
+#: scripts/ui/main_menu.gd:56
+msgid "Editor de escenarios"
+msgstr "Map editor"
+
+#: scripts/ui/main_menu.gd:57
+msgid "Tabla de tipos"
+msgstr "Type chart"
+
+#: scripts/ui/main_menu.gd:58
+#: scripts/ui/main_menu.gd:300
 msgid "Opciones"
 msgstr "Options"
 
-#. volumen general
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:59
+#: scripts/ui/main_menu.gd:381
+msgid "Acerca de"
+msgstr "About"
+
+#: scripts/ui/main_menu.gd:60
+msgid "Salir"
+msgstr "Quit"
+
+#: scripts/ui/main_menu.gd:62
+msgid "vacío"
+msgstr "empty"
+
+#: scripts/ui/main_menu.gd:138
+#: scripts/ui/tower.gd:124
+msgid "Tu equipo:"
+msgstr "Your team:"
+
+#: scripts/ui/main_menu.gd:153
+msgid "Dificultad:"
+msgstr "Difficulty:"
+
+#: scripts/ui/main_menu.gd:170
+msgid "Escenario:"
+msgstr "Map:"
+
+#: scripts/ui/main_menu.gd:182
+#: scripts/ui/map_editor.gd:347
+#: scripts/ui/tower.gd:76
+msgid "Tablero"
+msgstr "Board"
+
+#: scripts/ui/main_menu.gd:186
+msgid "▦  Cuadrícula"
+msgstr "▦  Square grid"
+
+#: scripts/ui/main_menu.gd:186
+msgid "⬢  Hexágonos"
+msgstr "⬢  Hexagons"
+
+#: scripts/ui/main_menu.gd:195
+msgid "Campo"
+msgstr "Field"
+
+#: scripts/ui/main_menu.gd:201
+msgid "🎲  Aleatorio"
+msgstr "🎲  Random"
+
+#: scripts/ui/main_menu.gd:213
+msgid "Clima"
+msgstr "Weather"
+
+#: scripts/ui/main_menu.gd:217
+msgid "🎲 Aleatorio"
+msgstr "🎲 Random"
+
+#: scripts/ui/main_menu.gd:229
+msgid "El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo."
+msgstr "The rival is random (Pokémon and moves), with as many Pokémon as your team."
+
+#: scripts/ui/main_menu.gd:234
+#: scripts/ui/tower.gd:406
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: scripts/ui/main_menu.gd:235
+msgid "¡A combatir!"
+msgstr "Battle!"
+
+#: scripts/ui/main_menu.gd:242
+msgid "Partida rápida (¡arma tu equipo!)"
+msgstr "Quick battle (build your team!)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/main_menu.gd:246
+msgid "%s  (%d Pokémon)"
+msgstr "%s  (%d Pokémon)"
+
+#: scripts/ui/main_menu.gd:249
+msgid "Generado al azar"
+msgstr "Randomly generated"
+
+#: scripts/ui/main_menu.gd:260
+msgid "Este equipo está vacío: elige otro o complétalo en el editor."
+msgstr "This team is empty: pick another one or fill it in the editor."
+
+#: scripts/ui/main_menu.gd:308
+#: scripts/ui/pause_menu.gd:38
 msgid "General"
 msgstr "Master"
 
-#. volumen
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:308
+#: scripts/ui/pause_menu.gd:38
 msgid "Música"
 msgstr "Music"
 
-#. volumen de efectos de sonido
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:308
+#: scripts/ui/pause_menu.gd:38
 msgid "Efectos"
 msgstr "Sound effects"
 
-#. opciones
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:327
 msgid "Velocidad de combate"
 msgstr "Battle speed"
 
-#. opciones
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:332
 msgid "Calidad gráfica"
 msgstr "Graphics quality"
 
-#. opciones
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:335
 msgid "Idioma"
 msgstr "Language"
 
-#. botón de cerrar
-#: scripts/ui/main_menu.gd
+#: scripts/ui/main_menu.gd:338
 msgid "Listo"
 msgstr "Done"
 
-#. calidad gráfica
-#: scripts/game.gd
+#: scripts/ui/main_menu.gd:347
+msgid ""
+"[center][b]Poké Tactics[/b] es un proyecto de fans, gratuito y sin ánimo de lucro.\n"
+"No está afiliado a Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.[/center]\n"
+"\n"
+"[color=#ffcc40][b]Pokémon[/b][/color]\n"
+"Pokémon y sus personajes son marcas y propiedad de Nintendo, Creatures Inc., GAME FREAK inc. y The Pokémon Company. Gracias a sus creadores por más de 25 años de aventuras.\n"
+"\n"
+"[color=#ffcc40][b]Modelos 3D[/b][/color]\n"
+"Repositorio [url=https://github.com/pokemon-party/3d-pokemon]3d-pokemon[/url] de [url=https://github.com/Pokemon-3D-api]Pokémon 3D API[/url] (Sudhanshu Ambastha), que reúne modelos publicados en Sketchfab. Los modelos son propiedad de Nintendo / Creatures Inc. / GAME FREAK inc. Las animaciones se hicieron para este juego con Blender.\n"
+"\n"
+"[color=#ffcc40][b]Datos[/b][/color]\n"
+"[url=https://pokemonshowdown.com]Pokémon Showdown[/url] (MIT): estadísticas, tipos, ataques y learnsets.\n"
+"[url=https://pokeapi.co]PokeAPI[/url] (BSD): nombres y descripciones en español, y los sprites de los objetos.\n"
+"\n"
+"[color=#ffcc40][b]Sonido[/b][/color]\n"
+"Efectos de [url=https://kenney.nl]Kenney[/url] (CC0). La música, los ambientes y los gritos se generan por código.\n"
+"\n"
+"[color=#ffcc40][b]Herramientas[/b][/color]\n"
+"Hecho con [url=https://godotengine.org]Godot Engine[/url] (MIT), [url=https://www.blender.org]Blender[/url] y [url=https://gltf-transform.dev]glTF Transform[/url]."
+msgstr ""
+"[center][b]Poké Tactics[/b] is a free, non-profit fan project.\n"
+"It is not affiliated with Nintendo, Creatures Inc., GAME FREAK inc. or The Pokémon Company.[/center]\n"
+"\n"
+"[color=#ffcc40][b]Pokémon[/b][/color]\n"
+"Pokémon and its characters are trademarks and property of Nintendo, Creatures Inc., GAME FREAK inc. and The Pokémon Company. Thanks to their creators for more than 25 years of adventures.\n"
+"\n"
+"[color=#ffcc40][b]3D models[/b][/color]\n"
+"The [url=https://github.com/pokemon-party/3d-pokemon]3d-pokemon[/url] repository by [url=https://github.com/Pokemon-3D-api]Pokémon 3D API[/url] (Sudhanshu Ambastha), which gathers models published on Sketchfab. The models are property of Nintendo / Creatures Inc. / GAME FREAK inc. The animations were made for this game with Blender.\n"
+"\n"
+"[color=#ffcc40][b]Data[/b][/color]\n"
+"[url=https://pokemonshowdown.com]Pokémon Showdown[/url] (MIT): stats, types, moves and learnsets.\n"
+"[url=https://pokeapi.co]PokeAPI[/url] (BSD): names and descriptions, and the item sprites.\n"
+"\n"
+"[color=#ffcc40][b]Sound[/b][/color]\n"
+"Sound effects by [url=https://kenney.nl]Kenney[/url] (CC0). The music, ambiences and cries are generated in code.\n"
+"\n"
+"[color=#ffcc40][b]Tools[/b][/color]\n"
+"Made with [url=https://godotengine.org]Godot Engine[/url] (MIT), [url=https://www.blender.org]Blender[/url] and [url=https://gltf-transform.dev]glTF Transform[/url]."
+
+#: scripts/ui/map_editor.gd:71
+msgid "Nuevo escenario"
+msgstr "New map"
+
+#: scripts/ui/map_editor.gd:91
+msgid "Escenario generado."
+msgstr "Map generated."
+
+#: scripts/ui/map_editor.gd:91
+msgid "Escenario vacío creado."
+msgstr "Empty map created."
+
+#: scripts/ui/map_editor.gd:121
+msgid "Sin nombre"
+msgstr "Untitled"
+
+#: scripts/ui/map_editor.gd:198
+msgid "Rival quitado."
+msgstr "Rival removed."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/map_editor.gd:206
+msgid "%s no cabe ahí."
+msgstr "%s doesn't fit there."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/map_editor.gd:210
+msgid "%s colocado (%d rivales)."
+msgstr "%s placed (%d rivals)."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/map_editor.gd:265
+msgid "Guardado en %s"
+msgstr "Saved to %s"
+
+#: scripts/ui/map_editor.gd:265
+msgid "No se pudo guardar."
+msgstr "Could not save."
+
+#: scripts/ui/map_editor.gd:271
+msgid "Falta la zona azul (despliegue del jugador)."
+msgstr "The blue zone (player deployment) is missing."
+
+#: scripts/ui/map_editor.gd:274
+msgid "Falta la zona roja o algún rival colocado."
+msgstr "The red zone or a placed rival is missing."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/map_editor.gd:284
+msgid "Cargado: %s"
+msgstr "Loaded: %s"
+
+#: scripts/ui/map_editor.gd:324
+#: scripts/ui/tower.gd:34
+msgid "← Menú"
+msgstr "← Menu"
+
+#: scripts/ui/map_editor.gd:327
+msgid "  Editor de escenarios  "
+msgstr "  Map editor  "
+
+#: scripts/ui/map_editor.gd:329
+msgid "Nombre del escenario"
+msgstr "Map name"
+
+#: scripts/ui/map_editor.gd:332
+msgid "💾 Guardar"
+msgstr "💾 Save"
+
+#: scripts/ui/map_editor.gd:336
+msgid "Cargar"
+msgstr "Load"
+
+#: scripts/ui/map_editor.gd:337
+msgid "▶ Probar"
+msgstr "▶ Test"
+
+#: scripts/ui/map_editor.gd:352
+msgid "Ancho "
+msgstr "Width "
+
+#: scripts/ui/map_editor.gd:354
+msgid "  Alto "
+msgstr "  Height "
+
+#: scripts/ui/map_editor.gd:357
+#: scripts/ui/tower.gd:80
+msgid "▦ Cuadrícula"
+msgstr "▦ Square grid"
+
+#: scripts/ui/map_editor.gd:358
+#: scripts/ui/tower.gd:80
+msgid "⬢ Hexágonos"
+msgstr "⬢ Hexagons"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/map_editor.gd:366
+msgid "Gimnasio: %s"
+msgstr "Gym: %s"
+
+#: scripts/ui/map_editor.gd:366
+msgid "neutral"
+msgstr "neutral"
+
+#: scripts/ui/map_editor.gd:367
+msgid "Estilo del gimnasio (solo cuenta en el campo Gimnasio)"
+msgstr "Gym style (only used on the Gym field)"
+
+#: scripts/ui/map_editor.gd:382
+msgid "Generar al azar"
+msgstr "Generate randomly"
+
+#: scripts/ui/map_editor.gd:383
+msgid "Vacío"
+msgstr "Empty"
+
+#: scripts/ui/map_editor.gd:384
+msgid "Cambiar tamaño o tablero rehace el mapa."
+msgstr "Changing the size or board rebuilds the map."
+
+#: scripts/ui/map_editor.gd:387
+msgid "Herramienta"
+msgstr "Tool"
+
+#: scripts/ui/map_editor.gd:389
+msgid "⛰ Altura"
+msgstr "⛰ Height"
+
+#: scripts/ui/map_editor.gd:389
+msgid "🟩 Suelo"
+msgstr "🟩 Ground"
+
+#: scripts/ui/map_editor.gd:389
+msgid "🌲 Obstáculo"
+msgstr "🌲 Obstacle"
+
+#: scripts/ui/map_editor.gd:390
+msgid "🔵 Zona jugador"
+msgstr "🔵 Player zone"
+
+#: scripts/ui/map_editor.gd:390
+msgid "🔴 Zona rival"
+msgstr "🔴 Rival zone"
+
+#: scripts/ui/map_editor.gd:390
+msgid "👾 Rival"
+msgstr "👾 Rival"
+
+#: scripts/ui/map_editor.gd:401
+msgid "Pincel"
+msgstr "Brush"
+
+#: scripts/ui/map_editor.gd:401
+msgid "1 casilla"
+msgstr "1 tile"
+
+#: scripts/ui/map_editor.gd:401
+msgid "Radio 1"
+msgstr "Radius 1"
+
+#: scripts/ui/map_editor.gd:401
+msgid "Radio 2"
+msgstr "Radius 2"
+
+#: scripts/ui/map_editor.gd:403
+#: scripts/grid/biome.gd:27
+msgid "Suelo"
+msgstr "Ground"
+
+#: scripts/ui/map_editor.gd:405
+msgid "Obstáculo"
+msgstr "Obstacle"
+
+#: scripts/ui/map_editor.gd:406
+msgid "Rival"
+msgstr "Rival"
+
+#: scripts/ui/map_editor.gd:423
+msgid "Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
+msgstr "Q/E: rotate · Wheel: zoom · WASD/middle button: move camera"
+
+#: scripts/ui/map_editor.gd:11
+msgid "Clic izq.: subir · Clic der.: bajar (arrastra para pintar)"
+msgstr "Left click: raise · Right click: lower (drag to paint)"
+
+#: scripts/ui/map_editor.gd:12
+msgid "Clic izq.: pintar el suelo elegido"
+msgstr "Left click: paint the chosen ground"
+
+#: scripts/ui/map_editor.gd:13
+msgid "Clic izq.: colocar obstáculo · Clic der.: quitarlo"
+msgstr "Left click: place obstacle · Right click: remove it"
+
+#: scripts/ui/map_editor.gd:14
+msgid "Clic izq.: añadir a la zona azul · Clic der.: quitar"
+msgstr "Left click: add to the blue zone · Right click: remove"
+
+#: scripts/ui/map_editor.gd:15
+msgid "Clic izq.: añadir a la zona roja · Clic der.: quitar"
+msgstr "Left click: add to the red zone · Right click: remove"
+
+#: scripts/ui/map_editor.gd:16
+msgid "Clic izq.: colocar el rival elegido (con sus ataques por defecto) · Clic der.: quitarlo"
+msgstr "Left click: place the chosen rival (with its default moves) · Right click: remove it"
+
+#: scripts/ui/pause_menu.gd:7
+msgid "Abandonar (volver al menú)"
+msgstr "Quit (back to menu)"
+
+#: scripts/ui/pause_menu.gd:28
+msgid "Pausa"
+msgstr "Pause"
+
+#: scripts/ui/pause_menu.gd:31
+msgid "Continuar"
+msgstr "Continue"
+
+#: scripts/ui/pause_menu.gd:51
+#: scripts/ui/ui_kit.gd:12
+msgid "Velocidad"
+msgstr "Speed"
+
+#: scripts/ui/pause_menu.gd:53
+msgid "Gráficos"
+msgstr "Graphics"
+
+#: scripts/ui/team_editor.gd:49
+msgid "  Editor de equipo"
+msgstr "  Team editor"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:63
+msgid "Pokémon disponibles (%d)"
+msgstr "Available Pokémon (%d)"
+
+#: scripts/ui/team_editor.gd:65
+msgid "Buscar por nombre, número o tipo…"
+msgstr "Search by name, number or type…"
+
+#: scripts/ui/team_editor.gd:101
+msgid "Ver animaciones"
+msgstr "View animations"
+
+#: scripts/ui/team_editor.gd:102
+msgid "Reproduce sus animaciones y las de cada ataque"
+msgstr "Plays its animations and those of each move"
+
+#: scripts/ui/team_editor.gd:108
+msgid "Agregar al equipo"
+msgstr "Add to team"
+
+#: scripts/ui/team_editor.gd:130
+msgid "Nombre del equipo"
+msgstr "Team name"
+
+#: scripts/ui/team_editor.gd:135
+#: scripts/ui/team_editor.gd:485
+#: scripts/ui/team_editor.gd:487
+msgid "Borrar"
+msgstr "Delete"
+
+#: scripts/ui/team_editor.gd:136
+msgid "Borrar este equipo"
+msgstr "Delete this team"
+
+#: scripts/ui/team_editor.gd:144
+msgid ""
+"Clic en un miembro del equipo para\n"
+"elegir sus ataques. El orden del equipo\n"
+"es el orden de despliegue."
+msgstr ""
+"Click a team member to\n"
+"choose its moves. The team order\n"
+"is the deployment order."
+
+#: scripts/ui/team_editor.gd:172
+msgid "Buscar ataque…"
+msgstr "Search move…"
+
+#: scripts/ui/team_editor.gd:178
+msgid "Todos los tipos"
+msgstr "All types"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:263
+msgid "(%d nadando)"
+msgstr "(%d swimming)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:264
+msgid "Movimiento %d%s · Salto %d · Talla %s"
+msgstr "Move %d%s · Jump %d · Size %s"
+
+#: scripts/ui/team_editor.gd:267
+#: scripts/ui/type_chart_screen.gd:115
+msgid "Débil a"
+msgstr "Weak to"
+
+#: scripts/ui/team_editor.gd:267
+#: scripts/ui/type_chart_screen.gd:116
+msgid "Resiste"
+msgstr "Resists"
+
+#: scripts/ui/team_editor.gd:267
+#: scripts/ui/type_chart_screen.gd:117
+msgid "Inmune a"
+msgstr "Immune to"
+
+#: scripts/ui/team_editor.gd:292
+msgid "Género:"
+msgstr "Gender:"
+
+#: scripts/ui/team_editor.gd:295
+msgid "sin género"
+msgstr "genderless"
+
+#: scripts/ui/team_editor.gd:318
+msgid "Objeto:"
+msgstr "Item:"
+
+#: scripts/ui/team_editor.gd:323
+msgid "— ninguno —"
+msgstr "— none —"
+
+#: scripts/ui/team_editor.gd:347
+msgid "Habilidad:"
+msgstr "Ability:"
+
+#: scripts/ui/team_editor.gd:352
+msgid "(oculta)"
+msgstr "(hidden)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:374
+msgid "Ataques de tu %s (%d/%d)"
+msgstr "Your %s's moves (%d/%d)"
+
+#: scripts/ui/team_editor.gd:375
+msgid "Ataques por defecto"
+msgstr "Default moves"
+
+#: scripts/ui/team_editor.gd:392
+msgid "Olvidar este ataque"
+msgstr "Forget this move"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:421
+msgid "Puede aprender %d ataques: quita uno (✕) para elegir otro"
+msgstr "Can learn %d moves: remove one (✕) to pick another"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:422
+msgid "Puede aprender %d ataques: clic para enseñárselo"
+msgstr "Can learn %d moves: click to teach it"
+
+#: scripts/ui/team_editor.gd:454
+msgid "+ Nuevo"
+msgstr "+ New"
+
+#: scripts/ui/team_editor.gd:482
+#: scripts/ui/team_editor.gd:483
+msgid "¿Seguro?"
+msgstr "Sure?"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:495
+msgid "Tu equipo (%d/%d)"
+msgstr "Your team (%d/%d)"
+
+#: scripts/ui/team_editor.gd:512
+msgid "Quitar del equipo"
+msgstr "Remove from team"
+
+#: scripts/ui/team_editor.gd:520
+msgid "— vacío —"
+msgstr "— empty —"
+
+#: scripts/ui/team_editor.gd:533
+msgid "Equipo completo (6/6)"
+msgstr "Team full (6/6)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/team_editor.gd:533
+msgid "Agregar %s al equipo"
+msgstr "Add %s to the team"
+
+#: scripts/ui/team_editor.gd:6
+msgid "Fís"
+msgstr "Phy"
+
+#: scripts/ui/team_editor.gd:6
+msgid "Esp"
+msgstr "Spe"
+
+#: scripts/ui/team_editor.gd:6
+msgid "Est"
+msgstr "Sta"
+
+#: scripts/ui/tower.gd:37
+msgid "  Torre de Batallas"
+msgstr "  Battle Tower"
+
+#: scripts/ui/tower.gd:73
+msgid "Nueva subida a la Torre"
+msgstr "New Tower climb"
+
+#: scripts/ui/tower.gd:74
+msgid ""
+"Elige 4 Pokémon básicos (de 6 al azar cada vez), empiezan a nivel 5.\n"
+"Cada piso es un combate contra Pokémon salvajes: captúralos con Poké Balls,\n"
+"sube de nivel, evoluciona y llega lo más alto posible."
+msgstr ""
+"Pick 4 basic Pokémon (out of 6 random ones each time); they start at level 5.\n"
+"Each floor is a battle against wild Pokémon: catch them with Poké Balls,\n"
+"level up, evolve and climb as high as you can."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:75
+#: scripts/ui/tower.gd:183
+msgid "Récord: piso %d"
+msgstr "Record: floor %d"
+
+#: scripts/ui/tower.gd:90
+msgid "Dificultad"
+msgstr "Difficulty"
+
+#: scripts/ui/tower.gd:104
+msgid "¡Empezar!"
+msgstr "Start!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:122
+msgid "Elige tu Pokémon (%d de %d)"
+msgstr "Choose your Pokémon (%d of %d)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:154
+msgid "Total de stats: %d · Mov %d"
+msgstr "Stat total: %d · Move %d"
+
+#: scripts/ui/tower.gd:155
+msgid "Ataques a nivel 5:"
+msgstr "Moves at level 5:"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:156
+msgid "Evoluciona a nivel %d"
+msgstr "Evolves at level %d"
+
+#: scripts/ui/tower.gd:156
+msgid "No evoluciona"
+msgstr "Doesn't evolve"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:176
+msgid "Piso %d"
+msgstr "Floor %d"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:178
+msgid "Medallas: %d"
+msgstr "Badges: %d"
+
+#: scripts/ui/tower.gd:179
+msgid "Vence a los líderes de gimnasio (cada 10 pisos)."
+msgstr "Beat the Gym Leaders (every 10 floors)."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:184
+msgid "Dificultad: %s"
+msgstr "Difficulty: %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:188
+msgid "Próximo piso: %s"
+msgstr "Next floor: %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:202
+msgid "Equipo (%d/%d)"
+msgstr "Team (%d/%d)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:206
+msgid "Caja (%d)"
+msgstr "Box (%d)"
+
+#: scripts/ui/tower.gd:215
+msgid ""
+"Captura Pokémon salvajes con Poké Balls\n"
+"durante los combates."
+msgstr ""
+"Catch wild Pokémon with Poké Balls\n"
+"during battles."
+
+#: scripts/ui/tower.gd:235
+msgid "Último combate"
+msgstr "Last battle"
+
+#: scripts/ui/tower.gd:235
+msgid "Antes de subir"
+msgstr "Before climbing"
+
+#: scripts/ui/tower.gd:241
+msgid ""
+"Tu equipo se cura por completo antes de cada piso.\n"
+"\n"
+"Elige los 4 ataques de cada Pokémon entre los que ha aprendido, y cambia miembros del equipo por los capturados."
+msgstr ""
+"Your team is fully healed before each floor.\n"
+"\n"
+"Choose the 4 moves of each Pokémon among the ones it has learned, and swap team members for the ones you caught."
+
+#: scripts/ui/tower.gd:244
+msgid "Mochila"
+msgstr "Bag"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:245
+msgid "Clic: equipar a %s (o usar la piedra)."
+msgstr "Click: give it to %s (or use the stone)."
+
+#: scripts/ui/tower.gd:255
+msgid "Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda."
+msgstr "Empty: sometimes you win an item when clearing a floor, or buy them in the Shop."
+
+#: scripts/ui/tower.gd:274
+msgid "Abandonar la torre"
+msgstr "Leave the tower"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:275
+msgid "¡Subir al piso %d!"
+msgstr "Climb to floor %d!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:322
+msgid "¡Piso %d superado!"
+msgstr "Floor %d cleared!"
+
+#: scripts/ui/tower.gd:353
+#: scripts/ui/tower.gd:429
+msgid "¡Genial!"
+msgstr "Great!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:393
+msgid "¿Eh? ¡%s está evolucionando!"
+msgstr "What? %s is evolving!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:427
+msgid "¡Enhorabuena! ¡%s evolucionó a %s!"
+msgstr "Congratulations! %s evolved into %s!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:443
+msgid "¿Eh? %s dejó de evolucionar."
+msgstr "Huh? %s stopped evolving."
+
+#: scripts/ui/tower.gd:444
+msgid "Puedes evolucionarlo luego desde su ficha."
+msgstr "You can evolve it later from its summary."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:444
+msgid "No se ha gastado: %s."
+msgstr "Not used up: %s."
+
+#: scripts/ui/tower.gd:445
+msgid "Vale"
+msgstr "OK"
+
+#: scripts/ui/tower.gd:499
+msgid "Tienda"
+msgstr "Shop"
+
+#: scripts/ui/tower.gd:502
+msgid "Bloqueada"
+msgstr "Locked"
+
+#: scripts/ui/tower.gd:502
+msgid "Bloquear"
+msgstr "Lock"
+
+#: scripts/ui/tower.gd:510
+msgid "Con el candado puesto, al superar el piso la tienda conserva lo que queda a la venta (el candado se quita solo al llegar)."
+msgstr "While locked, the shop keeps what is left for sale when you clear the floor (the lock is removed on arrival)."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:516
+msgid "Tienes %d ₽ · se guarda para el próximo piso."
+msgstr "You have %d ₽ · kept for the next floor."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:516
+msgid "Tienes %d ₽ · los objetos cambian en cada piso."
+msgstr "You have %d ₽ · items change every floor."
+
+#: scripts/ui/tower.gd:531
+msgid "No queda nada más a la venta en este piso."
+msgstr "Nothing else is for sale on this floor."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:549
+msgid "%s Tienes %d."
+msgstr "%s You have %d."
+
+#: scripts/ui/tower.gd:601
+msgid "Comprar"
+msgstr "Buy"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:624
+#: scripts/ui/tower.gd:669
+msgid "%s  Nv. %d"
+msgstr "%s  Lv. %d"
+
+#: scripts/ui/tower.gd:646
+msgid "Mandar a la caja"
+msgstr "Send to box"
+
+#: scripts/ui/tower.gd:646
+msgid "Pasar al equipo"
+msgstr "Move to team"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:671
+msgid "Experiencia: %d / %d"
+msgstr "Experience: %d / %d"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:672
+msgid "Habilidad: %s"
+msgstr "Ability: %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:674
+msgid "Objeto: %s"
+msgstr "Item: %s"
+
+#: scripts/ui/tower.gd:683
+msgid "Quitar"
+msgstr "Remove"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:690
+msgid "Evoluciona con: %s"
+msgstr "Evolves with: %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:693
+msgid "Evoluciona a %s a nivel %d"
+msgstr "Evolves into %s at level %d"
+
+#: scripts/ui/tower.gd:695
+msgid "Evolucionar"
+msgstr "Evolve"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:698
+msgid "Ataques (%d/4) — clic para quitar o añadir"
+msgstr "Moves (%d/4) — click to remove or add"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:702
+msgid "Pot %d"
+msgstr "Pow %d"
+
+#: scripts/ui/tower.gd:714
+msgid "(sin ataques aprendidos por nivel)"
+msgstr "(no moves learned by level)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:731
+msgid "%s no reacciona: %s."
+msgstr "%s doesn't react: %s."
+
+#: scripts/ui/tower.gd:751
+msgid "¿Abandonar esta subida? Se pierde el equipo (el récord se conserva)."
+msgstr "Leave this climb? The team is lost (the record is kept)."
+
+#: scripts/ui/tower.gd:752
+msgid "Abandonar"
+msgstr "Leave"
+
+#: scripts/ui/tower.gd:753
+msgid "Seguir"
+msgstr "Keep going"
+
+#: scripts/ui/tower.gd:774
+msgid "Fin de la subida"
+msgstr "Climb over"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:775
+msgid "Llegaste al piso %d. Récord: piso %d."
+msgstr "You reached floor %d. Record: floor %d."
+
+#: scripts/ui/tower.gd:778
+msgid "Tu equipo final:"
+msgstr "Your final team:"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/tower.gd:778
+msgid "%s Nv.%d"
+msgstr "%s Lv.%d"
+
+#: scripts/ui/tower.gd:779
+msgid "Nueva subida"
+msgstr "New climb"
+
+#: scripts/ui/type_chart_screen.gd:27
+msgid "  Tabla de tipos"
+msgstr "  Type chart"
+
+#: scripts/ui/type_chart_screen.gd:38
+msgid "Filas: tipo del ataque · Columnas: tipo del Pokémon que lo recibe · Clic en un tipo para ver su ficha"
+msgstr "Rows: move type · Columns: type of the Pokémon hit · Click a type to see its details"
+
+#: scripts/ui/type_chart_screen.gd:45
+msgid "ATQ \\ DEF"
+msgstr "ATK \\ DEF"
+
+#: scripts/ui/type_chart_screen.gd:68
+msgid "Muy eficaz"
+msgstr "Super effective"
+
+#: scripts/ui/type_chart_screen.gd:68
+msgid "Poco eficaz"
+msgstr "Not very effective"
+
+#: scripts/ui/type_chart_screen.gd:68
+msgid "Sin efecto"
+msgstr "No effect"
+
+#: scripts/ui/type_chart_screen.gd:109
+msgid "Atacando"
+msgstr "Attacking"
+
+#: scripts/ui/type_chart_screen.gd:110
+msgid "Muy eficaz contra"
+msgstr "Super effective against"
+
+#: scripts/ui/type_chart_screen.gd:111
+msgid "Poco eficaz contra"
+msgstr "Not very effective against"
+
+#: scripts/ui/type_chart_screen.gd:112
+msgid "No afecta a"
+msgstr "Doesn't affect"
+
+#: scripts/ui/type_chart_screen.gd:114
+msgid "Defendiendo"
+msgstr "Defending"
+
+#: scripts/ui/type_chart_screen.gd:122
+msgid "En el roster:"
+msgstr "In the roster:"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "NOR"
+msgstr "NOR"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "FUE"
+msgstr "FIR"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "AGU"
+msgstr "WAT"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "ELÉ"
+msgstr "ELE"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "PLA"
+msgstr "GRA"
+
+#: scripts/ui/ui_kit.gd:8
+msgid "HIE"
+msgstr "ICE"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "LUC"
+msgstr "FIG"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "VEN"
+msgstr "POI"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "TIE"
+msgstr "GRO"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "VOL"
+msgstr "FLY"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "PSÍ"
+msgstr "PSY"
+
+#: scripts/ui/ui_kit.gd:9
+msgid "BIC"
+msgstr "BUG"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "ROC"
+msgstr "ROC"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "FAN"
+msgstr "GHO"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "DRA"
+msgstr "DRA"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "SIN"
+msgstr "DAR"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "ACE"
+msgstr "STE"
+
+#: scripts/ui/ui_kit.gd:10
+msgid "HAD"
+msgstr "FAI"
+
+#: scripts/ui/ui_kit.gd:12
+msgid "PS"
+msgstr "HP"
+
+#: scripts/ui/ui_kit.gd:12
+msgid "Ataque"
+msgstr "Attack"
+
+#: scripts/ui/ui_kit.gd:12
+msgid "Defensa"
+msgstr "Defense"
+
+#: scripts/ui/ui_kit.gd:12
+msgid "At. Esp."
+msgstr "Sp. Atk"
+
+#: scripts/ui/ui_kit.gd:12
+msgid "Def. Esp."
+msgstr "Sp. Def"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/game.gd:111
+#: scripts/game.gd:299
+#: scripts/game.gd:309
+#: scripts/game.gd:334
+msgid "Equipo %d"
+msgstr "Team %d"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/game.gd:239
+msgid ""
+"Baja o Media van más fluidas en gráficas integradas.\n"
+"Gráfica en uso: %s"
+msgstr ""
+"Low or Medium run smoother on integrated graphics.\n"
+"GPU in use: %s"
+
+#: scripts/game.gd:8
+msgid "Fácil"
+msgstr "Easy"
+
+#: scripts/game.gd:8
+msgid "Normal"
+msgstr "Normal"
+
+#: scripts/game.gd:8
+msgid "Difícil"
+msgstr "Hard"
+
+#: scripts/game.gd:12
+msgid "Rivales a nivel 45; a veces eligen mal."
+msgstr "Rivals at level 45; sometimes they choose poorly."
+
+#: scripts/game.gd:13
+msgid "Rivales a nivel 50."
+msgstr "Rivals at level 50."
+
+#: scripts/game.gd:14
+msgid "Rivales a nivel 55; evitan exponerse y rematan a los débiles."
+msgstr "Rivals at level 55; they avoid exposure and finish off the weak."
+
+#: scripts/game.gd:50
 msgid "Baja"
 msgstr "Low"
 
-#. calidad gráfica
-#: scripts/game.gd
+#: scripts/game.gd:50
 msgid "Media"
 msgstr "Medium"
 
-#. calidad gráfica
-#: scripts/game.gd
+#: scripts/game.gd:50
 msgid "Alta"
 msgstr "High"
+
+#: scripts/tower_run.gd:171
+msgid "revancha"
+msgstr "rematch"
+
+#: scripts/tower_run.gd:173
+msgid "Combate contra un entrenador"
+msgstr "Battle against a trainer"
+
+#: scripts/tower_run.gd:174
+msgid "Pokémon salvajes"
+msgstr "Wild Pokémon"
+
+#: scripts/tower_run.gd:174
+msgid "¡se siente algo poderoso!"
+msgstr "something powerful is near!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:310
+msgid "¡%s (Nv. %d) capturado! Está en la caja."
+msgstr "%s (Lv. %d) caught! It is in the box."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:311
+msgid "¡%s capturado! (Nv. %d)"
+msgstr "%s caught! (Lv. %d)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:315
+msgid "Tu equipo fue derrotado en el piso %d."
+msgstr "Your team was defeated on floor %d."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:322
+msgid "¡Has vencido a %s!"
+msgstr "You defeated %s!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:325
+msgid "¡Consigues la %s! (%d medalla)"
+msgid_plural "¡Consigues la %s! (%d medallas)"
+msgstr[0] "You got the %s! (%d badge)"
+msgstr[1] "You got the %s! (%d badges)"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:326
+msgid "¡%s! Ya tienes %d."
+msgstr "%s! You now have %d."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:327
+msgid "¡Piso %d superado! Cada Pokémon gana %d de experiencia."
+msgstr "Floor %d cleared! Each Pokémon gains %d experience."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:334
+msgid "%s subió al nivel %d"
+msgstr "%s grew to level %d"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:336
+#: scripts/data/team_member.gd:191
+msgid "%s aprendió %s."
+msgstr "%s learned %s."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:338
+#: scripts/data/team_member.gd:195
+msgid "%s puede aprender %s (cámbialo en su ficha)."
+msgstr "%s can learn %s (change it in its summary)."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:340
+msgid "¡%s está a punto de evolucionar!"
+msgstr "%s is about to evolve!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:342
+msgid "Recibes %d Poké Ball. Tienes %d."
+msgstr "You receive %d Poké Ball. You have %d."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:349
+msgid "Ganas %d ₽ (tienes %d ₽)."
+msgstr "You earn %d ₽ (you have %d ₽)."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:362
+msgid "¡%s encontró algo con Recogida!"
+msgstr "%s found something with Pickup!"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:366
+msgid "Obtienes: %s."
+msgstr "You get: %s."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:367
+msgid "Obtienes: %s"
+msgstr "You get: %s"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/tower_run.gd:487
+msgid "%s no evolucionó."
+msgstr "%s didn't evolve."
+
+#: scripts/tower_run.gd:33
+msgid "Poké Ball"
+msgstr "Poké Ball"
+
+#: scripts/tower_run.gd:34
+msgid "Para capturar Pokémon salvajes durante el combate."
+msgstr "For catching wild Pokémon during battle."
+
+#: scripts/tower_run.gd:36
+msgid "Super Ball"
+msgstr "Great Ball"
+
+#: scripts/tower_run.gd:37
+msgid "Captura mejor que la Poké Ball (×1,5)."
+msgstr "Catches better than a Poké Ball (×1.5)."
+
+#: scripts/tower_run.gd:39
+msgid "Ultra Ball"
+msgstr "Ultra Ball"
+
+#: scripts/tower_run.gd:40
+msgid "Captura mucho mejor que la Poké Ball (×2)."
+msgstr "Catches much better than a Poké Ball (×2)."
+
+#: scripts/tower_run.gd:42
+msgid "Master Ball"
+msgstr "Master Ball"
+
+#: scripts/tower_run.gd:43
+msgid "Captura cualquier Pokémon salvaje sin fallar, incluso legendarios."
+msgstr "Catches any wild Pokémon without fail, even legendaries."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/data/team_member.gd:141
+msgid "%s subió a nivel %d."
+msgstr "%s grew to level %d."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/data/team_member.gd:159
+msgid "¡%s evolucionó a %s!"
+msgstr "%s evolved into %s!"
+
+#: scripts/data/trainers.gd:98
+msgid "variado"
+msgstr "mixed"
+
+#: scripts/data/trainers.gd:8
+msgid "Cazabichos"
+msgstr "Bug Catcher"
+
+#: scripts/data/trainers.gd:9
+msgid "Nadador"
+msgstr "Swimmer"
+
+#: scripts/data/trainers.gd:10
+msgid "Nadadora"
+msgstr "Swimmer"
+
+#: scripts/data/trainers.gd:11
+msgid "Pescador"
+msgstr "Fisherman"
+
+#: scripts/data/trainers.gd:12
+msgid "Ornitólogo"
+msgstr "Bird Keeper"
+
+#: scripts/data/trainers.gd:13
+msgid "Pokémaníaco"
+msgstr "PokéManiac"
+
+#: scripts/data/trainers.gd:14
+msgid "Montañero"
+msgstr "Hiker"
+
+#: scripts/data/trainers.gd:15
+msgid "Karateka"
+msgstr "Black Belt"
+
+#: scripts/data/trainers.gd:16
+msgid "Médium"
+msgstr "Channeler"
+
+#: scripts/data/trainers.gd:17
+msgid "Psíquico"
+msgstr "Psychic"
+
+#: scripts/data/trainers.gd:18
+msgid "Motorista"
+msgstr "Biker"
+
+#: scripts/data/trainers.gd:19
+msgid "Científico"
+msgstr "Scientist"
+
+#: scripts/data/trainers.gd:20
+msgid "Supernecio"
+msgstr "Super Nerd"
+
+#: scripts/data/trainers.gd:21
+msgid "Ladrón"
+msgstr "Burglar"
+
+#: scripts/data/trainers.gd:22
+msgid "Ecologista"
+msgstr "Picnicker"
+
+#: scripts/data/trainers.gd:23
+msgid "Esquiadora"
+msgstr "Skier"
+
+#: scripts/data/trainers.gd:24
+msgid "Belleza"
+msgstr "Beauty"
+
+#: scripts/data/trainers.gd:25
+msgid "Joven"
+msgstr "Youngster"
+
+#: scripts/data/trainers.gd:26
+msgid "Chica"
+msgstr "Lass"
+
+#: scripts/data/trainers.gd:27
+msgid "Domadragón"
+msgstr "Dragon Tamer"
+
+#: scripts/data/trainers.gd:44
+msgid "Brock"
+msgstr "Brock"
+
+#: scripts/data/trainers.gd:44
+#: scripts/data/trainers.gd:46
+#: scripts/data/trainers.gd:48
+#: scripts/data/trainers.gd:50
+#: scripts/data/trainers.gd:52
+msgid "Líder de gimnasio"
+msgstr "Gym Leader"
+
+#: scripts/data/trainers.gd:44
+msgid "Medalla Roca"
+msgstr "Boulder Badge"
+
+#: scripts/data/trainers.gd:46
+msgid "Misty"
+msgstr "Misty"
+
+#: scripts/data/trainers.gd:46
+msgid "Medalla Cascada"
+msgstr "Cascade Badge"
+
+#: scripts/data/trainers.gd:48
+msgid "Teniente Surge"
+msgstr "Lt. Surge"
+
+#: scripts/data/trainers.gd:48
+msgid "Medalla Trueno"
+msgstr "Thunder Badge"
+
+#: scripts/data/trainers.gd:50
+msgid "Erika"
+msgstr "Erika"
+
+#: scripts/data/trainers.gd:50
+msgid "Medalla Arcoíris"
+msgstr "Rainbow Badge"
+
+#: scripts/data/trainers.gd:52
+msgid "Koga"
+msgstr "Koga"
+
+#: scripts/data/trainers.gd:52
+msgid "Medalla Alma"
+msgstr "Soul Badge"
+
+#: scripts/data/trainers.gd:54
+msgid "Sabrina"
+msgstr "Sabrina"
+
+#: scripts/data/trainers.gd:54
+msgid "Medalla Pantano"
+msgstr "Marsh Badge"
+
+#: scripts/data/trainers.gd:56
+msgid "Blaine"
+msgstr "Blaine"
+
+#: scripts/data/trainers.gd:56
+msgid "Medalla Volcán"
+msgstr "Volcano Badge"
+
+#: scripts/data/trainers.gd:58
+msgid "Giovanni"
+msgstr "Giovanni"
+
+#: scripts/data/trainers.gd:58
+msgid "Medalla Tierra"
+msgstr "Earth Badge"
+
+#: scripts/data/trainers.gd:60
+msgid "Lorelei"
+msgstr "Lorelei"
+
+#: scripts/data/trainers.gd:60
+#: scripts/data/trainers.gd:62
+#: scripts/data/trainers.gd:64
+#: scripts/data/trainers.gd:66
+msgid "Alto Mando"
+msgstr "Elite Four"
+
+#: scripts/data/trainers.gd:62
+msgid "Bruno"
+msgstr "Bruno"
+
+#: scripts/data/trainers.gd:64
+msgid "Agatha"
+msgstr "Agatha"
+
+#: scripts/data/trainers.gd:66
+msgid "Lance"
+msgstr "Lance"
+
+#: scripts/data/trainers.gd:68
+msgid "Azul"
+msgstr "Blue"
+
+#: scripts/data/trainers.gd:68
+msgid "Campeón"
+msgstr "Champion"
+
+#: scripts/grid/biome.gd:13
+msgid "Pradera"
+msgstr "Meadow"
+
+#: scripts/grid/biome.gd:13
+msgid "Bosque"
+msgstr "Forest"
+
+#: scripts/grid/biome.gd:13
+msgid "Montaña"
+msgstr "Mountain"
+
+#: scripts/grid/biome.gd:13
+msgid "Desierto"
+msgstr "Desert"
+
+#: scripts/grid/biome.gd:14
+msgid "Lago"
+msgstr "Lake"
+
+#: scripts/grid/biome.gd:14
+#: scripts/grid/biome.gd:27
+msgid "Nieve"
+msgstr "Snow"
+
+#: scripts/grid/biome.gd:14
+#: scripts/grid/biome.gd:27
+msgid "Cueva"
+msgstr "Cave"
+
+#: scripts/grid/biome.gd:14
+msgid "Gimnasio"
+msgstr "Gym"
+
+#: scripts/grid/biome.gd:14
+msgid "Pantano"
+msgstr "Swamp"
+
+#: scripts/grid/biome.gd:15
+msgid "Ciudad"
+msgstr "City"
+
+#: scripts/grid/biome.gd:15
+msgid "Laboratorio"
+msgstr "Lab"
+
+#: scripts/grid/biome.gd:15
+msgid "Volcán"
+msgstr "Volcano"
+
+#: scripts/grid/biome.gd:15
+msgid "Playa"
+msgstr "Beach"
+
+#: scripts/grid/biome.gd:16
+msgid "Cementerio"
+msgstr "Cemetery"
+
+#: scripts/grid/biome.gd:16
+msgid "Estudio"
+msgstr "Studio"
+
+#: scripts/grid/biome.gd:16
+msgid "Librería"
+msgstr "Library"
+
+#: scripts/grid/biome.gd:16
+msgid "Aeropuerto"
+msgstr "Airport"
+
+#: scripts/grid/biome.gd:17
+msgid "Cueva submarina"
+msgstr "Underwater cave"
+
+#: scripts/grid/biome.gd:26
+msgid "Hierba"
+msgstr "Grass"
+
+#: scripts/grid/biome.gd:26
+msgid "Tierra"
+msgstr "Ground"
+
+#: scripts/grid/biome.gd:26
+msgid "Arena"
+msgstr "Sand"
+
+#: scripts/grid/biome.gd:26
+#: scripts/grid/biome.gd:31
+msgid "Roca"
+msgstr "Rock"
+
+#: scripts/grid/biome.gd:26
+msgid "Agua"
+msgstr "Water"
+
+#: scripts/grid/biome.gd:27
+msgid "Hielo"
+msgstr "Ice"
+
+#: scripts/grid/biome.gd:27
+msgid "Línea"
+msgstr "Line"
+
+#: scripts/grid/biome.gd:28
+msgid "Puente"
+msgstr "Bridge"
+
+#: scripts/grid/biome.gd:28
+msgid "Lodo"
+msgstr "Mud"
+
+#: scripts/grid/biome.gd:28
+msgid "Calzada"
+msgstr "Road"
+
+#: scripts/grid/biome.gd:28
+msgid "Lava"
+msgstr "Lava"
+
+#: scripts/grid/biome.gd:28
+msgid "Madera"
+msgstr "Wood"
+
+#: scripts/grid/biome.gd:31
+msgid "Nada"
+msgstr "None"
+
+#: scripts/grid/biome.gd:31
+msgid "Árbol"
+msgstr "Tree"
+
+#: scripts/grid/biome.gd:31
+msgid "Pino"
+msgstr "Pine"
+
+#: scripts/grid/biome.gd:32
+msgid "Cactus"
+msgstr "Cactus"
+
+#: scripts/grid/biome.gd:32
+msgid "Columna"
+msgstr "Pillar"
+
+#: scripts/grid/biome.gd:32
+msgid "Cristal"
+msgstr "Crystal"
+
+#: scripts/grid/biome.gd:33
+msgid "Estalagmita"
+msgstr "Stalagmite"
+
+#: scripts/grid/biome.gd:33
+msgid "Palmera"
+msgstr "Palm tree"
+
+#: scripts/grid/biome.gd:33
+msgid "Árbol seco"
+msgstr "Dead tree"
+
+#: scripts/grid/biome.gd:33
+msgid "Edificio"
+msgstr "Building"
+
+#: scripts/grid/biome.gd:34
+msgid "Farola"
+msgstr "Street lamp"
+
+#: scripts/grid/biome.gd:34
+msgid "Sombrilla"
+msgstr "Parasol"
+
+#: scripts/grid/biome.gd:34
+msgid "Máquina"
+msgstr "Machine"
+
+#: scripts/grid/biome.gd:34
+msgid "Incubadora"
+msgstr "Incubator"
+
+#: scripts/grid/biome.gd:35
+msgid "Fumarola"
+msgstr "Vent"
+
+#: scripts/grid/biome.gd:35
+msgid "Lápida"
+msgstr "Gravestone"
+
+#: scripts/grid/biome.gd:35
+msgid "Estantería"
+msgstr "Bookshelf"
+
+#: scripts/grid/biome.gd:35
+msgid "Foco"
+msgstr "Spotlight"
+
+#: scripts/grid/biome.gd:36
+msgid "Cámara"
+msgstr "Camera"
+
+#: scripts/grid/biome.gd:36
+#: scripts/grid/biome.gd:36
+msgid "Avión"
+msgstr "Plane"
+
+#: scripts/grid/biome.gd:36
+msgid "Coral"
+msgstr "Coral"

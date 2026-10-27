@@ -8,9 +8,10 @@ puedan traducir temas distintos a la vez sin pisarse.
 | `ataques/` | nombres y descripciones de los ataques | `tools/build_translations.py` (rellena con PokeAPI) |
 | `objetos/` | nombres y descripciones de los objetos | `tools/build_translations.py` (rellena con PokeAPI) |
 | `habilidades/` | nombres y descripciones de las habilidades | `tools/build_translations.py` (rellena con PokeAPI) |
-| `interfaz/` | menús y pantallas | a mano |
+| `interfaz/` | menús, editores, Torre de Batallas | `tools/extract_texts.py` (desde el código) |
+| `combate/` | combate: tipos, climas, estados y mensajes | `tools/extract_texts.py` (desde el código) |
 
-Próximamente: `combate/` (mensajes del combate) e `historia/` (diálogos del modo historia).
+Próximamente: `historia/` (diálogos del modo historia).
 
 **Traducir a un idioma nuevo:** copia la plantilla `<tema>.pot` de cada carpeta como `<idioma>.po` (código de
 Godot: `fr`, `de`, `pt_BR`...) y tradúcela con [Poedit](https://poedit.net) o cualquier editor de `.po`. El juego
@@ -23,6 +24,6 @@ Las líneas `#.` son notas de contexto para quien traduce.
 ---
 
 The game is written in Spanish. Each language is one gettext `.po` file per topic (folders above: moves, items,
-abilities, interface; battle and story dialogue coming soon). To add a language, copy each `<topic>.pot` to
+abilities, interface, battle; story dialogue coming soon). To add a language, copy each `<topic>.pot` to
 `<lang>.po` (Godot locale code) and translate it with Poedit or any PO editor; the game picks it up automatically
 in *Options → Language*. Keep placeholders like `{name}` and `%s`.

@@ -4,10 +4,12 @@ extends RefCounted
 
 enum Kind { CLEAR, SUN, RAIN, SAND, HAIL }
 
-const NAMES := {
+const NAMES := { # i18n
 	Kind.CLEAR: "Despejado", Kind.SUN: "Sol intenso", Kind.RAIN: "Lluvia",
 	Kind.SAND: "Tormenta de arena", Kind.HAIL: "Granizo",
 }
+## Nombre corto, para los botones.
+const SHORT_NAMES := {Kind.CLEAR: "Despejado", Kind.SUN: "Sol", Kind.RAIN: "Lluvia", Kind.SAND: "Arena", Kind.HAIL: "Granizo"} # i18n
 ## Símbolos que existen en la fuente por defecto (los emojis de clima no).
 const ICONS := {Kind.CLEAR: "○", Kind.SUN: "☀", Kind.RAIN: "☂", Kind.SAND: "≋", Kind.HAIL: "❄"}
 ## Tipo de Meteorobola con cada clima.

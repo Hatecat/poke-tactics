@@ -2107,17 +2107,13 @@ func _finish_story() -> void:
 		if u.team == 1 and not u.is_alive():
 			total += u.level * TowerRun.EXP_PER_ENEMY_LEVEL
 	var report := PackedStringArray()
-	report.append("¡Victoria! Cada Pokémon de Cristina gana %d de experiencia." % total)
+	report.append(tr("¡Victoria! Cada Pokémon de Cristina gana %d de experiencia.") % total)
 	for i in Game.story.party.size():
 		var m: TeamMember = Game.story.party[i]
-		var before := m.known.duplicate()
-		for line in m.gain_exp(total):
-			# En la historia no hay ficha: el ataque que no cabe se elige en la próxima escena.
-			if not line.contains("cámbialo en su ficha"):
-				report.append(line)
-		for mv in m.known:
-			if mv not in before and mv not in m.moves:
-				Game.story.pending_moves.append({"member": i, "move": mv.id})
+		# En la historia no hay ficha: el ataque que no cabe se elige en la próxima escena.
+		report.append_array(m.gain_exp(total, false))
+		for mv in m.pending:
+			Game.story.pending_moves.append({"member": i, "move": mv.id})
 	Game.story.report = report
 	Game.story.advance()
 	Game.save()
