@@ -24,6 +24,11 @@ const BIOME_ODDS := {
 	Biome.Kind.SNOW: {Kind.HAIL: 0.6},
 	Biome.Kind.CAVE: {Kind.SAND: 0.15},
 	Biome.Kind.GYM: {},
+	Biome.Kind.SWAMP: {Kind.RAIN: 0.5},
+	Biome.Kind.CITY: {Kind.RAIN: 0.25, Kind.SUN: 0.15},
+	Biome.Kind.LAB: {},
+	Biome.Kind.VOLCANO: {Kind.SUN: 0.45, Kind.SAND: 0.1},
+	Biome.Kind.BEACH: {Kind.SUN: 0.4, Kind.RAIN: 0.15},
 }
 ## Los climas provocados por ataques duran estas rondas (una ronda = un turno de cada Pokémon).
 const MOVE_ROUNDS := 4

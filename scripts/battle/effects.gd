@@ -29,6 +29,7 @@ const FLANK_NAMES := ["de frente", "por el flanco", "por la espalda"]
 const TILE_AFFINITY := {
 	Biome.Tile.GRASS: "grass", Biome.Tile.WATER: "water", Biome.Tile.SAND: "ground", Biome.Tile.DIRT: "ground",
 	Biome.Tile.ROCK: "rock", Biome.Tile.CAVE: "rock", Biome.Tile.SNOW: "ice", Biome.Tile.ICE: "ice",
+	Biome.Tile.MUD: "ground", Biome.Tile.LAVA: "fire",
 }
 const AFFINITY_MULT := 1.2
 const WATER_FIRE_MULT := 0.8
@@ -129,6 +130,11 @@ func water_blocked(u: Unit) -> bool:
 	return types.any(func(t: String) -> bool: return t in ["rock", "steel", "ground"])
 
 
+## Solo los de Fuego y los que no tocan el suelo pueden pisar la lava.
+func lava_blocked(u: Unit) -> bool:
+	return "fire" not in Array(u.data.types) and field.grounded(u)
+
+
 ## ¿Se mueve por el agua sin coste extra?
 func swims(u: Unit) -> bool:
 	return "water" in u.data.types or not field.grounded(u)
@@ -147,6 +153,10 @@ func tile_info(c: Vector2i) -> String:
 			parts.append("Tierra/Roca/Acero esquivan más")
 		Biome.Tile.ICE:
 			parts.append("los empujones deslizan 1 casilla más")
+		Biome.Tile.BRIDGE:
+			parts.append("cruza el agua: todos pasan por él a pie")
+		Biome.Tile.LAVA:
+			parts.append("solo la pisan los de tipo Fuego y los voladores")
 	var trap: Dictionary = field.traps.get(c, {})
 	if not trap.is_empty():
 		var t := PackedStringArray()

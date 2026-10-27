@@ -6,6 +6,8 @@ extends Resource
 @export var map_name := "Nuevo escenario"
 @export var topology := BoardGrid.Topology.SQUARE
 @export var biome := Biome.Kind.MEADOW
+## Estilo del gimnasio (tipo; "" = neutral).
+@export var gym_type := ""
 ## Clima de fondo del escenario.
 @export var weather := Weather.Kind.CLEAR
 @export var width := 20
@@ -23,6 +25,7 @@ extends Resource
 func to_grid() -> BoardGrid:
 	var grid := BoardGrid.new(topology, width, height)
 	grid.biome = biome
+	grid.gym_type = gym_type
 	for c in grid.all_cells():
 		var i := c.y * width + c.x
 		if i < heights.size():
@@ -35,6 +38,7 @@ func to_grid() -> BoardGrid:
 func store_grid(grid: BoardGrid) -> void:
 	topology = grid.topology
 	biome = grid.biome
+	gym_type = grid.gym_type
 	width = grid.width
 	height = grid.height
 	heights.resize(width * height)

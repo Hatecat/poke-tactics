@@ -149,7 +149,11 @@ func _start_battle() -> void:
 		var clear: Array[Vector2i] = []
 		clear.append_array(zones[0])
 		clear.append_array(zones[1])
-		Biome.generate(grid, Game.tower.biome if _tower() else Game.biome, rng, clear, zones[0], zones[1])
+		var kind: Biome.Kind = Game.tower.biome if _tower() else Game.biome
+		# Gimnasio del tipo del líder o entrenador; si no hay, un estilo al azar
+		var types: Array = Game.tower.trainer.get("types", []) if _trainer_battle() else []
+		grid.gym_type = types[0] if not types.is_empty() else Biome.GYM_TYPES[rng.randi_range(0, Biome.GYM_TYPES.size() - 1)]
+		Biome.generate(grid, kind, rng, clear, zones[0], zones[1])
 	for team in 2:
 		_zones[team] = {}
 		for c: Vector2i in zones[team]:
@@ -396,10 +400,13 @@ func _fits(u: Unit, anchor: Vector2i) -> bool:
 	var lo := 99
 	var hi := 0
 	var no_water := effects != null and effects.water_blocked(u)
+	var no_lava := effects != null and effects.lava_blocked(u)
 	for c in cells:
 		if not grid.is_inside(c) or grid.is_blocked(c):
 			return false
 		if no_water and grid.tiles.get(c, 0) == Biome.Tile.WATER:
+			return false
+		if no_lava and grid.tiles.get(c, 0) == Biome.Tile.LAVA:
 			return false
 		lo = mini(lo, grid.get_height(c))
 		hi = maxi(hi, grid.get_height(c))

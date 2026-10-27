@@ -23,6 +23,8 @@ var heights: Dictionary = {} # Vector2i -> int
 var tiles: Dictionary = {} # Vector2i -> Biome.Tile
 var props: Dictionary = {} # Vector2i -> Biome.Prop (obstáculos)
 var biome := Biome.Kind.MEADOW
+## Tipo del gimnasio para su estilo ("" = neutral; solo cuenta si el bioma es GYM).
+var gym_type := ""
 
 
 func _init(p_topology: Topology, p_width: int, p_height: int) -> void:

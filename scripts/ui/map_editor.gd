@@ -34,6 +34,7 @@ var _width: SpinBox
 var _height: SpinBox
 var _topology: OptionButton
 var _biome: OptionButton
+var _gym: OptionButton  # estilo del gimnasio (tipo)
 var _weather: OptionButton
 var _tile_pick: OptionButton
 var _prop_pick: OptionButton
@@ -76,6 +77,7 @@ func _new_map(generate: bool) -> void:
 	m.enemy_zone = MapData.default_zone(m.width, m.height, 1)
 	var g := BoardGrid.new(m.topology, m.width, m.height)
 	g.biome = m.biome
+	g.gym_type = Biome.GYM_TYPES[_gym.selected]
 	if generate:
 		var clear: Array[Vector2i] = []
 		clear.append_array(m.player_zone)
@@ -98,6 +100,7 @@ func _open(m: MapData) -> void:
 	_height.set_value_no_signal(m.height)
 	_topology.select(m.topology)
 	_biome.select(m.biome)
+	_gym.select(maxi(0, Biome.GYM_TYPES.find(m.gym_type)))
 	_weather.select(m.weather)
 	for n in ["WorldEnvironment", "Sun"]:
 		var old := get_node_or_null(n)
@@ -358,6 +361,17 @@ func _build_ui() -> void:
 	for kind: int in Biome.NAMES:
 		_biome.add_item("%s %s" % [Biome.ICONS[kind], Biome.NAMES[kind]])
 	col.add_child(_biome)
+	_gym = OptionButton.new()
+	for type in Biome.GYM_TYPES:
+		_gym.add_item("Gimnasio: %s" % (Combat.TYPE_NAMES[type] if type else "neutral"))
+	_gym.tooltip_text = "Estilo del gimnasio (solo cuenta en el campo Gimnasio)"
+	# Cambia el estilo del escenario abierto al momento
+	_gym.item_selected.connect(func(i: int) -> void:
+		if grid:
+			grid.gym_type = Biome.GYM_TYPES[i]
+			_board.build(grid)
+			_refresh_highlights())
+	col.add_child(_gym)
 	_weather = OptionButton.new()
 	for kind: int in Weather.NAMES:
 		_weather.add_item("%s %s" % [Weather.ICONS[kind], Weather.NAMES[kind]])

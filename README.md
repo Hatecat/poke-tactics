@@ -69,9 +69,17 @@ Si retocas un `.tres` a mano, ten en cuenta que volver a ejecutar `build_data.py
 
 ## Campos
 
-Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva y Gimnasio. Cada uno genera alturas, suelos y obstáculos
-(árboles, rocas, cactus, columnas, cristales) al azar, garantizando un camino entre las dos zonas. Los obstáculos
-bloquean el paso; los suelos aún no tienen efectos.
+Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva, Gimnasio, Pantano, Ciudad, Laboratorio, Volcán y Playa.
+Cada uno genera alturas, suelos y obstáculos (árboles, rocas, cactus, columnas, cristales, edificios, farolas,
+máquinas, incubadoras, fumarolas, sombrillas) al azar, garantizando un camino entre
+las dos zonas para todos: también para los que no pueden entrar al agua (Roca, Acero, Tierra) y para los de talla
+grande (hasta 3×3, como Onix). Los ríos se cruzan por vados o puentes de madera. Los obstáculos bloquean el paso.
+La **lava** solo la pisan los de tipo Fuego y los que vuelan, y potencia los ataques de Fuego desde ella.
+
+El **Gimnasio** tiene un estilo por tipo (18) y uno neutral: colores del suelo, líneas y columnas, y rasgos como
+piscinas (Agua, Veneno), fosos de lava (Fuego), jardín con árboles (Planta, Bicho), placas de hielo, arena o roca, y
+cristales o árboles secos en lugar de columnas. En la Torre usa el tipo del líder o entrenador; en Partida rápida
+sale al azar, y en el editor de escenarios se elige.
 
 ## Clima
 
@@ -283,7 +291,15 @@ los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca, un o
 hojas con foliolos que cuelgan, cocos) y matorrales de cactus de tres tipos (columnar con brazos, barril con
 flores y nopal con tunas). Lago: cuenca
 central con playa de arena. Nieve: ventisqueros, estanque helado y pinares nevados. Cueva: crestas de roca,
-charcas, estalagmitas y cristales. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
+charcas, estalagmitas y cristales. Pantano: terreno bajo con pozas, lodazales, juncales, nenúfares, sauces, árboles
+secos, luciérnagas y bruma verdosa. Ciudad: calles de dos carriles con línea discontinua, manzanas de edificios de
+1 a 3 plantas, farolas y un parque con fuente. Laboratorio: paneles con líneas guía luminosas, plataforma central
+elevada, bancos de consolas con pantallas y pilotos, e incubadoras de cristal con líquido que brilla. Volcán: crestas
+de basalto, río y pozas de lava (costra agrietada que se desliza sobre roca fundida que late y alumbra) con dos pasos
+de roca, ceniza, fumarolas humeantes, troncos calcinados, brasas que suben y calima. Playa: el mar en un costado con
+orilla irregular, muelle de madera, sombrillas, palmeras, conchas y dunas con hierba tierra adentro. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
+puente con barandilla), y al final de la generación se abre, si hace falta, un paso sin agua y uno de 3 casillas
+de ancho (quitando obstáculos y suavizando cuestas) entre los dos bandos. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
 hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol); la hierba crece en zonas de
 hierba alta y claros de césped corto, y se aparta alrededor de cada Pokémon para no taparlo; las copas, los pinos y
 los troncos tienen textura procedural (racimos de hojas, agujas y corteza con grietas); el agua tiene oleaje,

@@ -22,6 +22,14 @@ Ver README.md para las reglas y la estructura de carpetas.
 - **Terrenos** (scripts/grid/biome.gd): generador con geografía para cada bioma (ríos, lago con playa, macizo
   nevado, dunas, mesetas, oasis, cueva con estalagmitas). Obstáculos nuevos `STALAGMITE` y `PALM` (al final del
   enum `Prop`, para no romper mapas guardados).
+- **Pantano y Ciudad** (biomas `SWAMP`, `CITY`), suelos `BRIDGE`, `MUD`, `ROAD` y obstáculos `DEAD_TREE`, `BUILDING`,
+  `LAMP`, todos al final de sus enums. El generador garantiza paso sin agua (`_ensure_dry_path`) y para talla 3
+  (`_ensure_wide_path`); el río del bosque tiene vados o puentes (`_fords`). Para comprobarlo en muchos mapas,
+  genera con `Biome.generate` en un script `--headless` y recorre la huella como `battle.gd` `_fits`.
+- **Laboratorio, Volcán y Playa** (`LAB`, `VOLCANO`, `BEACH`), suelo `LAVA` (solo Fuego y voladores:
+  `effects.lava_blocked`; shader `TerrainFx.LAVA_SHADER`) y obstáculos `PARASOL`, `MACHINE`, `TANK`, `VENT`.
+  **Gimnasio por tipo:** `Biome.GYM_STYLES` / `gym_style()`, guardado en `BoardGrid.gym_type` y `MapData.gym_type`;
+  battle.gd lo toma del líder (`trainer.types[0]`) o al azar.
 - **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
   agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la

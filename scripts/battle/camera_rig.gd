@@ -146,6 +146,14 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 		env.fog_enabled = true
 		env.fog_light_color = Color(0.08, 0.07, 0.09)
 		env.fog_density = 0.015
+	elif biome == Biome.Kind.SWAMP:
+		env.fog_enabled = true  # bruma verdosa del pantano
+		env.fog_light_color = Color(0.5, 0.58, 0.48)
+		env.fog_density = 0.007
+	elif biome == Biome.Kind.VOLCANO:
+		env.fog_enabled = true  # calima de humo y ceniza
+		env.fog_light_color = Color(0.55, 0.32, 0.24)
+		env.fog_density = 0.006
 	var world_env := WorldEnvironment.new()
 	world_env.name = "WorldEnvironment"
 	world_env.environment = env

@@ -38,12 +38,16 @@ const SIDE_TOP := {
 	Biome.Tile.SAND: Color(0.76, 0.62, 0.4), Biome.Tile.ROCK: Color(0.5, 0.48, 0.45),
 	Biome.Tile.SNOW: Color(0.78, 0.82, 0.9), Biome.Tile.ICE: Color(0.6, 0.74, 0.86),
 	Biome.Tile.CAVE: Color(0.3, 0.27, 0.25), Biome.Tile.WATER: Color(0.12, 0.3, 0.5),
+	Biome.Tile.LAVA: Color(0.25, 0.12, 0.08),
 }
 const BEDROCK := {
 	Biome.Kind.MEADOW: Color(0.38, 0.33, 0.28), Biome.Kind.FOREST: Color(0.32, 0.27, 0.22),
 	Biome.Kind.MOUNTAIN: Color(0.36, 0.35, 0.34), Biome.Kind.DESERT: Color(0.62, 0.42, 0.28),
 	Biome.Kind.LAKE: Color(0.38, 0.33, 0.28), Biome.Kind.SNOW: Color(0.42, 0.43, 0.47),
 	Biome.Kind.CAVE: Color(0.16, 0.15, 0.15), Biome.Kind.GYM: Color(0.4, 0.4, 0.45),
+	Biome.Kind.SWAMP: Color(0.27, 0.23, 0.17), Biome.Kind.CITY: Color(0.42, 0.41, 0.42),
+	Biome.Kind.LAB: Color(0.36, 0.38, 0.42), Biome.Kind.VOLCANO: Color(0.14, 0.11, 0.1),
+	Biome.Kind.BEACH: Color(0.62, 0.5, 0.36),
 }
 
 
@@ -333,16 +337,30 @@ func _build_cell(c: Vector2i) -> void:
 	var thickness := BASE_THICKNESS + top.y
 	var tile_kind: int = grid.tiles.get(c, Biome.Tile.GRASS)
 
-	var water := tile_kind == Biome.Tile.WATER
+	var water := tile_kind in [Biome.Tile.WATER, Biome.Tile.BRIDGE, Biome.Tile.LAVA]  # el puente va sobre el agua
 	if water:
 		var surface := MeshInstance3D.new()
 		surface.mesh = _water_mesh()
 		surface.position = Vector3(top.x, top.y - WATER_DROP, top.z)
-		surface.material_override = _live("water", func() -> ShaderMaterial:
-			return TerrainFx.water_material(Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)))
+		if tile_kind == Biome.Tile.LAVA:
+			surface.material_override = _live("lava", func() -> ShaderMaterial: return TerrainFx.lava_material())
+			if (c.x * 3 + c.y) % 4 == 0:  # la lava ilumina lo que tiene cerca (una luz cada pocas casillas)
+				var light := OmniLight3D.new()
+				light.light_color = Color(1.0, 0.45, 0.15)
+				light.light_energy = 0.9
+				light.omni_range = 2.2
+				light.position = Vector3(top.x, top.y + 0.3, top.z)
+				root.add_child(light)
+		else:
+			var tint: Array = Biome.gym_style(grid.gym_type).get("water", [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]) \
+					if grid.biome == Biome.Kind.GYM else [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]
+			surface.material_override = _live("water_%s" % tint[0].to_html(), func() -> ShaderMaterial:
+				return TerrainFx.water_material(tint[0], tint[1]))
 		surface.set_instance_shader_parameter("shore", _shore(c))
 		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(surface)
+		if tile_kind == Biome.Tile.BRIDGE:
+			_bridge(root, c, top)
 	else:
 		var top_mesh := MeshInstance3D.new()
 		top_mesh.mesh = _tile_mesh(TOP_THICKNESS, 0.0)
@@ -352,7 +370,7 @@ func _build_cell(c: Vector2i) -> void:
 			top_mesh.material_override = _live("stone_%s" % col.to_html(), func() -> ShaderMaterial:
 				return TerrainFx.stone_material(col))
 		else:
-			top_mesh.material_override = _material(col, tile_kind == Biome.Tile.ICE)
+			top_mesh.material_override = _material(col, tile_kind in [Biome.Tile.ICE, Biome.Tile.MUD])  # el lodo brilla mojado
 		root.add_child(top_mesh)
 
 	var side_top := top.y - (WATER_DROP + 0.1 if water else TOP_THICKNESS)  # bajo el seno de las olas
@@ -364,6 +382,8 @@ func _build_cell(c: Vector2i) -> void:
 	root.add_child(side)
 
 	_decorate(root, c, tile_kind, top)
+	if tile_kind == Biome.Tile.ROAD:
+		_road_marks(root, c, top)
 	_maybe_puddle(root, c, tile_kind, top)
 	_hail_pile(root, c, tile_kind, top)
 
@@ -406,6 +426,8 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 	match prop:
 		Biome.Prop.TREE:
 			var leaf := Color(0.22, 0.48, 0.2) if grid.biome == Biome.Kind.FOREST else Color(0.28, 0.56, 0.24)
+			if grid.biome == Biome.Kind.SWAMP:
+				leaf = Color(0.3, 0.38, 0.16)  # sauce de pantano, verde oliva
 			leaf = leaf.lerp(Color(0.45, 0.55, 0.18), float(h % 7) / 20.0)
 			var bark := 3 if snowy else 4  # con musgo salvo en la nieve
 			_leaf(node, _cyl(0.05, 0.1, 0.62, 7), Vector3(0, 0.31, 0), Color(0.4, 0.27, 0.16), 0.3, 0.0, bark)
@@ -432,6 +454,8 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				Biome.Kind.DESERT: stone = Color(0.66, 0.47, 0.34)
 				Biome.Kind.CAVE: stone = Color(0.34, 0.31, 0.3)
 				Biome.Kind.SNOW: stone = Color(0.48, 0.5, 0.54)
+				Biome.Kind.VOLCANO: stone = Color(0.22, 0.2, 0.2)
+				Biome.Kind.GYM: stone = Biome.gym_style(grid.gym_type).pillar
 			# Cuatro composiciones (peñasco con canto, roca alta, lajas apiladas, montón de cantos) y tamaño
 			# variable; cada pieza con su forma (TerrainFx.rock_mesh) y su tono.
 			var size := 0.8 + float((h >> 3) % 5) * 0.1
@@ -454,7 +478,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				top_y = maxf(top_y, (piece[1].y + piece[2].y * 0.5) * size)
 			if snowy:
 				_part(node, _sphere(0.27, 0.12), Vector3(0, top_y - 0.04, 0), snow).scale = Vector3(1.0, 1.0, 0.85) * size
-			elif grid.biome == Biome.Kind.FOREST:
+			elif grid.biome in [Biome.Kind.FOREST, Biome.Kind.SWAMP]:
 				_part(node, _sphere(0.25, 0.1), Vector3(-0.03, top_y - 0.04, 0), Color(0.3, 0.45, 0.18)).scale = Vector3(1.0, 1.0, 0.8) * size
 		Biome.Prop.CACTUS:
 			var green := Color(0.3, 0.52, 0.27).lerp(Color(0.42, 0.55, 0.3), float(h % 5) / 8.0)
@@ -529,8 +553,9 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				_part(node, _sphere(0.045, 0.085), p + Vector3(cos(a) * 0.06, -0.05 - 0.02 * (i % 2), sin(a) * 0.06), Color(0.4, 0.28, 0.14).darkened(0.1 * (i % 2)))
 			height = 1.25
 		Biome.Prop.PILLAR:
-			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), Color(0.82, 0.8, 0.76))
-			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), Color(0.7, 0.68, 0.64))
+			var marble: Color = Biome.gym_style(grid.gym_type).pillar if grid.biome == Biome.Kind.GYM else Color(0.82, 0.8, 0.76)
+			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), marble)
+			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), marble.darkened(0.15))
 		Biome.Prop.STALAGMITE:
 			# Estalagmita gastada: bloques de roca redondeados que se funden en una sola roca que se estrecha
 			# hacia arriba, y piedras al pie.
@@ -572,8 +597,205 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			light.position = Vector3(0, 0.65, 0)
 			node.add_child(light)
 			_crystal_lights.append(light)
+		Biome.Prop.DEAD_TREE:
+			# Árbol seco: tronco gris torcido con ramas desnudas que se abren hacia arriba y musgo colgando.
+			var wood := Color(0.42, 0.38, 0.33)
+			var trunk := _leaf(node, _cyl(0.05, 0.11, 0.8, 7), Vector3(0, 0.4, 0), wood, 0.15, 0.0, 3)
+			trunk.rotation.z = 0.08
+			for i in 3 + h % 2:
+				var a := TAU * i / 3.0 + float(h % 5)
+				var branch := _leaf(node, _cyl(0.015, 0.035, 0.42, 5), Vector3(cos(a) * 0.12, 0.62 + 0.1 * (i % 2), sin(a) * 0.12), wood.darkened(0.05 * i), 0.3, 0.0, 3)
+				branch.basis = Basis(Vector3(-sin(a), 0, cos(a)), 0.7 + 0.15 * (i % 2))
+				if i % 2 == 0:
+					_leaf(node, _cyl(0.0, 0.04, 0.22, 5), Vector3(cos(a) * 0.24, 0.62, sin(a) * 0.24), Color(0.4, 0.46, 0.3), 0.6, 0.6)
+			height = 1.0
+		Biome.Prop.BUILDING:
+			# Edificio: bloque de 1 a 3 plantas en ladrillo, estuco u hormigón, con ventanas en cada cara,
+			# puerta, cornisa y a veces una caja en la azotea. No gira, para que las fachadas queden alineadas.
+			node.rotation.y = 0.0
+			node.scale = Vector3.ONE
+			var walls := [Color(0.62, 0.36, 0.28), Color(0.82, 0.76, 0.62), Color(0.62, 0.64, 0.66), Color(0.7, 0.55, 0.42)]
+			var wall: Color = walls[h % 4]
+			var floors := 1 + (h >> 2) % 3
+			var tall := 0.45 * floors + 0.2
+			_part(node, BoxMesh.new(), Vector3(0, tall * 0.5, 0), wall).scale = Vector3(0.9, tall, 0.9)
+			_part(node, BoxMesh.new(), Vector3(0, tall + 0.03, 0), wall.darkened(0.3)).scale = Vector3(0.96, 0.06, 0.96)
+			var glass := Color(0.35, 0.5, 0.62)
+			for f in floors:
+				var y := 0.42 + 0.45 * f
+				for side in 4:
+					var out := Vector3(cos(side * PI / 2), 0, sin(side * PI / 2))
+					var across := Vector3(-out.z, 0, out.x)
+					for k in [-1, 1]:
+						var win := _part(node, BoxMesh.new(), Vector3(0, y, 0) + out * 0.452 + across * 0.2 * k, glass.lightened(0.15 * ((h >> (f + side)) % 2)))
+						win.scale = Vector3(0.02, 0.2, 0.02) + (across * 0.16).abs()
+			_part(node, BoxMesh.new(), Vector3(0, 0.15, 0.452), wall.darkened(0.45)).scale = Vector3(0.2, 0.3, 0.02)
+			if (h >> 5) % 2 == 0:
+				_part(node, BoxMesh.new(), Vector3(0.18, tall + 0.14, -0.15), Color(0.55, 0.56, 0.58)).scale = Vector3(0.25, 0.2, 0.22)
+			height = tall
+		Biome.Prop.LAMP:
+			# Farola: poste negro con brazo y un farol que brilla tenue.
+			node.scale = Vector3.ONE
+			var iron := Color(0.16, 0.17, 0.19)
+			_part(node, _cyl(0.06, 0.08, 0.08), Vector3(0, 0.04, 0), iron)
+			_part(node, _cyl(0.025, 0.03, 1.1), Vector3(0, 0.55, 0), iron)
+			_part(node, _cyl(0.015, 0.015, 0.25), Vector3(0.1, 1.08, 0), iron).rotation.z = PI / 2
+			var bulb := _part(node, _sphere(0.07, 0.1), Vector3(0.21, 1.02, 0), Color(1.0, 0.9, 0.6))
+			var glow: StandardMaterial3D = bulb.material_override.duplicate()
+			glow.emission_enabled = true
+			glow.emission = Color(1.0, 0.85, 0.5)
+			glow.emission_energy_multiplier = 1.5
+			bulb.material_override = glow
+			_part(node, _cyl(0.0, 0.09, 0.06), Vector3(0.21, 1.09, 0), iron)
+		Biome.Prop.PARASOL:
+			# Sombrilla de playa: mástil blanco algo inclinado y lona de un color con gajos más claros.
+			node.scale = Vector3.ONE
+			var cloth: Color = [Color(0.9, 0.25, 0.22), Color(0.98, 0.8, 0.25), Color(0.25, 0.55, 0.9), Color(0.3, 0.7, 0.45)][h % 4]
+			var tilt := Node3D.new()
+			tilt.rotation.z = 0.12
+			node.add_child(tilt)
+			_part(tilt, _cyl(0.02, 0.02, 1.1), Vector3(0, 0.55, 0), Color(0.95, 0.95, 0.92))
+			for i in 8:
+				var gore := _leaf(tilt, _cyl(0.0, 0.6, 0.22, 8), Vector3(0, 1.0, 0), cloth.lightened(0.35 * (i % 2)), 0.25, 0.3)
+				gore.scale = Vector3(1.0, 1.0, 1.0) * (1.0 - 0.002 * i)
+				gore.rotation.y = TAU * i / 16.0
+			_part(tilt, _sphere(0.035, 0.07), Vector3(0, 1.13, 0), Color(0.95, 0.95, 0.92))
+			height = 1.15
+		Biome.Prop.MACHINE:
+			# Máquina de laboratorio: consola blanca con pantalla encendida inclinada y pilotos de colores.
+			node.rotation.y = float(h % 4) * PI / 2
+			node.scale = Vector3.ONE
+			var shell := Color(0.86, 0.88, 0.9)
+			_part(node, BoxMesh.new(), Vector3(0, 0.3, 0), shell).scale = Vector3(0.82, 0.6, 0.6)
+			_part(node, BoxMesh.new(), Vector3(0, 0.62, -0.18), shell.darkened(0.15)).scale = Vector3(0.82, 0.05, 0.25)
+			var screen := _part(node, BoxMesh.new(), Vector3(0, 0.82, -0.2), Color(0.1, 0.12, 0.15))
+			screen.scale = Vector3(0.66, 0.38, 0.04)
+			screen.rotation.x = -0.25
+			var face := _part(screen, BoxMesh.new(), Vector3(0, 0, 0.6), Color(0.2, 0.6, 0.8))
+			face.scale = Vector3(0.9, 0.85, 0.3)
+			_glow(face, [Color(0.3, 0.85, 1.0), Color(0.4, 1.0, 0.6), Color(0.6, 0.5, 1.0)][h % 3], 1.6)
+			for i in 4:
+				var led := _part(node, BoxMesh.new(), Vector3(-0.27 + 0.18 * i, 0.5, 0.305), Color.WHITE)
+				led.scale = Vector3(0.06, 0.04, 0.01)
+				_glow(led, [Color(1.0, 0.25, 0.2), Color(0.3, 1.0, 0.35), Color(1.0, 0.8, 0.2)][(h + i) % 3], 2.0)
+			height = 1.0
+		Biome.Prop.TANK:
+			# Incubadora: cilindro de cristal con líquido luminoso y burbujas, sobre base y bajo tapa metálicas.
+			node.rotation.y = 0.0
+			node.scale = Vector3.ONE
+			var metal := Color(0.55, 0.58, 0.62)
+			var tint := Color(0.3, 0.95, 0.75) if h % 2 else Color(0.4, 0.75, 1.0)
+			_part(node, _cyl(0.36, 0.4, 0.16, 16), Vector3(0, 0.08, 0), metal)
+			_part(node, _cyl(0.36, 0.33, 0.14, 16), Vector3(0, 1.36, 0), metal)
+			var liquid := _part(node, _cyl(0.27, 0.27, 1.0, 16), Vector3(0, 0.66, 0), tint)
+			_glow(liquid, tint, 1.2)
+			for i in 3:
+				_glow(_part(node, _sphere(0.035, 0.07), Vector3(0.08 * (i - 1), 0.4 + 0.3 * i, 0.06 * (i % 2)), Color.WHITE), tint.lightened(0.5), 1.5)
+			var glass := _part(node, _cyl(0.31, 0.31, 1.14, 20), Vector3(0, 0.71, 0), Color.WHITE)
+			var gm := StandardMaterial3D.new()
+			gm.albedo_color = Color(0.85, 0.95, 1.0, 0.22)
+			gm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			gm.roughness = 0.05
+			gm.metallic_specular = 1.0
+			glass.material_override = gm
+			glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			height = 1.45
+		Biome.Prop.VENT:
+			# Fumarola: cono de basalto con la boca al rojo y una columna de humo que sube y se deshace.
+			var basalt := Color(0.2, 0.18, 0.18)
+			var cone := _part(node, _cyl(0.12, 0.4, 0.45, 9), Vector3(0, 0.22, 0), basalt)
+			cone.rotation.y = float(h % 7)
+			for i in 3:
+				var a := float(i) * 2.1 + float(h % 5)
+				_part(node, TerrainFx.rock_mesh(i), Vector3(cos(a) * 0.32, 0.06, sin(a) * 0.32), basalt.lightened(0.05)).scale = Vector3(0.2, 0.15, 0.2)
+			_glow(_part(node, _cyl(0.1, 0.1, 0.03, 9), Vector3(0, 0.45, 0), Color(1.0, 0.5, 0.15)), Color(1.0, 0.45, 0.1), 3.0)
+			var smoke := CPUParticles3D.new()
+			smoke.amount = 14
+			smoke.lifetime = 3.0
+			smoke.position = Vector3(0, 0.5, 0)
+			smoke.direction = Vector3.UP
+			smoke.spread = 12.0
+			smoke.initial_velocity_min = 0.3
+			smoke.initial_velocity_max = 0.5
+			smoke.gravity = Vector3(0.08, 0.05, 0.0)
+			smoke.scale_amount_min = 0.6
+			smoke.scale_amount_max = 1.4
+			var puff := QuadMesh.new()
+			puff.size = Vector2(0.3, 0.3)
+			var pm := StandardMaterial3D.new()
+			pm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			pm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			pm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+			pm.vertex_color_use_as_albedo = true
+			puff.material = pm
+			smoke.mesh = puff
+			var fade := Gradient.new()
+			fade.set_color(0, Color(0.55, 0.52, 0.5, 0.45))
+			fade.set_color(1, Color(0.6, 0.58, 0.56, 0.0))
+			smoke.color_ramp = fade
+			smoke.preprocess = smoke.lifetime
+			node.add_child(smoke)
+			height = 0.5
 	node.set_meta("sway_height", height * jitter)
 	return node
+
+
+## Puente de madera sobre el agua: tablones atravesados al paso, vigas por debajo y, en los lados que
+## dan al agua, barandilla con postes.
+func _bridge(root: Node3D, c: Vector2i, top: Vector3) -> void:
+	var wood := Color(0.52, 0.37, 0.23)
+	var on_water := func(n: Vector2i) -> bool:
+		return not grid.is_inside(n) or grid.tiles.get(n, 0) in [Biome.Tile.WATER, Biome.Tile.BRIDGE]
+	# Los tablones van de lado a lado (hacia donde hay agua o más puente) y se suceden en el sentido del paso
+	var across := Vector3.RIGHT
+	if grid.topology == BoardGrid.Topology.SQUARE and not (on_water.call(c + Vector2i(1, 0)) and on_water.call(c - Vector2i(1, 0))):
+		across = Vector3.BACK
+	var along := Vector3(-across.z, 0, across.x)
+	var count := 5
+	for i in count:
+		var plank := _part(root, BoxMesh.new(), top + Vector3(0, -0.035, 0) + along * ((i + 0.5) / count - 0.5), wood.darkened(0.06 * ((hash(c) + i) % 3)))
+		plank.scale = (across * 0.98 + along * (0.9 / count)).abs() + Vector3(0, 0.05, 0)
+	for k in [-0.3, 0.3]:
+		var beam := _part(root, BoxMesh.new(), top + Vector3(0, -0.1, 0) + across * k, wood.darkened(0.3))
+		beam.scale = (along + across * 0.08).abs() + Vector3(0, 0.08, 0)
+	var edge := 1.0 if grid.topology == BoardGrid.Topology.SQUARE else 1.0 / sqrt(3.0)
+	for n in grid.neighbors(c):
+		if grid.tiles.get(n, 0) != Biome.Tile.WATER:
+			continue
+		var out := grid.to_world(n) - grid.to_world(c)
+		out.y = 0.0
+		out = out.normalized()
+		var side := Vector3(-out.z, 0, out.x)
+		var rail := _part(root, BoxMesh.new(), top + out * 0.44 + Vector3(0, 0.3, 0), wood.darkened(0.1))
+		rail.scale = (side * edge + out * 0.06).abs() + Vector3(0, 0.05, 0)
+		for k in [-0.5, 0.5]:
+			var post := _part(root, BoxMesh.new(), top + out * 0.44 + side * edge * k * 0.9 + Vector3(0, 0.05, 0), wood.darkened(0.2))
+			post.scale = Vector3(0.07, 0.6, 0.07)
+
+
+## Línea discontinua blanca en el centro de una calle de dos carriles (solo en tramos rectos, no en cruces).
+func _road_marks(root: Node3D, c: Vector2i, top: Vector3) -> void:
+	if grid.topology != BoardGrid.Topology.SQUARE:
+		return
+	var road := func(n: Vector2i) -> bool: return grid.tiles.get(n, -1) == Biome.Tile.ROAD
+	for d: Vector2i in [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]:
+		var side := Vector2i(-d.y, d.x)
+		# El otro carril está en `d`, al otro lado no hay calle y la calle sigue recta hacia los dos lados
+		if road.call(c + d) and not road.call(c - d) and road.call(c + side) and road.call(c - side):
+			var dash := _part(root, BoxMesh.new(), top + Vector3(d.x, 0, d.y) * 0.5 + Vector3(0, 0.004, 0), Color(0.92, 0.9, 0.82))
+			dash.scale = (Vector3(side.x, 0, side.y) * 0.45 + Vector3(d.x, 0, d.y) * 0.06).abs() + Vector3(0, 0.008, 0)
+			dash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+## Hace que una pieza brille con luz propia (pantallas, pilotos, líquidos, la boca de una fumarola).
+func _glow(mi: MeshInstance3D, color: Color, energy: float) -> MeshInstance3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.emission_enabled = true
+	m.emission = color
+	m.emission_energy_multiplier = energy
+	mi.material_override = m
+	return mi
 
 
 ## Da a las partes que se mecen (las de material con viento) su base y altura en el mundo.
@@ -626,8 +848,16 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 	var color: Color = Biome.TILE_COLORS[tile_kind]
 	if tile_kind == Biome.Tile.GRASS and grid.biome == Biome.Kind.FOREST:
 		color = Color(0.32, 0.56, 0.28)
+	elif tile_kind == Biome.Tile.GRASS and grid.biome == Biome.Kind.SWAMP:
+		color = Color(0.36, 0.48, 0.24)  # hierba de pantano, oliva
 	elif tile_kind == Biome.Tile.ROCK and grid.biome == Biome.Kind.DESERT:
 		color = Color(0.74, 0.52, 0.38)  # arenisca
+	elif grid.biome == Biome.Kind.VOLCANO and tile_kind in [Biome.Tile.ROCK, Biome.Tile.DIRT]:
+		color = Color(0.24, 0.21, 0.2) if tile_kind == Biome.Tile.ROCK else Color(0.46, 0.43, 0.41)  # basalto y ceniza
+	elif grid.biome == Biome.Kind.LAB and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+		color = Color(0.84, 0.88, 0.92) if tile_kind == Biome.Tile.FLOOR else Color(0.3, 0.78, 0.92)
+	elif grid.biome == Biome.Kind.GYM and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+		color = Biome.gym_style(grid.gym_type).floor if tile_kind == Biome.Tile.FLOOR else Biome.gym_style(grid.gym_type).line
 	var w := grid.to_world(c)
 	var n := snappedf(_tint_noise.get_noise_2d(w.x, w.z), 0.25)
 	if tile_kind == Biome.Tile.GRASS:
@@ -643,14 +873,14 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 
 
 func _side_material(tile_kind: int) -> ShaderMaterial:
-	var key := tile_kind * 16 + grid.biome
+	var key := "%d_%d_%s" % [tile_kind, grid.biome, grid.gym_type]
 	if not _side_mats.has(key):
 		var bedrock: Color = BEDROCK[grid.biome]
 		var top: Color = SIDE_TOP.get(tile_kind, Biome.SIDE_COLORS[grid.biome])
 		if tile_kind == Biome.Tile.ROCK and grid.biome == Biome.Kind.DESERT:
 			top = Color(0.66, 0.44, 0.3)
 		if grid.biome == Biome.Kind.GYM:
-			top = Biome.SIDE_COLORS[grid.biome]
+			top = Biome.gym_style(grid.gym_type).side
 		_side_mats[key] = TerrainFx.side_material(top, bedrock)
 	return _side_mats[key]
 
@@ -679,9 +909,10 @@ func _shore(c: Vector2i) -> Vector4:
 		return Vector4.ZERO
 	var out := Vector4.ZERO
 	var dirs := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
+	var same := [Biome.Tile.LAVA] if grid.tiles.get(c, 0) == Biome.Tile.LAVA else [Biome.Tile.WATER, Biome.Tile.BRIDGE]
 	for i in 4:
 		var n: Vector2i = c + dirs[i]
-		if grid.is_inside(n) and grid.tiles.get(n, 0) != Biome.Tile.WATER:
+		if grid.is_inside(n) and grid.tiles.get(n, 0) not in same:
 			out[i] = 1.0
 	return out
 
@@ -694,7 +925,10 @@ func _tall_grass(c: Vector2i) -> bool:
 	var threshold := 0.05
 	match grid.biome:
 		Biome.Kind.FOREST: threshold = 0.2
+		Biome.Kind.SWAMP: threshold = -0.15  # juncales
 		Biome.Kind.MOUNTAIN, Biome.Kind.DESERT: threshold = 0.35
+		Biome.Kind.CITY: threshold = 1.0  # césped cortado en el parque
+		Biome.Kind.BEACH: threshold = 0.3
 	return _grass_noise.get_noise_2d(w.x, w.z) > threshold
 
 
@@ -708,7 +942,10 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 	match b:
 		Biome.Kind.FOREST: grass = Color(0.3, 0.55, 0.25)
 		Biome.Kind.MOUNTAIN: grass = Color(0.42, 0.62, 0.3)
+		Biome.Kind.SWAMP: grass = Color(0.42, 0.52, 0.24)
 	var stone := Color(0.55, 0.52, 0.48) if b != Biome.Kind.CAVE else Color(0.36, 0.33, 0.31)
+	if b == Biome.Kind.VOLCANO:
+		stone = Color(0.18, 0.16, 0.16)
 	var list := []  # [tipo, tinte, se mece, altura]
 	var r1 := rng.randf()
 	var r2 := rng.randf()
@@ -721,14 +958,15 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 				if b == Biome.Kind.FOREST:
 					if r1 < 0.45: list.append(["fern", grass, 0.5, 0.2])
 					if r2 < 0.1: list.append(["mushrooms", Color(0.85, 0.22, 0.15), 0.0, 0.1])
-				elif r2 < (0.3 if b == Biome.Kind.MEADOW else 0.1):
+				elif r2 < (0.3 if b in [Biome.Kind.MEADOW, Biome.Kind.CITY] else 0.1):
 					list.append(["flowers", grass, 0.6, 0.15])
 		Biome.Tile.DIRT:
-			if r1 < 0.3: list.append(["pebbles", Color(0.5, 0.42, 0.34), 0.0, 0.1])
+			if r1 < 0.3: list.append(["pebbles", stone if b == Biome.Kind.VOLCANO else Color(0.5, 0.42, 0.34), 0.0, 0.1])
 			if b == Biome.Kind.FOREST and r2 < 0.35: list.append(["fern", grass.darkened(0.1), 0.5, 0.2])
 			if b == Biome.Kind.FOREST and r2 > 0.9: list.append(["mushrooms", Color(0.85, 0.7, 0.45), 0.0, 0.1])
 		Biome.Tile.SAND:
 			if b == Biome.Kind.DESERT and r1 < 0.07: list.append(["shrub", Color(0.62, 0.52, 0.32), 0.35, 0.2])
+			elif b == Biome.Kind.BEACH and r1 < 0.2: list.append(["pebbles", Color(0.95, 0.9, 0.85), 0.0, 0.1])  # conchas
 			elif r1 < (0.25 if b == Biome.Kind.LAKE else 0.08): list.append(["pebbles", Color(0.7, 0.64, 0.55), 0.0, 0.1])
 		Biome.Tile.ROCK:
 			if r1 < 0.3: list.append(["pebbles", stone, 0.0, 0.1])
@@ -741,10 +979,14 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			if r1 < 0.6: list.append(["pebbles", stone, 0.0, 0.1])
 			if r2 > 0.5: list.append(["stones", stone, 0.0, 0.1])
 			if r2 < 0.07: list.append(["glowshroom", Color(0.4, 0.9, 1.0), 0.0, 0.1])
+		Biome.Tile.MUD:
+			if r1 < 0.35: list.append(["pebbles", Color(0.3, 0.25, 0.18), 0.0, 0.1])
+			if r2 < 0.2: list.append(["reeds", Color(0.45, 0.52, 0.26), 0.9, 0.45])
+			elif r2 > 0.92: list.append(["mushrooms", Color(0.75, 0.68, 0.5), 0.0, 0.1])
 		Biome.Tile.WATER:
-			if b != Biome.Kind.CAVE and _shore(c) != Vector4.ZERO and r1 < 0.45:
+			if b not in [Biome.Kind.CAVE, Biome.Kind.CITY, Biome.Kind.BEACH, Biome.Kind.LAB, Biome.Kind.GYM] and _shore(c) != Vector4.ZERO and r1 < (0.7 if b == Biome.Kind.SWAMP else 0.45):
 				list.append(["reeds", Color(0.4, 0.6, 0.28), 0.9, 0.45])
-			if b in [Biome.Kind.LAKE, Biome.Kind.MEADOW] and r2 < 0.25:
+			if b in [Biome.Kind.LAKE, Biome.Kind.MEADOW, Biome.Kind.SWAMP] and r2 < (0.45 if b == Biome.Kind.SWAMP else 0.25):
 				list.append(["lily", Color(0.3, 0.58, 0.25), 0.15, 0.3])
 	for d: Array in list:
 		var kind: String = d[0]
@@ -778,7 +1020,7 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 
 ## Bolitas de granizo acumuladas (solo se ven con granizo) en las casillas de tierra.
 func _hail_pile(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
-	if tile_kind == Biome.Tile.WATER or (hash(c) * 13 + 5) % 100 >= 55:
+	if tile_kind in [Biome.Tile.WATER, Biome.Tile.LAVA] or (hash(c) * 13 + 5) % 100 >= 55:
 		return
 	var mi := MeshInstance3D.new()
 	mi.mesh = TerrainFx.decor_mesh("hailstones", hash(c) % TerrainFx.VARIANTS, Color(0.78, 0.88, 1.0))
@@ -806,7 +1048,7 @@ func _ice_pile_material() -> StandardMaterial3D:
 
 ## Charco (solo se ve con lluvia) en casillas llanas de hierba, tierra o roca sin obstáculo.
 func _maybe_puddle(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
-	if tile_kind not in [Biome.Tile.GRASS, Biome.Tile.DIRT, Biome.Tile.ROCK, Biome.Tile.FLOOR]:
+	if tile_kind not in [Biome.Tile.GRASS, Biome.Tile.DIRT, Biome.Tile.ROCK, Biome.Tile.FLOOR, Biome.Tile.ROAD, Biome.Tile.MUD]:
 		return
 	if grid.props.get(c, Biome.Prop.NONE) != Biome.Prop.NONE or (hash(c) * 7 + 3) % 100 >= 22:
 		return

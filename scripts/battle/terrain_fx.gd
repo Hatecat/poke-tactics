@@ -237,6 +237,62 @@ void fragment() {
 }
 "
 
+## Lava: costra oscura agrietada que se desliza despacio sobre roca fundida que brilla y late; en los bordes
+## que dan a tierra la costra se enfría y cubre más.
+const LAVA_SHADER := "
+shader_type spatial;
+uniform vec4 hot : source_color = vec4(1.0, 0.45, 0.08, 1.0);
+uniform vec4 crust : source_color = vec4(0.16, 0.08, 0.06, 1.0);
+instance uniform vec4 shore = vec4(0.0);
+varying vec3 wpos;
+
+float hash12(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float vnoise2(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash12(i), hash12(i + vec2(1.0, 0.0)), f.x), mix(hash12(i + vec2(0.0, 1.0)), hash12(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+
+// Distancia al borde de la placa de costra más cercana (celdas de Voronoi): 0 en las grietas.
+float cracks(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	float d1 = 8.0;
+	float d2 = 8.0;
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			vec2 o = vec2(float(x), float(y));
+			vec2 h = vec2(hash12(i + o), hash12(i + o + 17.1));
+			float d = length(o + h - f);
+			if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; }
+		}
+	}
+	return d2 - d1;
+}
+
+void vertex() {
+	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+	vec2 flow = wpos.xz * 2.2 + vec2(TIME * 0.05, TIME * 0.03);
+	float plates = smoothstep(0.03, 0.16, cracks(flow + vnoise2(wpos.xz * 1.5 + TIME * 0.1) * 0.6));
+	vec4 edge = vec4(UV.x, UV.y, 1.0 - UV.x, 1.0 - UV.y);
+	vec4 near = shore * (1.0 - smoothstep(0.0, 0.3, 1.0 - edge));
+	float cool = max(max(near.x, near.y), max(near.z, near.w));
+	float cover = clamp(plates * mix(0.55, 1.0, cool), 0.0, 1.0);
+	float pulse = 0.75 + 0.25 * sin(TIME * 1.3 + wpos.x * 1.7 + wpos.z * 1.1);
+	vec3 glow = hot.rgb * mix(0.8, 1.25, vnoise2(wpos.xz * 4.0 - TIME * 0.4));
+	ALBEDO = mix(glow * 0.6, crust.rgb, cover);
+	EMISSION = glow * (1.0 - cover) * 2.4 * pulse;
+	ROUGHNESS = mix(0.4, 0.95, cover);
+}
+"
+
 ## Laterales de las casillas: arriba el color del suelo (tierra, arena, nieve...), abajo la roca madre,
 ## con vetas horizontales por cada nivel de altura. `top_y` (por instancia) es lo alto de la casilla.
 const SIDE_SHADER := "
@@ -435,6 +491,12 @@ static func water_material(deep: Color, shallow: Color) -> ShaderMaterial:
 	m.shader = shader(WATER_SHADER)
 	m.set_shader_parameter("deep", deep)
 	m.set_shader_parameter("shallow", shallow)
+	return m
+
+
+static func lava_material() -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = shader(LAVA_SHADER)
 	return m
 
 
@@ -813,7 +875,8 @@ static func puddle_mesh(v: int) -> Mesh:
 
 ## Partículas de ambiente del bioma sobre un tablero de `size` (ancho, fondo) centrado en `center`:
 ## hojas que caen en el bosque, polen en la pradera, arena que corre por el desierto, copos sueltos
-## en la nieve, motas que brillan en la cueva. null si el bioma no tiene.
+## en la nieve, motas que brillan en la cueva, luciérnagas en el pantano, brasas que suben en el volcán,
+## motas de luz en el laboratorio. null si el bioma no tiene.
 static func ambient(kind: Biome.Kind, center: Vector3, size: Vector2) -> CPUParticles3D:
 	var p := CPUParticles3D.new()
 	p.local_coords = false
@@ -895,6 +958,45 @@ static func ambient(kind: Biome.Kind, center: Vector3, size: Vector2) -> CPUPart
 			p.initial_velocity_max = 0.15
 			p.gravity = Vector3.ZERO
 			p.color = Color(0.75, 0.6, 1.0, 0.9)
+			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		Biome.Kind.SWAMP:
+			p.amount = 30
+			p.lifetime = 6.0
+			ext.y = 0.5
+			p.position.y += 0.8
+			quad.size = Vector2(0.05, 0.05)
+			p.direction = Vector3(0.3, 0.4, 0.2)
+			p.spread = 180.0
+			p.initial_velocity_min = 0.05
+			p.initial_velocity_max = 0.2
+			p.gravity = Vector3.ZERO
+			p.color = Color(0.85, 1.0, 0.45, 0.95)
+			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		Biome.Kind.VOLCANO:
+			p.amount = 60
+			p.lifetime = 4.0
+			ext.y = 0.3
+			p.position.y += 0.3
+			quad.size = Vector2(0.04, 0.04)
+			p.direction = Vector3.UP
+			p.spread = 25.0
+			p.initial_velocity_min = 0.3
+			p.initial_velocity_max = 0.7
+			p.gravity = Vector3(0.1, 0.05, 0)
+			p.color_initial_ramp = _ramp([Color(1.0, 0.75, 0.3), Color(1.0, 0.45, 0.1), Color(0.95, 0.3, 0.08)])
+			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		Biome.Kind.LAB:
+			p.amount = 20
+			p.lifetime = 6.0
+			ext.y = 0.6
+			p.position.y += 1.2
+			quad.size = Vector2(0.035, 0.035)
+			p.direction = Vector3.UP
+			p.spread = 90.0
+			p.initial_velocity_min = 0.03
+			p.initial_velocity_max = 0.1
+			p.gravity = Vector3.ZERO
+			p.color = Color(0.45, 0.9, 1.0, 0.8)
 			mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 		_:
 			p.free()
