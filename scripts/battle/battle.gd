@@ -5,11 +5,11 @@ enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, FACING, GAME_OVER }
 
 ## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
-const COLOR_ACTIVE := Color(1.0, 1.0, 1.0, 0.35)
-const COLOR_MOVE := Color(0.3, 0.6, 1.0, 0.5)
-const COLOR_RANGE := Color(1.0, 0.75, 0.2, 0.4)
-const COLOR_AREA := Color(1.0, 0.2, 0.15, 0.65)
-const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.55)
+const COLOR_ACTIVE := Color(1.0, 1.0, 1.0, 0.5)
+const COLOR_MOVE := Color(0.15, 0.5, 1.0, 0.68)
+const COLOR_RANGE := Color(1.0, 0.68, 0.08, 0.62)
+const COLOR_AREA := Color(1.0, 0.12, 0.08, 0.8)
+const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.7)
 const STEP_TIME := 0.22
 const TURN_PREVIEW := 8
 ## Puntos que la IA resta a los ataques sobre sí misma (equivale al CT de actuar).
@@ -118,6 +118,7 @@ func _ready() -> void:
 	add_child(_weather_fx)
 	_build_ui()
 	_board = BoardView.new()
+	_board.batching = true
 	add_child(_board)
 	_units_root = Node3D.new()
 	add_child(_units_root)

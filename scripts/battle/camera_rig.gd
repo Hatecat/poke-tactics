@@ -180,4 +180,21 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 	sun.shadow_opacity = 1.0
 	sun.directional_shadow_max_distance = 60.0  # solo el tablero: más resolución donde importa
 	sun.directional_shadow_blend_splits = true
+	sun.set_meta("angular", sun.light_angular_distance)
 	parent.add_child(sun)
+	apply_quality(parent)
+
+
+## Ajusta el entorno y el sol de `parent` a la calidad gráfica (Game.graphics_quality). En Alta queda todo.
+static func apply_quality(parent: Node) -> void:
+	var q: int = Game.graphics_quality
+	var world_env := parent.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if world_env and world_env.environment:
+		world_env.environment.ssil_enabled = q == Game.Quality.HIGH
+		world_env.environment.ssao_enabled = q != Game.Quality.LOW
+	var sun := parent.get_node_or_null("Sun") as DirectionalLight3D
+	if sun:
+		var low := q == Game.Quality.LOW
+		sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if low \
+				else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+		sun.light_angular_distance = 0.0 if low else sun.get_meta("angular", sun.light_angular_distance)

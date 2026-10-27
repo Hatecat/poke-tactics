@@ -24,7 +24,11 @@ uniform int pattern = 0;  // textura procedural: 0 lisa, 1 copa de hojas, 2 aguj
                           // 5 cactus con costillas, 6 pala de nopal
 instance uniform float base_y = 0.0;
 instance uniform float height = 1.0;
+uniform bool instanced = false;  // en una MultiMesh: base y altura de cada pieza en INSTANCE_CUSTOM
 varying vec3 rest_pos;  // posición en el mundo sin viento: la textura no resbala al mecerse
+varying float v_base_y;
+varying float v_height;
+varying vec3 v_origin;  // origen de la pieza (= NODE_POSITION_WORLD si no va en una MultiMesh)
 
 float hash13(vec3 p) {
 	p = fract(p * 0.1031);
@@ -60,9 +64,14 @@ float leaves(vec3 p) {
 }
 
 void vertex() {
+	float by = instanced ? INSTANCE_CUSTOM.x : base_y;
+	float hh = instanced ? INSTANCE_CUSTOM.y : height;
+	v_base_y = by;
+	v_height = hh;
+	v_origin = MODEL_MATRIX[3].xyz;
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	rest_pos = wp;
-	float k = clamp((wp.y - base_y) / height, 0.0, 1.4);
+	float k = clamp((wp.y - by) / hh, 0.0, 1.4);
 	k *= k;
 	float ph = dot(MODEL_MATRIX[3].xz, vec2(0.37, 0.29));
 	float gust = 0.55 + 0.45 * sin(TIME * 0.45 + wp.x * 0.13 + wp.z * 0.07);
@@ -77,13 +86,13 @@ void vertex() {
 			vec4 u = pushers[i];
 			vec2 d = wp.xz - u.xz;
 			float dist = length(d);
-			if (u.w <= 0.0 || dist > u.w || abs(base_y - u.y) > 0.2) {
+			if (u.w <= 0.0 || dist > u.w || abs(by - u.y) > 0.2) {
 				continue;
 			}
 			float f = push * (1.0 - smoothstep(u.w * 0.35, u.w, dist));
 			vec2 dir = dist > 0.001 ? d / dist : vec2(1.0, 0.0);
-			wp.xz += dir * f * k * height * 0.9;
-			wp.y = max(base_y + 0.01, wp.y - f * k * height * 0.75);
+			wp.xz += dir * f * k * hh * 0.9;
+			wp.y = max(by + 0.01, wp.y - f * k * hh * 0.75);
 		}
 	}
 	VERTEX = (inverse(MODEL_MATRIX) * vec4(wp, 1.0)).xyz;
@@ -95,10 +104,10 @@ void fragment() {
 		c *= pow(COLOR.rgb, vec3(2.2));  // color de vértice en sRGB
 	}
 	if (pattern > 0) {
-		vec3 q = rest_pos - NODE_POSITION_WORLD;
+		vec3 q = rest_pos - v_origin;
 		vec3 qn = normalize(q + vec3(0.0, 0.0001, 0.0));
 		vec2 dir = normalize(q.xz + vec2(0.0001));
-		float up = clamp((rest_pos.y - base_y) / height, 0.0, 1.0);
+		float up = clamp((rest_pos.y - v_base_y) / v_height, 0.0, 1.0);
 		float rim = 1.0 - abs(dot(NORMAL, VIEW));  // 1 en la silueta
 		float bump = 0.0;  // relieve (en metros) para sombrear las hojas o las grietas
 		if (pattern <= 2) {
@@ -174,7 +183,7 @@ void fragment() {
 	}
 	ALBEDO = c * (1.0 - 0.2 * wet);  // mojado: más oscuro y algo más brillante
 	ROUGHNESS = mix(roughness, 0.55, wet);
-	EMISSION = c * glow * (1.0 + pulse * sin(TIME * 2.2 + NODE_POSITION_WORLD.x * 1.3 + NODE_POSITION_WORLD.z));
+	EMISSION = c * glow * (1.0 + pulse * sin(TIME * 2.2 + v_origin.x * 1.3 + v_origin.z));
 }
 "
 
@@ -302,14 +311,17 @@ uniform vec4 bottom_color : source_color;
 uniform float band = 0.3;
 uniform float wet = 0.0;
 instance uniform float top_y = 0.0;
+uniform bool instanced = false;  // en una MultiMesh: top_y de cada pieza en INSTANCE_CUSTOM.x
 varying float wy;
+varying float v_top_y;
 
 void vertex() {
 	wy = (MODEL_MATRIX * vec4(VERTEX, 1.0)).y;
+	v_top_y = instanced ? INSTANCE_CUSTOM.x : top_y;
 }
 
 void fragment() {
-	float t = smoothstep(band * 0.6, band * 1.4, top_y - wy);
+	float t = smoothstep(band * 0.6, band * 1.4, v_top_y - wy);
 	vec3 c = mix(top_color.rgb, bottom_color.rgb, t);
 	float strata = smoothstep(0.0, 0.025, abs(fract(wy / 0.35 + 0.5) - 0.5));
 	ALBEDO = c * mix(0.82, 1.0, strata) * (1.0 - 0.25 * wet);
@@ -323,6 +335,7 @@ const STONE_SHADER := "
 shader_type spatial;
 uniform vec4 albedo : source_color = vec4(1.0);
 uniform float wet = 0.0;
+uniform bool instanced = false;  // en una MultiMesh: el color de cada losa es el de la instancia (sRGB)
 varying vec3 wpos;
 varying vec3 wnormal;
 
@@ -349,6 +362,10 @@ void vertex() {
 
 void fragment() {
 	vec3 c = albedo.rgb;
+	if (instanced) {
+		vec3 s = COLOR.rgb;
+		c = mix(pow((s + vec3(0.055)) / 1.055, vec3(2.4)), s / 12.92, lessThan(s, vec3(0.04045)));
+	}
 	float gap = 1.0;
 	if (wnormal.y > 0.5) {
 		// Voronoi en el plano: distancia a la losa más cercana (f1) y a la segunda (f2).
@@ -454,6 +471,13 @@ static var _shaders := {}
 static var _meshes := {}
 
 
+## Variante de un shader que dibuja las dos caras de cada triángulo con la misma normal (la de la cara de
+## delante), como si fueran dos triángulos superpuestos: así la hierba lleva la mitad de triángulos.
+static func _two_sided(code: String) -> String:
+	return code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;") \
+		.replace("void fragment() {", "void fragment() {\n\tif (!FRONT_FACING) {\n\t\tNORMAL = -NORMAL;  // Godot la invierte en la cara de atrás\n\t}")
+
+
 static func shader(code: String) -> Shader:
 	if not _shaders.has(code):
 		var s := Shader.new()
@@ -462,9 +486,9 @@ static func shader(code: String) -> Shader:
 	return _shaders[code]
 
 
-static func foliage_material(color: Color, sway: float, flutter := 0.0, vcol := false) -> ShaderMaterial:
+static func foliage_material(color: Color, sway: float, flutter := 0.0, vcol := false, two_sided := false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
-	m.shader = shader(FOLIAGE_SHADER)
+	m.shader = shader(_two_sided(FOLIAGE_SHADER) if two_sided else FOLIAGE_SHADER)
 	m.set_shader_parameter("albedo", color)
 	m.set_shader_parameter("sway", sway)
 	m.set_shader_parameter("flutter", flutter)
@@ -619,6 +643,8 @@ static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 				_blossom(st, p, rng.randf_range(0.1, 0.16), tint, 0.35)
 	if kind not in ["grass", "tallgrass"]:  # la hierba lleva sus propias normales (luz suave, sin facetas)
 		st.generate_normals()
+	else:
+		st.index()  # vértices compartidos entre los triángulos de cada hoja: menos trabajo para la GPU
 	var mesh := st.commit()
 	_meshes[key] = mesh
 	return mesh
@@ -662,12 +688,11 @@ static func _curved_blade(st: SurfaceTool, p: Vector3, dir: Vector3, h: float, w
 		var a1 := pts[i + 1] - side * w1
 		var b1 := pts[i + 1] + side * w1
 		var tris := [[a0, b0, b1, 0, 0, 1], [a0, b1, a1, 0, 1, 1]] if i < segs - 1 else [[a0, b0, a1, 0, 0, 1]]
-		for tri: Array in tris:
-			for order in [[0, 1, 2], [0, 2, 1]]:  # dos caras
-				for j: int in order:
-					st.set_normal(normal)
-					st.set_color(cols[i + tri[3 + j]])
-					st.add_vertex(tri[j])
+		for tri: Array in tris:  # una cara: el material de la hierba se dibuja por los dos lados (GRASS_MATERIAL)
+			for j: int in [0, 1, 2]:
+				st.set_normal(normal)
+				st.set_color(cols[i + tri[3 + j]])
+				st.add_vertex(tri[j])
 
 
 ## Tono de una hoja: el del suelo, algo más oscuro, más amarillo o más fresco según la hoja.
@@ -839,6 +864,58 @@ static func rock_mesh(v: int) -> Mesh:
 			p.y = -0.15 + (p.y + 0.15) * 0.3  # base aplanada, asentada en el suelo
 		st.add_vertex(p)
 	st.generate_normals()  # sin índices: caras planas, aspecto de roca tallada
+	var mesh := st.commit()
+	_meshes[key] = mesh
+	return mesh
+
+
+## Estalagmita: cono de caliza torneado (radio que se afila hasta la punta, pie ensanchado como colada,
+## anillos de goteo y bultos irregulares), con color por vértice: pie oscuro y húmedo, punta clara y vetas
+## verticales. Altura 1 y radio de pie ~0.5; se escala al colocarla. `v` elige la forma.
+static func stalagmite_mesh(v: int) -> Mesh:
+	var key := "stalagmite_%d" % v
+	if _meshes.has(key):
+		return _meshes[key]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4111 + v * 389
+	var noise := FastNoiseLite.new()
+	noise.seed = 53 + v * 29
+	noise.frequency = 1.3
+	var segs := 12
+	var rings := 16
+	var lean := Vector2(rng.randf_range(-0.12, 0.12), rng.randf_range(-0.12, 0.12))
+	var phase := rng.randf() * TAU
+	var sharp := rng.randf_range(0.75, 1.05)  # cuánto se afila: más alto = punta más fina
+	var foot := Color(0.4, 0.39, 0.37)
+	var body := Color(0.63, 0.6, 0.56)
+	var tip := Color(0.82, 0.8, 0.76)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for j in rings:
+		var t := float(j) / rings
+		var r := 0.36 * pow(1.0 - t, sharp) + 0.16 * exp(-t * 9.0)  # cono + pie de colada
+		r *= 1.0 + 0.07 * sin(t * TAU * 5.0 + phase) * (1.0 - t)  # anillos de goteo
+		var c := foot.lerp(body, smoothstep(0.0, 0.35, t)).lerp(tip, smoothstep(0.55, 1.0, t))
+		for i in segs:
+			var a := TAU * i / segs
+			var dir := Vector3(cos(a), 0, sin(a))
+			var rr := r * (1.0 + noise.get_noise_3d(dir.x, dir.z, t * 2.5) * 0.45)
+			var off := lean * t * t
+			st.set_color(c.darkened(maxf(0.0, noise.get_noise_3d(dir.x * 3.0, dir.z * 3.0, 9.0)) * 0.35))  # vetas
+			st.add_vertex(Vector3(dir.x * rr + off.x, t - 0.04, dir.z * rr + off.y))
+	st.set_color(tip.lightened(0.1))
+	st.add_vertex(Vector3(lean.x, 0.985, lean.y))  # punta roma
+	var top := rings * segs
+	for j in rings - 1:
+		for i in segs:
+			var a := j * segs + i
+			var b := j * segs + (i + 1) % segs
+			for k in [a, b, a + segs, b, b + segs, a + segs]:  # caras hacia fuera
+				st.add_index(k)
+	for i in segs:
+		for k in [(rings - 1) * segs + i, (rings - 1) * segs + (i + 1) % segs, top]:
+			st.add_index(k)
+	st.generate_normals()  # con índices: normales suaves, roca pulida por el agua
 	var mesh := st.commit()
 	_meshes[key] = mesh
 	return mesh

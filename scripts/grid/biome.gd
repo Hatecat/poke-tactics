@@ -692,8 +692,8 @@ static func _underwater(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dict
 			grid.props[c] = Prop.STALAGMITE
 
 
-## Gimnasio: suelo plano, líneas de la arena y columnas simétricas, con el estilo del tipo del gimnasio
-## (`grid.gym_type`): suelo de hierba, arena o roca, piscinas o lava a los lados de la arena, placas de
+## Gimnasio: suelo plano, líneas de la arena, tarimas del líder y del retador y columnas simétricas, con
+## el estilo del tipo del gimnasio (`grid.gym_type`): suelo de hierba, arena o roca, piscinas o lava a los lados de la arena, placas de
 ## hielo, y árboles, rocas o cristales en lugar de columnas.
 static func _gym_layout(grid: BoardGrid, keep_clear: Array[Vector2i]) -> void:
 	var style := gym_style(grid.gym_type)
@@ -712,6 +712,18 @@ static func _gym_layout(grid: BoardGrid, keep_clear: Array[Vector2i]) -> void:
 			var side := c.x >= 3 and c.x <= 5 or c.x >= grid.width - 6 and c.x <= grid.width - 4
 			if side and absi(c.y - mid) <= 3 and c not in keep_clear:
 				grid.tiles[c] = pool
+	# Tarimas escalonadas del líder y del retador en el fondo de cada campo: dos escalones en el centro
+	# y uno a los lados.
+	var cx := grid.width / 2
+	for x in range(cx - 3, cx + 3):
+		var inner := x >= cx - 2 and x < cx + 2
+		for c in [Vector2i(x, 0), Vector2i(x, grid.height - 1)]:
+			grid.heights[c] = 2 if inner else 1
+			grid.tiles[c] = floor_tile
+		if inner:
+			for c in [Vector2i(x, 1), Vector2i(x, grid.height - 2)]:
+				grid.heights[c] = 1
+				grid.tiles[c] = floor_tile
 	var pillars := [Vector2i(3, mid - 5), Vector2i(grid.width / 2 - 1, mid - 5), Vector2i(grid.width - 5, mid - 6)]
 	for p: Vector2i in pillars:
 		for c in [p, Vector2i(grid.width - 1 - p.x, grid.height - 1 - p.y)]:

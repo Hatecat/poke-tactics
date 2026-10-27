@@ -8,6 +8,13 @@ const BASE_THICKNESS := 0.25
 const TOP_THICKNESS := 0.06
 
 var grid: BoardGrid
+## En combate, las piezas repetidas de las casillas (caras de arriba, laterales y detalles del suelo) se
+## agrupan en MultiMesh: se ven igual y se dibujan en muchas menos llamadas. El editor lo deja apagado
+## para poder rehacer casillas sueltas (`refresh_cell`).
+var batching := false
+## Lado (en casillas) de cada zona del tablero en que se agrupan: cada cascada de sombra y la cámara solo
+## dibujan las zonas que ven.
+const CHUNK := 5
 var _cells := {} # Vector2i -> Node3D con todo lo de esa casilla
 var _overlays := {} # Vector2i -> MeshInstance3D
 var _mats := {} # Color -> StandardMaterial3D
@@ -69,6 +76,12 @@ func build(p_grid: BoardGrid) -> void:
 	_grass_noise.frequency = 0.22
 	for c in grid.all_cells():
 		_build_cell(c)
+	if batching:
+		_batch()
+	if grid.biome == Biome.Kind.GYM:
+		var dressing := GymDressing.new()
+		add_child(dressing)
+		dressing.setup(grid)
 	var w0 := grid.to_world(Vector2i.ZERO)
 	var w1 := grid.to_world(Vector2i(grid.width - 1, grid.height - 1))
 	var amb := TerrainFx.ambient(grid.biome, Vector3((w0.x + w1.x) * 0.5, 0.0, (w0.z + w1.z) * 0.5),
@@ -144,6 +157,103 @@ func _process(_delta: float) -> void:
 			continue
 		var p := light.global_position
 		light.light_energy = CRYSTAL_LIGHT * (1.0 + 0.35 * sin(t * 2.2 + p.x * 1.3 + p.z))
+
+
+## Junta las piezas marcadas con "batch" de todas las casillas en una MultiMesh por zona, malla, material y
+## sombra, con la posición de cada una y lo que cada shader necesita por pieza: el color de la losa
+## (caras de arriba), la altura de la cara de arriba (laterales, que van en una caja de alto 1 escalada)
+## y la base y altura con viento (detalles del suelo). Los originales se borran.
+func _batch() -> void:
+	var groups := {}  # clave -> [malla, material, sombra, colores?, [[Transform3D, Color custom, Color color]]]
+	var top_mesh := _tile_mesh(TOP_THICKNESS, 0.0)
+	var side_mesh := _tile_mesh(1.0, 0.0)
+	for root: Node3D in _cells.values():
+		for mi in root.get_children():
+			if not (mi is MeshInstance3D and mi.has_meta("batch")):
+				continue
+			var mesh: Mesh = mi.mesh
+			var mat: Material = mi.material_override
+			var custom := Color(0, 0, 0, 0)
+			var color := Color.WHITE
+			var xf: Transform3D = root.transform * mi.transform
+			match mi.get_meta("batch"):
+				"top":
+					mesh = top_mesh
+					color = mi.get_meta("color")
+					mat = _instanced_top_material(mat)
+				"side":
+					mesh = side_mesh
+					custom.r = mi.get_meta("top_y")
+					xf = Transform3D(xf.basis.scaled(Vector3(1, mi.get_meta("thickness"), 1)), xf.origin)
+					mat = _instanced_material(mat, "side")
+				"decor":
+					var sb: Vector2 = mi.get_meta("sway_base")
+					custom = Color(sb.x, sb.y, 0, 0)
+					if mat is ShaderMaterial:
+						mat = _instanced_material(mat, "decor")
+			var cell: Vector2i = root.get_meta("cell")
+			var key := [mesh, mat, mi.cast_shadow, cell / CHUNK]
+			if not groups.has(key):
+				groups[key] = []
+			groups[key].append([xf, custom, color])
+			root.remove_child(mi)
+			mi.free()
+	for key: Array in groups:
+		var items: Array = groups[key]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_colors = true
+		mm.use_custom_data = true
+		mm.mesh = key[0]
+		mm.instance_count = items.size()
+		for i in items.size():
+			mm.set_instance_transform(i, items[i][0])
+			mm.set_instance_custom_data(i, items[i][1])
+			mm.set_instance_color(i, items[i][2])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.material_override = key[1]
+		mmi.cast_shadow = key[2]
+		add_child(mmi)
+
+
+## Material de las caras de arriba agrupadas: el color sale de cada instancia. Los suelos lisos usan un
+## StandardMaterial con color de vértice (se moja como los demás) y la piedra su shader en modo instancia.
+func _instanced_top_material(mat: Material) -> Material:
+	if mat is ShaderMaterial:  # piedra: una sola copia para todos los colores
+		if not _live_mats.has("stone_inst"):
+			var dup := mat.duplicate() as ShaderMaterial
+			dup.set_shader_parameter("instanced", true)
+			_live_mats["stone_inst"] = dup
+		return _live_mats["stone_inst"]
+	var glossy: bool = (mat as StandardMaterial3D).roughness < 0.5
+	var key := "top_glossy" if glossy else "top"
+	if not _mats.has(key):
+		var m := StandardMaterial3D.new()
+		m.vertex_color_use_as_albedo = true
+		m.vertex_color_is_srgb = true
+		if glossy:
+			m.roughness = 0.15
+			m.metallic_specular = 0.9
+		_mats[key] = m
+	return _mats[key]
+
+
+## Copia de un material con shader en modo instancia, registrada donde corresponde para que siga
+## recibiendo viento, lluvia y los Pokémon que apartan la hierba.
+func _instanced_material(mat: ShaderMaterial, kind: String) -> ShaderMaterial:
+	if mat.has_meta("instanced"):
+		return mat.get_meta("instanced")
+	var dup := mat.duplicate() as ShaderMaterial
+	dup.set_shader_parameter("instanced", true)
+	mat.set_meta("instanced", dup)
+	if kind == "side":
+		_side_mats["%d_inst" % _side_mats.size()] = dup
+	else:
+		for key: String in _live_mats.keys():
+			if _live_mats[key] == mat:
+				_live_mats[key + "_inst"] = dup
+	return dup
 
 
 ## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).
@@ -314,7 +424,7 @@ func highlight(cells: Array[Vector2i], color: Color) -> void:
 	for c in cells:
 		var overlay: MeshInstance3D = _overlays.get(c)
 		if overlay:
-			overlay.material_override = _overlay_material(_contrast(c, color))
+			overlay.material_override = _highlight_material(_contrast(c, color))
 			overlay.visible = true
 
 
@@ -333,6 +443,7 @@ func _contrast(c: Vector2i, color: Color) -> Color:
 
 func _build_cell(c: Vector2i) -> void:
 	var root := Node3D.new()
+	root.set_meta("cell", c)
 	add_child(root)
 	_cells[c] = root
 	var top := grid.to_world(c)
@@ -373,6 +484,8 @@ func _build_cell(c: Vector2i) -> void:
 				return TerrainFx.stone_material(col))
 		else:
 			top_mesh.material_override = _material(col, tile_kind in [Biome.Tile.ICE, Biome.Tile.MUD])  # el lodo brilla mojado
+		top_mesh.set_meta("batch", "top")
+		top_mesh.set_meta("color", col)
 		root.add_child(top_mesh)
 
 	var side_top := top.y - (WATER_DROP + 0.1 if water else TOP_THICKNESS)  # bajo el seno de las olas
@@ -381,6 +494,9 @@ func _build_cell(c: Vector2i) -> void:
 	side.position = Vector3(top.x, (side_top - BASE_THICKNESS) * 0.5, top.z)
 	side.material_override = _side_material(tile_kind)
 	side.set_instance_shader_parameter("top_y", top.y)
+	side.set_meta("batch", "side")
+	side.set_meta("top_y", top.y)
+	side.set_meta("thickness", side_top + BASE_THICKNESS)
 	root.add_child(side)
 
 	_decorate(root, c, tile_kind, top)
@@ -454,7 +570,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			var stone := Color(0.5, 0.48, 0.46)
 			match grid.biome:
 				Biome.Kind.DESERT: stone = Color(0.66, 0.47, 0.34)
-				Biome.Kind.CAVE: stone = Color(0.34, 0.31, 0.3)
+				Biome.Kind.CAVE: stone = Color(0.42, 0.41, 0.4)  # gris frío, sin tono café
 				Biome.Kind.SNOW: stone = Color(0.48, 0.5, 0.54)
 				Biome.Kind.VOLCANO: stone = Color(0.22, 0.2, 0.2)
 				Biome.Kind.GYM: stone = Biome.gym_style(grid.gym_type).pillar
@@ -559,19 +675,19 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), marble)
 			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), marble.darkened(0.15))
 		Biome.Prop.STALAGMITE:
-			# Estalagmita gastada: bloques de roca redondeados que se funden en una sola roca que se estrecha
-			# hacia arriba, y piedras al pie.
-			var stone := Color(0.42, 0.37, 0.34)
-			var pieces := [[Vector3(0, 0.24, 0), Vector3(0.62, 0.52, 0.56)], [Vector3(0.03, 0.47, 0.02), Vector3(0.46, 0.52, 0.42)],
-				[Vector3(0.05, 0.7, 0.02), Vector3(0.3, 0.4, 0.28)], [Vector3(0.27, 0.07, 0.13), Vector3(0.24, 0.17, 0.22)],
-				[Vector3(-0.22, 0.06, 0.2), Vector3(0.19, 0.14, 0.18)]]
-			for i in pieces.size():
-				var mi := _part(node, TerrainFx.rock_mesh([0, 0, 3, 1, 1][i] + (h >> i) % 2 * 4), pieces[i][0], stone.darkened(0.05 * (i % 3)))
-				mi.scale = pieces[i][1]
-				mi.rotation.y = float((h >> i) % 6)
-				var mat: StandardMaterial3D = mi.material_override.duplicate()
-				mat.roughness = 0.45  # roca húmeda
-				mi.material_override = mat
+			# Grupo de estalagmitas de caliza: una alta y afilada con dos o tres pequeñas al pie, y cantos sueltos.
+			var main_h := 0.95 + float(h % 5) * 0.1
+			var mi := _stalagmite(node, h % 6, Vector3.ZERO, Vector3(0.8, main_h, 0.8))
+			mi.rotation.y = float((h >> 3) % 7)
+			for i in 2 + (h >> 2) % 2:
+				var a := TAU * i / 3.0 + float(h % 9) * 0.7
+				var tall := 0.3 + float((h >> (i + 4)) % 4) * 0.1
+				var w := 0.32 + tall * 0.35
+				_stalagmite(node, (h + i + 1) % 6, Vector3(cos(a), 0, sin(a)) * 0.27, Vector3(w, tall, w)).rotation.y = a
+			var a2 := float(h % 13)
+			var pebble := _part(node, TerrainFx.rock_mesh(1 + h % 2 * 4), Vector3(cos(a2), 0.02, sin(a2)) * 0.33, Color(0.38, 0.37, 0.36))
+			pebble.scale = Vector3(0.12, 0.08, 0.1)
+			height = main_h
 		Biome.Prop.CRYSTAL:
 			# Drusa: una punta grande y varias pequeñas que salen inclinadas de una base de roca. Ilumina
 			# el suelo de alrededor con su color.
@@ -1140,14 +1256,17 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 				m.set_shader_parameter("pulse", 0.5)
 				return m)
 		elif sway > 0.0:
-			mi.material_override = _live("decor_%.2f" % sway, func() -> ShaderMaterial:
-				var m := TerrainFx.foliage_material(Color.WHITE, sway, sway, true)
+			var grassy := kind in ["grass", "tallgrass"]  # hojas de una cara: material de dos caras
+			mi.material_override = _live("decor_%s%.2f" % ["grass_" if grassy else "", sway], func() -> ShaderMaterial:
+				var m := TerrainFx.foliage_material(Color.WHITE, sway, sway, true, grassy)
 				m.set_shader_parameter("push", 1.0)
 				return m)
 			mi.set_instance_shader_parameter("base_y", y)
 			mi.set_instance_shader_parameter("height", d[3])
 		else:
 			mi.material_override = _vcol_material()
+		mi.set_meta("batch", "decor")
+		mi.set_meta("sway_base", Vector2(y, d[3]))
 		root.add_child(mi)
 
 
@@ -1201,6 +1320,26 @@ func _maybe_puddle(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> v
 	mi.scale = Vector3(_wet, 1.0, _wet)
 	root.add_child(mi)
 	_puddles.append(mi)
+
+
+var _stalag_mat: StandardMaterial3D
+
+
+## Estalagmita con su malla de color por vértice y un material algo brillante (roca húmeda).
+func _stalagmite(parent: Node3D, v: int, pos: Vector3, size: Vector3) -> MeshInstance3D:
+	if _stalag_mat == null:
+		_stalag_mat = StandardMaterial3D.new()
+		_stalag_mat.vertex_color_use_as_albedo = true
+		_stalag_mat.vertex_color_is_srgb = true
+		_stalag_mat.roughness = 0.4
+		_mats["stalagmite"] = _stalag_mat  # para que también se moje
+	var mi := MeshInstance3D.new()
+	mi.mesh = TerrainFx.stalagmite_mesh(v)
+	mi.material_override = _stalag_mat
+	mi.position = pos
+	mi.scale = size
+	parent.add_child(mi)
+	return mi
 
 
 var _vcol_mat: StandardMaterial3D
@@ -1278,6 +1417,42 @@ func _material(color: Color, glossy := false) -> StandardMaterial3D:
 			m.metallic_specular = 0.9
 		_mats[key] = m
 	return _mats[key]
+
+
+## Resaltado de casilla (movimiento, alcance, área, orientación...): el color con un borde más claro y
+## opaco para que cada opción se distinga aunque esté pegada a otras.
+const HIGHLIGHT_SHADER := "
+shader_type spatial;
+render_mode unshaded, shadows_disabled, depth_draw_never;
+uniform vec4 color : source_color;
+uniform float half_size = 0.4;
+uniform bool hex = false;
+varying vec2 lp;
+
+void vertex() {
+	lp = VERTEX.xz;
+}
+
+void fragment() {
+	vec2 p = abs(lp);
+	float d = half_size - (hex ? max(p.x, dot(p, vec2(0.5, 0.8660254))) : max(p.x, p.y));
+	float edge = 1.0 - smoothstep(0.035, 0.065, d);
+	ALBEDO = mix(color.rgb, mix(color.rgb, vec3(1.0), 0.45), edge);
+	ALPHA = mix(color.a, min(1.0, color.a + 0.3), edge);
+}
+"
+var _highlight_mats := {}
+
+
+func _highlight_material(color: Color) -> ShaderMaterial:
+	if not _highlight_mats.has(color):
+		var m := ShaderMaterial.new()
+		m.shader = TerrainFx.shader(HIGHLIGHT_SHADER)
+		m.set_shader_parameter("color", color)
+		m.set_shader_parameter("half_size", (1.0 - TILE_GAP - 0.16) * 0.5)
+		m.set_shader_parameter("hex", grid.topology != BoardGrid.Topology.SQUARE)
+		_highlight_mats[color] = m
+	return _highlight_mats[color]
 
 
 func _overlay_material(color: Color) -> StandardMaterial3D:

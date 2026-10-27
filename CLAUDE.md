@@ -30,12 +30,24 @@ Ver README.md para las reglas y la estructura de carpetas.
   `effects.lava_blocked`; shader `TerrainFx.LAVA_SHADER`) y obstáculos `PARASOL`, `MACHINE`, `TANK`, `VENT`.
   **Gimnasio por tipo:** `Biome.GYM_STYLES` / `gym_style()`, guardado en `BoardGrid.gym_type` y `MapData.gym_type`;
   battle.gd lo toma del líder (`trainer.types[0]`) o al azar.
+  El estadio alrededor (gradas, muros, medalla, estatuas, adornos por tipo) está en `scripts/battle/gym_dressing.gd`,
+  fuera de las casillas; `Unit.fit_model` escala las estatuas.
 - **Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina** (`CEMETERY`, `STUDIO`, `LIBRARY`, `AIRPORT`,
   `UNDERWATER`), suelo `WOOD` y obstáculos `GRAVE`, `SHELF`, `SPOTLIGHT`, `CAMERA`, `CORAL` y el avión: `PLANE` en
   la casilla ancla (lo dibuja entero) y `PLANE_PART` en el resto de su huella 3×3. Para quitar obstáculos usa
   `Biome._clear_prop`, que quita el avión completo.
 - **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
   agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
+- **Rendimiento:** en combate `BoardView.batching` agrupa en MultiMesh (por zonas de `CHUNK` casillas) las caras
+  de arriba, laterales y detalles marcados con meta `"batch"`; los shaders leen lo de cada pieza de
+  `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa.
+  La hierba tiene una sola cara por hoja (material de dos caras, `TerrainFx._two_sided`).
+- **Calidad gráfica** (`Game.graphics_quality`, Opciones y Pausa): `Game.apply_graphics` (MSAA/FXAA, atlas y filtro de
+  sombras) + `CameraRig.apply_quality` (SSIL, SSAO, cascadas, PCSS). Alta = como siempre. El juego usa la GPU
+  dedicada solo (Vulkan elige la discreta); en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*`
+  de la misma versión que el driver (si no, corre en la Intel: compruébalo con `RenderingServer.get_video_adapter_name()`).
+- **Pokémon:** `Unit._vivid_materials` satura las texturas de los rips (salían desteñidas); `_fix_palette_materials`
+  toma el color del nombre de la pieza en los modelos de paleta (Gastly) y su gas usa `HALO_SHADER` (halo fresnel).
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la
   tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se
   acumulan. La fuerza del viento depende del clima (`WIND` en battle.gd).

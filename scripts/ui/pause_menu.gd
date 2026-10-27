@@ -50,6 +50,8 @@ func _ready() -> void:
 		grid.add_child(slider)
 	grid.add_child(UiKit.label("Velocidad", 16))
 	grid.add_child(Game.speed_slider(func(_v: int) -> void: Engine.time_scale = Game.battle_time_scale()))
+	grid.add_child(UiKit.label("Gráficos", 16))
+	grid.add_child(Game.quality_picker())
 	box.add_child(HSeparator.new())
 	var quit := UiKit.button(quit_text, func() -> void:
 		close()

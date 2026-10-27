@@ -41,6 +41,12 @@ var volumes := {"master": 0.8, "music": 0.6, "sfx": 0.8}
 const BATTLE_SPEED_MIN := 20
 const BATTLE_SPEED_MAX := 200
 var battle_speed := BATTLE_SPEED_MAX
+## Calidad gráfica. Alta: todo (luz rebotada SSIL, sombra de contacto SSAO, MSAA, sombras suaves en 4
+## cascadas). Media: sin SSIL y sombras algo menos suaves. Baja: además sin SSAO, FXAA en vez de MSAA y
+## sombras más simples, para gráficas integradas.
+enum Quality { LOW, MEDIUM, HIGH }
+const QUALITY_NAMES := ["Baja", "Media", "Alta"]
+var graphics_quality := Quality.HIGH
 ## Equipo con el que se juega (el seleccionado).
 var player_team: Array[TeamMember]:
 	get:
@@ -65,6 +71,7 @@ func _ready() -> void:
 	rng.randomize()
 	_load_roster()
 	_load_save()
+	apply_graphics()
 
 
 func _load_roster() -> void:
@@ -154,6 +161,35 @@ func battle_time_scale() -> float:
 	return float(battle_speed) / BATTLE_SPEED_MAX
 
 
+## Aplica la calidad gráfica a la ventana y al entorno de la escena actual (si tiene WorldEnvironment y Sun).
+func apply_graphics() -> void:
+	if not is_inside_tree():
+		return
+	var q := graphics_quality
+	var vp := get_tree().root
+	vp.msaa_3d = Viewport.MSAA_DISABLED if q == Quality.LOW else Viewport.MSAA_2X
+	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if q == Quality.LOW else Viewport.SCREEN_SPACE_AA_DISABLED
+	RenderingServer.directional_shadow_atlas_set_size(2048 if q == Quality.LOW else 4096, true)
+	RenderingServer.directional_soft_shadow_filter_set_quality([RenderingServer.SHADOW_QUALITY_SOFT_VERY_LOW,
+		RenderingServer.SHADOW_QUALITY_SOFT_LOW, RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM][q])
+	var scene := get_tree().current_scene
+	if scene:
+		CameraRig.apply_quality(scene)
+
+
+## Desplegable de calidad gráfica (para Opciones y Pausa): la cambia y la aplica al momento.
+func quality_picker() -> OptionButton:
+	var pick := OptionButton.new()
+	for i in QUALITY_NAMES.size():
+		pick.add_item(QUALITY_NAMES[i], i)
+	pick.select(graphics_quality)
+	pick.tooltip_text = "Baja o Media van más fluidas en gráficas integradas.\nGráfica en uso: %s" % RenderingServer.get_video_adapter_name()
+	pick.item_selected.connect(func(i: int) -> void:
+		graphics_quality = i as Quality
+		apply_graphics())
+	return pick
+
+
 ## Deslizador de velocidad de combate (para Opciones y Pausa). `on_change` se llama con el nuevo valor.
 func speed_slider(on_change := Callable()) -> HBoxContainer:
 	var row := HBoxContainer.new()
@@ -187,6 +223,7 @@ func save() -> void:
 	cfg.set_value("options", "difficulty", difficulty)
 	cfg.set_value("options", "volumes", volumes)
 	cfg.set_value("options", "battle_speed", battle_speed)
+	cfg.set_value("options", "graphics_quality", graphics_quality)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("options", "topology", topology)
@@ -225,6 +262,7 @@ func _load_save() -> void:
 		difficulty = cfg.get_value("options", "difficulty", Difficulty.NORMAL)
 		volumes.merge(cfg.get_value("options", "volumes", {}), true)
 		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
+		graphics_quality = clampi(cfg.get_value("options", "graphics_quality", Quality.HIGH), Quality.LOW, Quality.HIGH) as Quality
 		tower_best = cfg.get_value("tower", "best", 0)
 		var run: Dictionary = cfg.get_value("tower", "run", {})
 		if not run.is_empty():

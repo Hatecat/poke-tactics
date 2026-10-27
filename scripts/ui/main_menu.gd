@@ -317,6 +317,9 @@ func _build_options_dialog() -> void:
 	speed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_child(speed)
 	grid.add_child(Control.new())
+	grid.add_child(UiKit.label("Calidad gráfica", 18))
+	grid.add_child(Game.quality_picker())
+	grid.add_child(Control.new())
 	var close := UiKit.button("Listo", func() -> void:
 		Game.save()
 		_options_dialog.visible = false, 20)

@@ -81,6 +81,11 @@ El **Gimnasio** tiene un estilo por tipo (18) y uno neutral: colores del suelo, 
 piscinas (Agua, Veneno), fosos de lava (Fuego), jardín con árboles (Planta, Bicho), placas de hielo, arena o roca, y
 cristales o árboles secos en lugar de columnas. En la Torre usa el tipo del líder o entrenador; en Partida rápida
 sale al azar, y en el editor de escenarios se elige.
+La arena es un estadio: Poké Ball pintada en el centro, tarimas escalonadas del líder y del retador, luz LED y
+barandilla en el borde, gradas con público que salta, muros con estandartes, focos en las esquinas, la medalla
+sobre el sitio del líder con dos estatuas de piedra del Pokémon emblema del tipo, la puerta de entrada y adornos
+del tipo (braseros, fuentes, bobinas, sacos de boxeo, orbes, engranajes...). Las gradas del lado de la cámara se
+ocultan para no tapar (`scripts/battle/gym_dressing.gd`).
 
 ## Clima
 
@@ -238,6 +243,13 @@ piso 20 y Ultra Balls (1200 ₽) tras el 40. Cada piso añade un lote al azar qu
 (40 %), Ultra (25 %) o Master Ball (5 %, 5000 ₽) si aún no se venden siempre, y 6 objetos (200/500/1200 ₽ según
 rareza, piedras 1500 ₽).
 
+## Calidad gráfica
+
+En Opciones (y en Pausa) se elige **Alta**, **Media** o **Baja**. Alta lo enseña todo; Media quita la luz rebotada
+y suaviza algo menos las sombras; Baja quita también la sombra de contacto, usa FXAA y sombras más simples (unas
+tres veces más fluido en una gráfica integrada). El juego usa la tarjeta gráfica dedicada si la hay; el nombre de
+la que está en uso sale al pasar el ratón por el desplegable.
+
 ## Velocidad de combate
 
 En Opciones (menú principal) y en la Pausa (Esc): de 20 % a 200 % (200 % es la velocidad normal). Escala todo el
@@ -263,6 +275,10 @@ La carga de CT es `10 * velocidad^0.4`: el Pokémon más rápido actúa unas 2,2
 Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se ajusta en `turn_manager.gd`.
 
 ## Animaciones
+
+Los modelos salen con más color que sus texturas (los rips se veían desteñidos con la luz normal) y Gastly es
+una esfera negra envuelta en un halo de gas morado que palpita, transparente en el centro y denso en el borde.
+Las casillas resaltadas (movimiento, alcance, área, orientación) son más intensas y llevan un borde claro.
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`, y en
 reposo el clip de su estado: `status_freeze`, `status_sleep`, `status_paralysis`, `status_confusion` o

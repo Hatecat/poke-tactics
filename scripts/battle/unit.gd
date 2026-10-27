@@ -774,6 +774,8 @@ func _load_model() -> void:
 	_model = data.model.instantiate()
 	add_child(_model)
 	_fix_fire_materials()
+	_fix_palette_materials()
+	_vivid_materials()
 	var players := _model.find_children("*", "AnimationPlayer", true, false)
 	_anim = players[0] if not players.is_empty() else null
 	# Aplicar la pose de idle antes de medir: en estos modelos las animaciones
@@ -811,33 +813,127 @@ func _fix_fire_materials() -> void:
 			m.set_surface_override_material(i, fire)
 
 
+## Algunos rips (Gastly) traen una textura de paleta cuyas coordenadas caen en el color equivocado (el cuerpo
+## negro salía lavanda). El color bueno va en el nombre de cada pieza ("s_0068_Phong_0C0010_0": RRGGBB, y
+## AA si es translúcida, como el gas): se usa ese color liso. Las piezas con alfa son el gas: brillan un poco.
+func _fix_palette_materials() -> void:
+	var hex := RegEx.create_from_string("_([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?_\\d+$")
+	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
+		var found := hex.search(m.name)
+		if found == null:
+			continue
+		for i in m.mesh.get_surface_count():
+			var mat := m.get_active_material(i) as BaseMaterial3D
+			if mat == null or mat.albedo_texture == null or not mat.albedo_texture.resource_path.contains("Palette"):
+				continue
+			var key := found.get_string(0)
+			if not _palette_mats.has(key):
+				var col := Color.html(found.get_string(1))
+				if found.get_string(2):
+					# Gas fantasmal: halo transparente en el centro y denso en el borde, con luz propia.
+					col.a = clampf(found.get_string(2).hex_to_int() / 255.0, 0.0, 1.0)
+					var halo := ShaderMaterial.new()
+					halo.shader = _halo_shader()
+					halo.set_shader_parameter("color", col)
+					halo.set_meta("vivid", true)
+					_palette_mats[key] = halo
+				else:
+					var fixed := mat.duplicate() as StandardMaterial3D
+					fixed.albedo_texture = null
+					fixed.albedo_color = col
+					_palette_mats[key] = fixed
+			m.set_surface_override_material(i, _palette_mats[key])
+
+
+static var _palette_mats := {}
+static var _halo: Shader
+const HALO_SHADER := "
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled;
+uniform vec4 color : source_color;
+void fragment() {
+	float rim = 1.0 - abs(dot(NORMAL, VIEW));
+	float breath = 0.85 + 0.15 * sin(TIME * 2.4);
+	ALBEDO = color.rgb * 1.6;
+	ALPHA = clamp(color.a * (0.18 + 2.4 * rim * rim), 0.0, 1.0) * breath;
+}
+"
+
+
+static func _halo_shader() -> Shader:
+	if _halo == null:
+		_halo = Shader.new()
+		_halo.code = HALO_SHADER
+	return _halo
+## Texturas originales -> versión con más color (se calculan una vez).
+static var _vivid_textures := {}
+## Los rips vienen de juegos cuyo shader satura el color; con la luz normal se ven desteñidos (Charmander
+## melocotón en vez de naranja). Se sube la saturación y algo el contraste: el blanco sigue blanco.
+const VIVID_SATURATION := 1.6
+const VIVID_CONTRAST := 1.08
+
+
+## Da más color a las texturas del modelo. Los materiales son del modelo
+## compartido entre instancias: se marcan para no saturarlos dos veces.
+func _vivid_materials() -> void:
+	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
+		for i in m.mesh.get_surface_count():
+			var mat := m.get_active_material(i) as BaseMaterial3D
+			if mat == null or mat.has_meta("vivid") or mat.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED:
+				continue
+			mat.set_meta("vivid", true)
+			if mat.albedo_texture:  # los colores lisos ya vienen con su tono (Haunter): solo las texturas
+				mat.albedo_texture = _vivid_texture(mat.albedo_texture)
+
+
+static func _vivid_texture(tex: Texture2D) -> Texture2D:
+	if _vivid_textures.has(tex):
+		return _vivid_textures[tex]
+	var img := tex.get_image()
+	if img == null:
+		return tex
+	if img.is_compressed():
+		img.decompress()
+	img.adjust_bcs(1.0, VIVID_CONTRAST, VIVID_SATURATION)
+	img.generate_mipmaps()
+	var out := ImageTexture.create_from_image(img)
+	_vivid_textures[tex] = out
+	return out
+
+
 func _normalize_model() -> void:
+	fit_model(_model, data.model_height)
+
+
+## Escala `model` (en su pose actual) para que mida `height` de alto y lo apoya en el suelo.
+## También lo usan las estatuas del gimnasio.
+static func fit_model(model: Node3D, height: float) -> void:
 	var aabb := AABB()
 	var first := true
-	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
-		var a := _skinned_aabb(m)
+	for m: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		var a := _skinned_aabb(model, m)
 		aabb = a if first else aabb.merge(a)
 		first = false
 	if first or aabb.size.y <= 0.0:
 		return
-	var s := data.model_height / aabb.size.y
-	_model.scale = Vector3.ONE * s
-	_model.position.y = -aabb.position.y * s
+	var s := height / aabb.size.y
+	model.scale = Vector3.ONE * s
+	model.position.y = -aabb.position.y * s
 
 
-## AABB de la malla deformada por la pose actual del esqueleto, relativa a `_model`.
+## AABB de la malla deformada por la pose actual del esqueleto, relativa a `model`.
 ## Muestrea como mucho ~2000 vértices; basta para medir el tamaño.
-func _skinned_aabb(m: MeshInstance3D) -> AABB:
+static func _skinned_aabb(model: Node3D, m: MeshInstance3D) -> AABB:
 	var skel := m.get_node_or_null(m.skeleton) as Skeleton3D
 	if m.skin == null or skel == null:
-		return _relative_transform(m) * m.get_aabb()
+		return _relative_transform(model, m) * m.get_aabb()
 	var binds: Array[Transform3D] = []
 	for b in m.skin.get_bind_count():
 		var bone := m.skin.get_bind_bone(b)
 		if bone < 0:
 			bone = skel.find_bone(m.skin.get_bind_name(b))
 		binds.append(skel.get_bone_global_pose(bone) * m.skin.get_bind_pose(b))
-	var to_model := _relative_transform(skel)
+	var to_model := _relative_transform(model, skel)
 	var aabb := AABB()
 	var first := true
 	for surface in m.mesh.get_surface_count():
@@ -863,10 +959,10 @@ func _skinned_aabb(m: MeshInstance3D) -> AABB:
 	return aabb
 
 
-func _relative_transform(node: Node3D) -> Transform3D:
+static func _relative_transform(model: Node3D, node: Node3D) -> Transform3D:
 	var t := Transform3D.IDENTITY
 	var n: Node = node
-	while n != _model and n is Node3D:
+	while n != model and n is Node3D:
 		t = (n as Node3D).transform * t
 		n = n.get_parent()
 	return t
