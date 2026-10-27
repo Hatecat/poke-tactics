@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b42ojv6vaanti"
-path="res://.godot/imported/onix_Image_0.webp-1397e84e2c6c3f628a82978a7acf3913.ctex"
+path.s3tc="res://.godot/imported/onix_Image_0.webp-1397e84e2c6c3f628a82978a7acf3913.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "e93ddd055241ccb91ab3f72e89424f8c"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/pokemon/onix_Image_0.webp"
-dest_files=["res://.godot/imported/onix_Image_0.webp-1397e84e2c6c3f628a82978a7acf3913.ctex"]
+dest_files=["res://.godot/imported/onix_Image_0.webp-1397e84e2c6c3f628a82978a7acf3913.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqvrb2mlvqrct"
-path="res://.godot/imported/mewtwo_Image_2.webp-a954ffedaf52c4bdebcc8fa82a8c9203.ctex"
+path.s3tc="res://.godot/imported/mewtwo_Image_2.webp-a954ffedaf52c4bdebcc8fa82a8c9203.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "0f34a373d6ac6f49403b6f1f7ed95d74"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/pokemon/mewtwo_Image_2.webp"
-dest_files=["res://.godot/imported/mewtwo_Image_2.webp-a954ffedaf52c4bdebcc8fa82a8c9203.ctex"]
+dest_files=["res://.godot/imported/mewtwo_Image_2.webp-a954ffedaf52c4bdebcc8fa82a8c9203.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

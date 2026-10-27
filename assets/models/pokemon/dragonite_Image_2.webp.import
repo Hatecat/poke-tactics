@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3qoh0nay62wl"
-path="res://.godot/imported/dragonite_Image_2.webp-ac730d126e25185635150b392b9ea38f.ctex"
+path.s3tc="res://.godot/imported/dragonite_Image_2.webp-ac730d126e25185635150b392b9ea38f.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "2fb63897be123ed9a686f6f5152b4b29"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/pokemon/dragonite_Image_2.webp"
-dest_files=["res://.godot/imported/dragonite_Image_2.webp-ac730d126e25185635150b392b9ea38f.ctex"]
+dest_files=["res://.godot/imported/dragonite_Image_2.webp-ac730d126e25185635150b392b9ea38f.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
