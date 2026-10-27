@@ -7,7 +7,8 @@ mkdir -p "$DIR"
 for f in moves.json learnsets.json pokedex.json; do
   curl -fsSL -o "$DIR/$f" "https://play.pokemonshowdown.com/data/$f"
 done
-for f in move_names.csv move_flavor_text.csv; do
+for f in move_names.csv move_flavor_text.csv items.csv item_names.csv item_flavor_text.csv \
+    abilities.csv ability_names.csv ability_flavor_text.csv; do
   curl -fsSL -o "$DIR/$f" "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/$f"
 done
 echo "Datos en $DIR"

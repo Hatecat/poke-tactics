@@ -37,6 +37,7 @@ WASD/flechas o botón central para mover la cámara · **R** revancha al termina
 | `data/story/*.json` | Capítulos del modo historia: personajes, equipo inicial y pasos (escenas y combates) |
 | `scripts/story/` | Modo historia: partida (`StoryRun`), escenas (`cutscene.gd`), cuadro de diálogo y figuras |
 | `assets/portraits/` | Retratos de los personajes para los diálogos (`<id>.png`) |
+| `locale/<tema>/` | Traducciones gettext por tema (`<tema>.pot` + `<idioma>.po`); guía para traducir en `locale/LEEME.md` |
 | `scripts/ui/` | Menú, editor de equipo, editor de escenarios, tabla de tipos, vista 3D, kit de UI |
 | `tools/` | Generación de datos, importación de modelos, Blender y exportación |
 | `art/` | Fuentes de arte (`.blend`); Godot las ignora (`.gdignore`) |
@@ -49,6 +50,8 @@ Se generan desde Pokémon Showdown (stats, tipos, ataques, learnsets) y PokeAPI 
 tools/fetch_data.sh ~/datos-pokemon                                   # descarga las fuentes
 python3 tools/import_models.py ~/Documentos/modelos-godot/regular ~/datos-pokemon   # N.glb -> nombre.glb
 python3 tools/build_data.py ~/datos-pokemon                           # genera data/moves y data/pokemon
+python3 tools/build_items.py ~/datos-pokemon                          # genera data/items
+python3 tools/build_translations.py ~/datos-pokemon                   # actualiza las traducciones (locale/)
 ```
 
 `build_data.py` traduce cada ataque a reglas tácticas:
