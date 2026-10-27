@@ -332,6 +332,9 @@ func _build_options_dialog() -> void:
 	grid.add_child(UiKit.label("Calidad gráfica", 18))
 	grid.add_child(Game.quality_picker())
 	grid.add_child(Control.new())
+	grid.add_child(UiKit.label("Idioma", 18))
+	grid.add_child(Game.language_picker())
+	grid.add_child(Control.new())
 	var close := UiKit.button("Listo", func() -> void:
 		Game.save()
 		_options_dialog.visible = false, 20)

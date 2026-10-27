@@ -1,0 +1,1143 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#. nombre
+#: data/abilities.json:adaptability
+msgid "Adaptable"
+msgstr "Adaptability"
+
+#. descripción
+#: data/abilities.json:adaptability
+msgid "Potencia aún más los movimientos cuyo tipo coincida con el suyo."
+msgstr "Powers up moves of the same type as the Pokémon."
+
+#. nombre
+#: data/abilities.json:aftermath
+msgid "Detonación"
+msgstr "Aftermath"
+
+#. descripción
+#: data/abilities.json:aftermath
+msgid "Daña al agresor que le ha dado el golpe de gracia con un movimiento de contacto."
+msgstr "Damages the attacker if it knocks out the Pokémon with a move that makes direct contact."
+
+#. nombre
+#: data/abilities.json:analytic
+msgid "Cálculo Final"
+msgstr "Analytic"
+
+#. descripción
+#: data/abilities.json:analytic
+msgid "Aumenta la potencia de su movimiento si es el último en atacar."
+msgstr "Boosts the power of the Pokémon's move if it is the last to act that turn."
+
+#. nombre
+#: data/abilities.json:angerpoint
+msgid "Irascible"
+msgstr "Anger Point"
+
+#. descripción
+#: data/abilities.json:angerpoint
+msgid "Si recibe un golpe crítico, monta en cólera y sube su Ataque hasta el máximo."
+msgstr "The Pokémon is angered when it takes a critical hit, and that maxes its Attack stat."
+
+#. nombre
+#: data/abilities.json:anticipation
+msgid "Anticipación"
+msgstr "Anticipation"
+
+#. descripción
+#: data/abilities.json:anticipation
+msgid "Prevé los movimientos peligrosos del rival."
+msgstr "The Pokémon can sense an opposing Pokémon's dangerous moves."
+
+#. nombre
+#: data/abilities.json:arenatrap
+msgid "Trampa Arena"
+msgstr "Arena Trap"
+
+#. descripción
+#: data/abilities.json:arenatrap
+msgid "Evita que el rival huya."
+msgstr "Prevents opposing Pokémon from fleeing from battle."
+
+#. nombre
+#: data/abilities.json:battlearmor
+msgid "Armadura Batalla"
+msgstr "Battle Armor"
+
+#. descripción
+#: data/abilities.json:battlearmor
+#: data/abilities.json:shellarmor
+msgid "La robusta coraza que lo protege bloquea los golpes críticos."
+msgstr "Hard armor protects the Pokémon from critical hits."
+
+#. nombre
+#: data/abilities.json:bigpecks
+msgid "Sacapecho"
+msgstr "Big Pecks"
+
+#. descripción
+#: data/abilities.json:bigpecks
+msgid "Impide que el rival le baje la Defensa."
+msgstr "Prevents the Pokémon from having its Defense stat lowered."
+
+#. nombre
+#: data/abilities.json:blaze
+msgid "Mar Llamas"
+msgstr "Blaze"
+
+#. descripción
+#: data/abilities.json:blaze
+msgid "Potencia sus movimientos de tipo Fuego cuando le quedan pocos PS."
+msgstr "Powers up Fire-type moves when the Pokémon's HP is low."
+
+#. nombre
+#: data/abilities.json:chlorophyll
+msgid "Clorofila"
+msgstr "Chlorophyll"
+
+#. descripción
+#: data/abilities.json:chlorophyll
+msgid "Sube su Velocidad cuando hace sol."
+msgstr "Boosts the Pokémon's Speed stat in harsh sunlight."
+
+#. nombre
+#: data/abilities.json:clearbody
+msgid "Cuerpo Puro"
+msgstr "Clear Body"
+
+#. descripción
+#: data/abilities.json:clearbody
+msgid "Evita que bajen sus características a causa de movimientos o habilidades de otros Pokémon."
+msgstr "Prevents other Pokémon's moves or Abilities from lowering the Pokémon's stats."
+
+#. nombre
+#: data/abilities.json:cloudnine
+msgid "Aclimatación"
+msgstr "Cloud Nine"
+
+#. descripción
+#: data/abilities.json:cloudnine
+msgid "Anula todos los efectos del tiempo atmosférico."
+msgstr "Eliminates the effects of weather."
+
+#. nombre
+#: data/abilities.json:competitive
+msgid "Tenacidad"
+msgstr "Competitive"
+
+#. descripción
+#: data/abilities.json:competitive
+msgid "Aumenta mucho su Ataque Especial cuando el rival le baja cualquiera de sus características."
+msgstr "Boosts the Pokémon's Sp. Atk stat sharply when its stats are lowered by an opposing Pokémon."
+
+#. nombre
+#: data/abilities.json:compoundeyes
+msgid "Ojo Compuesto"
+msgstr "Compound Eyes"
+
+#. descripción
+#: data/abilities.json:compoundeyes
+msgid "Aumenta la precisión de sus movimientos."
+msgstr "The Pokémon's compound eyes boost its accuracy."
+
+#. nombre
+#: data/abilities.json:cursedbody
+msgid "Cuerpo Maldito"
+msgstr "Cursed Body"
+
+#. descripción
+#: data/abilities.json:cursedbody
+msgid "Puede anular el movimiento usado en su contra."
+msgstr "May disable a move that has dealt damage to the Pokémon."
+
+#. nombre
+#: data/abilities.json:cutecharm
+msgid "Gran Encanto"
+msgstr "Cute Charm"
+
+#. descripción
+#: data/abilities.json:cutecharm
+msgid "Puede causar enamoramiento al rival que lo toque."
+msgstr "The Pokémon may infatuate attackers that make direct contact with it."
+
+#. nombre
+#: data/abilities.json:damp
+msgid "Humedad"
+msgstr "Damp"
+
+#. descripción
+#: data/abilities.json:damp
+msgid "Aumenta la humedad del entorno y evita que se puedan utilizar movimientos explosivos, tales como Autodestrucción."
+msgstr "The Pokémon dampens its surroundings, preventing all Pokémon from using explosive moves such as Self-Destruct."
+
+#. nombre
+#: data/abilities.json:defiant
+msgid "Competitivo"
+msgstr "Defiant"
+
+#. descripción
+#: data/abilities.json:defiant
+msgid "Sube mucho su Ataque cuando el rival le baja las características."
+msgstr "If the Pokémon has any stat lowered by an opposing Pokémon, its Attack stat will be boosted sharply."
+
+#. nombre
+#: data/abilities.json:download
+msgid "Descarga"
+msgstr "Download"
+
+#. descripción
+#: data/abilities.json:download
+msgid "Compara la Defensa y la Defensa Especial del rival para ver cuál es inferior y aumenta su propio Ataque o Ataque Especial según sea lo más eficaz."
+msgstr "The Pokémon compares an opposing Pokémon's Defense and Sp. Def stats before raising its own Attack or Sp. Atk stat—whichever will be more effective."
+
+#. nombre
+#: data/abilities.json:drought
+msgid "Sequía"
+msgstr "Drought"
+
+#. descripción
+#: data/abilities.json:drought
+msgid "Cuando entra en combate, el tiempo pasa a ser soleado."
+msgstr "Turns the sunlight harsh when the Pokémon enters a battle."
+
+#. nombre
+#: data/abilities.json:dryskin
+msgid "Piel Seca"
+msgstr "Dry Skin"
+
+#. descripción
+#: data/abilities.json:dryskin
+msgid "Pierde PS si hace sol y los recupera si llueve o recibe un movimiento de tipo Agua. Los movimientos de tipo Fuego, por su parte, le hacen más daño de lo normal."
+msgstr "Restores the Pokémon's HP in rain or when it is hit by Water-type moves. Reduces HP in harsh sunlight, and increases the damage received from Fire-type moves."
+
+#. nombre
+#: data/abilities.json:earlybird
+msgid "Madrugar"
+msgstr "Early Bird"
+
+#. descripción
+#: data/abilities.json:earlybird
+msgid "Si se duerme, tardará la mitad de tiempo en despertarse."
+msgstr "The Pokémon awakens from sleep twice as fast as other Pokémon."
+
+#. nombre
+#: data/abilities.json:effectspore
+msgid "Efecto Espora"
+msgstr "Effect Spore"
+
+#. descripción
+#: data/abilities.json:effectspore
+msgid "Puede dormir, envenenar o paralizar al Pokémon con el que entre en contacto al recibir un ataque."
+msgstr "Contact with the Pokémon may inflict poison, sleep, or paralysis on the attacker."
+
+#. nombre
+#: data/abilities.json:filter
+msgid "Filtro"
+msgstr "Filter"
+
+#. descripción
+#: data/abilities.json:filter
+msgid "Mitiga el daño que le infligen los movimientos supereficaces."
+msgstr "Reduces the power of supereffective attacks that hit the Pokémon."
+
+#. nombre
+#: data/abilities.json:flamebody
+msgid "Cuerpo Llama"
+msgstr "Flame Body"
+
+#. descripción
+#: data/abilities.json:flamebody
+msgid "Puede quemar al mínimo contacto."
+msgstr "Contact with the Pokémon may burn the attacker."
+
+#. nombre
+#: data/abilities.json:flashfire
+msgid "Absorbe Fuego"
+msgstr "Flash Fire"
+
+#. descripción
+#: data/abilities.json:flashfire
+msgid "Si le alcanza algún movimiento de tipo Fuego, potencia sus propios movimientos de dicho tipo."
+msgstr "If hit by a Fire-type move, the Pokémon absorbs the flames and uses them to power up its own Fire-type moves."
+
+#. nombre
+#: data/abilities.json:forewarn
+msgid "Alerta"
+msgstr "Forewarn"
+
+#. descripción
+#: data/abilities.json:forewarn
+msgid "Indica el movimiento más potente del rival al entrar en combate."
+msgstr "When it enters a battle, the Pokémon can tell one of the moves an opposing Pokémon has."
+
+#. nombre
+#: data/abilities.json:friendguard
+msgid "Compiescolta"
+msgstr "Friend Guard"
+
+#. descripción
+#: data/abilities.json:friendguard
+msgid "Reduce el daño que sufren los aliados."
+msgstr "Reduces damage dealt to allies."
+
+#. nombre
+#: data/abilities.json:frisk
+msgid "Cacheo"
+msgstr "Frisk"
+
+#. descripción
+#: data/abilities.json:frisk
+msgid "Puede ver el objeto que lleva el rival al entrar en combate."
+msgstr "When it enters a battle, the Pokémon can check an opposing Pokémon's held item."
+
+#. nombre
+#: data/abilities.json:gluttony
+msgid "Gula"
+msgstr "Gluttony"
+
+#. descripción
+#: data/abilities.json:gluttony
+msgid "Cuando sus PS se ven reducidos a la mitad, engulle la baya que normalmente solo se comería cuando le quedasen pocos PS."
+msgstr "If the Pokémon is holding a Berry to be eaten when its HP is low, it will instead eat the Berry when its HP drops to half or less."
+
+#. nombre
+#: data/abilities.json:guts
+msgid "Agallas"
+msgstr "Guts"
+
+#. descripción
+#: data/abilities.json:guts
+msgid "Si sufre un problema de estado, se viene arriba y aumenta su Ataque."
+msgstr "It's so gutsy that having a status condition boosts the Pokémon's Attack stat."
+
+#. nombre
+#: data/abilities.json:harvest
+msgid "Cosecha"
+msgstr "Harvest"
+
+#. descripción
+#: data/abilities.json:harvest
+msgid "Puede reutilizar varias veces una misma baya."
+msgstr "May create another Berry after one is used."
+
+#. nombre
+#: data/abilities.json:healer
+msgid "Alma Cura"
+msgstr "Healer"
+
+#. descripción
+#: data/abilities.json:healer
+msgid "A veces cura los problemas de estado de un aliado."
+msgstr "Sometimes cures the status conditions of the Pokémon's allies."
+
+#. nombre
+#: data/abilities.json:hustle
+msgid "Entusiasmo"
+msgstr "Hustle"
+
+#. descripción
+#: data/abilities.json:hustle
+msgid "Aumenta su Ataque, pero reduce su Precisión."
+msgstr "Boosts the Pokémon's Attack stat but lowers its accuracy."
+
+#. nombre
+#: data/abilities.json:hydration
+msgid "Hidratación"
+msgstr "Hydration"
+
+#. descripción
+#: data/abilities.json:hydration
+msgid "Cura los problemas de estado si está lloviendo."
+msgstr "Cures the Pokémon's status conditions in rain."
+
+#. nombre
+#: data/abilities.json:hypercutter
+msgid "Corte Fuerte"
+msgstr "Hyper Cutter"
+
+#. descripción
+#: data/abilities.json:hypercutter
+msgid "Evita que el rival le baje el Ataque."
+msgstr "The Pokémon's prized, mighty pincers prevent other Pokémon from lowering its Attack stat."
+
+#. nombre
+#: data/abilities.json:icebody
+msgid "Gélido"
+msgstr "Ice Body"
+
+#. descripción
+#: data/abilities.json:icebody
+msgid "Recupera PS de forma gradual cuando hay tormentas de granizo."
+msgstr "The Pokémon gradually regains HP in snow."
+
+#. nombre
+#: data/abilities.json:illuminate
+msgid "Iluminación"
+msgstr "Illuminate"
+
+#. descripción
+#: data/abilities.json:illuminate
+msgid "Aumenta la probabilidad de encontrar Pokémon al iluminar el entorno."
+msgstr "By illuminating its surroundings, the Pokémon prevents its accuracy from being lowered."
+
+#. nombre
+#: data/abilities.json:immunity
+msgid "Inmunidad"
+msgstr "Immunity"
+
+#. descripción
+#: data/abilities.json:immunity
+msgid "Su sistema inmunitario evita el envenenamiento."
+msgstr "The Pokémon's immune system prevents it from being poisoned."
+
+#. nombre
+#: data/abilities.json:imposter
+msgid "Impostor"
+msgstr "Imposter"
+
+#. descripción
+#: data/abilities.json:imposter
+msgid "Se transforma en el Pokémon que tiene enfrente."
+msgstr "The Pokémon transforms itself into the Pokémon it's facing."
+
+#. nombre
+#: data/abilities.json:infiltrator
+msgid "Allanamiento"
+msgstr "Infiltrator"
+
+#. descripción
+#: data/abilities.json:infiltrator
+msgid "Ataca sorteando la barrera o el sustituto del rival."
+msgstr "The Pokémon's moves are unaffected by the target's barriers, substitutes, and the like."
+
+#. nombre
+#: data/abilities.json:innerfocus
+msgid "Fuerza Mental"
+msgstr "Inner Focus"
+
+#. descripción
+#: data/abilities.json:innerfocus
+msgid "Gracias a su profunda concentración, no se amedrenta ante los ataques del rival."
+msgstr "The Pokémon's intense focus prevents it from flinching or being affected by Intimidate."
+
+#. nombre
+#: data/abilities.json:insomnia
+msgid "Insomnio"
+msgstr "Insomnia"
+
+#. descripción
+#: data/abilities.json:insomnia
+msgid "Su resistencia al sueño le impide quedarse dormido."
+msgstr "The Pokémon's insomnia prevents it from falling asleep."
+
+#. nombre
+#: data/abilities.json:intimidate
+msgid "Intimidación"
+msgstr "Intimidate"
+
+#. descripción
+#: data/abilities.json:intimidate
+msgid "Al entrar en combate amilana al rival de tal manera que su Ataque disminuye."
+msgstr "When the Pokémon enters a battle, it intimidates opposing Pokémon and makes them cower, lowering their Attack stats."
+
+#. nombre
+#: data/abilities.json:ironfist
+msgid "Puño Férreo"
+msgstr "Iron Fist"
+
+#. descripción
+#: data/abilities.json:ironfist
+msgid "Aumenta la potencia de los puñetazos."
+msgstr "Powers up punching moves."
+
+#. nombre
+#: data/abilities.json:justified
+msgid "Justiciero"
+msgstr "Justified"
+
+#. descripción
+#: data/abilities.json:justified
+msgid "Si le alcanza un movimiento de tipo Siniestro, aumenta el Ataque debido a su integridad."
+msgstr "When the Pokémon is hit by a Dark-type attack, its Attack stat is boosted by its sense of justice."
+
+#. nombre
+#: data/abilities.json:keeneye
+msgid "Vista Lince"
+msgstr "Keen Eye"
+
+#. descripción
+#: data/abilities.json:keeneye
+msgid "Su aguda vista evita que le disminuya la Precisión."
+msgstr "The Pokémon's keen eyes prevent its accuracy from being lowered."
+
+#. nombre
+#: data/abilities.json:leafguard
+msgid "Defensa Hoja"
+msgstr "Leaf Guard"
+
+#. descripción
+#: data/abilities.json:leafguard
+msgid "Evita los problemas de estado si hace sol."
+msgstr "Prevents status conditions in harsh sunlight."
+
+#. nombre
+#: data/abilities.json:levitate
+msgid "Levitación"
+msgstr "Levitate"
+
+#. descripción
+#: data/abilities.json:levitate
+msgid "Su capacidad de flotar sobre el suelo le proporciona inmunidad frente a los movimientos de tipo Tierra."
+msgstr "By floating in the air, the Pokémon receives full immunity to all Ground-type moves."
+
+#. nombre
+#: data/abilities.json:lightningrod
+msgid "Pararrayos"
+msgstr "Lightning Rod"
+
+#. descripción
+#: data/abilities.json:lightningrod
+msgid "Atrae y neutraliza los movimientos de tipo Eléctrico, que además le suben el Ataque Especial."
+msgstr "The Pokémon draws in all Electric-type moves. Instead of taking damage from them, its Sp. Atk stat is boosted."
+
+#. nombre
+#: data/abilities.json:limber
+msgid "Flexibilidad"
+msgstr "Limber"
+
+#. descripción
+#: data/abilities.json:limber
+msgid "Evita ser paralizado gracias a la flexibilidad de su cuerpo."
+msgstr "The Pokémon's limber body prevents it from being paralyzed."
+
+#. nombre
+#: data/abilities.json:liquidooze
+msgid "Lodo Líquido"
+msgstr "Liquid Ooze"
+
+#. descripción
+#: data/abilities.json:liquidooze
+msgid "Exuda una sustancia tóxica de intenso hedor que hiere a quienes intentan drenarle PS."
+msgstr "The strong stench of the Pokémon's oozed liquid damages attackers that use HP-draining moves."
+
+#. nombre
+#: data/abilities.json:magicguard
+msgid "Muro Mágico"
+msgstr "Magic Guard"
+
+#. descripción
+#: data/abilities.json:magicguard
+msgid "Solo recibe daño de ataques."
+msgstr "The Pokémon only takes damage from attacks."
+
+#. nombre
+#: data/abilities.json:magnetpull
+msgid "Imán"
+msgstr "Magnet"
+
+#. descripción
+#: data/abilities.json:magnetpull
+msgid "Su magnetismo atrae a los Pokémon de tipo Acero y les impide huir."
+msgstr "Prevents Steel-type Pokémon from fleeing by pulling them in with magnetism."
+
+#. nombre
+#: data/abilities.json:marvelscale
+msgid "Escama Especial"
+msgstr "Marvel Scale"
+
+#. descripción
+#: data/abilities.json:marvelscale
+msgid "Sube su Defensa si sufre un problema de estado."
+msgstr "The Pokémon's marvelous scales boost its Defense stat if it has a status condition."
+
+#. nombre
+#: data/abilities.json:moldbreaker
+msgid "Rompemoldes"
+msgstr "Mold Breaker"
+
+#. descripción
+#: data/abilities.json:moldbreaker
+msgid "Las habilidades del objetivo no afectan a los movimientos que emplea."
+msgstr "The Pokémon's moves are unimpeded by the Ability of the target."
+
+#. nombre
+#: data/abilities.json:moxie
+msgid "Autoestima"
+msgstr "Moxie"
+
+#. descripción
+#: data/abilities.json:moxie
+msgid "Al debilitar a un objetivo, su confianza se refuerza de tal manera que aumenta su Ataque."
+msgstr "When the Pokémon knocks out a target, it shows moxie, which boosts its Attack stat."
+
+#. nombre
+#: data/abilities.json:multiscale
+msgid "Multiescamas"
+msgstr "Multiscale"
+
+#. descripción
+#: data/abilities.json:multiscale
+msgid "Reduce el daño que sufre si sus PS están al máximo."
+msgstr "Reduces the amount of damage the Pokémon takes while its HP is full."
+
+#. nombre
+#: data/abilities.json:naturalcure
+msgid "Cura Natural"
+msgstr "Natural Cure"
+
+#. descripción
+#: data/abilities.json:naturalcure
+msgid "Cura sus problemas de estado al cambiarse con otro Pokémon."
+msgstr "The Pokémon's status conditions are cured when it switches out."
+
+#. nombre
+#: data/abilities.json:neutralizinggas
+msgid "Gas Reactivo"
+msgstr "Neutralizing Gas"
+
+#. descripción
+#: data/abilities.json:neutralizinggas
+msgid "Anula los efectos de las habilidades de los demás Pokémon presentes mientras esté en el terreno de combate."
+msgstr "While the Pokémon is in the battle, the effects of all other Pokémon's Abilities will be nullified or will not be triggered."
+
+#. nombre
+#: data/abilities.json:noguard
+msgid "Indefenso"
+msgstr "No Guard"
+
+#. descripción
+#: data/abilities.json:noguard
+msgid "Al quedar ambos expuestos, tanto sus movimientos como los del rival acertarán siempre."
+msgstr "The Pokémon employs no-guard tactics to ensure incoming and outgoing attacks always land."
+
+#. nombre
+#: data/abilities.json:oblivious
+msgid "Despiste"
+msgstr "Oblivious"
+
+#. descripción
+#: data/abilities.json:oblivious
+msgid "Su indiferencia evita que sea provocado o caiga presa del enamoramiento."
+msgstr "The Pokémon is oblivious, keeping it from being infatuated, falling for taunts, or being affected by Intimidate."
+
+#. nombre
+#: data/abilities.json:overcoat
+msgid "Funda"
+msgstr "Overcoat"
+
+#. descripción
+#: data/abilities.json:overcoat
+msgid "No le afectan las tormentas de arena, el granizo y los movimientos con polvos."
+msgstr "The Pokémon takes no damage from sandstorms. It is also protected from the effects of powders and spores."
+
+#. nombre
+#: data/abilities.json:overgrow
+msgid "Espesura"
+msgstr "Overgrow"
+
+#. descripción
+#: data/abilities.json:overgrow
+msgid "Potencia sus movimientos de tipo Planta cuando le quedan pocos PS."
+msgstr "Powers up Grass-type moves when the Pokémon's HP is low."
+
+#. nombre
+#: data/abilities.json:owntempo
+msgid "Ritmo Propio"
+msgstr "Own Tempo"
+
+#. descripción
+#: data/abilities.json:owntempo
+msgid "Como le gusta hacer las cosas a su manera, los rivales no logran confundirlo."
+msgstr "The Pokémon sticks to its own tempo, preventing it from becoming confused or being affected by Intimidate."
+
+#. nombre
+#: data/abilities.json:pickup
+msgid "Recogida"
+msgstr "Pickup"
+
+#. descripción
+#: data/abilities.json:pickup
+msgid "Puede recoger objetos que el rival haya usado, o bien otros que encuentre en plena aventura."
+msgstr "The Pokémon may pick up an item another Pokémon used during a battle. It may pick up items outside of battle, too."
+
+#. nombre
+#: data/abilities.json:poisonpoint
+msgid "Punto Tóxico"
+msgstr "Poison Point"
+
+#. descripción
+#: data/abilities.json:poisonpoint
+msgid "Puede envenenar al mínimo contacto."
+msgstr "Contact with the Pokémon may poison the attacker."
+
+#. nombre
+#: data/abilities.json:poisontouch
+msgid "Toque Tóxico"
+msgstr "Poison Touch"
+
+#. descripción
+#: data/abilities.json:poisontouch
+msgid "Puede envenenar al objetivo con solo tocarlo."
+msgstr "May poison a target when the Pokémon makes contact."
+
+#. nombre
+#: data/abilities.json:pressure
+msgid "Presión"
+msgstr "Pressure"
+
+#. descripción
+#: data/abilities.json:pressure
+msgid "Presiona al rival para que sus PP se acaben antes."
+msgstr "Puts other Pokémon under pressure, causing them to expend more PP to use their moves."
+
+#. nombre
+#: data/abilities.json:quickfeet
+msgid "Pies Rápidos"
+msgstr "Quick Feet"
+
+#. descripción
+#: data/abilities.json:quickfeet
+msgid "Aumenta la Velocidad si sufre problemas de estado."
+msgstr "Boosts the Speed stat if the Pokémon has a status condition."
+
+#. nombre
+#: data/abilities.json:raindish
+msgid "Cura Lluvia"
+msgstr "Rain Dish"
+
+#. descripción
+#: data/abilities.json:raindish
+msgid "Recupera PS de forma gradual cuando llueve."
+msgstr "The Pokémon gradually regains HP in rain."
+
+#. nombre
+#: data/abilities.json:rattled
+msgid "Cobardía"
+msgstr "Rattled"
+
+#. descripción
+#: data/abilities.json:rattled
+msgid "Si le alcanza un movimiento de tipo Siniestro, Bicho o Fantasma, el miedo hace que le suba la Velocidad."
+msgstr "The Pokémon gets scared when hit by a Dark-, Ghost-, or Bug-type attack or if intimidated, which boosts its Speed stat."
+
+#. nombre
+#: data/abilities.json:reckless
+msgid "Audaz"
+msgstr "Reckless"
+
+#. descripción
+#: data/abilities.json:reckless
+msgid "Potencia los movimientos que también dañan al usuario."
+msgstr "Powers up moves that have recoil damage."
+
+#. nombre
+#: data/abilities.json:regenerator
+msgid "Regeneración"
+msgstr "Regenerator"
+
+#. descripción
+#: data/abilities.json:regenerator
+msgid "Recupera unos pocos PS al ser cambiado por otro Pokémon."
+msgstr "The Pokémon has a little of its HP restored when withdrawn from battle."
+
+#. nombre
+#: data/abilities.json:rivalry
+msgid "Rivalidad"
+msgstr "Rivalry"
+
+#. descripción
+#: data/abilities.json:rivalry
+msgid "Si el objetivo es del mismo sexo, su competitividad le lleva a infligir más daño. Si es del sexo contrario, en cambio, el daño será menor."
+msgstr "The Pokémon's competitive spirit makes it deal more damage to Pokémon of the same gender, but less damage to Pokémon of the opposite gender."
+
+#. nombre
+#: data/abilities.json:rockhead
+msgid "Cabeza Roca"
+msgstr "Rock Head"
+
+#. descripción
+#: data/abilities.json:rockhead
+msgid "No puede dañarse con sus propios movimientos."
+msgstr "Protects the Pokémon from recoil damage."
+
+#. nombre
+#: data/abilities.json:runaway
+msgid "Fuga"
+msgstr "Run Away"
+
+#. descripción
+#: data/abilities.json:runaway
+msgid "Puede escaparse de todos los Pokémon salvajes."
+msgstr "Enables a sure getaway from wild Pokémon."
+
+#. nombre
+#: data/abilities.json:sandforce
+msgid "Poder Arena"
+msgstr "Sand Force"
+
+#. descripción
+#: data/abilities.json:sandforce
+msgid "Potencia los movimientos de tipo Tierra, Acero y Roca durante las tormentas de arena."
+msgstr "Boosts the power of Rock-, Ground-, and Steel-type moves in a sandstorm."
+
+#. nombre
+#: data/abilities.json:sandrush
+msgid "Ímpetu Arena"
+msgstr "Sand Rush"
+
+#. descripción
+#: data/abilities.json:sandrush
+msgid "Aumenta su Velocidad durante las tormentas de arena."
+msgstr "Boosts the Pokémon's Speed stat in a sandstorm."
+
+#. nombre
+#: data/abilities.json:sandveil
+msgid "Velo Arena"
+msgstr "Sand Veil"
+
+#. descripción
+#: data/abilities.json:sandveil
+msgid "Aumenta su Evasión durante las tormentas de arena."
+msgstr "Boosts the Pokémon's evasiveness in a sandstorm."
+
+#. nombre
+#: data/abilities.json:scrappy
+msgid "Intrépido"
+msgstr "Scrappy"
+
+#. descripción
+#: data/abilities.json:scrappy
+msgid "Puede alcanzar a Pokémon de tipo Fantasma con movimientos de tipo Normal o Lucha."
+msgstr "The Pokémon can hit Ghost-type Pokémon with Normal- and Fighting-type moves. It is also unaffected by Intimidate."
+
+#. nombre
+#: data/abilities.json:serenegrace
+msgid "Dicha"
+msgstr "Serene Grace"
+
+#. descripción
+#: data/abilities.json:serenegrace
+msgid "Aumenta la probabilidad de que los movimientos causen efectos secundarios."
+msgstr "Raises the likelihood of additional effects occurring when the Pokémon uses its moves."
+
+#. nombre
+#: data/abilities.json:shedskin
+msgid "Mudar"
+msgstr "Shed Skin"
+
+#. descripción
+#: data/abilities.json:shedskin
+msgid "Puede curar sus problemas de estado al mudar la piel."
+msgstr "The Pokémon may cure its own status conditions by shedding its skin."
+
+#. nombre
+#: data/abilities.json:sheerforce
+msgid "Potencia Bruta"
+msgstr "Sheer Force"
+
+#. descripción
+#: data/abilities.json:sheerforce
+msgid "Sube la potencia de sus movimientos en detrimento de los efectos secundarios, que se ven anulados."
+msgstr "Removes any additional effects from the Pokémon's moves, but increases the moves' power."
+
+#. nombre
+#: data/abilities.json:shellarmor
+msgid "Caparazón"
+msgstr "Shell Armor"
+
+#. nombre
+#: data/abilities.json:shielddust
+msgid "Polvo Escudo"
+msgstr "Shield Dust"
+
+#. descripción
+#: data/abilities.json:shielddust
+msgid "El polvo de escamas que lo envuelve lo protege de los efectos secundarios de los ataques recibidos."
+msgstr "Protective dust shields the Pokémon from the additional effects of moves."
+
+#. nombre
+#: data/abilities.json:skilllink
+msgid "Encadenado"
+msgstr "Skill Link"
+
+#. descripción
+#: data/abilities.json:skilllink
+msgid "Ejecuta siempre los movimientos múltiples con el número máximo de golpes."
+msgstr "Maximizes the number of times multistrike moves hit."
+
+#. nombre
+#: data/abilities.json:sniper
+msgid "Francotirador"
+msgstr "Sniper"
+
+#. descripción
+#: data/abilities.json:sniper
+msgid "Potencia los golpes críticos que asesta aún más de lo normal."
+msgstr "If the Pokémon's attack lands a critical hit, the attack is powered up even further."
+
+#. nombre
+#: data/abilities.json:snowcloak
+msgid "Manto Níveo"
+msgstr "Snow Cloak"
+
+#. descripción
+#: data/abilities.json:snowcloak
+msgid "Sube la Evasión cuando graniza."
+msgstr "Boosts the Pokémon's evasiveness in snow."
+
+#. nombre
+#: data/abilities.json:solarpower
+msgid "Poder Solar"
+msgstr "Solar Power"
+
+#. descripción
+#: data/abilities.json:solarpower
+msgid "Si hace sol, aumenta su Ataque Especial, pero pierde PS en cada turno."
+msgstr "In harsh sunlight, the Pokémon's Sp. Atk stat is boosted, but its HP decreases every turn."
+
+#. nombre
+#: data/abilities.json:soundproof
+msgid "Insonorizar"
+msgstr "Soundproof"
+
+#. descripción
+#: data/abilities.json:soundproof
+msgid "Su aislamiento acústico lo protege de movimientos que usan sonido."
+msgstr "Soundproofing gives the Pokémon full immunity to all sound-based moves."
+
+#. nombre
+#: data/abilities.json:static
+msgid "Electricidad Estática"
+msgstr "Static"
+
+#. descripción
+#: data/abilities.json:static
+msgid "La electricidad estática que lo envuelve puede paralizar al mínimo contacto."
+msgstr "The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it."
+
+#. nombre
+#: data/abilities.json:steadfast
+msgid "Impasible"
+msgstr "Steadfast"
+
+#. descripción
+#: data/abilities.json:steadfast
+msgid "Cada vez que se amedrenta sube su Velocidad, debido a su voluntad inquebrantable."
+msgstr "The Pokémon's determination boosts its Speed stat every time it flinches."
+
+#. nombre
+#: data/abilities.json:stench
+msgid "Hedor"
+msgstr "Stench"
+
+#. descripción
+#: data/abilities.json:stench
+msgid "Puede amedrentar al rival al atacarlo debido al mal olor que emana."
+msgstr "By releasing a stench when attacking, the Pokémon may cause the target to flinch."
+
+#. nombre
+#: data/abilities.json:stickyhold
+msgid "Viscosidad"
+msgstr "Sticky Hold"
+
+#. descripción
+#: data/abilities.json:stickyhold
+msgid "Los objetos se quedan pegados a su cuerpo, por lo que no pueden robárselos."
+msgstr "The Pokémon's held items cling to its sticky body and cannot be removed by other Pokémon."
+
+#. nombre
+#: data/abilities.json:sturdy
+msgid "Robustez"
+msgstr "Sturdy"
+
+#. descripción
+#: data/abilities.json:sturdy
+msgid "Evita que el rival pueda debilitarlo de un solo golpe cuando tiene los PS al máximo. También evita los movimientos fulminantes."
+msgstr "The Pokémon cannot be knocked out by a single hit as long as its HP is full. One-hit KO moves will also fail to knock it out."
+
+#. nombre
+#: data/abilities.json:swarm
+msgid "Enjambre"
+msgstr "Swarm"
+
+#. descripción
+#: data/abilities.json:swarm
+msgid "Potencia sus movimientos de tipo Bicho cuando le quedan pocos PS."
+msgstr "Powers up Bug-type moves when the Pokémon's HP is low."
+
+#. nombre
+#: data/abilities.json:swiftswim
+msgid "Nado Rápido"
+msgstr "Swift Swim"
+
+#. descripción
+#: data/abilities.json:swiftswim
+msgid "Sube su Velocidad cuando llueve."
+msgstr "Boosts the Pokémon's Speed stat in rain."
+
+#. nombre
+#: data/abilities.json:synchronize
+msgid "Sincronía"
+msgstr "Synchronize"
+
+#. descripción
+#: data/abilities.json:synchronize
+msgid "Contagia el envenenamiento, las quemaduras o la parálisis al Pokémon que le cause ese estado."
+msgstr "If the Pokémon is burned, paralyzed, or poisoned by another Pokémon, that Pokémon will be inflicted with the same status condition."
+
+#. nombre
+#: data/abilities.json:tangledfeet
+msgid "Tumbos"
+msgstr "Tangled Feet"
+
+#. descripción
+#: data/abilities.json:tangledfeet
+msgid "Sube su Evasión si está confuso."
+msgstr "Boosts the Pokémon's evasiveness if it is confused."
+
+#. nombre
+#: data/abilities.json:technician
+msgid "Experto"
+msgstr "Technician"
+
+#. descripción
+#: data/abilities.json:technician
+msgid "Potencia sus movimientos más débiles."
+msgstr "Powers up weak moves so the Pokémon can deal more damage with them."
+
+#. nombre
+#: data/abilities.json:thickfat
+msgid "Sebo"
+msgstr "Thick Fat"
+
+#. descripción
+#: data/abilities.json:thickfat
+msgid "Gracias a la gruesa capa de grasa que lo protege, reduce a la mitad el daño que recibe de ataques de tipo Fuego o Hielo."
+msgstr "The Pokémon is protected by a layer of thick fat, which halves the damage taken from Fire- and Ice-type moves."
+
+#. nombre
+#: data/abilities.json:tintedlens
+msgid "Cromolente"
+msgstr "Tinted Lens"
+
+#. descripción
+#: data/abilities.json:tintedlens
+msgid "Potencia los movimientos que no son muy eficaces, que infligen ahora un daño normal."
+msgstr "The Pokémon can use “not very effective” moves to deal regular damage."
+
+#. nombre
+#: data/abilities.json:torrent
+msgid "Torrente"
+msgstr "Torrent"
+
+#. descripción
+#: data/abilities.json:torrent
+msgid "Potencia sus movimientos de tipo Agua cuando le quedan pocos PS."
+msgstr "Powers up Water-type moves when the Pokémon's HP is low."
+
+#. nombre
+#: data/abilities.json:trace
+msgid "Calco"
+msgstr "Trace"
+
+#. descripción
+#: data/abilities.json:trace
+msgid "Al entrar en combate copia la habilidad del rival."
+msgstr "When it enters a battle, the Pokémon copies an opposing Pokémon's Ability."
+
+#. nombre
+#: data/abilities.json:unaware
+msgid "Ignorante"
+msgstr "Unaware"
+
+#. descripción
+#: data/abilities.json:unaware
+msgid "Pasa por alto las mejoras en las características del rival al atacar."
+msgstr "When attacking, the Pokémon ignores the target's stat changes."
+
+#. nombre
+#: data/abilities.json:unburden
+msgid "Liviano"
+msgstr "Unburden"
+
+#. descripción
+#: data/abilities.json:unburden
+msgid "Sube su Velocidad si usa o pierde el objeto que lleva."
+msgstr "Boosts the Speed stat if the Pokémon's held item is used or lost."
+
+#. nombre
+#: data/abilities.json:unnerve
+msgid "Nerviosismo"
+msgstr "Unnerve"
+
+#. descripción
+#: data/abilities.json:unnerve
+msgid "Pone nervioso al rival y le impide usar bayas."
+msgstr "Unnerves opposing Pokémon and makes them unable to eat Berries."
+
+#. nombre
+#: data/abilities.json:vitalspirit
+msgid "Espíritu Vital"
+msgstr "Vital Spirit"
+
+#. descripción
+#: data/abilities.json:vitalspirit
+msgid "Su determinación le impide quedarse dormido."
+msgstr "The Pokémon is full of vitality, and that prevents it from falling asleep."
+
+#. nombre
+#: data/abilities.json:voltabsorb
+msgid "Absorbe Electricidad"
+msgstr "Volt Absorb"
+
+#. descripción
+#: data/abilities.json:voltabsorb
+msgid "Si le alcanza un movimiento de tipo Eléctrico, recupera PS en vez de sufrir daño."
+msgstr "If hit by an Electric-type move, the Pokémon has its HP restored instead of taking damage."
+
+#. nombre
+#: data/abilities.json:waterabsorb
+msgid "Absorbe Agua"
+msgstr "Water Absorb"
+
+#. descripción
+#: data/abilities.json:waterabsorb
+msgid "Si le alcanza un movimiento de tipo Agua, recupera PS en vez de sufrir daño."
+msgstr "If hit by a Water-type move, the Pokémon has its HP restored instead of taking damage."
+
+#. nombre
+#: data/abilities.json:waterveil
+msgid "Velo Agua"
+msgstr "Water Veil"
+
+#. descripción
+#: data/abilities.json:waterveil
+msgid "Evita las quemaduras gracias a la capa de agua que lo envuelve."
+msgstr "The Pokémon's water veil prevents it from being burned."
+
+#. nombre
+#: data/abilities.json:weakarmor
+msgid "Armadura Frágil"
+msgstr "Weak Armor"
+
+#. descripción
+#: data/abilities.json:weakarmor
+msgid "Al recibir daño de un ataque físico, le baja la Defensa, pero le sube mucho la Velocidad."
+msgstr "The Pokémon's Defense stat is lowered when it takes damage from physical moves, but its Speed stat is sharply boosted."
+
+#. nombre
+#: data/abilities.json:wonderskin
+msgid "Piel Milagro"
+msgstr "Wonder Skin"
+
+#. descripción
+#: data/abilities.json:wonderskin
+msgid "Presenta una mayor resistencia ante los movimientos de estado."
+msgstr "Makes status moves more likely to miss the Pokémon."

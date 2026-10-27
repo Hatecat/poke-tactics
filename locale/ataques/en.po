@@ -1,0 +1,4600 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#. nombre
+#: data/moves/absorb.tres
+msgid "Absorber"
+msgstr "Absorb"
+
+#. descripción
+#: data/moves/absorb.tres
+#: data/moves/gigadrain.tres
+#: data/moves/megadrain.tres
+msgid "Un ataque que absorbe nutrientes. Quien lo usa recupera la mitad de los PS del daño que produce."
+msgstr "A nutrient-draining attack. The user's HP is restored by up to half the damage taken by the target."
+
+#. nombre
+#: data/moves/acid.tres
+msgid "Ácido"
+msgstr "Acid"
+
+#. descripción
+#: data/moves/acid.tres
+msgid "Rocía a los enemigos con un ácido corrosivo. Puede bajar la Defensa Especial."
+msgstr "Opposing Pokémon are attacked with a spray of harsh acid. This may also lower their Sp. Def stats."
+
+#. nombre
+#: data/moves/acidarmor.tres
+msgid "Armadura Ácida"
+msgstr "Acid Armor"
+
+#. descripción
+#: data/moves/acidarmor.tres
+msgid "Transforma la estructura celular para hacerse líquido y aumenta mucho la Defensa."
+msgstr "The user alters its cellular structure to liquefy itself, sharply boosting its Defense stat."
+
+#. nombre
+#: data/moves/acidspray.tres
+msgid "Bomba Ácida"
+msgstr "Acid Spray"
+
+#. descripción
+#: data/moves/acidspray.tres
+msgid "Ataca con un líquido corrosivo que reduce mucho la Defensa Especial del objetivo."
+msgstr "The user attacks by spitting fluid that works to melt the target. This also harshly lowers the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/acrobatics.tres
+msgid "Acróbata"
+msgstr "Acrobatics"
+
+#. descripción
+#: data/moves/acrobatics.tres
+msgid "Golpea ágilmente. Si el usuario no porta ningún objeto, el objetivo resulta seriamente dañado."
+msgstr "The user nimbly strikes the target. This attack does massive damage if the user isn't holding an item."
+
+#. nombre
+#: data/moves/aerialace.tres
+msgid "Golpe Aéreo"
+msgstr "Aerial Ace"
+
+#. descripción
+#: data/moves/aerialace.tres
+msgid "El usuario lanza un ataque muy rápido e ineludible."
+msgstr "The user confounds the target with speed, then slashes. This attack never misses."
+
+#. nombre
+#: data/moves/agility.tres
+msgid "Agilidad"
+msgstr "Agility"
+
+#. descripción
+#: data/moves/agility.tres
+msgid "Relaja el cuerpo para ganar mucha Velocidad."
+msgstr "The user relaxes and lightens its body to move faster. This sharply boosts its Speed stat."
+
+#. nombre
+#: data/moves/aircutter.tres
+msgid "Aire Afilado"
+msgstr "Air Cutter"
+
+#. descripción
+#: data/moves/aircutter.tres
+msgid "Viento cortante que azota. Suele ser un golpe crítico."
+msgstr "The user launches razor-like wind to slash opposing Pokémon. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/airslash.tres
+msgid "Tajo Aéreo"
+msgstr "Air Slash"
+
+#. descripción
+#: data/moves/airslash.tres
+msgid "Ataca con un viento afilado que incluso corta el aire. También puede amedrentar al objetivo."
+msgstr "The user attacks with a blade of air that slices even the sky. This may also make the target flinch."
+
+#. nombre
+#: data/moves/alluringvoice.tres
+msgid "Canto Encantador"
+msgstr "Alluring Voice"
+
+#. nombre
+#: data/moves/amnesia.tres
+msgid "Amnesia"
+msgstr "Amnesia"
+
+#. descripción
+#: data/moves/amnesia.tres
+msgid "El usuario olvida sus preocupaciones y aumenta mucho la Defensa Especial."
+msgstr "The user temporarily empties its mind to forget its concerns. This sharply boosts the user's Sp. Def stat."
+
+#. nombre
+#: data/moves/ancientpower.tres
+msgid "Poder Pasado"
+msgstr "Ancient Power"
+
+#. descripción
+#: data/moves/ancientpower.tres
+msgid "Ataque prehistórico que puede subir todas las características."
+msgstr "The user attacks with a prehistoric power. This may also boost all the user's stats at once."
+
+#. nombre
+#: data/moves/aquajet.tres
+msgid "Acua Jet"
+msgstr "Aqua Jet"
+
+#. descripción
+#: data/moves/aquajet.tres
+msgid "Ataque de una rapidez espeluznante. Este movimiento tiene prioridad alta."
+msgstr "The user lunges at the target to inflict damage, moving at blinding speed. This move always goes first."
+
+#. nombre
+#: data/moves/aquaring.tres
+msgid "Acua Aro"
+msgstr "Aqua Ring"
+
+#. descripción
+#: data/moves/aquaring.tres
+msgid "Un manto de agua cubre al Pokémon que lo usa. Recupera algunos PS en cada turno."
+msgstr "The user envelops itself in a veil made of water. It regains some HP every turn."
+
+#. nombre
+#: data/moves/aquatail.tres
+msgid "Acua Cola"
+msgstr "Aqua Tail"
+
+#. descripción
+#: data/moves/aquatail.tres
+msgid "Ataca agitando la cola como si fuera una ola rabiosa en una tormenta devastadora."
+msgstr "The user attacks by swinging its tail as if it were a vicious wave in a raging storm."
+
+#. nombre
+#: data/moves/assurance.tres
+msgid "Buena Baza"
+msgstr "Assurance"
+
+#. descripción
+#: data/moves/assurance.tres
+msgid "Si el objetivo ya ha sufrido daño en ese turno, la fuerza del ataque se duplica."
+msgstr "This move's power is doubled if the target has already taken some damage in the same turn."
+
+#. nombre
+#: data/moves/astonish.tres
+msgid "Impresionar"
+msgstr "Astonish"
+
+#. descripción
+#: data/moves/astonish.tres
+msgid "Lanza un grito tan tremendo que impresiona y puede amedrentar al objetivo."
+msgstr "The user attacks the target by crying out in a startling fashion. This may also make the target flinch."
+
+#. nombre
+#: data/moves/attract.tres
+msgid "Atracción"
+msgstr "Attract"
+
+#. descripción
+#: data/moves/attract.tres
+msgid "Si el objetivo es del sexo opuesto, se enamorará y bajará la posibilidad de que ataque."
+msgstr "If the target is of the opposite gender to the user, it becomes infatuated with the user and will sometimes be unable to use its moves."
+
+#. nombre
+#: data/moves/aurasphere.tres
+msgid "Esfera Aural"
+msgstr "Aura Sphere"
+
+#. descripción
+#: data/moves/aurasphere.tres
+msgid "Libera, desde su interior, una inmensa descarga de aura. Es infalible."
+msgstr "The user lets loose a pulse of aura power from deep within its body at the target. This attack never misses."
+
+#. nombre
+#: data/moves/aurorabeam.tres
+msgid "Rayo Aurora"
+msgstr "Aurora Beam"
+
+#. descripción
+#: data/moves/aurorabeam.tres
+msgid "Rayo multicolor que puede reducir el Ataque."
+msgstr "The target is hit with a rainbow-colored beam. This may also lower the target's Attack stat."
+
+#. nombre
+#: data/moves/auroraveil.tres
+msgid "Velo Aurora"
+msgstr "Aurora Veil"
+
+#. descripción
+#: data/moves/auroraveil.tres
+msgid "Reduce el daño de los ataques físicos y especiales que ejecuta el rival durante cinco turnos. Solo puede usarse cuando está granizando."
+msgstr "This move reduces damage from physical and special moves for five turns. This can be used only when it is snowing."
+
+#. nombre
+#: data/moves/autotomize.tres
+msgid "Aligerar"
+msgstr "Autotomize"
+
+#. descripción
+#: data/moves/autotomize.tres
+msgid "El usuario se desprende de partes prescindibles de su cuerpo para hacerse más ligero y aumentar mucho su Velocidad."
+msgstr "The user sheds part of its body to make itself lighter and sharply raise its Speed stat."
+
+#. nombre
+#: data/moves/avalanche.tres
+msgid "Alud"
+msgstr "Avalanche"
+
+#. descripción
+#: data/moves/avalanche.tres
+msgid "Este ataque inflige el doble de daño a un objetivo que haya golpeado al usuario en ese mismo turno."
+msgstr "This move's power is doubled if the target has inflicted damage on the user in the same turn."
+
+#. nombre
+#: data/moves/axekick.tres
+msgid "Patada Hacha"
+msgstr "Axe Kick"
+
+#. nombre
+#: data/moves/babydolleyes.tres
+msgid "Ojitos Tiernos"
+msgstr "Baby-Doll Eyes"
+
+#. descripción
+#: data/moves/babydolleyes.tres
+msgid "Lanza una mirada al objetivo con ojos acaramelados, con lo que logra que su Ataque se reduzca. Este movimiento tiene prioridad alta."
+msgstr "The user stares at the target with its baby-doll eyes, which lowers the target's Attack stat. This move always goes first."
+
+#. nombre
+#: data/moves/barrage.tres
+msgid "Bombardeo"
+msgstr "Barrage"
+
+#. descripción
+#: data/moves/barrage.tres
+#: data/moves/barrier.tres
+#: data/moves/boneclub.tres
+#: data/moves/bubble.tres
+#: data/moves/captivate.tres
+msgid "Este movimiento no se puede usar, por lo que sería mejor olvidarlo, aunque eso implique que no se pueda recordar posteriormente."
+msgstr "This move can’t be used. It’s recommended that this move is forgotten. Once forgotten, this move can’t be remembered."
+
+#. nombre
+#: data/moves/barrier.tres
+msgid "Barrera"
+msgstr "Barrier"
+
+#. nombre
+#: data/moves/beatup.tres
+msgid "Paliza"
+msgstr "Beat Up"
+
+#. descripción
+#: data/moves/beatup.tres
+msgid "Ataque de todo el equipo Pokémon. Cuantos más haya, más veces se atacará."
+msgstr "The user gets all party Pokémon to attack the target. The more party Pokémon, the greater the number of attacks."
+
+#. nombre
+#: data/moves/bellydrum.tres
+msgid "Tambor"
+msgstr "Belly Drum"
+
+#. descripción
+#: data/moves/bellydrum.tres
+msgid "Reduce la mitad de los PS máximos para mejorar al máximo el Ataque."
+msgstr "The user maximizes its Attack stat but loses HP equal to half its max HP."
+
+#. nombre
+#: data/moves/bind.tres
+msgid "Atadura"
+msgstr "Bind"
+
+#. descripción
+#: data/moves/bind.tres
+msgid "Ata y oprime de cuatro a cinco turnos."
+msgstr "A long body, tentacles, or the like are used to bind and squeeze the target for four to five turns."
+
+#. nombre
+#: data/moves/bite.tres
+msgid "Mordisco"
+msgstr "Bite"
+
+#. descripción
+#: data/moves/bite.tres
+msgid "Un voraz bocado que puede amedrentar al objetivo."
+msgstr "The target is bitten with viciously sharp fangs. This may also make the target flinch."
+
+#. nombre
+#: data/moves/blastburn.tres
+msgid "Anillo Ígneo"
+msgstr "Blast Burn"
+
+#. descripción
+#: data/moves/blastburn.tres
+msgid "Explosión de fuego. El atacante debe descansar el siguiente turno."
+msgstr "The target is razed by a fiery explosion. The user can't move on the next turn."
+
+#. nombre
+#: data/moves/blazekick.tres
+msgid "Patada Ígnea"
+msgstr "Blaze Kick"
+
+#. descripción
+#: data/moves/blazekick.tres
+msgid "Patada que suele ser un golpe crítico y puede causar quemaduras."
+msgstr "The user launches a kick that has a heightened chance of landing a critical hit. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/blizzard.tres
+msgid "Ventisca"
+msgstr "Blizzard"
+
+#. descripción
+#: data/moves/blizzard.tres
+msgid "Tormenta de hielo que puede llegar a congelar."
+msgstr "A howling blizzard is summoned to strike opposing Pokémon. This may also leave the opposing Pokémon frozen."
+
+#. nombre
+#: data/moves/bodypress.tres
+msgid "Plancha Corporal"
+msgstr "Body Press"
+
+#. descripción
+#: data/moves/bodypress.tres
+msgid "El usuario usa el cuerpo para lanzar su ataque e infligir un daño directamente proporcional a su Defensa."
+msgstr "The user attacks by slamming its body into the target. The higher the user's Defense stat, the greater the damage this move deals."
+
+#. nombre
+#: data/moves/bodyslam.tres
+msgid "Golpe Cuerpo"
+msgstr "Body Slam"
+
+#. descripción
+#: data/moves/bodyslam.tres
+msgid "Salta sobre el objetivo con todo su peso y puede llegar a paralizarlo."
+msgstr "The user attacks by dropping onto the target with its full body weight. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/boneclub.tres
+msgid "Hueso Palo"
+msgstr "Bone Club"
+
+#. nombre
+#: data/moves/bonemerang.tres
+msgid "Huesomerang"
+msgstr "Bonemerang"
+
+#. descripción
+#: data/moves/bonemerang.tres
+msgid "Lanza un hueso a modo de bumerán que golpea dos veces."
+msgstr "The user throws the bone it holds. The bone loops around to hit the target twice—coming and going."
+
+#. nombre
+#: data/moves/bonerush.tres
+msgid "Ataque Óseo"
+msgstr "Bone Rush"
+
+#. descripción
+#: data/moves/bonerush.tres
+msgid "Hueso en ristre, aporrea al objetivo de dos a cinco veces."
+msgstr "The user attacks by striking the target with a hard bone. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/bounce.tres
+msgid "Bote"
+msgstr "Bounce"
+
+#. descripción
+#: data/moves/bounce.tres
+msgid "El usuario bota en el primer turno y golpea al objetivo en el segundo y puede llegar a paralizarlo."
+msgstr "The user bounces up high on the first turn, then drops onto the target on the next turn. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/bravebird.tres
+msgid "Pájaro Osado"
+msgstr "Brave Bird"
+
+#. descripción
+#: data/moves/bravebird.tres
+msgid "Pliega sus alas y ataca con un vuelo rasante. El Pokémon que lo usa también resulta seriamente dañado."
+msgstr "The user tucks in its wings and charges at a low altitude. This also damages the user quite a lot."
+
+#. nombre
+#: data/moves/breakingswipe.tres
+msgid "Vasto Impacto"
+msgstr "Breaking Swipe"
+
+#. descripción
+#: data/moves/breakingswipe.tres
+msgid "El usuario sacude violentamente su enorme cola para golpear a todos los rivales y reducir su Ataque a la par."
+msgstr "The user swings its tough tail wildly and attacks opposing Pokémon. This also lowers their Attack stats."
+
+#. nombre
+#: data/moves/brickbreak.tres
+msgid "Demolición"
+msgstr "Brick Break"
+
+#. descripción
+#: data/moves/brickbreak.tres
+msgid "Potente ataque que también es capaz de destruir barreras como Pantalla de Luz y Reflejo."
+msgstr "The user attacks with a swift chop. This move can also break barriers, such as Light Screen and Reflect."
+
+#. nombre
+#: data/moves/brine.tres
+msgid "Salmuera"
+msgstr "Brine"
+
+#. descripción
+#: data/moves/brine.tres
+msgid "Si al objetivo le queda la mitad o menos de sus PS, el ataque será el doble de fuerte."
+msgstr "This move's power is doubled if the target's HP is at half or less."
+
+#. nombre
+#: data/moves/brutalswing.tres
+msgid "Giro Vil"
+msgstr "Brutal Swing"
+
+#. descripción
+#: data/moves/brutalswing.tres
+msgid "Hace pivotar su cuerpo para causar daño a su alrededor."
+msgstr "The user swings its body around violently to inflict damage on everything in its vicinity."
+
+#. nombre
+#: data/moves/bubble.tres
+msgid "Burbuja"
+msgstr "Bubble"
+
+#. nombre
+#: data/moves/bubblebeam.tres
+msgid "Rayo Burbuja"
+msgstr "Bubble Beam"
+
+#. descripción
+#: data/moves/bubblebeam.tres
+msgid "Diluvio de burbujas que puede bajar la Velocidad."
+msgstr "A spray of bubbles is forcefully ejected at the target. This may also lower the target's Speed stat."
+
+#. nombre
+#: data/moves/bugbite.tres
+msgid "Picadura"
+msgstr "Bug Bite"
+
+#. descripción
+#: data/moves/bugbite.tres
+msgid "Pica al objetivo. Si el objetivo lleva una baya, el usuario se la come y se beneficia de su efecto."
+msgstr "The user attacks by biting the target. If the target is holding a Berry, the user eats it and gains its effect."
+
+#. nombre
+#: data/moves/bugbuzz.tres
+msgid "Zumbido"
+msgstr "Bug Buzz"
+
+#. descripción
+#: data/moves/bugbuzz.tres
+msgid "El usuario crea una onda sónica dañina moviendo su cuerpo que también puede disminuir la Defensa Especial del objetivo."
+msgstr "The user vibrates to generate a damaging sound wave. This may also lower the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/bulkup.tres
+msgid "Corpulencia"
+msgstr "Bulk Up"
+
+#. descripción
+#: data/moves/bulkup.tres
+msgid "Robustece el cuerpo para subir el Ataque y la Defensa."
+msgstr "The user tenses its muscles to bulk up its body, boosting its Attack and Defense stats."
+
+#. nombre
+#: data/moves/bulldoze.tres
+msgid "Terratemblor"
+msgstr "Bulldoze"
+
+#. descripción
+#: data/moves/bulldoze.tres
+msgid "Sacudida sísmica que afecta a los demás Pokémon adyacentes y también reduce su Velocidad."
+msgstr "The user strikes everything around it by stomping down on the ground. This lowers the Speed stats of those hit."
+
+#. nombre
+#: data/moves/bulletpunch.tres
+msgid "Puño Bala"
+msgstr "Bullet Punch"
+
+#. descripción
+#: data/moves/bulletpunch.tres
+msgid "Ataca con fuertes puñetazos tan rápidos como proyectiles. Este movimiento tiene prioridad alta."
+msgstr "The user strikes the target with tough punches as fast as bullets. This move always goes first."
+
+#. nombre
+#: data/moves/bulletseed.tres
+msgid "Semilladora"
+msgstr "Bullet Seed"
+
+#. descripción
+#: data/moves/bulletseed.tres
+msgid "Dispara rápido de dos a cinco ráfagas de semillas de manera consecutiva."
+msgstr "The user attacks by forcefully shooting seeds at the target. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/burningjealousy.tres
+msgid "Envidia Ardiente"
+msgstr "Burning Jealousy"
+
+#. descripción
+#: data/moves/burningjealousy.tres
+msgid "Ataca al objetivo con la energía generada por la envidia y causa quemaduras a los Pokémon cuyas características hayan aumentado en ese turno."
+msgstr "The user attacks with energy from jealousy. This leaves all opposing Pokémon that have had their stats boosted during the turn with a burn."
+
+#. nombre
+#: data/moves/burnup.tres
+msgid "Llama Final"
+msgstr "Burn Up"
+
+#. descripción
+#: data/moves/burnup.tres
+msgid "Utiliza hasta el último resquicio de llamas de su cuerpo para infligir un grave daño al oponente. Tras el ataque, el usuario deja de ser de tipo Fuego."
+msgstr "To inflict massive damage, the user burns itself out. After using this move, the user will no longer be Fire type."
+
+#. nombre
+#: data/moves/calmmind.tres
+msgid "Paz Mental"
+msgstr "Calm Mind"
+
+#. descripción
+#: data/moves/calmmind.tres
+msgid "Aumenta la concentración y calma el espíritu para subir el Ataque Especial y la Defensa Especial."
+msgstr "The user quietly focuses its mind and calms its spirit to boost its Sp. Atk and Sp. Def stats."
+
+#. nombre
+#: data/moves/captivate.tres
+msgid "Seducción"
+msgstr "Captivate"
+
+#. nombre
+#: data/moves/charge.tres
+msgid "Carga"
+msgstr "Charge"
+
+#. descripción
+#: data/moves/charge.tres
+msgid "Recarga energía para potenciar el siguiente movimiento de tipo Eléctrico. También sube la Defensa Especial."
+msgstr "The user becomes charged, boosting the power of the next Electric-type move it uses. This also boosts the user's Sp. Def stat."
+
+#. nombre
+#: data/moves/chargebeam.tres
+msgid "Rayo Carga"
+msgstr "Charge Beam"
+
+#. descripción
+#: data/moves/chargebeam.tres
+msgid "Lanza un rayo eléctrico contra el objetivo. Puede subir el Ataque Especial de quien lo usa."
+msgstr "The user attacks the target with an electric charge. The residual electricity may also boost the user's Sp. Atk stat."
+
+#. nombre
+#: data/moves/charm.tres
+msgid "Encanto"
+msgstr "Charm"
+
+#. descripción
+#: data/moves/charm.tres
+msgid "Engatusa al objetivo y reduce mucho su Ataque."
+msgstr "The user gazes at the target rather charmingly, making it less wary. This harshly lowers the target's Attack stat."
+
+#. nombre
+#: data/moves/chillingwater.tres
+msgid "Agua Fría"
+msgstr "Chilling Water"
+
+#. nombre
+#: data/moves/chipaway.tres
+msgid "Guardia Baja"
+msgstr "Chip Away"
+
+#. nombre
+#: data/moves/circlethrow.tres
+msgid "Llave Giro"
+msgstr "Circle Throw"
+
+#. descripción
+#: data/moves/circlethrow.tres
+msgid "Lanza por los aires al objetivo y hace que salga otro Pokémon. Si es uno salvaje, acaba el combate."
+msgstr "The target is thrown, and a different Pokémon is dragged out. In the wild, this ends a battle against a single Pokémon."
+
+#. nombre
+#: data/moves/clamp.tres
+msgid "Tenaza"
+msgstr "Clamp"
+
+#. nombre
+#: data/moves/clearsmog.tres
+msgid "Niebla Clara"
+msgstr "Clear Smog"
+
+#. descripción
+#: data/moves/clearsmog.tres
+msgid "Ataca al objetivo con una singular bola de lodo que elimina cualquier cambio en sus características."
+msgstr "The user attacks the target by throwing a clump of special mud. All stat changes are eliminated."
+
+#. nombre
+#: data/moves/closecombat.tres
+msgid "A Bocajarro"
+msgstr "Close Combat"
+
+#. descripción
+#: data/moves/closecombat.tres
+msgid "Lucha abiertamente contra el objetivo sin protegerse. También reduce la Defensa y la Defensa Especial del usuario."
+msgstr "The user fights the target up close, inflicting damage without guarding itself. This also lowers the user's Defense and Sp. Def stats."
+
+#. nombre
+#: data/moves/coaching.tres
+msgid "Motivación"
+msgstr "Coaching"
+
+#. descripción
+#: data/moves/coaching.tres
+msgid "El usuario imparte indicaciones precisas a sus aliados, que ven aumentados su Ataque y su Defensa."
+msgstr "The user properly coaches its ally Pokémon, boosting their Attack and Defense stats."
+
+#. nombre
+#: data/moves/coil.tres
+msgid "Enrosque"
+msgstr "Coil"
+
+#. descripción
+#: data/moves/coil.tres
+msgid "El usuario se concentra, lo que le permite aumentar su Ataque, Defensa y Precisión."
+msgstr "The user coils up and concentrates. This boosts its Attack and Defense stats as well as its accuracy."
+
+#. nombre
+#: data/moves/cometpunch.tres
+msgid "Puño Cometa"
+msgstr "Comet Punch"
+
+#. nombre
+#: data/moves/confide.tres
+msgid "Confidencia"
+msgstr "Confide"
+
+#. descripción
+#: data/moves/confide.tres
+msgid "Hace que el objetivo pierda la concentración contándole un secreto. Disminuye el Ataque Especial del oponente."
+msgstr "The user tells the target a secret, and the target loses its ability to concentrate. This lowers the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/confuseray.tres
+msgid "Rayo Confuso"
+msgstr "Confuse Ray"
+
+#. descripción
+#: data/moves/confuseray.tres
+msgid "Rayo siniestro que confunde al objetivo."
+msgstr "The target is exposed to a sinister ray that causes confusion."
+
+#. nombre
+#: data/moves/confusion.tres
+msgid "Confusión"
+msgstr "Confusion"
+
+#. descripción
+#: data/moves/confusion.tres
+msgid "Débil ataque telequinético que puede causar confusión."
+msgstr "The target is hit with a weak telekinetic force to inflict damage. This may also confuse the target."
+
+#. nombre
+#: data/moves/constrict.tres
+msgid "Restricción"
+msgstr "Constrict"
+
+#. nombre
+#: data/moves/cosmicpower.tres
+msgid "Masa Cósmica"
+msgstr "Cosmic Power"
+
+#. descripción
+#: data/moves/cosmicpower.tres
+msgid "Sube la Defensa y la Defensa Especial propias con energía mística."
+msgstr "The user absorbs a mystical power from space to boost its Defense and Sp. Def stats."
+
+#. nombre
+#: data/moves/covet.tres
+msgid "Antojo"
+msgstr "Covet"
+
+#. descripción
+#: data/moves/covet.tres
+msgid "Se acerca con ternura al objetivo, pero le ataca y le roba el objeto que lleve."
+msgstr "The user endearingly approaches the target, then steals the target's held item."
+
+#. nombre
+#: data/moves/crabhammer.tres
+msgid "Martillazo"
+msgstr "Crabhammer"
+
+#. descripción
+#: data/moves/crabhammer.tres
+msgid "Golpea con fuerza con una pinza enorme. Suele asestar un golpe crítico."
+msgstr "The target is hammered with a large pincer. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/crosschop.tres
+msgid "Tajo Cruzado"
+msgstr "Cross Chop"
+
+#. descripción
+#: data/moves/crosschop.tres
+msgid "Corte doble que suele propinar un golpe crítico."
+msgstr "The user delivers a double chop with its forearms crossed. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/crosspoison.tres
+msgid "Veneno X"
+msgstr "Cross Poison"
+
+#. descripción
+#: data/moves/crosspoison.tres
+msgid "Tajo que puede envenenar al objetivo. Suele ser crítico."
+msgstr "A slashing attack with a poisonous blade that may also poison the target. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/crunch.tres
+msgid "Triturar"
+msgstr "Crunch"
+
+#. descripción
+#: data/moves/crunch.tres
+msgid "Tritura con afilados colmillos y puede bajar la Defensa del objetivo."
+msgstr "The user crunches up the target with sharp fangs. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/crushclaw.tres
+msgid "Garra Brutal"
+msgstr "Crush Claw"
+
+#. descripción
+#: data/moves/crushclaw.tres
+msgid "Hace trizas al objetivo con garras afiladas y puede bajar su Defensa."
+msgstr "The user slashes the target with hard and sharp claws. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/curse.tres
+msgid "Maldición"
+msgstr "Curse"
+
+#. descripción
+#: data/moves/curse.tres
+msgid "Un movimiento que tiene efectos distintos si el usuario es de tipo Fantasma o no."
+msgstr "A move that has different effects depending on whether the user is a Ghost type or not."
+
+#. nombre
+#: data/moves/cut.tres
+msgid "Corte"
+msgstr "Cut"
+
+#. descripción
+#: data/moves/cut.tres
+msgid "Corta al adversario con garras, guadañas, etc."
+msgstr "The target is cut with a scythe or claw."
+
+#. nombre
+#: data/moves/darkestlariat.tres
+msgid "Lariat Oscuro"
+msgstr "Darkest Lariat"
+
+#. descripción
+#: data/moves/darkestlariat.tres
+msgid "Gira sobre sí mismo y golpea al oponente con ambos brazos. Ignora los cambios en las características del objetivo."
+msgstr "The user swings both arms and hits the target. The target's stat changes don't affect the damage inflicted by this move."
+
+#. nombre
+#: data/moves/darkpulse.tres
+msgid "Pulso Umbrío"
+msgstr "Dark Pulse"
+
+#. descripción
+#: data/moves/darkpulse.tres
+msgid "Libera una horrible aura llena de malos pensamientos que puede amedrentar al objetivo."
+msgstr "The user releases a horrible aura imbued with ill intent. This may also make the target flinch."
+
+#. nombre
+#: data/moves/dazzlinggleam.tres
+msgid "Brillo Mágico"
+msgstr "Dazzling Gleam"
+
+#. descripción
+#: data/moves/dazzlinggleam.tres
+msgid "Inflige daño a los oponentes con una potente luz."
+msgstr "The user damages opposing Pokémon by emitting a powerful flash."
+
+#. nombre
+#: data/moves/defensecurl.tres
+msgid "Rizo Defensa"
+msgstr "Defense Curl"
+
+#. descripción
+#: data/moves/defensecurl.tres
+msgid "Se enrosca para ocultar sus puntos débiles y aumentar la Defensa."
+msgstr "The user curls up and boosts its Defense stat."
+
+#. nombre
+#: data/moves/defog.tres
+msgid "Despejar"
+msgstr "Defog"
+
+#. descripción
+#: data/moves/defog.tres
+msgid "Potente viento que barre el reflejo o la pantalla de luz creada por el objetivo. También puede reducir su Evasión."
+msgstr "A strong wind blows away the target's barriers such as Reflect or Light Screen. This also lowers the target's evasiveness."
+
+#. nombre
+#: data/moves/destinybond.tres
+msgid "Mismo Destino"
+msgstr "Destiny Bond"
+
+#. descripción
+#: data/moves/destinybond.tres
+msgid "Si el usuario se debilita por un ataque rival antes de usar otro movimiento, el Pokémon rival se debilitará también. Puede fallar si se usa repetidamente."
+msgstr "If the user is knocked out after using this move, the Pokémon that knocked it out will also faint. This move's chance of failing rises if it is used in succession."
+
+#. nombre
+#: data/moves/detect.tres
+msgid "Detección"
+msgstr "Detect"
+
+#. descripción
+#: data/moves/detect.tres
+#: data/moves/protect.tres
+msgid "Frena todos los ataques, pero puede fallar si se usa repetidamente."
+msgstr "This move enables the user to protect itself from all attacks. Its chance of failing rises if it is used in succession."
+
+#. nombre
+#: data/moves/dig.tres
+msgid "Excavar"
+msgstr "Dig"
+
+#. descripción
+#: data/moves/dig.tres
+msgid "El usuario cava durante el primer turno y ataca en el segundo."
+msgstr "The user burrows into the ground on the first turn, then attacks on the next turn."
+
+#. nombre
+#: data/moves/disarmingvoice.tres
+msgid "Voz Cautivadora"
+msgstr "Disarming Voice"
+
+#. descripción
+#: data/moves/disarmingvoice.tres
+msgid "Obnubila a los oponentes con su fascinante voz y les provoca daños emocionales. Siempre acierta al objetivo."
+msgstr "Letting out a charming cry, the user does emotional damage to opposing Pokémon. This attack never misses."
+
+#. nombre
+#: data/moves/discharge.tres
+msgid "Chispazo"
+msgstr "Discharge"
+
+#. descripción
+#: data/moves/discharge.tres
+msgid "Una deslumbradora onda eléctrica afecta a los Pokémon que hay combatiendo alrededor. Puede paralizar."
+msgstr "The user strikes everything around it by letting loose a flare of electricity. This may also leave those hit by the attack with paralysis."
+
+#. nombre
+#: data/moves/dive.tres
+msgid "Buceo"
+msgstr "Dive"
+
+#. descripción
+#: data/moves/dive.tres
+msgid "El usuario se sumerge en el primer turno y ataca en el segundo."
+msgstr "The user dives on the first turn, then floats up and attacks on the next turn."
+
+#. nombre
+#: data/moves/dizzypunch.tres
+msgid "Puño Mareo"
+msgstr "Dizzy Punch"
+
+#. nombre
+#: data/moves/doubleedge.tres
+msgid "Doble Filo"
+msgstr "Double-Edge"
+
+#. descripción
+#: data/moves/doubleedge.tres
+msgid "Ataque arriesgado que también hiere al agresor."
+msgstr "A reckless life-risking tackle in which the user rushes the target. This also damages the user quite a lot."
+
+#. nombre
+#: data/moves/doublehit.tres
+msgid "Doble Golpe"
+msgstr "Double Hit"
+
+#. descripción
+#: data/moves/doublehit.tres
+msgid "Golpea al objetivo dos veces seguidas con la cola u otras partes de su cuerpo."
+msgstr "The user slams the target with a tail or the like. The target is hit twice in a row."
+
+#. nombre
+#: data/moves/doublekick.tres
+msgid "Doble Patada"
+msgstr "Double Kick"
+
+#. descripción
+#: data/moves/doublekick.tres
+msgid "Una patada doble. Golpea dos veces."
+msgstr "The user attacks by kicking the target twice in a row using two feet."
+
+#. nombre
+#: data/moves/doubleslap.tres
+msgid "Doble Bofetón"
+msgstr "Double Slap"
+
+#. nombre
+#: data/moves/doubleteam.tres
+msgid "Doble Equipo"
+msgstr "Double Team"
+
+#. descripción
+#: data/moves/doubleteam.tres
+msgid "Crea copias de sí mismo para mejorar la Evasión."
+msgstr "By moving rapidly, the user makes illusory copies of itself to boost its evasiveness."
+
+#. nombre
+#: data/moves/dracometeor.tres
+msgid "Cometa Draco"
+msgstr "Draco Meteor"
+
+#. descripción
+#: data/moves/dracometeor.tres
+msgid "Hace que grandes cometas caigan del cielo sobre el objetivo. Baja mucho el Ataque Especial del que lo usa."
+msgstr "Comets are summoned down from the sky onto the target. The recoil from this move harshly lowers the user’s Sp. Atk stat."
+
+#. nombre
+#: data/moves/dragonbreath.tres
+msgid "Dragoaliento"
+msgstr "Dragon Breath"
+
+#. descripción
+#: data/moves/dragonbreath.tres
+msgid "Poderosa ráfaga de aliento que golpea al objetivo y puede paralizarlo."
+msgstr "The user exhales a mighty gust that inflicts damage. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/dragonclaw.tres
+msgid "Garra Dragón"
+msgstr "Dragon Claw"
+
+#. descripción
+#: data/moves/dragonclaw.tres
+msgid "Araña al objetivo con garras afiladas."
+msgstr "The user slashes the target with huge, sharp claws to inflict damage."
+
+#. nombre
+#: data/moves/dragondance.tres
+msgid "Danza Dragón"
+msgstr "Dragon Dance"
+
+#. descripción
+#: data/moves/dragondance.tres
+msgid "Danza mística que sube el Ataque y la Velocidad."
+msgstr "The user vigorously performs a mystic, powerful dance that boosts its Attack and Speed stats."
+
+#. nombre
+#: data/moves/dragonpulse.tres
+msgid "Pulso Dragón"
+msgstr "Dragon Pulse"
+
+#. descripción
+#: data/moves/dragonpulse.tres
+msgid "Abre mucho la boca y libera una onda de choque que ataca al objetivo."
+msgstr "The target is attacked with a shock wave generated by the user's gaping mouth."
+
+#. nombre
+#: data/moves/dragonrage.tres
+msgid "Furia Dragón"
+msgstr "Dragon Rage"
+
+#. nombre
+#: data/moves/dragonrush.tres
+msgid "Carga Dragón"
+msgstr "Dragon Rush"
+
+#. descripción
+#: data/moves/dragonrush.tres
+msgid "Ataca de forma brutal mientras intimida al objetivo. También puede amedrentarlo."
+msgstr "The user tackles the target while exhibiting overwhelming menace. This may also make the target flinch."
+
+#. nombre
+#: data/moves/dragontail.tres
+msgid "Cola Dragón"
+msgstr "Dragon Tail"
+
+#. descripción
+#: data/moves/dragontail.tres
+msgid "Ataca al objetivo y lo obliga a cambiarse por otro Pokémon. Si es uno salvaje, acaba el combate."
+msgstr "The target is knocked away, and a different Pokémon is dragged out. In the wild, this ends a battle against a single Pokémon."
+
+#. nombre
+#: data/moves/drainingkiss.tres
+msgid "Beso Drenaje"
+msgstr "Draining Kiss"
+
+#. descripción
+#: data/moves/drainingkiss.tres
+msgid "El usuario absorbe PS del objetivo con un beso y restaura su propia energía en una cantidad igual o superior a la mitad del daño infligido."
+msgstr "The user steals the target's HP with a kiss. The user's HP is restored by over half the damage taken by the target."
+
+#. nombre
+#: data/moves/drainpunch.tres
+msgid "Puño Drenaje"
+msgstr "Drain Punch"
+
+#. descripción
+#: data/moves/drainpunch.tres
+msgid "Un golpe que drena energía. El Pokémon recupera la mitad de los PS arrebatados al objetivo."
+msgstr "The user attacks with an energy-draining punch. The user's HP is restored by up to half the damage taken by the target."
+
+#. nombre
+#: data/moves/drillpeck.tres
+msgid "Pico Taladro"
+msgstr "Drill Peck"
+
+#. descripción
+#: data/moves/drillpeck.tres
+msgid "Picotazo giratorio y perforador muy potente."
+msgstr "A corkscrewing attack that strikes the target with a sharp beak acting as a drill."
+
+#. nombre
+#: data/moves/drillrun.tres
+msgid "Taladradora"
+msgstr "Drill Run"
+
+#. descripción
+#: data/moves/drillrun.tres
+msgid "El usuario golpea usando su cuerpo como un taladro. Suele ser crítico."
+msgstr "The user crashes into the target while rotating its body like a drill. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/dualchop.tres
+msgid "Golpe Bis"
+msgstr "Dual Chop"
+
+#. descripción
+#: data/moves/dualchop.tres
+msgid "Golpea dos veces seguidas con las partes más recias de su cuerpo."
+msgstr "The user attacks its target by hitting it with brutal strikes. The target is hit twice in a row."
+
+#. nombre
+#: data/moves/dualwingbeat.tres
+msgid "Ala Bis"
+msgstr "Dual Wingbeat"
+
+#. descripción
+#: data/moves/dualwingbeat.tres
+msgid "Ataca al adversario golpeándolo dos veces con las alas."
+msgstr "The user slams the target with its wings to inflict damage. The target is hit twice in a row."
+
+#. nombre
+#: data/moves/dynamicpunch.tres
+msgid "Puño Dinámico"
+msgstr "Dynamic Punch"
+
+#. descripción
+#: data/moves/dynamicpunch.tres
+msgid "Puñetazo con toda la fuerza concentrada. Causa confusión si atina."
+msgstr "The user attacks by punching the target with full concentrated power. This also confuses the target."
+
+#. nombre
+#: data/moves/earthpower.tres
+msgid "Tierra Viva"
+msgstr "Earth Power"
+
+#. descripción
+#: data/moves/earthpower.tres
+msgid "La tierra a los pies del objetivo erupciona violentamente. Puede disminuir la Defensa Especial del objetivo."
+msgstr "The user makes the ground under the target erupt with power. This may also lower the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/earthquake.tres
+msgid "Terremoto"
+msgstr "Earthquake"
+
+#. descripción
+#: data/moves/earthquake.tres
+msgid "Un terremoto que afecta a todos los Pokémon que estén a su alrededor."
+msgstr "The user sets off an earthquake that strikes every Pokémon around it."
+
+#. nombre
+#: data/moves/echoedvoice.tres
+msgid "Eco Voz"
+msgstr "Echoed Voice"
+
+#. descripción
+#: data/moves/echoedvoice.tres
+msgid "Un susurro que aumenta de potencia conforme el usuario y otros Pokémon lo van utilizando."
+msgstr "The user attacks the target with an echoing voice. If this move is used consecutively by any Pokémon, its power is boosted."
+
+#. nombre
+#: data/moves/eerieimpulse.tres
+msgid "Onda Anómala"
+msgstr "Eerie Impulse"
+
+#. descripción
+#: data/moves/eerieimpulse.tres
+msgid "El usuario irradia unas raras ondas que, al alcanzar a un oponente, hacen que disminuya mucho su Ataque Especial."
+msgstr "The user's body generates an eerie impulse. Exposing the target to it harshly lowers the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/eggbomb.tres
+msgid "Bomba Huevo"
+msgstr "Egg Bomb"
+
+#. nombre
+#: data/moves/electricterrain.tres
+msgid "Campo Eléctrico"
+msgstr "Electric Terrain"
+
+#. descripción
+#: data/moves/electricterrain.tres
+msgid "Durante cinco turnos, se potencian los movimientos de tipo Eléctrico y los Pokémon que están en contacto con el suelo no pueden quedarse dormidos."
+msgstr "The user turns the ground into Electric Terrain for five turns, powering up Electric-type moves. Pokémon on the ground can no longer fall asleep."
+
+#. nombre
+#: data/moves/electroball.tres
+msgid "Bola Voltio"
+msgstr "Electro Ball"
+
+#. descripción
+#: data/moves/electroball.tres
+msgid "Lanza una bola eléctrica. Cuanto mayor sea la Velocidad del usuario en comparación con la del objetivo, mayor será el daño causado."
+msgstr "The user hurls an electric orb at the target. The faster the user is than the target, the greater the move's power."
+
+#. nombre
+#: data/moves/electroweb.tres
+msgid "Electrotela"
+msgstr "Electroweb"
+
+#. descripción
+#: data/moves/electroweb.tres
+msgid "Atrapa y ataca a los objetivos con una telaraña eléctrica. También reduce su Velocidad."
+msgstr "The user captures opposing Pokémon in an electric net to inflict damage. This also lowers their Speed stats."
+
+#. nombre
+#: data/moves/ember.tres
+msgid "Ascuas"
+msgstr "Ember"
+
+#. descripción
+#: data/moves/ember.tres
+msgid "Ataca con llamas pequeñas que pueden causar quemaduras."
+msgstr "The target is attacked with small flames. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/endure.tres
+msgid "Aguante"
+msgstr "Endure"
+
+#. descripción
+#: data/moves/endure.tres
+msgid "Resiste cualquier ataque y deja al menos 1 PS. Puede fallar si se usa repetidamente."
+msgstr "The user endures any attack with at least 1 HP. This move's chance of failing rises if used in succession."
+
+#. nombre
+#: data/moves/energyball.tres
+msgid "Energibola"
+msgstr "Energy Ball"
+
+#. descripción
+#: data/moves/energyball.tres
+msgid "Aúna fuerzas de la naturaleza y libera su ataque. Puede disminuir la Defensa Especial del objetivo."
+msgstr "The user draws power from nature and fires it at the target. This may also lower the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/expandingforce.tres
+msgid "Vasta Fuerza"
+msgstr "Expanding Force"
+
+#. descripción
+#: data/moves/expandingforce.tres
+msgid "El usuario ataca al objetivo con sus poderes psíquicos. Cuando se usa en conjunción con un campo psíquico, aumenta su potencia e inflige daño a todos los rivales."
+msgstr "The user attacks the target with its psychic power. When the ground is Psychic Terrain, this move's power is boosted and it damages all opposing Pokémon."
+
+#. nombre
+#: data/moves/explosion.tres
+msgid "Explosión"
+msgstr "Explosion"
+
+#. descripción
+#: data/moves/explosion.tres
+msgid "El atacante causa una grandísima explosión y hiere a todos a su alrededor. El usuario se debilita de inmediato."
+msgstr "The user attacks everything around it by causing a tremendous explosion. The user faints upon using this move."
+
+#. nombre
+#: data/moves/extrasensory.tres
+msgid "Paranormal"
+msgstr "Extrasensory"
+
+#. descripción
+#: data/moves/extrasensory.tres
+msgid "Emite una energía muy extraña que puede amedrentar al objetivo."
+msgstr "The user attacks with an odd, unseeable power. This may also make the target flinch."
+
+#. nombre
+#: data/moves/extremespeed.tres
+msgid "Velocidad Extrema"
+msgstr "Extreme Speed"
+
+#. descripción
+#: data/moves/extremespeed.tres
+msgid "Ataque de una velocidad extrema. Este movimiento tiene prioridad alta."
+msgstr "The user charges the target at blinding speed. This move always goes first."
+
+#. nombre
+#: data/moves/facade.tres
+msgid "Fachada"
+msgstr "Facade"
+
+#. descripción
+#: data/moves/facade.tres
+msgid "Si el usuario está quemado, paralizado o envenenado, ataca con el doble de potencia."
+msgstr "This move's power is doubled if the user is poisoned, burned, or paralyzed."
+
+#. nombre
+#: data/moves/fakeout.tres
+msgid "Sorpresa"
+msgstr "Fake Out"
+
+#. descripción
+#: data/moves/fakeout.tres
+msgid "Amedrenta al objetivo con este movimiento de prioridad alta. Solo sirve en el primer turno."
+msgstr "This attack hits first and makes the target flinch. It works only on the first turn each time the user enters battle."
+
+#. nombre
+#: data/moves/faketears.tres
+msgid "Llanto Falso"
+msgstr "Fake Tears"
+
+#. descripción
+#: data/moves/faketears.tres
+msgid "Lágrimas de cocodrilo que bajan mucho la Defensa Especial del objetivo."
+msgstr "The user feigns crying to fluster the target. This harshly lowers the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/falseswipe.tres
+msgid "Falso Tortazo"
+msgstr "False Swipe"
+
+#. descripción
+#: data/moves/falseswipe.tres
+msgid "Ataque moderado que no debilita al objetivo y le deja al menos 1 PS."
+msgstr "A restrained attack that prevents the target from fainting. The target is left with at least 1 HP."
+
+#. nombre
+#: data/moves/featherdance.tres
+msgid "Danza Pluma"
+msgstr "Feather Dance"
+
+#. descripción
+#: data/moves/featherdance.tres
+msgid "Envuelve al objetivo con un manto de plumas para reducir mucho su Ataque."
+msgstr "The user covers the target's body with a mass of down that harshly lowers its Attack stat."
+
+#. nombre
+#: data/moves/feint.tres
+msgid "Amago"
+msgstr "Feint"
+
+#. descripción
+#: data/moves/feint.tres
+msgid "Permite golpear a objetivos que han utilizado movimientos como Protección o Detección y anula sus efectos."
+msgstr "This attack can hit a target using a move such as Protect or Detect. This also lifts the effects of those moves."
+
+#. nombre
+#: data/moves/feintattack.tres
+msgid "Finta"
+msgstr "Feint Attack"
+
+#. nombre
+#: data/moves/fellstinger.tres
+msgid "Aguijón Letal"
+msgstr "Fell Stinger"
+
+#. descripción
+#: data/moves/fellstinger.tres
+msgid "Si se derrota al objetivo utilizando este movimiento, aumenta muchísimo el Ataque del usuario."
+msgstr "When the user knocks out a target with this move, the user's Attack stat is boosted drastically."
+
+#. nombre
+#: data/moves/fireblast.tres
+msgid "Llamarada"
+msgstr "Fire Blast"
+
+#. descripción
+#: data/moves/fireblast.tres
+msgid "Llama intensa que chamusca y puede causar quemaduras."
+msgstr "The target is attacked with an intense blast of all-consuming fire. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/firefang.tres
+msgid "Colmillo Ígneo"
+msgstr "Fire Fang"
+
+#. descripción
+#: data/moves/firefang.tres
+msgid "El usuario muerde al objetivo con colmillos en llamas y puede hacer que se amedrente o sufra quemaduras."
+msgstr "The user bites with flame-cloaked fangs. This may also make the target flinch or leave it with a burn."
+
+#. nombre
+#: data/moves/firepledge.tres
+msgid "Voto Fuego"
+msgstr "Fire Pledge"
+
+#. descripción
+#: data/moves/firepledge.tres
+msgid "Ataca con columnas de fuego. Combinado con Voto Planta, crea un mar de llamas y aumenta su potencia."
+msgstr "A column of fire hits the target. When used with its grass counterpart, this move's power is boosted and a vast sea of fire appears."
+
+#. nombre
+#: data/moves/firepunch.tres
+msgid "Puño Fuego"
+msgstr "Fire Punch"
+
+#. descripción
+#: data/moves/firepunch.tres
+msgid "Puñetazo ardiente que puede causar quemaduras."
+msgstr "The target is attacked with a fiery punch. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/firespin.tres
+msgid "Giro Fuego"
+msgstr "Fire Spin"
+
+#. descripción
+#: data/moves/firespin.tres
+msgid "Un aro de fuego que atrapa al objetivo de cuatro a cinco turnos."
+msgstr "The user traps the target inside a fierce vortex of fire that inflicts damage for four to five turns."
+
+#. nombre
+#: data/moves/firstimpression.tres
+msgid "Escaramuza"
+msgstr "First Impression"
+
+#. descripción
+#: data/moves/firstimpression.tres
+msgid "Movimiento de gran potencia que solo puede usarse en el turno en que el usuario sale al combate."
+msgstr "Although this move has great power, it works only on the first turn each time the user enters battle."
+
+#. nombre
+#: data/moves/flail.tres
+msgid "Azote"
+msgstr "Flail"
+
+#. descripción
+#: data/moves/flail.tres
+msgid "Ataque frenético. Cuantos menos PS tenga el usuario, más daño producirá."
+msgstr "The user flails about aimlessly to attack. The less HP the user has, the greater the move's power."
+
+#. nombre
+#: data/moves/flameburst.tres
+msgid "Pirotecnia"
+msgstr "Flame Burst"
+
+#. nombre
+#: data/moves/flamecharge.tres
+msgid "Nitrocarga"
+msgstr "Flame Charge"
+
+#. descripción
+#: data/moves/flamecharge.tres
+msgid "Llamas que golpean al objetivo y aumentan la Velocidad del atacante."
+msgstr "Cloaking itself in flame, the user attacks the target. Then, building up momentum, the user boosts its Speed stat."
+
+#. nombre
+#: data/moves/flamethrower.tres
+msgid "Lanzallamas"
+msgstr "Flamethrower"
+
+#. descripción
+#: data/moves/flamethrower.tres
+msgid "Ataca con una gran ráfaga de fuego que puede causar quemaduras."
+msgstr "The target is scorched with an intense blast of fire. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/flamewheel.tres
+msgid "Rueda Fuego"
+msgstr "Flame Wheel"
+
+#. descripción
+#: data/moves/flamewheel.tres
+msgid "Ataca envuelto en fuego. Puede causar quemaduras."
+msgstr "The user attacks by cloaking itself in fire and charging at the target. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/flareblitz.tres
+msgid "Envite Ígneo"
+msgstr "Flare Blitz"
+
+#. descripción
+#: data/moves/flareblitz.tres
+msgid "El Pokémon se cubre de llamas y carga contra el objetivo, aunque él también recibe daño. Puede quemar."
+msgstr "The user cloaks itself in fire and charges the target to inflict damage. This also damages the user quite a lot and may leave the target with a burn."
+
+#. nombre
+#: data/moves/flash.tres
+msgid "Destello"
+msgstr "Flash"
+
+#. nombre
+#: data/moves/flashcannon.tres
+msgid "Cañón Resplandor"
+msgstr "Flash Cannon"
+
+#. descripción
+#: data/moves/flashcannon.tres
+msgid "El usuario concentra toda la luz del cuerpo y la libera. Puede bajar la Defensa Especial del objetivo."
+msgstr "The user gathers all its light energy and releases it at once. This may also lower the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/flatter.tres
+msgid "Camelo"
+msgstr "Flatter"
+
+#. descripción
+#: data/moves/flatter.tres
+msgid "Halaga al objetivo y lo confunde, pero también sube su Ataque Especial."
+msgstr "Flattery is used to confuse the target. However, this also boosts the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/fling.tres
+msgid "Lanzamiento"
+msgstr "Fling"
+
+#. descripción
+#: data/moves/fling.tres
+msgid "El usuario lanza contra el objetivo el objeto que lleva. La fuerza del ataque y su efecto varían según el objeto."
+msgstr "The user flings its held item at the target to attack. This move's power and effects depend on the item."
+
+#. nombre
+#: data/moves/flipturn.tres
+msgid "Viraje"
+msgstr "Flip Turn"
+
+#. descripción
+#: data/moves/flipturn.tres
+msgid "Tras atacar, el usuario da paso a toda prisa a otro Pokémon del equipo."
+msgstr "After making its attack, the user rushes back to switch places with a party Pokémon in waiting."
+
+#. nombre
+#: data/moves/fly.tres
+msgid "Vuelo"
+msgstr "Fly"
+
+#. descripción
+#: data/moves/fly.tres
+msgid "El usuario vuela en el primer turno y ataca en el segundo."
+msgstr "The user flies up into the sky on the first turn, then attacks on the next turn."
+
+#. nombre
+#: data/moves/focusblast.tres
+msgid "Onda Certera"
+msgstr "Focus Blast"
+
+#. descripción
+#: data/moves/focusblast.tres
+msgid "Agudiza la concentración mental y libera su poder. Puede disminuir la Defensa Especial del objetivo."
+msgstr "The user heightens its mental focus and unleashes its power. This may also lower the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/focusenergy.tres
+msgid "Foco Energía"
+msgstr "Focus Energy"
+
+#. descripción
+#: data/moves/focusenergy.tres
+msgid "Concentra energía para aumentar las posibilidades de asestar un golpe crítico."
+msgstr "The user takes a deep breath and focuses so that its future attacks have a heightened chance of landing critical hits."
+
+#. nombre
+#: data/moves/foulplay.tres
+msgid "Juego Sucio"
+msgstr "Foul Play"
+
+#. descripción
+#: data/moves/foulplay.tres
+msgid "El usuario emplea la fuerza del objetivo para atacarlo. Cuanto mayor es el Ataque del objetivo, más daño provoca."
+msgstr "The user turns the target's strength against it. The higher the target's Attack stat, the greater the damage this move inflicts."
+
+#. nombre
+#: data/moves/freezedry.tres
+msgid "Liofilización"
+msgstr "Freeze-Dry"
+
+#. descripción
+#: data/moves/freezedry.tres
+msgid "Enfría súbitamente al objetivo e incluso puede congelarlo. Es supereficaz contra Pokémon de tipo Agua."
+msgstr "The user rapidly cools the target. This may also leave the target frozen. This move is super effective on Water types."
+
+#. nombre
+#: data/moves/frenzyplant.tres
+msgid "Planta Feroz"
+msgstr "Frenzy Plant"
+
+#. descripción
+#: data/moves/frenzyplant.tres
+msgid "Golpea con una enorme planta. Quien lo usa no puede moverse en el siguiente turno."
+msgstr "The user slams the target with the roots of an enormous tree. The user can't move on the next turn."
+
+#. nombre
+#: data/moves/frostbreath.tres
+msgid "Vaho Gélido"
+msgstr "Frost Breath"
+
+#. descripción
+#: data/moves/frostbreath.tres
+msgid "Quien lo usa ataca lanzando un aliento gélido. Siempre asesta un golpe crítico."
+msgstr "The user attacks by blowing its cold breath on the target. This move always lands a critical hit."
+
+#. nombre
+#: data/moves/frustration.tres
+msgid "Frustración"
+msgstr "Frustration"
+
+#. nombre
+#: data/moves/furyattack.tres
+msgid "Ataque Furia"
+msgstr "Fury Attack"
+
+#. descripción
+#: data/moves/furyattack.tres
+msgid "Cornea al objetivo de dos a cinco veces."
+msgstr "The user attacks by jabbing the target with a horn, a beak, or the like. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/furycutter.tres
+msgid "Corte Furia"
+msgstr "Fury Cutter"
+
+#. descripción
+#: data/moves/furycutter.tres
+msgid "Ataque con garras o guadaña que crece en intensidad si se usa repetidas veces."
+msgstr "The user attacks by slashing the target with scythes, claws, or the like. This attack becomes more powerful if it hits in succession."
+
+#. nombre
+#: data/moves/furyswipes.tres
+msgid "Golpes Furia"
+msgstr "Fury Swipes"
+
+#. descripción
+#: data/moves/furyswipes.tres
+msgid "Araña rápidamente de dos a cinco veces."
+msgstr "The user attacks by raking the target with claws, scythes, or the like. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/gigadrain.tres
+msgid "Gigadrenado"
+msgstr "Giga Drain"
+
+#. nombre
+#: data/moves/gigaimpact.tres
+msgid "Gigaimpacto"
+msgstr "Giga Impact"
+
+#. descripción
+#: data/moves/gigaimpact.tres
+msgid "El usuario carga contra el objetivo con toda la fuerza que tiene y descansa durante el siguiente turno."
+msgstr "The user charges at the target using every bit of its power. The user can't move on the next turn."
+
+#. nombre
+#: data/moves/glare.tres
+msgid "Deslumbrar"
+msgstr "Glare"
+
+#. descripción
+#: data/moves/glare.tres
+msgid "Intimida y asusta al objetivo con la mirada para dejarlo paralizado."
+msgstr "The user intimidates the target with the pattern on its belly to cause paralysis."
+
+#. nombre
+#: data/moves/grassknot.tres
+msgid "Hierba Lazo"
+msgstr "Grass Knot"
+
+#. descripción
+#: data/moves/grassknot.tres
+msgid "Enreda al objetivo con hierba y lo derriba. Cuanto más pesado es el objetivo, más daño inflige."
+msgstr "The user snares the target with grass and trips it. The heavier the target, the greater the move's power."
+
+#. nombre
+#: data/moves/grasspledge.tres
+msgid "Voto Planta"
+msgstr "Grass Pledge"
+
+#. descripción
+#: data/moves/grasspledge.tres
+msgid "Ataca con columnas de hojas. Combinado con Voto Agua, crea un pantano y aumenta su potencia."
+msgstr "A column of grass hits the target. When used with its water counterpart, this move's power is boosted and a vast swamp appears."
+
+#. nombre
+#: data/moves/grasswhistle.tres
+msgid "Silbato"
+msgstr "Grass Whistle"
+
+#. nombre
+#: data/moves/grassyglide.tres
+msgid "Fitoimpulso"
+msgstr "Grassy Glide"
+
+#. descripción
+#: data/moves/grassyglide.tres
+msgid "Ataca al objetivo deslizándose sobre el terreno de combate. Este movimiento tiene prioridad alta cuando el terreno está cubierto por un campo de hierba."
+msgstr "Gliding on the ground, the user attacks the target. This move always goes first on Grassy Terrain."
+
+#. nombre
+#: data/moves/grassyterrain.tres
+msgid "Campo de Hierba"
+msgstr "Grassy Terrain"
+
+#. descripción
+#: data/moves/grassyterrain.tres
+msgid "Durante cinco turnos, se potencian los movimientos de tipo Planta y los Pokémon que están en contacto con el suelo recuperan PS en cada turno."
+msgstr "The user turns the ground into Grassy Terrain for five turns. This restores the HP of Pokémon on the ground a little every turn and powers up Grass-type moves."
+
+#. nombre
+#: data/moves/gravity.tres
+msgid "Gravedad"
+msgstr "Gravity"
+
+#. descripción
+#: data/moves/gravity.tres
+msgid "Durante cinco turnos, se anulan los movimientos que alzan el vuelo y los Pokémon de tipo Volador o que levitan son vulnerables a movimientos de tipo Tierra."
+msgstr "Enables Flying types or Pokémon with the Levitate Ability to be hit by Ground-type moves for five turns. Moves that involve flying can't be used."
+
+#. nombre
+#: data/moves/growl.tres
+msgid "Gruñido"
+msgstr "Growl"
+
+#. descripción
+#: data/moves/growl.tres
+msgid "Dulce gruñido que reduce el Ataque del equipo rival."
+msgstr "The user growls in an endearing way, making opposing Pokémon less wary. This lowers their Attack stats."
+
+#. nombre
+#: data/moves/growth.tres
+msgid "Desarrollo"
+msgstr "Growth"
+
+#. descripción
+#: data/moves/growth.tres
+msgid "Hace que su cuerpo crezca a marchas forzadas con lo que aumenta su Ataque y Ataque Especial."
+msgstr "The user's body grows all at once, boosting the Attack and Sp. Atk stats."
+
+#. nombre
+#: data/moves/gunkshot.tres
+msgid "Lanzamugre"
+msgstr "Gunk Shot"
+
+#. descripción
+#: data/moves/gunkshot.tres
+msgid "Lanza contra el objetivo basura asquerosa y puede envenenarlo."
+msgstr "The user shoots filthy garbage at the target to attack. This may also poison the target."
+
+#. nombre
+#: data/moves/gust.tres
+msgid "Tornado"
+msgstr "Gust"
+
+#. descripción
+#: data/moves/gust.tres
+msgid "Crea un tornado con las alas y lo lanza contra el objetivo."
+msgstr "A gust of wind is whipped up by wings and launched at the target to inflict damage."
+
+#. nombre
+#: data/moves/gyroball.tres
+msgid "Giro Bola"
+msgstr "Gyro Ball"
+
+#. descripción
+#: data/moves/gyroball.tres
+msgid "Embiste al objetivo con un potente ataque giratorio. Cuanto más lento es el usuario, más daño causa."
+msgstr "The user tackles the target with a high-speed spin. The slower the user is than the target, the greater the move's power."
+
+#. nombre
+#: data/moves/hail.tres
+msgid "Granizo"
+msgstr "Hail"
+
+#. descripción
+#: data/moves/hail.tres
+msgid "Tormenta de granizo que dura cinco turnos. Hiere a todos los Pokémon excepto a los de tipo Hielo."
+msgstr "The user summons a hailstorm lasting five turns. It damages all Pokémon except Ice types."
+
+#. nombre
+#: data/moves/hammerarm.tres
+msgid "Machada"
+msgstr "Hammer Arm"
+
+#. descripción
+#: data/moves/hammerarm.tres
+msgid "Gira con fuerza el puño y da un gran golpe. No obstante, baja la Velocidad."
+msgstr "The user swings its strong, heavy fist at the target to inflict damage. This also lowers the user's Speed stat."
+
+#. nombre
+#: data/moves/harden.tres
+msgid "Fortaleza"
+msgstr "Harden"
+
+#. descripción
+#: data/moves/harden.tres
+msgid "Tensa la musculatura del usuario para aumentar la Defensa."
+msgstr "The user stiffens all the muscles in its body to boost its Defense stat."
+
+#. nombre
+#: data/moves/haze.tres
+msgid "Niebla"
+msgstr "Haze"
+
+#. descripción
+#: data/moves/haze.tres
+msgid "Neblina que elimina los cambios de características de todos los Pokémon en combate."
+msgstr "The user creates a haze that eliminates every stat change among all the Pokémon engaged in battle."
+
+#. nombre
+#: data/moves/headbutt.tres
+msgid "Golpe Cabeza"
+msgstr "Headbutt"
+
+#. descripción
+#: data/moves/headbutt.tres
+msgid "Potente cabezazo que puede amedrentar al objetivo."
+msgstr "The user sticks out its head and attacks by charging straight into the target. This may also make the target flinch."
+
+#. nombre
+#: data/moves/headsmash.tres
+msgid "Testarazo"
+msgstr "Head Smash"
+
+#. descripción
+#: data/moves/headsmash.tres
+msgid "El usuario arriesga su vida y lanza un cabezazo con toda su fuerza. El agresor resulta seriamente dañado."
+msgstr "The user attacks the target with a hazardous full-power headbutt. This also damages the user terribly."
+
+#. nombre
+#: data/moves/heartstamp.tres
+msgid "Arrumaco"
+msgstr "Heart Stamp"
+
+#. nombre
+#: data/moves/heatcrash.tres
+msgid "Golpe Calor"
+msgstr "Heat Crash"
+
+#. descripción
+#: data/moves/heatcrash.tres
+msgid "El usuario ataca con su cuerpo ardiente. Cuanto mayor sea su peso comparado con el del objetivo, más daño causará."
+msgstr "The user slams into the target with its flame-covered body. The more the user outweighs the target, the greater the move's power."
+
+#. nombre
+#: data/moves/heatwave.tres
+msgid "Onda Ígnea"
+msgstr "Heat Wave"
+
+#. descripción
+#: data/moves/heatwave.tres
+msgid "Provoca un viento abrasador que puede quemar al objetivo."
+msgstr "The user attacks by exhaling hot breath on opposing Pokémon. This may also leave them with a burn."
+
+#. nombre
+#: data/moves/heavyslam.tres
+msgid "Cuerpo Pesado"
+msgstr "Heavy Slam"
+
+#. descripción
+#: data/moves/heavyslam.tres
+msgid "El usuario golpea con todo su cuerpo. Cuanto mayor sea su peso comparado con el del objetivo, más daño causará."
+msgstr "The user slams into the target with its heavy body. The more the user outweighs the target, the greater the move's power."
+
+#. nombre
+#: data/moves/hex.tres
+msgid "Infortunio"
+msgstr "Hex"
+
+#. descripción
+#: data/moves/hex.tres
+msgid "Ataque que causa un gran daño a los objetivos que sufren problemas de estado."
+msgstr "This relentless attack does massive damage to a target affected by status conditions."
+
+#. nombre
+#: data/moves/hiddenpower.tres
+msgid "Poder Oculto"
+msgstr "Hidden Power"
+
+#. nombre
+#: data/moves/highhorsepower.tres
+msgid "Fuerza Equina"
+msgstr "High Horsepower"
+
+#. descripción
+#: data/moves/highhorsepower.tres
+msgid "Asesta un golpe devastador usando todo su cuerpo."
+msgstr "The user fiercely attacks the target using its entire body."
+
+#. nombre
+#: data/moves/highjumpkick.tres
+msgid "Patada Salto Alta"
+msgstr "High Jump Kick"
+
+#. descripción
+#: data/moves/highjumpkick.tres
+msgid "El usuario salta muy alto y da un rodillazo. Si falla, se hará daño."
+msgstr "The target is attacked with a knee kick from a jump. If this move misses, the user takes damage instead."
+
+#. nombre
+#: data/moves/honeclaws.tres
+msgid "Afilagarras"
+msgstr "Hone Claws"
+
+#. descripción
+#: data/moves/honeclaws.tres
+msgid "El usuario se afila las garras para aumentar su Ataque y Precisión."
+msgstr "The user sharpens its claws to boost its Attack stat and accuracy."
+
+#. nombre
+#: data/moves/hornattack.tres
+msgid "Cornada"
+msgstr "Horn Attack"
+
+#. descripción
+#: data/moves/hornattack.tres
+msgid "Ataca al objetivo con una cornada."
+msgstr "The target is jabbed with a sharply pointed horn to inflict damage."
+
+#. nombre
+#: data/moves/howl.tres
+msgid "Aullido"
+msgstr "Howl"
+
+#. descripción
+#: data/moves/howl.tres
+msgid "Aullido que sube el ánimo y aumenta el Ataque del equipo."
+msgstr "The user howls loudly to rouse itself and its allies. This boosts their Attack stats."
+
+#. nombre
+#: data/moves/hurricane.tres
+msgid "Vendaval"
+msgstr "Hurricane"
+
+#. descripción
+#: data/moves/hurricane.tres
+msgid "Golpea al objetivo con un fuerte torbellino que envuelve al rival y puede confundirlo."
+msgstr "The user attacks by wrapping its opponent in a fierce wind. This may also confuse the target."
+
+#. nombre
+#: data/moves/hydrocannon.tres
+msgid "Hidrocañón"
+msgstr "Hydro Cannon"
+
+#. descripción
+#: data/moves/hydrocannon.tres
+msgid "Disparo de agua. El atacante debe descansar el siguiente turno."
+msgstr "The target is hit with a watery blast. The user can't move on the next turn."
+
+#. nombre
+#: data/moves/hydropump.tres
+msgid "Hidrobomba"
+msgstr "Hydro Pump"
+
+#. descripción
+#: data/moves/hydropump.tres
+msgid "Lanza una gran masa de agua a presión para atacar."
+msgstr "The target is blasted by a huge volume of water launched under great pressure."
+
+#. nombre
+#: data/moves/hyperbeam.tres
+msgid "Hiperrayo"
+msgstr "Hyper Beam"
+
+#. descripción
+#: data/moves/hyperbeam.tres
+msgid "Es eficaz, pero el atacante deberá descansar en el siguiente turno."
+msgstr "The target is attacked with a powerful beam. The user can't move on the next turn."
+
+#. nombre
+#: data/moves/hyperfang.tres
+msgid "Hipercolmillo"
+msgstr "Hyper Fang"
+
+#. descripción
+#: data/moves/hyperfang.tres
+msgid "Ataca con agudos colmillos. Puede amedrentar al objetivo."
+msgstr "The user bites hard on the target with its sharp front fangs. This may also make the target flinch."
+
+#. nombre
+#: data/moves/hypervoice.tres
+msgid "Vozarrón"
+msgstr "Hyper Voice"
+
+#. descripción
+#: data/moves/hypervoice.tres
+msgid "Grito desgarrador que inflige daño al objetivo."
+msgstr "The user attacks by letting loose a horribly loud, resounding cry."
+
+#. nombre
+#: data/moves/hypnosis.tres
+msgid "Hipnosis"
+msgstr "Hypnosis"
+
+#. descripción
+#: data/moves/hypnosis.tres
+msgid "Ataque hipnótico que hace dormir profundamente al objetivo."
+msgstr "The user employs hypnotic suggestion to make the target fall asleep."
+
+#. nombre
+#: data/moves/iceball.tres
+msgid "Bola Hielo"
+msgstr "Ice Ball"
+
+#. nombre
+#: data/moves/icebeam.tres
+msgid "Rayo Hielo"
+msgstr "Ice Beam"
+
+#. descripción
+#: data/moves/icebeam.tres
+msgid "Rayo de hielo que puede llegar a congelar."
+msgstr "The target is struck with an icy-cold beam of energy. This may also leave the target frozen."
+
+#. nombre
+#: data/moves/icefang.tres
+msgid "Colmillo Hielo"
+msgstr "Ice Fang"
+
+#. descripción
+#: data/moves/icefang.tres
+msgid "El usuario muerde al objetivo con colmillos helados y puede hacer que se amedrente o se congele."
+msgstr "The user bites with cold-infused fangs. This may also make the target flinch or leave it frozen."
+
+#. nombre
+#: data/moves/icepunch.tres
+msgid "Puño Hielo"
+msgstr "Ice Punch"
+
+#. descripción
+#: data/moves/icepunch.tres
+msgid "Puñetazo helado que puede llegar a congelar."
+msgstr "The target is attacked with an icy punch. This may also leave the target frozen."
+
+#. nombre
+#: data/moves/iceshard.tres
+msgid "Esquirla Helada"
+msgstr "Ice Shard"
+
+#. descripción
+#: data/moves/iceshard.tres
+msgid "Crea bolas de hielo y las lanza a gran velocidad. Este movimiento tiene prioridad alta."
+msgstr "The user flash-freezes chunks of ice and hurls them at the target. This move always goes first."
+
+#. nombre
+#: data/moves/icespinner.tres
+msgid "Pirueta Helada"
+msgstr "Ice Spinner"
+
+#. nombre
+#: data/moves/iciclecrash.tres
+msgid "Chuzos"
+msgstr "Icicle Crash"
+
+#. descripción
+#: data/moves/iciclecrash.tres
+msgid "Lanza grandes carámbanos. Puede amedrentar al objetivo."
+msgstr "The user attacks by crashing large icicles onto the target. This may also make the target flinch."
+
+#. nombre
+#: data/moves/iciclespear.tres
+msgid "Carámbano"
+msgstr "Icicle Spear"
+
+#. descripción
+#: data/moves/iciclespear.tres
+msgid "Ataca lanzando de dos a cinco ráfagas consecutivas de carámbanos."
+msgstr "The user attacks by launching sharp icicles at the target. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/icywind.tres
+msgid "Viento Hielo"
+msgstr "Icy Wind"
+
+#. descripción
+#: data/moves/icywind.tres
+msgid "Ataque con aire helado que baja la Velocidad de los rivales."
+msgstr "The user attacks with a gust of chilled air. This also lowers opposing Pokémon's Speed stats."
+
+#. nombre
+#: data/moves/incinerate.tres
+msgid "Calcinación"
+msgstr "Incinerate"
+
+#. descripción
+#: data/moves/incinerate.tres
+msgid "Llamas que golpean a los objetivos adyacentes. Si estos llevan bayas o ciertos objetos, se quemarán y ya no se podrán usar."
+msgstr "The user attacks opposing Pokémon with fire. If a Pokémon is holding a certain item, such as a Berry, the item becomes burned up and unusable."
+
+#. nombre
+#: data/moves/inferno.tres
+msgid "Infierno"
+msgstr "Inferno"
+
+#. descripción
+#: data/moves/inferno.tres
+msgid "Ataca con una gran ráfaga de fuego que causa quemaduras."
+msgstr "The user attacks by engulfing the target in an intense fire. This leaves the target with a burn."
+
+#. nombre
+#: data/moves/infestation.tres
+msgid "Acoso"
+msgstr "Infestation"
+
+#. descripción
+#: data/moves/infestation.tres
+msgid "Hostiga al objetivo durante cuatro o cinco turnos e impide que pueda huir mientras tanto."
+msgstr "The target is infested and attacked for four to five turns. The target can't flee during this time."
+
+#. nombre
+#: data/moves/ingrain.tres
+msgid "Arraigo"
+msgstr "Ingrain"
+
+#. descripción
+#: data/moves/ingrain.tres
+msgid "Echa raíces para recuperar PS en cada turno, pero impide el relevo."
+msgstr "The user lays roots that restore its own HP every turn. Because the user is now rooted, it can't switch out."
+
+#. nombre
+#: data/moves/irondefense.tres
+msgid "Defensa Férrea"
+msgstr "Iron Defense"
+
+#. descripción
+#: data/moves/irondefense.tres
+msgid "Fortalece el cuerpo como si fuera de hierro y sube mucho la Defensa."
+msgstr "The user hardens its body's surface like iron, sharply boosting its Defense stat."
+
+#. nombre
+#: data/moves/ironhead.tres
+msgid "Cabeza de Hierro"
+msgstr "Iron Head"
+
+#. descripción
+#: data/moves/ironhead.tres
+msgid "Ataca con su dura cabeza de hierro. Puede hacer que el objetivo se amedrente."
+msgstr "The user slams the target with its steel-hard head. This may also make the target flinch."
+
+#. nombre
+#: data/moves/irontail.tres
+msgid "Cola Férrea"
+msgstr "Iron Tail"
+
+#. descripción
+#: data/moves/irontail.tres
+msgid "Ataca con una cola férrea y puede bajar la Defensa del objetivo."
+msgstr "The target is slammed with a steel-hard tail. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/jumpkick.tres
+msgid "Patada Salto"
+msgstr "Jump Kick"
+
+#. nombre
+#: data/moves/karatechop.tres
+msgid "Golpe Kárate"
+msgstr "Karate Chop"
+
+#. nombre
+#: data/moves/kinesis.tres
+msgid "Kinético"
+msgstr "Kinesis"
+
+#. descripción
+#: data/moves/kinesis.tres
+msgid "Dobla una cuchara para distraer al objetivo y bajar su nivel de Precisión."
+msgstr "The user distracts the target by bending a spoon. This lowers the target’s accuracy."
+
+#. nombre
+#: data/moves/knockoff.tres
+msgid "Desarme"
+msgstr "Knock Off"
+
+#. descripción
+#: data/moves/knockoff.tres
+msgid "Impide al objetivo usar el objeto que lleva durante el combate. La potencia del movimiento se multiplica si el objetivo lleva un objeto."
+msgstr "The user slaps down the target's held item, making it unusable for that battle. This move does more damage if the target has a held item."
+
+#. nombre
+#: data/moves/lashout.tres
+msgid "Desahogo"
+msgstr "Lash Out"
+
+#. descripción
+#: data/moves/lashout.tres
+msgid "Ataca al rival presa de la rabia. Si el usuario ha sufrido una reducción de características en ese turno, la potencia del movimiento se duplica."
+msgstr "The user lashes out to vent its frustration toward the target. This move's power is doubled if the user's stats were lowered during this turn."
+
+#. nombre
+#: data/moves/lavaplume.tres
+msgid "Humareda"
+msgstr "Lava Plume"
+
+#. descripción
+#: data/moves/lavaplume.tres
+msgid "Un infierno de llamas daña a los Pokémon adyacentes en combate. Puede quemar."
+msgstr "The user torches everything around it in an inferno of scarlet flames. This may also leave those it hits with a burn."
+
+#. nombre
+#: data/moves/leafblade.tres
+msgid "Hoja Aguda"
+msgstr "Leaf Blade"
+
+#. descripción
+#: data/moves/leafblade.tres
+msgid "Acuchilla con una hoja fina. Suele dar un golpe crítico."
+msgstr "The user handles a sharp leaf like a sword and cuts the target to inflict damage. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/leafstorm.tres
+msgid "Lluevehojas"
+msgstr "Leaf Storm"
+
+#. descripción
+#: data/moves/leafstorm.tres
+msgid "Envuelve al objetivo con una lluvia de hojas afiladas, pero reduce mucho su Ataque Especial."
+msgstr "The user whips up a storm of leaves around the target. The recoil from this move harshly lowers the user's Sp. Atk stat."
+
+#. nombre
+#: data/moves/leaftornado.tres
+msgid "Ciclón de Hojas"
+msgstr "Leaf Tornado"
+
+#. descripción
+#: data/moves/leaftornado.tres
+msgid "Tritura con afiladas hojas y puede bajar la Precisión del objetivo."
+msgstr "The user attacks its target by encircling it in sharp leaves. This attack may also lower the target’s accuracy."
+
+#. nombre
+#: data/moves/leechlife.tres
+msgid "Chupavidas"
+msgstr "Leech Life"
+
+#. descripción
+#: data/moves/leechlife.tres
+msgid "Restaura al usuario la mitad del daño causado al objetivo."
+msgstr "The user drains the target's blood. The user's HP is restored by up to half the damage taken by the target."
+
+#. nombre
+#: data/moves/leechseed.tres
+msgid "Drenadoras"
+msgstr "Leech Seed"
+
+#. descripción
+#: data/moves/leechseed.tres
+msgid "Planta semillas que absorben PS del objetivo en cada turno y que le sirven para recuperarse."
+msgstr "A seed is planted on the target. It steals some HP from the target every turn."
+
+#. nombre
+#: data/moves/leer.tres
+msgid "Malicioso"
+msgstr "Leer"
+
+#. descripción
+#: data/moves/leer.tres
+msgid "Intimida a los rivales para bajar su Defensa."
+msgstr "The user gives opposing Pokémon an intimidating leer that lowers their Defense stats."
+
+#. nombre
+#: data/moves/lick.tres
+msgid "Lengüetazo"
+msgstr "Lick"
+
+#. descripción
+#: data/moves/lick.tres
+msgid "Una lengua ataca al objetivo. Puede causar parálisis."
+msgstr "The user licks the target with a long tongue to inflict damage. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/lifedew.tres
+msgid "Gota Vital"
+msgstr "Life Dew"
+
+#. descripción
+#: data/moves/lifedew.tres
+msgid "Vierte un agua misteriosa y balsámica que restaura tanto sus propios PS como los de aquellos aliados presentes en el terreno de combate."
+msgstr "The user scatters mysterious water around and restores the HP of itself and its ally Pokémon currently in the battle."
+
+#. nombre
+#: data/moves/lightscreen.tres
+msgid "Pantalla de Luz"
+msgstr "Light Screen"
+
+#. descripción
+#: data/moves/lightscreen.tres
+msgid "Pared de luz que reduce durante cinco turnos el daño producido por los ataques especiales."
+msgstr "A wondrous wall of light is put up to reduce damage from special moves for five turns."
+
+#. nombre
+#: data/moves/liquidation.tres
+msgid "Hidroariete"
+msgstr "Liquidation"
+
+#. descripción
+#: data/moves/liquidation.tres
+msgid "Ataca golpeando gracias a la fuerza del agua. También puede reducir la Defensa del objetivo."
+msgstr "The user slams into the target using a full-force blast of water. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/lovelykiss.tres
+msgid "Beso Amoroso"
+msgstr "Lovely Kiss"
+
+#. descripción
+#: data/moves/lovelykiss.tres
+msgid "Intimida al objetivo con una cara que asusta y le da un beso que lo deja dormido."
+msgstr "With a scary face, the user tries to force a kiss on the target. If it succeeds, the target falls asleep."
+
+#. nombre
+#: data/moves/lowkick.tres
+msgid "Patada Baja"
+msgstr "Low Kick"
+
+#. descripción
+#: data/moves/lowkick.tres
+msgid "Patada baja que derriba al oponente. Cuanto más pesa el objetivo, más daño le causa."
+msgstr "A powerful low kick that makes the target fall over. The heavier the target, the greater the move's power."
+
+#. nombre
+#: data/moves/lowsweep.tres
+msgid "Puntapié"
+msgstr "Low Sweep"
+
+#. descripción
+#: data/moves/lowsweep.tres
+msgid "Ataque rápido dirigido a los pies del objetivo que le hace perder Velocidad."
+msgstr "The user makes a swift attack on the target's legs, which lowers the target's Speed stat."
+
+#. nombre
+#: data/moves/lunge.tres
+msgid "Plancha"
+msgstr "Lunge"
+
+#. descripción
+#: data/moves/lunge.tres
+msgid "Ataca al oponente abalanzándose sobre él con todas sus fuerzas y reduce su Ataque."
+msgstr "The user makes a lunge at the target, attacking with full force. This also lowers the target's Attack stat."
+
+#. nombre
+#: data/moves/machpunch.tres
+msgid "Ultrapuño"
+msgstr "Mach Punch"
+
+#. descripción
+#: data/moves/machpunch.tres
+msgid "Puñetazo de velocidad fulminante. Este movimiento tiene prioridad alta."
+msgstr "The user throws a punch at blinding speed. This move always goes first."
+
+#. nombre
+#: data/moves/magicalleaf.tres
+msgid "Hoja Mágica"
+msgstr "Magical Leaf"
+
+#. descripción
+#: data/moves/magicalleaf.tres
+msgid "Esparce extrañas hojas que persiguen al objetivo. No se puede esquivar."
+msgstr "The user scatters curious leaves that chase the target. This attack never misses."
+
+#. nombre
+#: data/moves/magnetbomb.tres
+msgid "Bomba Imán"
+msgstr "Magnet Bomb"
+
+#. nombre
+#: data/moves/magnetrise.tres
+msgid "Levitón"
+msgstr "Magnet Rise"
+
+#. descripción
+#: data/moves/magnetrise.tres
+msgid "Levita gracias a un campo magnético generado por electricidad durante cinco turnos."
+msgstr "The user levitates using electrically generated magnetism for five turns."
+
+#. nombre
+#: data/moves/magnitude.tres
+msgid "Magnitud"
+msgstr "Magnitude"
+
+#. nombre
+#: data/moves/meditate.tres
+msgid "Meditación"
+msgstr "Meditate"
+
+#. nombre
+#: data/moves/megadrain.tres
+msgid "Megaagotar"
+msgstr "Mega Drain"
+
+#. nombre
+#: data/moves/megahorn.tres
+msgid "Megacuerno"
+msgstr "Megahorn"
+
+#. descripción
+#: data/moves/megahorn.tres
+msgid "Violenta embestida con cuernos imponentes."
+msgstr "Using its tough and impressive horn, the user rams into the target with no letup."
+
+#. nombre
+#: data/moves/megakick.tres
+msgid "Megapatada"
+msgstr "Mega Kick"
+
+#. descripción
+#: data/moves/megakick.tres
+msgid "Patada de extrema fuerza."
+msgstr "The target is attacked by a kick launched with muscle-packed power."
+
+#. nombre
+#: data/moves/megapunch.tres
+msgid "Megapuño"
+msgstr "Mega Punch"
+
+#. descripción
+#: data/moves/megapunch.tres
+msgid "Un puñetazo de gran potencia."
+msgstr "The target is slugged by a punch thrown with muscle-packed power."
+
+#. nombre
+#: data/moves/memento.tres
+msgid "Legado"
+msgstr "Memento"
+
+#. descripción
+#: data/moves/memento.tres
+msgid "El usuario se debilita, pero baja mucho tanto el Ataque como el Ataque Especial del objetivo."
+msgstr "The user faints. In return, the target's Attack and Sp. Atk stats are harshly lowered."
+
+#. nombre
+#: data/moves/metalclaw.tres
+msgid "Garra Metal"
+msgstr "Metal Claw"
+
+#. descripción
+#: data/moves/metalclaw.tres
+msgid "Ataque con garras de acero que puede aumentar el Ataque del usuario."
+msgstr "The target is raked with steel claws. This may also boost the user's Attack stat."
+
+#. nombre
+#: data/moves/metalsound.tres
+msgid "Eco Metálico"
+msgstr "Metal Sound"
+
+#. descripción
+#: data/moves/metalsound.tres
+msgid "Horrible chirrido metálico que baja mucho la Defensa Especial del objetivo."
+msgstr "A horrible sound like scraping metal harshly lowers the target's Sp. Def stat."
+
+#. nombre
+#: data/moves/meteorbeam.tres
+msgid "Rayo Meteórico"
+msgstr "Meteor Beam"
+
+#. descripción
+#: data/moves/meteorbeam.tres
+msgid "El usuario dedica el primer turno a aumentar su Ataque Especial acumulando energía cósmica y lanza su ofensiva contra el objetivo en el segundo."
+msgstr "The user gathers energy from space and boosts its Sp. Atk stat on the first turn, then attacks on the next turn."
+
+#. nombre
+#: data/moves/meteormash.tres
+msgid "Puño Meteoro"
+msgstr "Meteor Mash"
+
+#. descripción
+#: data/moves/meteormash.tres
+msgid "Puñetazo que impacta como un meteorito y puede subir el Ataque del agresor."
+msgstr "The target is hit with a hard punch fired like a meteor. This may also boost the user’s Attack stat."
+
+#. nombre
+#: data/moves/minimize.tres
+msgid "Reducción"
+msgstr "Minimize"
+
+#. descripción
+#: data/moves/minimize.tres
+msgid "El usuario mengua para aumentar mucho la Evasión."
+msgstr "The user compresses its body to make itself look smaller, which sharply boosts its evasiveness."
+
+#. nombre
+#: data/moves/mirrorshot.tres
+msgid "Disparo Espejo"
+msgstr "Mirror Shot"
+
+#. nombre
+#: data/moves/mist.tres
+msgid "Neblina"
+msgstr "Mist"
+
+#. descripción
+#: data/moves/mist.tres
+msgid "Rodea de fina niebla al usuario y protege las características de su equipo durante cinco turnos."
+msgstr "The user cloaks itself and its allies in a white mist that prevents any of their stats from being lowered for five turns."
+
+#. nombre
+#: data/moves/mistyexplosion.tres
+msgid "Bruma Explosiva"
+msgstr "Misty Explosion"
+
+#. descripción
+#: data/moves/mistyexplosion.tres
+msgid "El usuario ataca a todos a su alrededor, pero se debilita de inmediato. La potencia del movimiento aumenta si el terreno está cubierto por un campo de niebla."
+msgstr "The user attacks everything around it and faints upon using this move. This move's power is boosted on Misty Terrain."
+
+#. nombre
+#: data/moves/mistyterrain.tres
+msgid "Campo de Niebla"
+msgstr "Misty Terrain"
+
+#. descripción
+#: data/moves/mistyterrain.tres
+msgid "Durante cinco turnos, los Pokémon que están en el suelo no sufren problemas de estado y se reduce a la mitad el daño de los movimientos de tipo Dragón."
+msgstr "This protects Pokémon on the ground from status conditions and halves damage from Dragon-type moves for five turns."
+
+#. nombre
+#: data/moves/moonblast.tres
+msgid "Fuerza Lunar"
+msgstr "Moonblast"
+
+#. descripción
+#: data/moves/moonblast.tres
+msgid "Invoca el poder de la luna para atacar al objetivo. Puede disminuir el Ataque Especial del objetivo."
+msgstr "Borrowing the power of the moon, the user attacks the target. This may also lower the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/moonlight.tres
+msgid "Luz Lunar"
+msgstr "Moonlight"
+
+#. descripción
+#: data/moves/moonlight.tres
+#: data/moves/morningsun.tres
+#: data/moves/synthesis.tres
+msgid "Restaura PS del usuario. La cantidad varía según el tiempo que haga."
+msgstr "The user restores its own HP. The amount of HP regained varies with the weather."
+
+#. nombre
+#: data/moves/morningsun.tres
+msgid "Sol Matinal"
+msgstr "Morning Sun"
+
+#. nombre
+#: data/moves/mudbomb.tres
+msgid "Bomba Fango"
+msgstr "Mud Bomb"
+
+#. nombre
+#: data/moves/muddywater.tres
+msgid "Agua Lodosa"
+msgstr "Muddy Water"
+
+#. descripción
+#: data/moves/muddywater.tres
+msgid "Ataque con agua lodosa que puede bajar la Precisión del equipo rival."
+msgstr "The user attacks by shooting muddy water at opposing Pokémon. This may also lower their accuracy."
+
+#. nombre
+#: data/moves/mudshot.tres
+msgid "Disparo Lodo"
+msgstr "Mud Shot"
+
+#. descripción
+#: data/moves/mudshot.tres
+msgid "El usuario lanza lodo al objetivo y reduce su Velocidad."
+msgstr "The user attacks by hurling a blob of mud at the target. This also lowers the target's Speed stat."
+
+#. nombre
+#: data/moves/mudslap.tres
+msgid "Bofetón Lodo"
+msgstr "Mud-Slap"
+
+#. descripción
+#: data/moves/mudslap.tres
+msgid "Echa lodo en la cara para bajar la Precisión."
+msgstr "The user hurls mud in the target's face to inflict damage and lower its accuracy."
+
+#. nombre
+#: data/moves/mysticalfire.tres
+msgid "Llama Embrujada"
+msgstr "Mystical Fire"
+
+#. descripción
+#: data/moves/mysticalfire.tres
+msgid "El usuario lanza por la boca una singular llama a gran temperatura con la que ataca a su oponente y baja su Ataque Especial."
+msgstr "The user attacks by breathing a special, hot fire. This also lowers the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/nastyplot.tres
+msgid "Maquinación"
+msgstr "Nasty Plot"
+
+#. descripción
+#: data/moves/nastyplot.tres
+msgid "Estimula su cerebro pensando en cosas malas. Aumenta mucho el Ataque Especial."
+msgstr "The user stimulates its brain by thinking bad thoughts. This sharply boosts the user's Sp. Atk stat."
+
+#. nombre
+#: data/moves/naturalgift.tres
+msgid "Don Natural"
+msgstr "Natural Gift"
+
+#. nombre
+#: data/moves/nightmare.tres
+msgid "Pesadilla"
+msgstr "Nightmare"
+
+#. nombre
+#: data/moves/nightshade.tres
+msgid "Tinieblas"
+msgstr "Night Shade"
+
+#. descripción
+#: data/moves/nightshade.tres
+msgid "Produce un espejismo ante el objetivo, que pierde tantos PS como nivel tenga el usuario."
+msgstr "The user makes the target see a frightening mirage. It inflicts damage equal to the user's level."
+
+#. nombre
+#: data/moves/nightslash.tres
+msgid "Tajo Umbrío"
+msgstr "Night Slash"
+
+#. descripción
+#: data/moves/nightslash.tres
+msgid "Ataca al objetivo a la primera oportunidad. Suele ser crítico."
+msgstr "The user slashes the target the instant an opportunity arises. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/nuzzle.tres
+msgid "Moflete Estático"
+msgstr "Nuzzle"
+
+#. descripción
+#: data/moves/nuzzle.tres
+msgid "Quien lo usa frota sus mofletes cargados de electricidad contra el objetivo y consigue paralizarlo."
+msgstr "The user attacks by nuzzling its electrified cheeks against the target. This also leaves the target with paralysis."
+
+#. nombre
+#: data/moves/octazooka.tres
+msgid "Pulpocañón"
+msgstr "Octazooka"
+
+#. descripción
+#: data/moves/octazooka.tres
+msgid "Dispara tinta a la cara. Puede bajar la Precisión."
+msgstr "The user attacks by spraying ink in the target’s face or eyes. This may also lower the target’s accuracy."
+
+#. nombre
+#: data/moves/ominouswind.tres
+msgid "Viento Aciago"
+msgstr "Ominous Wind"
+
+#. nombre
+#: data/moves/outrage.tres
+msgid "Enfado"
+msgstr "Outrage"
+
+#. descripción
+#: data/moves/outrage.tres
+msgid "Ataca de dos a tres turnos y acaba confundiendo al agresor."
+msgstr "The user rampages and attacks for two to three turns. The user then becomes confused."
+
+#. nombre
+#: data/moves/overheat.tres
+msgid "Sofoco"
+msgstr "Overheat"
+
+#. descripción
+#: data/moves/overheat.tres
+msgid "Ataque en toda regla que baja mucho el Ataque Especial de quien lo usa."
+msgstr "The user attacks the target with all its might. The recoil from this move harshly lowers the user's Sp. Atk stat."
+
+#. nombre
+#: data/moves/payback.tres
+msgid "Vendetta"
+msgstr "Payback"
+
+#. descripción
+#: data/moves/payback.tres
+msgid "El usuario contraataca con el doble de fuerza si el objetivo usa un movimiento antes."
+msgstr "The user stores power, then attacks. This move's power is doubled if the user moves after the target."
+
+#. nombre
+#: data/moves/payday.tres
+msgid "Día de Pago"
+msgstr "Pay Day"
+
+#. descripción
+#: data/moves/payday.tres
+msgid "Arroja monedas al objetivo y las recupera al final del combate."
+msgstr "Coins are hurled at the target to inflict damage. Money is earned after the battle."
+
+#. nombre
+#: data/moves/peck.tres
+msgid "Picotazo"
+msgstr "Peck"
+
+#. descripción
+#: data/moves/peck.tres
+msgid "Ensarta al objetivo con un cuerno o pico punzante."
+msgstr "The target is jabbed with a sharply pointed beak or horn to inflict damage."
+
+#. nombre
+#: data/moves/perishsong.tres
+msgid "Canto Mortal"
+msgstr "Perish Song"
+
+#. descripción
+#: data/moves/perishsong.tres
+msgid "Si un Pokémon escucha este canto y no es cambiado por otro en tres turnos, acaba debilitándose."
+msgstr "Any Pokémon that hears this song faints in three turns, unless it switches out of battle."
+
+#. nombre
+#: data/moves/petalblizzard.tres
+msgid "Tormenta Floral"
+msgstr "Petal Blizzard"
+
+#. descripción
+#: data/moves/petalblizzard.tres
+msgid "El usuario desata un intenso vendaval de pétalos que daña a los Pokémon a su alrededor."
+msgstr "The user stirs up a violent petal blizzard and damages everything around it."
+
+#. nombre
+#: data/moves/petaldance.tres
+msgid "Danza Pétalo"
+msgstr "Petal Dance"
+
+#. descripción
+#: data/moves/petaldance.tres
+msgid "Lanza pétalos de dos a tres turnos y acaba confundiendo al atacante."
+msgstr "The user attacks the target by scattering petals for two to three turns. The user then becomes confused."
+
+#. nombre
+#: data/moves/phantomforce.tres
+msgid "Golpe Fantasma"
+msgstr "Phantom Force"
+
+#. descripción
+#: data/moves/phantomforce.tres
+msgid "El usuario desaparece en el primer turno y ataca a su objetivo en el segundo. Permite acertar aunque el objetivo esté protegiéndose."
+msgstr "The user vanishes somewhere, then strikes the target on the next turn. This move hits even if the target protects itself."
+
+#. nombre
+#: data/moves/pinmissile.tres
+msgid "Pin Misil"
+msgstr "Pin Missile"
+
+#. descripción
+#: data/moves/pinmissile.tres
+msgid "Lanza finas púas que hieren de dos a cinco veces."
+msgstr "The user attacks by shooting sharp spikes at the target. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/playnice.tres
+msgid "Camaradería"
+msgstr "Play Nice"
+
+#. descripción
+#: data/moves/playnice.tres
+msgid "Se hace amigo de su oponente y consigue que a este se le quiten las ganas de combatir. Además, reduce su Ataque."
+msgstr "The user and the target become friends, and the target loses its will to fight. This lowers the target's Attack stat."
+
+#. nombre
+#: data/moves/playrough.tres
+msgid "Carantoña"
+msgstr "Play Rough"
+
+#. descripción
+#: data/moves/playrough.tres
+msgid "El Pokémon que lo usa le hace cucamonas al objetivo y lo ataca. Puede disminuir el Ataque del objetivo."
+msgstr "The user attacks by playing rough with the target. This may also lower the target's Attack stat."
+
+#. nombre
+#: data/moves/pluck.tres
+msgid "Picoteo"
+msgstr "Pluck"
+
+#. descripción
+#: data/moves/pluck.tres
+msgid "Picotea al objetivo. Si este sostiene una baya, la picotea también y obtiene sus efectos."
+msgstr "The user attacks by pecking the target. If the target is holding a Berry, the user eats it and gains its effect."
+
+#. nombre
+#: data/moves/poisonfang.tres
+msgid "Colmillo Veneno"
+msgstr "Poison Fang"
+
+#. descripción
+#: data/moves/poisonfang.tres
+msgid "Colmillos tóxicos que pueden envenenar gravemente al objetivo."
+msgstr "The user bites the target with toxic fangs. This may also leave the target badly poisoned."
+
+#. nombre
+#: data/moves/poisongas.tres
+msgid "Gas Venenoso"
+msgstr "Poison Gas"
+
+#. descripción
+#: data/moves/poisongas.tres
+msgid "Lanza una nube de gas tóxico al objetivo. Produce envenenamiento."
+msgstr "A cloud of poison gas is sprayed in the faces of opposing Pokémon, poisoning those it hits."
+
+#. nombre
+#: data/moves/poisonjab.tres
+msgid "Puya Nociva"
+msgstr "Poison Jab"
+
+#. descripción
+#: data/moves/poisonjab.tres
+msgid "Pincha al objetivo con un tentáculo o brazo envenenado. Puede llegar a envenenar al objetivo."
+msgstr "The target is stabbed with a tentacle, an arm, or the like steeped in poison. This may also poison the target."
+
+#. nombre
+#: data/moves/poisonpowder.tres
+msgid "Polvo Veneno"
+msgstr "Poison Powder"
+
+#. descripción
+#: data/moves/poisonpowder.tres
+msgid "Polvo tóxico que envenena al objetivo."
+msgstr "The user scatters a cloud of poisonous dust that poisons the target."
+
+#. nombre
+#: data/moves/poisonsting.tres
+msgid "Picotazo Veneno"
+msgstr "Poison Sting"
+
+#. descripción
+#: data/moves/poisonsting.tres
+msgid "Lanza un aguijón tóxico que puede envenenar al objetivo."
+msgstr "The user stabs the target with a poisonous stinger to inflict damage. This may also poison the target."
+
+#. nombre
+#: data/moves/poisontail.tres
+msgid "Cola Veneno"
+msgstr "Poison Tail"
+
+#. descripción
+#: data/moves/poisontail.tres
+msgid "Puede envenenar y dar un golpe crítico."
+msgstr "The user hits the target with its tail. This move has a heightened chance of landing a critical hit and may also poison the target."
+
+#. nombre
+#: data/moves/pollenpuff.tres
+msgid "Bola de Polen"
+msgstr "Pollen Puff"
+
+#. descripción
+#: data/moves/pollenpuff.tres
+msgid "Ataca al oponente con una bola explosiva. Si esta alcanza a un aliado, le hará recuperar PS."
+msgstr "The user attacks the enemy with a pollen puff that explodes. If the target is an ally, it gives the ally a pollen puff that restores its HP instead."
+
+#. nombre
+#: data/moves/poltergeist.tres
+msgid "Poltergeist"
+msgstr "Poltergeist"
+
+#. descripción
+#: data/moves/poltergeist.tres
+msgid "El usuario ataca utilizando el objeto que lleva el rival. Si no tiene ninguno equipado, el movimiento falla."
+msgstr "The user attacks by controlling the target's item. This move fails if the target isn't holding an item."
+
+#. nombre
+#: data/moves/pounce.tres
+msgid "Brinco"
+msgstr "Pounce"
+
+#. nombre
+#: data/moves/pound.tres
+msgid "Destructor"
+msgstr "Pound"
+
+#. descripción
+#: data/moves/pound.tres
+msgid "Golpea con las patas o la cola."
+msgstr "The target is physically pounded with a long tail, a foreleg, or the like."
+
+#. nombre
+#: data/moves/powdersnow.tres
+msgid "Nieve Polvo"
+msgstr "Powder Snow"
+
+#. descripción
+#: data/moves/powdersnow.tres
+msgid "Lanza nieve que puede llegar a congelar."
+msgstr "The user attacks with a chilling gust of powdery snow. This may also leave opposing Pokémon frozen."
+
+#. nombre
+#: data/moves/powergem.tres
+msgid "Joya de Luz"
+msgstr "Power Gem"
+
+#. descripción
+#: data/moves/powergem.tres
+msgid "Ataca con un rayo de luz que centellea como si lo formaran miles de joyas."
+msgstr "The user attacks with a ray of light that sparkles as if it were made of gemstones."
+
+#. nombre
+#: data/moves/powertrip.tres
+msgid "Chulería"
+msgstr "Power Trip"
+
+#. descripción
+#: data/moves/powertrip.tres
+msgid "Ataca al oponente presumiendo de su fuerza. Cuanto más hayan subido las características del usuario, mayor será el daño."
+msgstr "The user boasts its strength and attacks the target. The more the user's stats are boosted, the greater the move's power."
+
+#. nombre
+#: data/moves/poweruppunch.tres
+msgid "Puño Incremento"
+msgstr "Power-Up Punch"
+
+#. descripción
+#: data/moves/poweruppunch.tres
+msgid "Cada vez que golpea a un oponente se endurecen sus puños. Si acierta al objetivo, el Ataque del usuario aumenta."
+msgstr "Striking opponents over and over makes the user’s fists harder. Hitting a target raises the Attack stat."
+
+#. nombre
+#: data/moves/powerwhip.tres
+msgid "Latigazo"
+msgstr "Power Whip"
+
+#. descripción
+#: data/moves/powerwhip.tres
+msgid "El usuario agita violentamente sus lianas o tentáculos para golpear al objetivo."
+msgstr "The user violently whirls its vines, tentacles, or the like to lash the target."
+
+#. nombre
+#: data/moves/present.tres
+msgid "Presente"
+msgstr "Present"
+
+#. descripción
+#: data/moves/present.tres
+msgid "Quien lo usa ataca al objetivo dándole un regalo con una bomba trampa. Sin embargo, a veces restaura sus PS."
+msgstr "The user attacks by giving the target a gift with a hidden trap. The gift restores HP sometimes, however."
+
+#. nombre
+#: data/moves/protect.tres
+msgid "Protección"
+msgstr "Protect"
+
+#. nombre
+#: data/moves/psybeam.tres
+msgid "Psicorrayo"
+msgstr "Psybeam"
+
+#. descripción
+#: data/moves/psybeam.tres
+msgid "Extraño rayo que puede causar confusión."
+msgstr "The target is attacked with a peculiar ray. This may also confuse the target."
+
+#. nombre
+#: data/moves/psychic.tres
+msgid "Psíquico"
+msgstr "Psychic"
+
+#. descripción
+#: data/moves/psychic.tres
+msgid "Fuerte ataque telequinético que puede bajar la Defensa Especial del objetivo."
+msgstr "The target is hit with a strong telekinetic force to inflict damage. This may also lower the target’s Sp. Def stat."
+
+#. nombre
+#: data/moves/psychicfangs.tres
+msgid "Psicocolmillo"
+msgstr "Psychic Fangs"
+
+#. descripción
+#: data/moves/psychicfangs.tres
+msgid "Ataca a sus rivales con poderes psíquicos que además destruyen barreras como Pantalla de Luz y Reflejo."
+msgstr "The user attacks by biting the target with its psychic capabilities. This move can also break barriers, such as Light Screen and Reflect."
+
+#. nombre
+#: data/moves/psychicnoise.tres
+msgid "Psicorruido"
+msgstr "Psychic Noise"
+
+#. nombre
+#: data/moves/psychicterrain.tres
+msgid "Campo Psíquico"
+msgstr "Psychic Terrain"
+
+#. descripción
+#: data/moves/psychicterrain.tres
+msgid "Durante cinco turnos, se potencian los movimientos de tipo Psíquico y los Pokémon que están en el suelo quedan protegidos contra movimientos con prioridad."
+msgstr "This protects Pokémon on the ground from priority moves and powers up Psychic-type moves for five turns."
+
+#. nombre
+#: data/moves/psychocut.tres
+msgid "Psicocorte"
+msgstr "Psycho Cut"
+
+#. descripción
+#: data/moves/psychocut.tres
+msgid "Ataca al objetivo con cuchillas formadas por energía psíquica. Suele ser crítico."
+msgstr "The user tears at the target with blades formed by psychic power. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/psyshock.tres
+msgid "Psicocarga"
+msgstr "Psyshock"
+
+#. descripción
+#: data/moves/psyshock.tres
+#: data/moves/psystrike.tres
+msgid "Crea una onda psíquica que causa daño físico al objetivo."
+msgstr "The user materializes an odd psychic wave to attack the target. This move deals physical damage."
+
+#. nombre
+#: data/moves/psystrike.tres
+msgid "Onda Mental"
+msgstr "Psystrike"
+
+#. nombre
+#: data/moves/psywave.tres
+msgid "Psicoonda"
+msgstr "Psywave"
+
+#. nombre
+#: data/moves/punishment.tres
+msgid "Castigo"
+msgstr "Punishment"
+
+#. nombre
+#: data/moves/pursuit.tres
+msgid "Persecución"
+msgstr "Pursuit"
+
+#. nombre
+#: data/moves/quickattack.tres
+msgid "Ataque Rápido"
+msgstr "Quick Attack"
+
+#. descripción
+#: data/moves/quickattack.tres
+msgid "Ataca al objetivo a gran velocidad. Este movimiento tiene prioridad alta."
+msgstr "The user lunges at the target to inflict damage, moving at blinding speed. This move always goes first."
+
+#. nombre
+#: data/moves/quiverdance.tres
+msgid "Danza Aleteo"
+msgstr "Quiver Dance"
+
+#. descripción
+#: data/moves/quiverdance.tres
+msgid "Danza mística que sube el Ataque Especial, la Defensa Especial y la Velocidad."
+msgstr "The user lightly performs a beautiful, mystic dance. This boosts the user's Sp. Atk, Sp. Def, and Speed stats."
+
+#. nombre
+#: data/moves/rage.tres
+msgid "Furia"
+msgstr "Rage"
+
+#. nombre
+#: data/moves/ragefist.tres
+msgid "Puño Furia"
+msgstr "Rage Fist"
+
+#. nombre
+#: data/moves/ragingbull.tres
+msgid "Furia Taurina"
+msgstr "Raging Bull"
+
+#. nombre
+#: data/moves/ragingfury.tres
+msgid "Erupción de Ira"
+msgstr "Raging Fury"
+
+#. nombre
+#: data/moves/raindance.tres
+msgid "Danza Lluvia"
+msgstr "Rain Dance"
+
+#. descripción
+#: data/moves/raindance.tres
+msgid "Genera una fuerte lluvia que refuerza los movimientos de tipo Agua durante cinco turnos y debilita los de tipo Fuego."
+msgstr "The user summons a heavy rain that falls for five turns, powering up Water-type attacks. The rain also lowers the power of Fire-type attacks."
+
+#. nombre
+#: data/moves/rapidspin.tres
+msgid "Giro Rápido"
+msgstr "Rapid Spin"
+
+#. descripción
+#: data/moves/rapidspin.tres
+msgid "Ataque giratorio que puede eliminar movimientos como Atadura, Constricción y Drenadoras. También aumenta la Velocidad del usuario."
+msgstr "The user performs a spin attack that can also eliminate the effects of such moves as Bind, Wrap, and Leech Seed. This also boosts the user's Speed stat."
+
+#. nombre
+#: data/moves/razorleaf.tres
+msgid "Hoja Afilada"
+msgstr "Razor Leaf"
+
+#. descripción
+#: data/moves/razorleaf.tres
+msgid "Corta con hojas afiladas. Un ataque que suele ser crítico."
+msgstr "Sharp-edged leaves are launched to slash at opposing Pokémon. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/razorshell.tres
+msgid "Concha Filo"
+msgstr "Razor Shell"
+
+#. descripción
+#: data/moves/razorshell.tres
+msgid "Una afilada vieira ataca al objetivo. También puede hacer disminuir su Defensa."
+msgstr "The user cuts the target with sharp shells to inflict damage. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/razorwind.tres
+msgid "Viento Cortante"
+msgstr "Razor Wind"
+
+#. nombre
+#: data/moves/recover.tres
+msgid "Recuperación"
+msgstr "Recover"
+
+#. descripción
+#: data/moves/recover.tres
+msgid "Restaura hasta la mitad de los PS máximos."
+msgstr "The user regenerates its cells, restoring its own HP by up to half its max HP."
+
+#. nombre
+#: data/moves/reflect.tres
+msgid "Reflejo"
+msgstr "Reflect"
+
+#. descripción
+#: data/moves/reflect.tres
+msgid "Pared de luz que reduce durante cinco turnos el daño producido por los ataques físicos."
+msgstr "A wondrous wall of light is put up to reduce damage from physical moves for five turns."
+
+#. nombre
+#: data/moves/rest.tres
+msgid "Descanso"
+msgstr "Rest"
+
+#. descripción
+#: data/moves/rest.tres
+msgid "Restaura todos los PS y cura todos los problemas de estado del usuario, que se duerme los dos turnos siguientes."
+msgstr "The user goes to sleep for two turns. This fully restores the user's HP and cures any status conditions."
+
+#. nombre
+#: data/moves/retaliate.tres
+msgid "Represalia"
+msgstr "Retaliate"
+
+#. descripción
+#: data/moves/retaliate.tres
+msgid "Venga a los amigos caídos. Si en el turno anterior han derrotado a alguno, la potencia del ataque aumentará."
+msgstr "The user takes revenge for a fainted ally. This move's power is boosted if an ally fainted in the previous turn."
+
+#. nombre
+#: data/moves/return.tres
+msgid "Retribución"
+msgstr "Return"
+
+#. nombre
+#: data/moves/revenge.tres
+msgid "Desquite"
+msgstr "Revenge"
+
+#. descripción
+#: data/moves/revenge.tres
+msgid "Ataque que produce el doble de daño si el usuario resulta herido en el mismo turno."
+msgstr "This attack move’s power is doubled if the user has been hurt by the opponent in the same turn."
+
+#. nombre
+#: data/moves/reversal.tres
+msgid "Inversión"
+msgstr "Reversal"
+
+#. descripción
+#: data/moves/reversal.tres
+msgid "Ataque desesperado que causa más daño cuantos menos PS tenga el usuario."
+msgstr "An all-out attack that becomes more powerful the less HP the user has."
+
+#. nombre
+#: data/moves/risingvoltage.tres
+msgid "Alto Voltaje"
+msgstr "Rising Voltage"
+
+#. descripción
+#: data/moves/risingvoltage.tres
+msgid "Ataca con una descarga eléctrica que surge del terreno de combate. La potencia del movimiento se duplica si el rival se ve afectado por un campo eléctrico."
+msgstr "The user attacks with electricity rising from the ground. This move's power is doubled if the target is on Electric Terrain."
+
+#. nombre
+#: data/moves/roar.tres
+msgid "Rugido"
+msgstr "Roar"
+
+#. descripción
+#: data/moves/roar.tres
+#: data/moves/whirlwind.tres
+msgid "Se lleva al objetivo, que es cambiado por otro Pokémon. Si es un Pokémon salvaje, acaba el combate."
+msgstr "The target is blown away, and a different Pokémon is dragged out. In the wild, this ends a battle against a single Pokémon."
+
+#. nombre
+#: data/moves/rockblast.tres
+msgid "Pedrada"
+msgstr "Rock Blast"
+
+#. descripción
+#: data/moves/rockblast.tres
+msgid "Lanza pedruscos al objetivo de dos a cinco veces consecutivas."
+msgstr "The user attacks by hurling hard rocks at the target. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/rockclimb.tres
+msgid "Treparrocas"
+msgstr "Rock Climb"
+
+#. nombre
+#: data/moves/rockpolish.tres
+msgid "Pulimento"
+msgstr "Rock Polish"
+
+#. descripción
+#: data/moves/rockpolish.tres
+msgid "Reduce la resistencia puliendo su cuerpo. Aumenta mucho la Velocidad."
+msgstr "The user polishes its body to reduce drag. This sharply boosts the user's Speed stat."
+
+#. nombre
+#: data/moves/rockslide.tres
+msgid "Avalancha"
+msgstr "Rock Slide"
+
+#. descripción
+#: data/moves/rockslide.tres
+msgid "Lanza grandes pedruscos. Puede amedrentar al objetivo."
+msgstr "Large boulders are hurled at opposing Pokémon to inflict damage. This may also make the opposing Pokémon flinch."
+
+#. nombre
+#: data/moves/rocksmash.tres
+msgid "Golpe Roca"
+msgstr "Rock Smash"
+
+#. descripción
+#: data/moves/rocksmash.tres
+msgid "Ataque con los puños. Puede bajar la Defensa del objetivo."
+msgstr "The user attacks with a punch. This may also lower the target's Defense stat."
+
+#. nombre
+#: data/moves/rockthrow.tres
+msgid "Lanzarrocas"
+msgstr "Rock Throw"
+
+#. descripción
+#: data/moves/rockthrow.tres
+msgid "Tira una pequeña roca al objetivo."
+msgstr "The user picks up and throws a small rock at the target to inflict damage."
+
+#. nombre
+#: data/moves/rocktomb.tres
+msgid "Tumba Rocas"
+msgstr "Rock Tomb"
+
+#. descripción
+#: data/moves/rocktomb.tres
+msgid "Tira rocas que detienen al objetivo y bajan su Velocidad."
+msgstr "The user hurls boulders at the target to inflict damage. This also lowers the target's Speed stat by cutting off its movement."
+
+#. nombre
+#: data/moves/rollingkick.tres
+msgid "Patada Giro"
+msgstr "Rolling Kick"
+
+#. nombre
+#: data/moves/rollout.tres
+msgid "Rodar"
+msgstr "Rollout"
+
+#. descripción
+#: data/moves/rollout.tres
+msgid "El atacante rueda contra el objetivo durante cinco turnos, cada vez con mayor fuerza."
+msgstr "The user continually rolls into the target over five turns. This attack becomes more powerful each time it hits."
+
+#. nombre
+#: data/moves/roost.tres
+msgid "Respiro"
+msgstr "Roost"
+
+#. descripción
+#: data/moves/roost.tres
+msgid "Aterriza sobre la superficie para descansar. Recupera hasta la mitad del total de sus PS."
+msgstr "The user lands and rests its body. This move restores the user's HP by up to half its max HP."
+
+#. nombre
+#: data/moves/round.tres
+msgid "Canon"
+msgstr "Round"
+
+#. descripción
+#: data/moves/round.tres
+msgid "Un canto que ataca al objetivo. Cuantos más Pokémon lo usan, más aumenta de potencia."
+msgstr "The user attacks the target with a song. If others use this move, they will act immediately after the initial user, and the power of their Rounds will be boosted."
+
+#. nombre
+#: data/moves/safeguard.tres
+msgid "Velo Sagrado"
+msgstr "Safeguard"
+
+#. descripción
+#: data/moves/safeguard.tres
+msgid "Un escudo que protege de problemas de estado, como el sueño o la parálisis, durante cinco turnos."
+msgstr "The user creates a protective field that prevents status conditions for five turns."
+
+#. nombre
+#: data/moves/sandattack.tres
+msgid "Ataque Arena"
+msgstr "Sand Attack"
+
+#. descripción
+#: data/moves/sandattack.tres
+msgid "Arroja arena a la cara y baja la Precisión."
+msgstr "Sand is hurled in the target's face, lowering the target's accuracy."
+
+#. nombre
+#: data/moves/sandstorm.tres
+msgid "Tormenta de Arena"
+msgstr "Sandstorm"
+
+#. descripción
+#: data/moves/sandstorm.tres
+msgid "Tormenta de arena que dura cinco turnos y hiere a todos, excepto a los de tipo Roca, Tierra y Acero, y aumenta la Defensa Especial de los de tipo Roca."
+msgstr "A five-turn sandstorm is summoned to damage all Pokémon except Rock, Ground, and Steel types. The sandstorm also boosts the Sp. Def stats of Rock types."
+
+#. nombre
+#: data/moves/sandtomb.tres
+msgid "Bucle Arena"
+msgstr "Sand Tomb"
+
+#. descripción
+#: data/moves/sandtomb.tres
+msgid "Enreda al objetivo en un remolino de arena de cuatro a cinco turnos."
+msgstr "The user traps the target inside a harshly raging sandstorm that inflicts damage for four to five turns."
+
+#. nombre
+#: data/moves/scald.tres
+msgid "Escaldar"
+msgstr "Scald"
+
+#. descripción
+#: data/moves/scald.tres
+msgid "Ataca arrojando agua hirviendo al objetivo. Puede causar quemaduras."
+msgstr "The user attacks by shooting boiling hot water at the target. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/scaleshot.tres
+msgid "Ráfaga Escamas"
+msgstr "Scale Shot"
+
+#. descripción
+#: data/moves/scaleshot.tres
+msgid "Lanza escamas al objetivo de dos a cinco veces seguidas. Aumenta la Velocidad del usuario, pero reduce su Defensa."
+msgstr "The user attacks by shooting scales two to five times in a row. This move boosts the user's Speed stat but lowers its Defense stat."
+
+#. nombre
+#: data/moves/scaryface.tres
+msgid "Cara Susto"
+msgstr "Scary Face"
+
+#. descripción
+#: data/moves/scaryface.tres
+msgid "Asusta al objetivo para reducir mucho su Velocidad."
+msgstr "The user frightens the target with a scary face to harshly lower its Speed stat."
+
+#. nombre
+#: data/moves/scorchingsands.tres
+msgid "Arenas Ardientes"
+msgstr "Scorching Sands"
+
+#. descripción
+#: data/moves/scorchingsands.tres
+msgid "Ataca al objetivo arrojándole arena a temperaturas muy elevadas. Puede causar quemaduras."
+msgstr "The user throws scorching sand at the target to attack. This may also leave the target with a burn."
+
+#. nombre
+#: data/moves/scratch.tres
+msgid "Arañazo"
+msgstr "Scratch"
+
+#. descripción
+#: data/moves/scratch.tres
+msgid "Araña con afiladas garras."
+msgstr "Hard, pointed, sharp claws rake the target to inflict damage."
+
+#. nombre
+#: data/moves/screech.tres
+msgid "Chirrido"
+msgstr "Screech"
+
+#. descripción
+#: data/moves/screech.tres
+msgid "Alarido agudo que reduce mucho la Defensa del objetivo."
+msgstr "An earsplitting screech harshly lowers the target's Defense stat."
+
+#. nombre
+#: data/moves/secretpower.tres
+msgid "Daño Secreto"
+msgstr "Secret Power"
+
+#. nombre
+#: data/moves/seedbomb.tres
+msgid "Bomba Germen"
+msgstr "Seed Bomb"
+
+#. descripción
+#: data/moves/seedbomb.tres
+msgid "Lanza al objetivo una descarga de semillas explosivas desde arriba."
+msgstr "The user attacks by slamming a barrage of hard-shelled seeds down on the target from above."
+
+#. nombre
+#: data/moves/seismictoss.tres
+msgid "Sísmico"
+msgstr "Seismic Toss"
+
+#. descripción
+#: data/moves/seismictoss.tres
+msgid "Aprovecha la gravedad para derribar al objetivo. Le resta tantos PS como nivel tenga el usuario."
+msgstr "The target is thrown using the power of gravity. It inflicts damage equal to the user's level."
+
+#. nombre
+#: data/moves/selfdestruct.tres
+msgid "Autodestrucción"
+msgstr "Self-Destruct"
+
+#. descripción
+#: data/moves/selfdestruct.tres
+msgid "El atacante explota y hiere a todos a su alrededor. El usuario se debilita de inmediato."
+msgstr "The user attacks everything around it by causing an explosion. The user faints upon using this move."
+
+#. nombre
+#: data/moves/shadowball.tres
+msgid "Bola Sombra"
+msgstr "Shadow Ball"
+
+#. descripción
+#: data/moves/shadowball.tres
+msgid "Lanza una bola oscura que puede bajar la Defensa Especial del objetivo."
+msgstr "The user attacks by hurling a shadowy blob at the target. This may also lower the target’s Sp. Def stat."
+
+#. nombre
+#: data/moves/shadowclaw.tres
+msgid "Garra Umbría"
+msgstr "Shadow Claw"
+
+#. descripción
+#: data/moves/shadowclaw.tres
+msgid "Ataca con una garra afilada hecha de sombras. Suele ser crítico."
+msgstr "The user attacks by slashing the target with a sharp claw made from shadows. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/shadowpunch.tres
+msgid "Puño Sombra"
+msgstr "Shadow Punch"
+
+#. descripción
+#: data/moves/shadowpunch.tres
+msgid "Puñetazo ineludible procedente de las sombras."
+msgstr "The user throws a punch from the shadows. This attack never misses."
+
+#. nombre
+#: data/moves/shadowsneak.tres
+msgid "Sombra Vil"
+msgstr "Shadow Sneak"
+
+#. descripción
+#: data/moves/shadowsneak.tres
+msgid "Extiende su sombra y ataca al objetivo por la espalda. Este movimiento tiene prioridad alta."
+msgstr "The user extends its shadow and attacks the target from behind. This move always goes first."
+
+#. nombre
+#: data/moves/sharpen.tres
+msgid "Afilar"
+msgstr "Sharpen"
+
+#. nombre
+#: data/moves/shellsmash.tres
+msgid "Rompecoraza"
+msgstr "Shell Smash"
+
+#. descripción
+#: data/moves/shellsmash.tres
+msgid "El usuario rompe su coraza y baja su Defensa y Defensa Especial, pero aumenta mucho su Ataque, Ataque Especial y Velocidad."
+msgstr "The user breaks its shell, which lowers its Defense and Sp. Def stats but sharply boosts its Attack, Sp. Atk, and Speed stats."
+
+#. nombre
+#: data/moves/shockwave.tres
+msgid "Onda Voltio"
+msgstr "Shock Wave"
+
+#. descripción
+#: data/moves/shockwave.tres
+msgid "Ataque eléctrico muy rápido e ineludible."
+msgstr "The user strikes the target with a quick jolt of electricity. This attack never misses."
+
+#. nombre
+#: data/moves/signalbeam.tres
+msgid "Rayo Señal"
+msgstr "Signal Beam"
+
+#. nombre
+#: data/moves/silverwind.tres
+msgid "Viento Plata"
+msgstr "Silver Wind"
+
+#. nombre
+#: data/moves/sing.tres
+msgid "Canto"
+msgstr "Sing"
+
+#. descripción
+#: data/moves/sing.tres
+msgid "Cancioncilla que hace dormir profundamente al objetivo."
+msgstr "A soothing lullaby is sung in a beautiful voice that puts the target to sleep."
+
+#. nombre
+#: data/moves/skittersmack.tres
+msgid "Golpe Rastrero"
+msgstr "Skitter Smack"
+
+#. descripción
+#: data/moves/skittersmack.tres
+msgid "Ataca al objetivo por la espalda de forma subrepticia y además reduce su Ataque Especial."
+msgstr "The user skitters behind the target to attack. This also lowers the target's Sp. Atk stat."
+
+#. nombre
+#: data/moves/skullbash.tres
+msgid "Cabezazo"
+msgstr "Skull Bash"
+
+#. descripción
+#: data/moves/skullbash.tres
+msgid "El usuario se prepara y sube su Defensa en el primer turno y en el segundo arremete con un cabezazo."
+msgstr "The user tucks in its head to raise its Defense stat on the first turn, then rams the target on the next turn."
+
+#. nombre
+#: data/moves/skyattack.tres
+msgid "Ataque Aéreo"
+msgstr "Sky Attack"
+
+#. descripción
+#: data/moves/skyattack.tres
+msgid "Ataca durante dos turnos y suele asestar un golpe crítico. También puede amedrentar al objetivo."
+msgstr "The user attacks the turn after using this move. This move has a heightened chance of landing a critical hit and may also make the target flinch."
+
+#. nombre
+#: data/moves/skydrop.tres
+msgid "Caída Libre"
+msgstr "Sky Drop"
+
+#. nombre
+#: data/moves/skyuppercut.tres
+msgid "Gancho Alto"
+msgstr "Sky Uppercut"
+
+#. nombre
+#: data/moves/slackoff.tres
+msgid "Relajo"
+msgstr "Slack Off"
+
+#. descripción
+#: data/moves/slackoff.tres
+msgid "El usuario se relaja y restaura la mitad de sus PS máximos."
+msgstr "The user slacks off, restoring its own HP by up to half its max HP."
+
+#. nombre
+#: data/moves/slam.tres
+msgid "Atizar"
+msgstr "Slam"
+
+#. descripción
+#: data/moves/slam.tres
+msgid "Golpea con la cola o con lianas, por ejemplo, para causar daño al objetivo."
+msgstr "The target is slammed with a long tail, vines, or the like to inflict damage."
+
+#. nombre
+#: data/moves/slash.tres
+msgid "Cuchillada"
+msgstr "Slash"
+
+#. descripción
+#: data/moves/slash.tres
+msgid "Ataca con cuchillas o con pinzas. Suele asestar un golpe crítico."
+msgstr "The target is attacked with a slash of claws, scythes, or the like. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/sleeppowder.tres
+msgid "Somnífero"
+msgstr "Sleep Powder"
+
+#. descripción
+#: data/moves/sleeppowder.tres
+msgid "Esparce polvo que duerme al objetivo."
+msgstr "The user scatters a cloud of soporific dust that puts the target to sleep."
+
+#. nombre
+#: data/moves/sludge.tres
+msgid "Residuos"
+msgstr "Sludge"
+
+#. descripción
+#: data/moves/sludge.tres
+#: data/moves/sludgebomb.tres
+msgid "Arroja residuos al objetivo. Puede llegar a envenenar."
+msgstr "The user hurls unsanitary sludge at the target to inflict damage. This may also poison the target."
+
+#. nombre
+#: data/moves/sludgebomb.tres
+msgid "Bomba Lodo"
+msgstr "Sludge Bomb"
+
+#. nombre
+#: data/moves/sludgewave.tres
+msgid "Onda Tóxica"
+msgstr "Sludge Wave"
+
+#. descripción
+#: data/moves/sludgewave.tres
+msgid "Una onda tóxica que daña a los Pokémon de alrededor. Puede envenenar."
+msgstr "The user strikes everything around it by swamping the area with a giant sludge wave. This may also poison those it hits."
+
+#. nombre
+#: data/moves/smackdown.tres
+msgid "Antiaéreo"
+msgstr "Smack Down"
+
+#. descripción
+#: data/moves/smackdown.tres
+msgid "Ataca lanzando una piedra o un proyectil. Si el objetivo está en el aire, lo estrella contra el suelo."
+msgstr "The user throws a stone or similar projectile to attack the target. If the target is in the air, it will be knocked down to the ground."
+
+#. nombre
+#: data/moves/smartstrike.tres
+msgid "Cuerno Certero"
+msgstr "Smart Strike"
+
+#. descripción
+#: data/moves/smartstrike.tres
+msgid "El usuario ensarta al adversario con su afilada cornamenta. Este movimiento acierta siempre."
+msgstr "The user stabs the target with a sharp horn. This attack never misses."
+
+#. nombre
+#: data/moves/smellingsalts.tres
+msgid "Estímulo"
+msgstr "Smelling Salts"
+
+#. nombre
+#: data/moves/smog.tres
+msgid "Polución"
+msgstr "Smog"
+
+#. descripción
+#: data/moves/smog.tres
+msgid "Lanza un ataque con gases tóxicos que pueden llegar a envenenar."
+msgstr "The target is attacked with a discharge of filthy gases. This may also poison the target."
+
+#. nombre
+#: data/moves/smokescreen.tres
+msgid "Pantalla de Humo"
+msgstr "Smokescreen"
+
+#. descripción
+#: data/moves/smokescreen.tres
+msgid "Baja la Precisión del objetivo con una nube de humo o tinta."
+msgstr "The user releases an obscuring cloud of smoke or ink. This lowers the target's accuracy."
+
+#. nombre
+#: data/moves/snarl.tres
+msgid "Alarido"
+msgstr "Snarl"
+
+#. descripción
+#: data/moves/snarl.tres
+msgid "Chillido desagradable que baja el Ataque Especial del rival."
+msgstr "The user yells as if it's ranting about something, which lowers the Sp. Atk stats of opposing Pokémon."
+
+#. nombre
+#: data/moves/snowscape.tres
+msgid "Paisaje Nevado"
+msgstr "Snowscape"
+
+#. nombre
+#: data/moves/softboiled.tres
+msgid "Ovocuración"
+msgstr "Soft-Boiled"
+
+#. descripción
+#: data/moves/softboiled.tres
+msgid "Restaura la mitad de los PS máximos del usuario."
+msgstr "The user restores its own HP by up to half its max HP."
+
+#. nombre
+#: data/moves/solarbeam.tres
+msgid "Rayo Solar"
+msgstr "Solar Beam"
+
+#. descripción
+#: data/moves/solarbeam.tres
+msgid "El usuario absorbe luz en el primer turno y en el segundo lanza un potente rayo de energía."
+msgstr "The user gathers light on the first turn, then blasts a bundled beam on the next turn."
+
+#. nombre
+#: data/moves/solarblade.tres
+msgid "Cuchilla Solar"
+msgstr "Solar Blade"
+
+#. descripción
+#: data/moves/solarblade.tres
+msgid "El usuario dedica un turno a absorber energía lumínica y concentrarla en forma de cuchilla con la que ataca al rival en el siguiente turno."
+msgstr "The user gathers light on the first turn, then fills a blade with the light's energy and attacks on the next turn."
+
+#. nombre
+#: data/moves/sonicboom.tres
+msgid "Bomba Sónica"
+msgstr "Sonic Boom"
+
+#. nombre
+#: data/moves/spark.tres
+msgid "Chispa"
+msgstr "Spark"
+
+#. descripción
+#: data/moves/spark.tres
+msgid "Ataque eléctrico que puede llegar a paralizar."
+msgstr "The user attacks the target with an electrically charged tackle. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/sparklingaria.tres
+msgid "Aria Burbuja"
+msgstr "Sparkling Aria"
+
+#. descripción
+#: data/moves/sparklingaria.tres
+msgid "Libera burbujas al cantar. Este movimiento cura las quemaduras de los Pokémon que reciban daño."
+msgstr "The user bursts into song, emitting many bubbles. Any Pokémon suffering from a burn will be cured by the touch of these bubbles."
+
+#. nombre
+#: data/moves/spikecannon.tres
+msgid "Clavo Cañón"
+msgstr "Spike Cannon"
+
+#. nombre
+#: data/moves/spikes.tres
+msgid "Púas"
+msgstr "Spikes"
+
+#. descripción
+#: data/moves/spikes.tres
+msgid "Esparce púas alrededor del equipo rival que hieren a los Pokémon rivales que entran en combate."
+msgstr "The user lays a trap of spikes at the feet of the opposing team. The spikes will damage opposing Pokémon that switch into battle."
+
+#. nombre
+#: data/moves/spitup.tres
+msgid "Escupir"
+msgstr "Spit Up"
+
+#. descripción
+#: data/moves/spitup.tres
+msgid "Libera de una vez la energía acumulada con Reserva. La potencia del ataque será proporcional a la cantidad de energía acumulada."
+msgstr "The power stored using the move Stockpile is released at once in an attack. The more power is stored, the greater the move's power."
+
+#. nombre
+#: data/moves/splash.tres
+msgid "Salpicadura"
+msgstr "Splash"
+
+#. descripción
+#: data/moves/splash.tres
+msgid "Salta y salpica sin ningún efecto. Así es Magikarp."
+msgstr "It just flops and splashes around to no effect. That's Magikarp for you."
+
+#. nombre
+#: data/moves/spore.tres
+msgid "Espora"
+msgstr "Spore"
+
+#. descripción
+#: data/moves/spore.tres
+msgid "Esparce esporas que inducen al sueño."
+msgstr "The user scatters bursts of spores that induce sleep."
+
+#. nombre
+#: data/moves/stealthrock.tres
+msgid "Trampa Rocas"
+msgstr "Stealth Rock"
+
+#. descripción
+#: data/moves/stealthrock.tres
+msgid "Una trampa de rocas que flota en el aire y daña a los objetivos que entran en combate."
+msgstr "The user lays a trap of levitating stones around the opposing team. The trap damages opposing Pokémon that switch into battle."
+
+#. nombre
+#: data/moves/steamroller.tres
+msgid "Rodillo de Púas"
+msgstr "Steamroller"
+
+#. nombre
+#: data/moves/steelbeam.tres
+msgid "Metaláser"
+msgstr "Steel Beam"
+
+#. descripción
+#: data/moves/steelbeam.tres
+msgid "Utiliza el acero de su cuerpo para disparar un potente rayo. También hiere al agresor."
+msgstr "The user fires a beam of steel that it collected from its entire body. This also damages the user."
+
+#. nombre
+#: data/moves/steelroller.tres
+msgid "Allanador Férreo"
+msgstr "Steel Roller"
+
+#. descripción
+#: data/moves/steelroller.tres
+msgid "El usuario lanza su ataque y destruye el campo activo en el terreno de combate, y falla si no hay ninguno en ese momento."
+msgstr "The user attacks while destroying the terrain. This move fails if the ground hasn't turned into a terrain."
+
+#. nombre
+#: data/moves/steelwing.tres
+msgid "Ala de Acero"
+msgstr "Steel Wing"
+
+#. descripción
+#: data/moves/steelwing.tres
+msgid "Alas macizas que golpean al objetivo y pueden subir la Defensa del usuario."
+msgstr "The target is hit with wings of steel. This may also boost the user's Defense stat."
+
+#. nombre
+#: data/moves/stockpile.tres
+msgid "Reserva"
+msgstr "Stockpile"
+
+#. descripción
+#: data/moves/stockpile.tres
+msgid "Acumula energía y sube la Defensa y la Defensa Especial. Puede utilizarse hasta tres veces."
+msgstr "The user stores power and boosts its Defense and Sp. Def stats. This move can be used up to three times."
+
+#. nombre
+#: data/moves/stomp.tres
+msgid "Pisotón"
+msgstr "Stomp"
+
+#. descripción
+#: data/moves/stomp.tres
+msgid "Tremendo pisotón que puede hacer que el objetivo se amedrente."
+msgstr "The user attacks by stomping on the target with a big foot. This may also make the target flinch."
+
+#. nombre
+#: data/moves/stompingtantrum.tres
+msgid "Pataleta"
+msgstr "Stomping Tantrum"
+
+#. descripción
+#: data/moves/stompingtantrum.tres
+msgid "Usa la frustración como revulsivo para atacar. La potencia de Pataleta se duplica si el usuario ha fallado el último movimiento usado."
+msgstr "Driven by frustration, the user attacks the target. This move's power is doubled if the user's previous move failed."
+
+#. nombre
+#: data/moves/stoneedge.tres
+msgid "Roca Afilada"
+msgstr "Stone Edge"
+
+#. descripción
+#: data/moves/stoneedge.tres
+msgid "Clava piedras muy afiladas al objetivo. Suele ser crítico."
+msgstr "The user stabs the target with sharpened stones. This move has a heightened chance of landing a critical hit."
+
+#. nombre
+#: data/moves/storedpower.tres
+msgid "Poder Reserva"
+msgstr "Stored Power"
+
+#. descripción
+#: data/moves/storedpower.tres
+msgid "Acumula poder para golpear. Cuanto más suban las características del usuario, mayor será el daño."
+msgstr "The user attacks the target with stored power. The more the user's stats are boosted, the greater the move's power."
+
+#. nombre
+#: data/moves/stormthrow.tres
+msgid "Llave Corsé"
+msgstr "Storm Throw"
+
+#. descripción
+#: data/moves/stormthrow.tres
+msgid "Lanza un golpe devastador. Siempre asesta un golpe crítico."
+msgstr "The user strikes the target with a fierce blow. This attack always results in a critical hit."
+
+#. nombre
+#: data/moves/strength.tres
+msgid "Fuerza"
+msgstr "Strength"
+
+#. descripción
+#: data/moves/strength.tres
+msgid "Propina un potente puñetazo con todas sus fuerzas."
+msgstr "The target is slugged with a punch thrown at maximum power."
+
+#. nombre
+#: data/moves/stringshot.tres
+msgid "Disparo Demora"
+msgstr "String Shot"
+
+#. descripción
+#: data/moves/stringshot.tres
+msgid "Lanza seda a los rivales y reduce mucho su Velocidad."
+msgstr "The user blows silk from its mouth that binds opposing Pokémon and harshly lowers their Speed stats."
+
+#. nombre
+#: data/moves/struggle.tres
+msgid "Forcejeo"
+msgstr "Struggle"
+
+#. descripción
+#: data/moves/struggle.tres
+msgid "Ataque desesperado que solo se usa cuando no queda otro."
+msgstr "A desperate attack, used only when nothing else is left."
+
+#. nombre
+#: data/moves/strugglebug.tres
+msgid "Estoicismo"
+msgstr "Struggle Bug"
+
+#. descripción
+#: data/moves/strugglebug.tres
+msgid "El usuario opone resistencia y ataca a los oponentes. También reduce su Ataque Especial."
+msgstr "The user attacks by struggling against opposing Pokémon. This also lowers their Sp. Atk stats."
+
+#. nombre
+#: data/moves/stunspore.tres
+msgid "Paralizador"
+msgstr "Stun Spore"
+
+#. descripción
+#: data/moves/stunspore.tres
+msgid "Esparce polvo que paraliza al objetivo."
+msgstr "The user scatters a cloud of numbing powder that paralyzes the target."
+
+#. nombre
+#: data/moves/submission.tres
+msgid "Sumisión"
+msgstr "Submission"
+
+#. descripción
+#: data/moves/submission.tres
+msgid "El usuario se lanza al suelo con el oponente en brazos y también se hace un poco de daño."
+msgstr "The user grabs the target and recklessly dives for the ground. This also damages the user a little."
+
+#. nombre
+#: data/moves/substitute.tres
+msgid "Sustituto"
+msgstr "Substitute"
+
+#. descripción
+#: data/moves/substitute.tres
+msgid "Utiliza parte de los PS propios para crear un sustituto que actúa como señuelo."
+msgstr "The user creates a substitute for itself using some of its own HP. The substitute serves as the user's decoy."
+
+#. nombre
+#: data/moves/suckerpunch.tres
+msgid "Golpe Bajo"
+msgstr "Sucker Punch"
+
+#. descripción
+#: data/moves/suckerpunch.tres
+msgid "Permite atacar con prioridad. Falla si el objetivo no está preparando ningún ataque."
+msgstr "This move enables the user to attack first. This move fails if the target is not readying an attack."
+
+#. nombre
+#: data/moves/sunnyday.tres
+msgid "Día Soleado"
+msgstr "Sunny Day"
+
+#. descripción
+#: data/moves/sunnyday.tres
+msgid "Hace que se intensifique el efecto del sol durante cinco turnos, lo que potencia los movimientos de tipo Fuego y debilita los de tipo Agua."
+msgstr "The user intensifies the sun for five turns, powering up Fire-type attacks. The sunlight also lowers the power of Water-type attacks."
+
+#. nombre
+#: data/moves/supercellslam.tres
+msgid "Plancha Voltaica"
+msgstr "Supercell Slam"
+
+#. nombre
+#: data/moves/superpower.tres
+msgid "Fuerza Bruta"
+msgstr "Superpower"
+
+#. descripción
+#: data/moves/superpower.tres
+msgid "Ataque de gran potencia, pero que reduce el Ataque y la Defensa del agresor."
+msgstr "The user attacks the target with great power. This also lowers the user's Attack and Defense stats."
+
+#. nombre
+#: data/moves/supersonic.tres
+msgid "Supersónico"
+msgstr "Supersonic"
+
+#. descripción
+#: data/moves/supersonic.tres
+msgid "Raras ondas sónicas que confunden al objetivo."
+msgstr "The user generates odd sound waves from its body that confuse the target."
+
+#. nombre
+#: data/moves/surf.tres
+msgid "Surf"
+msgstr "Surf"
+
+#. descripción
+#: data/moves/surf.tres
+msgid "Inunda el terreno de combate con una ola gigante."
+msgstr "The user attacks everything around it by swamping its surroundings with a giant wave."
+
+#. nombre
+#: data/moves/swagger.tres
+msgid "Fanfarronear"
+msgstr "Swagger"
+
+#. descripción
+#: data/moves/swagger.tres
+msgid "Provoca confusión en el objetivo, pero también sube mucho su Ataque."
+msgstr "The user enrages and confuses the target. However, this also sharply boosts the target's Attack stat."
+
+#. nombre
+#: data/moves/sweetkiss.tres
+msgid "Beso Dulce"
+msgstr "Sweet Kiss"
+
+#. descripción
+#: data/moves/sweetkiss.tres
+msgid "Da un beso con tal dulzura que causa confusión."
+msgstr "The user kisses the target with a sweet, angelic cuteness that causes confusion."
+
+#. nombre
+#: data/moves/sweetscent.tres
+msgid "Dulce Aroma"
+msgstr "Sweet Scent"
+
+#. descripción
+#: data/moves/sweetscent.tres
+msgid "Un dulce aroma engatusa al objetivo, por lo que se reduce mucho su Evasión."
+msgstr "The user releases a scent that harshly lowers opposing Pokémon's evasiveness."
+
+#. nombre
+#: data/moves/swift.tres
+msgid "Meteoros"
+msgstr "Swift"
+
+#. descripción
+#: data/moves/swift.tres
+msgid "Lanza rayos en forma de estrella que no fallan nunca."
+msgstr "Star-shaped rays are shot at opposing Pokémon. This attack never misses."
+
+#. nombre
+#: data/moves/switcheroo.tres
+msgid "Trapicheo"
+msgstr "Switcheroo"
+
+#. descripción
+#: data/moves/switcheroo.tres
+msgid "Intercambia con el objetivo los objetos que llevan tan rápido que es imposible verlo a simple vista."
+msgstr "The user trades held items with the target faster than the eye can follow."
+
+#. nombre
+#: data/moves/swordsdance.tres
+msgid "Danza Espada"
+msgstr "Swords Dance"
+
+#. descripción
+#: data/moves/swordsdance.tres
+msgid "Baile frenético que aumenta mucho el Ataque."
+msgstr "A frenetic dance to uplift the fighting spirit. This sharply boosts the user's Attack stat."
+
+#. nombre
+#: data/moves/synchronoise.tres
+msgid "Sincrorruido"
+msgstr "Synchronoise"
+
+#. nombre
+#: data/moves/synthesis.tres
+msgid "Fotosíntesis"
+msgstr "Synthesis"
+
+#. nombre
+#: data/moves/tackle.tres
+msgid "Placaje"
+msgstr "Tackle"
+
+#. descripción
+#: data/moves/tackle.tres
+msgid "Embestida con todo el cuerpo."
+msgstr "A physical attack in which the user charges and slams into the target with its whole body."
+
+#. nombre
+#: data/moves/tailslap.tres
+msgid "Plumerazo"
+msgstr "Tail Slap"
+
+#. descripción
+#: data/moves/tailslap.tres
+msgid "Golpea con la cola de dos a cinco veces seguidas."
+msgstr "The user attacks by striking the target with its hard tail. This move hits two to five times in a row."
+
+#. nombre
+#: data/moves/tailwhip.tres
+msgid "Agitacola"
+msgstr "Tail Whip"
+
+#. descripción
+#: data/moves/tailwhip.tres
+msgid "Agita la cola para bajar la Defensa del equipo rival."
+msgstr "The user wags its tail cutely, making opposing Pokémon less wary. This lowers their Defense stats."
+
+#. nombre
+#: data/moves/tailwind.tres
+msgid "Viento Afín"
+msgstr "Tailwind"
+
+#. descripción
+#: data/moves/tailwind.tres
+msgid "Crea un fuerte remolino que aumenta la Velocidad de los Pokémon de tu equipo durante cuatro turnos."
+msgstr "The user whips up a turbulent whirlwind that boosts the Speed stats of itself and its allies for four turns."
+
+#. nombre
+#: data/moves/takedown.tres
+msgid "Derribo"
+msgstr "Take Down"
+
+#. descripción
+#: data/moves/takedown.tres
+msgid "Carga desmedida que también hiere al agresor."
+msgstr "A reckless full-body charge attack for slamming into the target. This also damages the user a little."
+
+#. nombre
+#: data/moves/taunt.tres
+msgid "Mofa"
+msgstr "Taunt"
+
+#. descripción
+#: data/moves/taunt.tres
+msgid "Enfurece al objetivo para que solo use movimientos de ataque durante tres turnos."
+msgstr "The target is taunted into a rage that allows it to use only attack moves for three turns."
+
+#. nombre
+#: data/moves/teeterdance.tres
+msgid "Danza Caos"
+msgstr "Teeter Dance"
+
+#. descripción
+#: data/moves/teeterdance.tres
+msgid "Danza histérica que confunde a los Pokémon que están alrededor del usuario."
+msgstr "The user performs a wobbly dance that confuses every Pokémon around it."
+
+#. nombre
+#: data/moves/teleport.tres
+msgid "Teletransporte"
+msgstr "Teleport"
+
+#. descripción
+#: data/moves/teleport.tres
+msgid "Se teletransporta a una casilla libre, sin importar obstáculos ni desniveles."
+msgstr "Teleports to any free tile, ignoring obstacles and height differences."
+
+#. nombre
+#: data/moves/temperflare.tres
+msgid "Cólera Ardiente"
+msgstr "Temper Flare"
+
+#. nombre
+#: data/moves/terablast.tres
+msgid "Teraexplosión"
+msgstr "Tera Blast"
+
+#. nombre
+#: data/moves/terrainpulse.tres
+msgid "Pulso de Campo"
+msgstr "Terrain Pulse"
+
+#. descripción
+#: data/moves/terrainpulse.tres
+msgid "El usuario ataca aprovechando la energía del campo activo, que determina tanto el tipo como la potencia del movimiento."
+msgstr "The user utilizes the energy of the terrain to attack. This move’s type and power change depending on the terrain at the time the move is used."
+
+#. nombre
+#: data/moves/thief.tres
+msgid "Ladrón"
+msgstr "Thief"
+
+#. descripción
+#: data/moves/thief.tres
+msgid "El agresor ataca y le quita el objeto al objetivo siempre y cuando no lleve ninguno."
+msgstr "The user attacks and steals the target's held item simultaneously. The user can't steal anything if it already holds an item."
+
+#. nombre
+#: data/moves/thrash.tres
+msgid "Saña"
+msgstr "Thrash"
+
+#. descripción
+#: data/moves/thrash.tres
+msgid "Ataque de dos a tres turnos que acaba confundiendo al agresor."
+msgstr "The user rampages and attacks for two to three turns. The user then becomes confused."
+
+#. nombre
+#: data/moves/throatchop.tres
+msgid "Golpe Mordaza"
+msgstr "Throat Chop"
+
+#. descripción
+#: data/moves/throatchop.tres
+msgid "Inflige al rival un dolor tan abrumador que le impide utilizar durante dos turnos ataques que se sirven del sonido."
+msgstr "The user attacks the target's throat, and the resultant suffering prevents the target from using sound-based moves for two turns."
+
+#. nombre
+#: data/moves/thunder.tres
+msgid "Trueno"
+msgstr "Thunder"
+
+#. descripción
+#: data/moves/thunder.tres
+msgid "Un poderoso rayo que daña al objetivo y puede paralizarlo."
+msgstr "A wicked thunderbolt is dropped on the target to inflict damage. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/thunderbolt.tres
+msgid "Rayo"
+msgstr "Thunderbolt"
+
+#. descripción
+#: data/moves/thunderbolt.tres
+msgid "Potente ataque eléctrico que puede paralizar al objetivo."
+msgstr "The user attacks the target with a strong electric blast. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/thunderfang.tres
+msgid "Colmillo Rayo"
+msgstr "Thunder Fang"
+
+#. descripción
+#: data/moves/thunderfang.tres
+msgid "El usuario muerde al objetivo con colmillos electrificados y puede hacer que se amedrente o se paralice."
+msgstr "The user bites with electrified fangs. This may also make the target flinch or leave it with paralysis."
+
+#. nombre
+#: data/moves/thunderpunch.tres
+msgid "Puño Trueno"
+msgstr "Thunder Punch"
+
+#. descripción
+#: data/moves/thunderpunch.tres
+msgid "Puñetazo eléctrico que puede paralizar al adversario."
+msgstr "The target is attacked with an electrified punch. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/thundershock.tres
+msgid "Impactrueno"
+msgstr "Thunder Shock"
+
+#. descripción
+#: data/moves/thundershock.tres
+msgid "Ataque eléctrico que puede paralizar al objetivo."
+msgstr "The user attacks the target with a jolt of electricity. This may also leave the target with paralysis."
+
+#. nombre
+#: data/moves/thunderwave.tres
+msgid "Onda Trueno"
+msgstr "Thunder Wave"
+
+#. descripción
+#: data/moves/thunderwave.tres
+msgid "Una ligera descarga que paraliza al objetivo si lo alcanza."
+msgstr "The user launches a weak jolt of electricity that paralyzes the target."
+
+#. nombre
+#: data/moves/tickle.tres
+msgid "Cosquillas"
+msgstr "Tickle"
+
+#. descripción
+#: data/moves/tickle.tres
+msgid "Hace reír al objetivo para bajar su Ataque y Defensa."
+msgstr "The user tickles the target into laughing, lowering its Attack and Defense stats."
+
+#. nombre
+#: data/moves/toxic.tres
+msgid "Tóxico"
+msgstr "Toxic"
+
+#. descripción
+#: data/moves/toxic.tres
+msgid "Envenena gravemente al objetivo y causa un daño mayor en cada turno."
+msgstr "A move that leaves the target badly poisoned. Its poison damage worsens every turn."
+
+#. nombre
+#: data/moves/toxicspikes.tres
+msgid "Púas Tóxicas"
+msgstr "Toxic Spikes"
+
+#. descripción
+#: data/moves/toxicspikes.tres
+msgid "Lanza una trampa de púas tóxicas a los pies del objetivo. El veneno afecta a los Pokémon oponentes que entran en combate."
+msgstr "The user lays a trap of poison spikes at the feet of the opposing team. The spikes will poison opposing Pokémon that switch into battle."
+
+#. nombre
+#: data/moves/trailblaze.tres
+msgid "Abrecaminos"
+msgstr "Trailblaze"
+
+#. nombre
+#: data/moves/transform.tres
+msgid "Transformación"
+msgstr "Transform"
+
+#. descripción
+#: data/moves/transform.tres
+msgid "Se transforma en el Pokémon objetivo: copia su aspecto, tipos, stats (salvo los PS), cambios de stats, habilidad y ataques."
+msgstr "Transforms into the target Pokémon: copies its look, types, stats (except HP), stat changes, ability and moves."
+
+#. nombre
+#: data/moves/triattack.tres
+msgid "Triataque"
+msgstr "Tri Attack"
+
+#. descripción
+#: data/moves/triattack.tres
+msgid "Ataque triple que puede paralizar, quemar o congelar al objetivo."
+msgstr "The user strikes with a simultaneous three-beam attack. This may also burn, freeze, or paralyze the target."
+
+#. nombre
+#: data/moves/trick.tres
+msgid "Truco"
+msgstr "Trick"
+
+#. descripción
+#: data/moves/trick.tres
+msgid "Engaña al objetivo desprevenido e intercambia objetos."
+msgstr "The user catches the target off guard and swaps the target's held item with its own."
+
+#. nombre
+#: data/moves/trickroom.tres
+msgid "Espacio Raro"
+msgstr "Trick Room"
+
+#. descripción
+#: data/moves/trickroom.tres
+msgid "Crea un espacio extraño en el que los Pokémon lentos se mueven primero durante cinco turnos."
+msgstr "The user creates a bizarre area in which slower Pokémon get to move first for five turns."
+
+#. nombre
+#: data/moves/tripleaxel.tres
+msgid "Triple Axel"
+msgstr "Triple Axel"
+
+#. descripción
+#: data/moves/tripleaxel.tres
+msgid "Patea hasta tres veces seguidas y cada vez más fuerte."
+msgstr "A consecutive three-kick attack that becomes more powerful with each successful hit."
+
+#. nombre
+#: data/moves/trumpcard.tres
+msgid "As Oculto"
+msgstr "Trump Card"
+
+#. nombre
+#: data/moves/twineedle.tres
+msgid "Doble Ataque"
+msgstr "Twineedle"
+
+#. nombre
+#: data/moves/twister.tres
+msgid "Ciclón"
+msgstr "Twister"
+
+#. descripción
+#: data/moves/twister.tres
+msgid "Crea un violento tornado para hacer trizas al objetivo. Puede amedrentarlo."
+msgstr "The user whips up a vicious tornado to tear at opposing Pokémon. This may also make them flinch."
+
+#. nombre
+#: data/moves/upperhand.tres
+msgid "Palma Rauda"
+msgstr "Upper Hand"
+
+#. nombre
+#: data/moves/uproar.tres
+msgid "Alboroto"
+msgstr "Uproar"
+
+#. descripción
+#: data/moves/uproar.tres
+msgid "Ataca de forma alborotada durante tres turnos. Mantiene despiertos a todos."
+msgstr "The user attacks in an uproar for three turns. During that time, no Pokémon can fall asleep."
+
+#. nombre
+#: data/moves/uturn.tres
+msgid "Ida y Vuelta"
+msgstr "U-turn"
+
+#. descripción
+#: data/moves/uturn.tres
+#: data/moves/voltswitch.tres
+msgid "Tras atacar, el usuario vuelve a toda prisa para dar paso a otro Pokémon del equipo."
+msgstr "After making its attack, the user rushes back to switch places with a party Pokémon in waiting."
+
+#. nombre
+#: data/moves/vacuumwave.tres
+msgid "Onda Vacío"
+msgstr "Vacuum Wave"
+
+#. descripción
+#: data/moves/vacuumwave.tres
+msgid "Gira los puños y libera una onda de vacío contra el objetivo. Este movimiento tiene prioridad alta."
+msgstr "The user whirls its fists to send a wave of pure vacuum at the target. This move always goes first."
+
+#. nombre
+#: data/moves/venoshock.tres
+msgid "Carga Tóxica"
+msgstr "Venoshock"
+
+#. descripción
+#: data/moves/venoshock.tres
+msgid "Cubre al objetivo con un líquido venenoso. El daño será doble si este ya está envenenado."
+msgstr "The user drenches the target in a special poisonous liquid. This move's power is doubled if the target is poisoned."
+
+#. nombre
+#: data/moves/vinewhip.tres
+msgid "Látigo Cepa"
+msgstr "Vine Whip"
+
+#. descripción
+#: data/moves/vinewhip.tres
+msgid "Azota al objetivo con ramas finas."
+msgstr "The target is struck with slender, whiplike vines to inflict damage."
+
+#. nombre
+#: data/moves/visegrip.tres
+msgid "Agarre"
+msgstr "Vise Grip"
+
+#. descripción
+#: data/moves/visegrip.tres
+msgid "Atrapa y atenaza al objetivo."
+msgstr "The target is gripped and squeezed from both sides to inflict damage."
+
+#. nombre
+#: data/moves/vitalthrow.tres
+msgid "Llave Vital"
+msgstr "Vital Throw"
+
+#. descripción
+#: data/moves/vitalthrow.tres
+msgid "El usuario ataca el último, pero no falla."
+msgstr "The user attacks last. In return, this throw move never misses."
+
+#. nombre
+#: data/moves/voltswitch.tres
+msgid "Voltiocambio"
+msgstr "Volt Switch"
+
+#. nombre
+#: data/moves/volttackle.tres
+msgid "Placaje Eléctrico"
+msgstr "Volt Tackle"
+
+#. descripción
+#: data/moves/volttackle.tres
+msgid "Quien lo usa electrifica su cuerpo para luego atacar. Se hiere mucho a sí mismo, pero puede paralizar al objetivo."
+msgstr "The user electrifies itself and charges the target. This also damages the user quite a lot. This attack may leave the target with paralysis."
+
+#. nombre
+#: data/moves/wakeupslap.tres
+msgid "Espabila"
+msgstr "Wake-Up Slap"
+
+#. nombre
+#: data/moves/waterfall.tres
+msgid "Cascada"
+msgstr "Waterfall"
+
+#. descripción
+#: data/moves/waterfall.tres
+msgid "Embiste con un gran impulso que puede llegar a amedrentar."
+msgstr "The user charges at the target and may make it flinch."
+
+#. nombre
+#: data/moves/watergun.tres
+msgid "Pistola Agua"
+msgstr "Water Gun"
+
+#. descripción
+#: data/moves/watergun.tres
+msgid "Ataca disparando agua con gran potencia."
+msgstr "The target is blasted with a forceful shot of water."
+
+#. nombre
+#: data/moves/waterpledge.tres
+msgid "Voto Agua"
+msgstr "Water Pledge"
+
+#. descripción
+#: data/moves/waterpledge.tres
+msgid "Ataca con columnas de agua. Combinado con Voto Fuego, crea un arcoíris y aumenta su potencia."
+msgstr "A column of water hits the target. When used with its fire counterpart, this move's power is boosted and a rainbow appears."
+
+#. nombre
+#: data/moves/waterpulse.tres
+msgid "Hidropulso"
+msgstr "Water Pulse"
+
+#. descripción
+#: data/moves/waterpulse.tres
+msgid "Ataca con un potente chorro de agua. Puede confundir al objetivo."
+msgstr "The user attacks the target with a pulsing blast of water. This may also confuse the target."
+
+#. nombre
+#: data/moves/waterspout.tres
+msgid "Salpicar"
+msgstr "Water Spout"
+
+#. descripción
+#: data/moves/waterspout.tres
+msgid "Chorro de agua. Cuantos menos PS tenga el usuario, menos dañino será."
+msgstr "The user spouts water to damage opposing Pokémon. The lower the user's HP, the lower the move's power."
+
+#. nombre
+#: data/moves/wavecrash.tres
+msgid "Envite Acuático"
+msgstr "Wave Crash"
+
+#. nombre
+#: data/moves/weatherball.tres
+msgid "Meteorobola"
+msgstr "Weather Ball"
+
+#. descripción
+#: data/moves/weatherball.tres
+msgid "El tipo y fuerza del ataque varían según el tiempo que haga."
+msgstr "This move's type and power change depending on the weather at the time the move is used."
+
+#. nombre
+#: data/moves/whirlpool.tres
+msgid "Torbellino"
+msgstr "Whirlpool"
+
+#. descripción
+#: data/moves/whirlpool.tres
+msgid "Una tromba de agua atrapa al objetivo durante cuatro o cinco turnos."
+msgstr "The user traps the target inside a violent, swirling whirlpool that inflicts damage for four to five turns."
+
+#. nombre
+#: data/moves/whirlwind.tres
+msgid "Remolino"
+msgstr "Whirlwind"
+
+#. nombre
+#: data/moves/wildcharge.tres
+msgid "Voltio Cruel"
+msgstr "Wild Charge"
+
+#. descripción
+#: data/moves/wildcharge.tres
+msgid "Carga eléctrica muy potente que también hiere ligeramente a quien la usa."
+msgstr "The user shrouds itself in electricity and smashes into its target. This also damages the user a little."
+
+#. nombre
+#: data/moves/willowisp.tres
+msgid "Fuego Fatuo"
+msgstr "Will-O-Wisp"
+
+#. descripción
+#: data/moves/willowisp.tres
+msgid "Siniestra llama morada que produce quemaduras."
+msgstr "The user shoots a sinister flame at the target to inflict a burn."
+
+#. nombre
+#: data/moves/wingattack.tres
+msgid "Ataque Ala"
+msgstr "Wing Attack"
+
+#. descripción
+#: data/moves/wingattack.tres
+msgid "Golpea al objetivo con unas grandes alas."
+msgstr "The target is struck with large, imposing wings spread wide to inflict damage."
+
+#. nombre
+#: data/moves/withdraw.tres
+msgid "Refugio"
+msgstr "Withdraw"
+
+#. descripción
+#: data/moves/withdraw.tres
+msgid "El usuario se resguarda en su coraza, por lo que le sube la Defensa."
+msgstr "The user withdraws its body into its hard shell, boosting its Defense stat."
+
+#. nombre
+#: data/moves/woodhammer.tres
+msgid "Mazazo"
+msgstr "Wood Hammer"
+
+#. descripción
+#: data/moves/woodhammer.tres
+msgid "Arremete contra el objetivo con su robusto cuerpo. El agresor también sufre bastante daño."
+msgstr "The user slams its rugged body into the target to attack. This also damages the user quite a lot."
+
+#. nombre
+#: data/moves/workup.tres
+msgid "Avivar"
+msgstr "Work Up"
+
+#. descripción
+#: data/moves/workup.tres
+msgid "Quien lo usa se concentra y potencia su Ataque y su Ataque Especial."
+msgstr "The user is roused, and its Attack and Sp. Atk stats are boosted."
+
+#. nombre
+#: data/moves/wrap.tres
+msgid "Constricción"
+msgstr "Wrap"
+
+#. descripción
+#: data/moves/wrap.tres
+msgid "Oprime al objetivo de cuatro a cinco turnos con ramas o con su cuerpo."
+msgstr "A long body, vines, or the like are used to wrap and squeeze the target for four to five turns."
+
+#. nombre
+#: data/moves/wringout.tres
+msgid "Estrujón"
+msgstr "Wring Out"
+
+#. nombre
+#: data/moves/xscissor.tres
+msgid "Tijera X"
+msgstr "X-Scissor"
+
+#. descripción
+#: data/moves/xscissor.tres
+msgid "Cruza las guadañas o las garras para atacar al objetivo como si fueran unas tijeras."
+msgstr "The user slashes at the target by crossing its scythes, claws, or the like as if they were a pair of scissors."
+
+#. nombre
+#: data/moves/yawn.tres
+msgid "Bostezo"
+msgstr "Yawn"
+
+#. descripción
+#: data/moves/yawn.tres
+msgid "Gran bostezo que induce al sueño al objetivo en el siguiente turno."
+msgstr "The user lets loose a huge yawn that lulls the target into falling asleep on the next turn."
+
+#. nombre
+#: data/moves/zapcannon.tres
+msgid "Electrocañón"
+msgstr "Zap Cannon"
+
+#. descripción
+#: data/moves/zapcannon.tres
+msgid "Dispara una descarga eléctrica que causa daño y parálisis."
+msgstr "The user attacks by firing an electric blast like a cannon. This also leaves the target with paralysis."
+
+#. nombre
+#: data/moves/zenheadbutt.tres
+msgid "Cabezazo Zen"
+msgstr "Zen Headbutt"
+
+#. descripción
+#: data/moves/zenheadbutt.tres
+msgid "Concentra su energía psíquica en la cabeza para golpear. Puede hacer que el objetivo se amedrente."
+msgstr "The user focuses its willpower to its head and attacks the target. This may also make the target flinch."

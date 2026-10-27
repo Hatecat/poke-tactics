@@ -60,6 +60,11 @@ Ver README.md para las reglas y la estructura de carpetas.
   (termina en "Continuará... Capítulo 2 · Ciudad Fucsia"). Los ataques que no caben se guardan en
   `StoryRun.pending_moves` y la escena siguiente pregunta cuál olvidar (`DialogueBox.choose`).
 
+- **Idiomas** (en curso, por tandas): `Game.language` / `apply_language()`, selector en Opciones; gettext en
+  `locale/<tema>/<idioma>.po` + `<tema>.pot` (ataques/objetos/habilidades generados con `tools/build_translations.py`;
+  interfaz a mano), cargados en `Game._load_translations()`. La clave es el
+  texto en español. Hecha la tanda 1 (sistema, selector, datos); faltan menús e interfaz, combate e historia.
+
 ## Cómo trabajar
 
 - Godot: en el equipo original es el flatpak `org.godotengine.Godot` (4.7.2). En otro equipo puede ser el
@@ -83,3 +88,8 @@ Ver README.md para las reglas y la estructura de carpetas.
 - Estilo: código y comentarios en español, `##` para documentar funciones, todo procedural (sin escenas para
   efectos). Imita el código de alrededor.
 - Actualiza el README cuando añadas algo visible para el jugador.
+- **Textos traducibles:** escribe el texto en español y añádelo (con nota `#.` de contexto) al `.pot` y al `en.po` de
+  su tema en `locale/`. Un Label o Button con el texto entero se traduce solo (auto_translate de Godot); las frases
+  montadas necesitan `tr()` antes de rellenar: `tr("¡{a} usó {b}!").format({"a": ..., "b": tr(mv.display_name)})`
+  (huecos con nombre, para que cada idioma ordene la frase; `tr_n()` para plurales). Nada de pegar trozos con
+  género o artículos.

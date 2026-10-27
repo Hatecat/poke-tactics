@@ -1,0 +1,61 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. título y botón
+#: scripts/ui/main_menu.gd
+msgid "Opciones"
+msgstr ""
+
+#. volumen general
+#: scripts/ui/main_menu.gd
+msgid "General"
+msgstr ""
+
+#. volumen
+#: scripts/ui/main_menu.gd
+msgid "Música"
+msgstr ""
+
+#. volumen de efectos de sonido
+#: scripts/ui/main_menu.gd
+msgid "Efectos"
+msgstr ""
+
+#. opciones
+#: scripts/ui/main_menu.gd
+msgid "Velocidad de combate"
+msgstr ""
+
+#. opciones
+#: scripts/ui/main_menu.gd
+msgid "Calidad gráfica"
+msgstr ""
+
+#. opciones
+#: scripts/ui/main_menu.gd
+msgid "Idioma"
+msgstr ""
+
+#. botón de cerrar
+#: scripts/ui/main_menu.gd
+msgid "Listo"
+msgstr ""
+
+#. calidad gráfica
+#: scripts/game.gd
+msgid "Baja"
+msgstr ""
+
+#. calidad gráfica
+#: scripts/game.gd
+msgid "Media"
+msgstr ""
+
+#. calidad gráfica
+#: scripts/game.gd
+msgid "Alta"
+msgstr ""

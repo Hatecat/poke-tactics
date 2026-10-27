@@ -279,6 +279,19 @@ y suaviza algo menos las sombras; Baja quita también la sombra de contacto, usa
 tres veces más fluido en una gráfica integrada). El juego usa la tarjeta gráfica dedicada si la hay; el nombre de
 la que está en uso sale al pasar el ratón por el desplegable.
 
+## Idiomas
+
+Español (el original) e inglés, en *Opciones → Idioma* (por defecto, el del sistema). Las traducciones son
+archivos gettext en `locale/<tema>/<idioma>.po`, con el texto en español como clave (msgid), una carpeta por tema
+(`ataques`, `objetos`, `habilidades`, `interfaz`; luego `combate` e `historia`) para poder traducir varios temas a
+la vez. El juego carga todos los `.po` al arrancar y ofrece cada idioma que tenga alguno. Guía para quien
+traduzca: `locale/LEEME.md`.
+
+- Ataques, objetos y habilidades: `python3 tools/build_translations.py <dir_datos>` rehace las plantillas `.pot`
+  y fusiona los `.po` (conserva lo traducido, rellena lo nuevo con PokeAPI; `--nuevo fr` crea un idioma). Los
+  textos propios del juego van en su lista `MANUAL`. Vuelve a ejecutarlo después de `build_data.py` o `build_items.py`.
+- Interfaz: a mano. Por ahora solo Opciones; el resto se va traduciendo por partes (menús, combate, historia).
+
 ## Velocidad de combate
 
 En Opciones (menú principal) y en la Pausa (Esc): de 20 % a 200 % (200 % es la velocidad normal). Escala todo el

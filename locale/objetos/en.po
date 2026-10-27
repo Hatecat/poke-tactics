@@ -1,0 +1,887 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Poké Tactics\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#. nombre
+#: data/items/airballoon.tres
+msgid "Globo Helio"
+msgstr "Air Balloon"
+
+#. descripción
+#: data/items/airballoon.tres
+msgid "El Pokémon que lo lleve flotará en el aire. Si recibe un golpe, estallará."
+msgstr "An item to be held by a Pokémon. The holder will float in the air until hit. Once the holder is hit, this item will burst."
+
+#. nombre
+#: data/items/apicotberry.tres
+msgid "Baya Aricoc"
+msgstr "Apicot Berry"
+
+#. descripción
+#: data/items/apicotberry.tres
+msgid "Si la lleva un Pokémon, le sube la Defensa Especial en un momento de apuro."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, its Sp. Def stat will increase when it’s in a pinch."
+
+#. nombre
+#: data/items/aspearberry.tres
+msgid "Baya Perasi"
+msgstr "Aspear Berry"
+
+#. descripción
+#: data/items/aspearberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para descongelarse."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from being frozen on its own in battle."
+
+#. nombre
+#: data/items/assaultvest.tres
+msgid "Chaleco Asalto"
+msgstr "Assault Vest"
+
+#. descripción
+#: data/items/assaultvest.tres
+msgid "Chaleco que potencia la Defensa Especial del Pokémon que lo lleva, pero le impide lanzar movimientos de estado."
+msgstr "An item to be held by a Pokémon. This offensive vest raises Sp. Def but prevents the use of status moves."
+
+#. nombre
+#: data/items/babiriberry.tres
+msgid "Baya Baribá"
+msgstr "Babiri Berry"
+
+#. descripción
+#: data/items/babiriberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Acero de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Steel-type attack."
+
+#. nombre
+#: data/items/bigroot.tres
+msgid "Raíz Grande"
+msgstr "Big Root"
+
+#. descripción
+#: data/items/bigroot.tres
+msgid "El Pokémon que la lleva recupera más PS al usar movimientos que drenan al objetivo."
+msgstr "An item to be held by a Pokémon. It boosts the amount of HP the holder restores from HP-stealing moves."
+
+#. nombre
+#: data/items/blackbelt.tres
+msgid "Cinturón Negro"
+msgstr "Black Belt"
+
+#. descripción
+#: data/items/blackbelt.tres
+msgid "Debe llevarlo un Pokémon. Aumenta la concentración y fortalece los movimientos de tipo Lucha."
+msgstr "An item to be held by a Pokémon. This belt helps the wearer to focus and boosts the power of Fighting-type moves."
+
+#. nombre
+#: data/items/blackglasses.tres
+msgid "Gafas de Sol"
+msgstr "Black Glasses"
+
+#. descripción
+#: data/items/blackglasses.tres
+msgid "Debe llevarlas un Pokémon. Fortalecen los movimientos de tipo Siniestro."
+msgstr "An item to be held by a Pokémon. It’s a pair of shady-looking glasses that boost the power of Dark-type moves."
+
+#. nombre
+#: data/items/blacksludge.tres
+msgid "Lodo Negro"
+msgstr "Black Sludge"
+
+#. descripción
+#: data/items/blacksludge.tres
+msgid "Si lo lleva un Pokémon de tipo Veneno, restaura gradualmente sus PS durante el combate. Si es de otro tipo, sus PS se reducirán."
+msgstr "An item to be held by a Pokémon. It gradually restores HP to Poison-type Pokémon. It damages any other type."
+
+#. nombre
+#: data/items/brightpowder.tres
+msgid "Polvo Brillo"
+msgstr "Bright Powder"
+
+#. descripción
+#: data/items/brightpowder.tres
+msgid "Lanza un destello que baja la Precisión del enemigo. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It casts a tricky glare that lowers the opposing Pokémon’s accuracy."
+
+#. nombre
+#: data/items/charcoal.tres
+msgid "Carbón"
+msgstr "Charcoal"
+
+#. descripción
+#: data/items/charcoal.tres
+msgid "Actúa como combustible y potencia los movimientos de tipo Fuego. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a combustible fuel that boosts the power of Fire-type moves."
+
+#. nombre
+#: data/items/chartiberry.tres
+msgid "Baya Alcho"
+msgstr "Charti Berry"
+
+#. descripción
+#: data/items/chartiberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Roca de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Rock-type attack."
+
+#. nombre
+#: data/items/cheriberry.tres
+msgid "Baya Zreza"
+msgstr "Cheri Berry"
+
+#. descripción
+#: data/items/cheriberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para recuperarse de la parálisis."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from paralysis on its own in battle."
+
+#. nombre
+#: data/items/chestoberry.tres
+msgid "Baya Atania"
+msgstr "Chesto Berry"
+
+#. descripción
+#: data/items/chestoberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para despertar del sueño."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from sleep on its own in battle."
+
+#. nombre
+#: data/items/chilanberry.tres
+msgid "Baya Chilan"
+msgstr "Chilan Berry"
+
+#. descripción
+#: data/items/chilanberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque de tipo Normal de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one Normal-type attack."
+
+#. nombre
+#: data/items/choiceband.tres
+msgid "Cinta Elección"
+msgstr "Choice Band"
+
+#. descripción
+#: data/items/choiceband.tres
+msgid "Aumenta la potencia de los ataques físicos del Pokémon que la lleva, pero solo le permite usar un movimiento."
+msgstr "An item to be held by a Pokémon. This curious headband boosts Attack but only allows the use of one move."
+
+#. nombre
+#: data/items/choicescarf.tres
+msgid "Pañuelo Elección"
+msgstr "Choice Scarf"
+
+#. descripción
+#: data/items/choicescarf.tres
+msgid "Debe llevarlo un Pokémon. Potencia la Velocidad, pero solo permite usar un movimiento."
+msgstr "An item to be held by a Pokémon. This curious scarf boosts Speed but only allows the use of one move."
+
+#. nombre
+#: data/items/choicespecs.tres
+msgid "Gafas Elección"
+msgstr "Choice Specs"
+
+#. descripción
+#: data/items/choicespecs.tres
+msgid "Aumentan la potencia de los ataques especiales del Pokémon que las lleva, pero solo le permiten usar un movimiento."
+msgstr "An item to be held by a Pokémon. These curious glasses boost Sp. Atk but only allow the use of one move."
+
+#. nombre
+#: data/items/chopleberry.tres
+msgid "Baya Pomaro"
+msgstr "Chople Berry"
+
+#. descripción
+#: data/items/chopleberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Lucha de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Fighting-type attack."
+
+#. nombre
+#: data/items/cobaberry.tres
+msgid "Baya Kouba"
+msgstr "Coba Berry"
+
+#. descripción
+#: data/items/cobaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Volador de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Flying-type attack."
+
+#. nombre
+#: data/items/colburberry.tres
+msgid "Baya Dillo"
+msgstr "Colbur Berry"
+
+#. descripción
+#: data/items/colburberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Siniestro de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Dark-type attack."
+
+#. nombre
+#: data/items/damprock.tres
+msgid "Roca Lluvia"
+msgstr "Damp Rock"
+
+#. descripción
+#: data/items/damprock.tres
+msgid "Prolonga la duración del movimiento Danza Lluvia que use el Pokémon que la lleva."
+msgstr "An item to be held by a Pokémon. It extends the duration of the move Rain Dance when used by the holder."
+
+#. nombre
+#: data/items/dragonfang.tres
+msgid "Colmillo de Dragón"
+msgstr "Dragon Fang"
+
+#. descripción
+#: data/items/dragonfang.tres
+msgid "Colmillo de gran dureza que refuerza los movimientos de tipo Dragón. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. This hard and sharp fang boosts the power of Dragon-type moves."
+
+#. nombre
+#: data/items/everstone.tres
+msgid "Piedra Eterna"
+msgstr "Everstone"
+
+#. descripción
+#: data/items/everstone.tres
+msgid "El Pokémon que lleva esta piedra mágica no evoluciona."
+msgstr "An item to be held by a Pokémon. A Pokémon holding this peculiar stone is prevented from evolving."
+
+#. nombre
+#: data/items/eviolite.tres
+msgid "Mineral Evol"
+msgstr "Eviolite"
+
+#. descripción
+#: data/items/eviolite.tres
+msgid "Roca misteriosa. El Pokémon portador aumentará su Defensa y su Defensa Especial si aún puede evolucionar."
+msgstr "A mysterious evolutionary lump. When held by a Pokémon that can still evolve, it raises both Defense and Sp. Def."
+
+#. nombre
+#: data/items/expertbelt.tres
+msgid "Cinta Experto"
+msgstr "Expert Belt"
+
+#. descripción
+#: data/items/expertbelt.tres
+msgid "Potencia ligeramente los movimientos supereficaces. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a well-worn belt that slightly boosts the power of supereffective moves."
+
+#. nombre
+#: data/items/fairyfeather.tres
+msgid "Pluma Feérica"
+msgstr "Fairy Feather"
+
+#. nombre
+#: data/items/firestone.tres
+msgid "Piedra Fuego"
+msgstr "Fire Stone"
+
+#. descripción
+#: data/items/firestone.tres
+msgid "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es amarilla con una marca naranja."
+msgstr "A peculiar stone that can make certain species of Pokémon evolve. The stone has a fiery orange heart."
+
+#. nombre
+#: data/items/flameorb.tres
+msgid "Llamasfera"
+msgstr "Flame Orb"
+
+#. descripción
+#: data/items/flameorb.tres
+msgid "Extraña esfera que causa quemaduras al Pokémon que la lleva en combate."
+msgstr "An item to be held by a Pokémon. It’s a bizarre orb that will afflict the holder with a burn during battle."
+
+#. nombre
+#: data/items/focusband.tres
+msgid "Cinta Aguante"
+msgstr "Focus Band"
+
+#. descripción
+#: data/items/focusband.tres
+msgid "El Pokémon que la lleva puede resistir un golpe que potencialmente lo dejaría K. O. y se queda con 1 PS."
+msgstr "An item to be held by a Pokémon. The holder may endure a potential KO attack, leaving it with just 1 HP."
+
+#. nombre
+#: data/items/focussash.tres
+msgid "Banda Aguante"
+msgstr "Focus Sash"
+
+#. descripción
+#: data/items/focussash.tres
+msgid "Si el Pokémon que la lleva tiene los PS al máximo, puede resistir un golpe que lo dejaría K. O. y se queda con 1 PS."
+msgstr "An item to be held by a Pokémon. If the holder has full HP, it will endure a potential KO attack with 1 HP. The item then disappears."
+
+#. nombre
+#: data/items/ganlonberry.tres
+msgid "Baya Gonlan"
+msgstr "Ganlon Berry"
+
+#. descripción
+#: data/items/ganlonberry.tres
+msgid "Si la lleva un Pokémon, le sube la Defensa en un momento de apuro."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, its Defense stat will increase when it’s in a pinch."
+
+#. nombre
+#: data/items/habanberry.tres
+msgid "Baya Anjiro"
+msgstr "Haban Berry"
+
+#. descripción
+#: data/items/habanberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Dragón de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Dragon-type attack."
+
+#. nombre
+#: data/items/hardstone.tres
+msgid "Piedra Dura"
+msgstr "Hard Stone"
+
+#. descripción
+#: data/items/hardstone.tres
+msgid "Debe llevarla un Pokémon. La robustez de la piedra fortalece los movimientos de tipo Roca."
+msgstr "An item to be held by a Pokémon. It’s a durable stone that boosts the power of Rock-type moves."
+
+#. nombre
+#: data/items/heatrock.tres
+msgid "Roca Calor"
+msgstr "Heat Rock"
+
+#. descripción
+#: data/items/heatrock.tres
+msgid "Prolonga la duración del movimiento Día Soleado que use el Pokémon que la lleva."
+msgstr "An item to be held by a Pokémon. It extends the duration of the move Sunny Day when used by the holder."
+
+#. nombre
+#: data/items/heavydutyboots.tres
+msgid "Botas Gruesas"
+msgstr "Heavy-Duty Boots"
+
+#. descripción
+#: data/items/heavydutyboots.tres
+msgid "Anula los efectos de aquello que se coloca a los pies del Pokémon para obstaculizarlo, como las trampas."
+msgstr "These boots prevent the effects of traps set on the battlefield."
+
+#. nombre
+#: data/items/icyrock.tres
+msgid "Roca Helada"
+msgstr "Icy Rock"
+
+#. descripción
+#: data/items/icyrock.tres
+msgid "Prolonga la duración del movimiento Granizo que use el Pokémon que la lleva."
+msgstr "An item to be held by a Pokémon. It extends the duration of the move Hail when used by the holder."
+
+#. nombre
+#: data/items/kasibberry.tres
+msgid "Baya Drasi"
+msgstr "Kasib Berry"
+
+#. descripción
+#: data/items/kasibberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Fantasma de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Ghost-type attack."
+
+#. nombre
+#: data/items/kebiaberry.tres
+msgid "Baya Kebia"
+msgstr "Kebia Berry"
+
+#. descripción
+#: data/items/kebiaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Veneno de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Poison-type attack."
+
+#. nombre
+#: data/items/kingsrock.tres
+msgid "Roca del Rey"
+msgstr "King’s Rock"
+
+#. descripción
+#: data/items/kingsrock.tres
+msgid "El Pokémon que la lleva puede amedrentar al Pokémon al que le inflige daño."
+msgstr "An item to be held by a Pokémon. When the holder successfully inflicts damage, the target may also flinch."
+
+#. nombre
+#: data/items/leafstone.tres
+msgid "Piedra Hoja"
+msgstr "Leaf Stone"
+
+#. descripción
+#: data/items/leafstone.tres
+msgid "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Tiene grabada una hoja."
+msgstr "A peculiar stone that can make certain species of Pokémon evolve. It has an unmistakable leaf pattern."
+
+#. nombre
+#: data/items/leftovers.tres
+msgid "Restos"
+msgstr "Leftovers"
+
+#. descripción
+#: data/items/leftovers.tres
+msgid "Este objeto restaura gradualmente durante el combate los PS del Pokémon que lo lleva."
+msgstr "An item to be held by a Pokémon. The holder’s HP is slowly but steadily restored throughout every battle."
+
+#. nombre
+#: data/items/leppaberry.tres
+msgid "Baya Zanama"
+msgstr "Leppa Berry"
+
+#. descripción
+#: data/items/leppaberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para restaurar 10 PP de un movimiento."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can restore 10 PP to a depleted move during battle."
+
+#. nombre
+#: data/items/liechiberry.tres
+msgid "Baya Lichi"
+msgstr "Liechi Berry"
+
+#. descripción
+#: data/items/liechiberry.tres
+msgid "Si la lleva un Pokémon, le sube el Ataque en un momento de apuro."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, its Attack stat will increase when it’s in a pinch."
+
+#. nombre
+#: data/items/lifeorb.tres
+msgid "Vidasfera"
+msgstr "Life Orb"
+
+#. descripción
+#: data/items/lifeorb.tres
+msgid "Potencia los movimientos, pero consume PS con cada ataque. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. It boosts the power of moves but at the cost of some HP on each hit."
+
+#. nombre
+#: data/items/lightclay.tres
+msgid "Refleluz"
+msgstr "Light Clay"
+
+#. descripción
+#: data/items/lightclay.tres
+msgid "Prolonga la duración de barreras como las creadas por Reflejo y Pantalla de Luz. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. Protective moves like Light Screen and Reflect will be effective longer."
+
+#. nombre
+#: data/items/lumberry.tres
+msgid "Baya Ziuela"
+msgstr "Lum Berry"
+
+#. descripción
+#: data/items/lumberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para recuperarse de problemas de estado."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from any status condition during battle."
+
+#. nombre
+#: data/items/magnet.tres
+msgid "Imán"
+msgstr "Magnet"
+
+#. descripción
+#: data/items/magnet.tres
+msgid "Debe llevarlo un Pokémon. Su potente magnetismo fortalece los movimientos de tipo Eléctrico."
+msgstr "An item to be held by a Pokémon. It’s a powerful magnet that boosts the power of Electric-type moves."
+
+#. nombre
+#: data/items/mentalherb.tres
+msgid "Hierba Mental"
+msgstr "Mental Herb"
+
+#. descripción
+#: data/items/mentalherb.tres
+msgid "El Pokémon que la lleva se libera del efecto de movimientos que restringen sus acciones. Solo puede usarse una vez."
+msgstr "An item to be held by a Pokémon. The holder shakes off move-binding effects to move freely. It can be used only once."
+
+#. nombre
+#: data/items/metalcoat.tres
+msgid "Revest. Metálico"
+msgstr "Metal Coat"
+
+#. descripción
+#: data/items/metalcoat.tres
+msgid "Película metálica que fortalece los ataques de tipo Acero. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a special metallic film that can boost the power of Steel-type moves."
+
+#. nombre
+#: data/items/miracleseed.tres
+msgid "Semilla Milagro"
+msgstr "Miracle Seed"
+
+#. descripción
+#: data/items/miracleseed.tres
+msgid "Debe llevarla un Pokémon. La vitalidad de la semilla fortalece los movimientos de tipo Planta."
+msgstr "An item to be held by a Pokémon. It’s a seed imbued with life-force that boosts the power of Grass-type moves."
+
+#. nombre
+#: data/items/moonstone.tres
+msgid "Piedra Lunar"
+msgstr "Moon Stone"
+
+#. descripción
+#: data/items/moonstone.tres
+msgid "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es oscura como la noche."
+msgstr "A peculiar stone that can make certain species of Pokémon evolve. It is as black as the night sky."
+
+#. nombre
+#: data/items/muscleband.tres
+msgid "Cinta Fuerte"
+msgstr "Muscle Band"
+
+#. descripción
+#: data/items/muscleband.tres
+msgid "Cinta del pelo que aumenta ligeramente la potencia de los ataques físicos. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. This headband exudes strength, slightly boosting the power of physical moves."
+
+#. nombre
+#: data/items/mysticwater.tres
+msgid "Agua Mística"
+msgstr "Mystic Water"
+
+#. descripción
+#: data/items/mysticwater.tres
+msgid "Gema con forma de gota de agua que fortalece los movimientos de tipo Agua. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. This teardrop-shaped gem boosts the power of Water-type moves."
+
+#. nombre
+#: data/items/nevermeltice.tres
+msgid "Hielo Perpetuo"
+msgstr "Never-Melt Ice"
+
+#. descripción
+#: data/items/nevermeltice.tres
+msgid "Fragmento de hielo que repele el calor y fortalece los movimientos de tipo Hielo. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a heat- repelling piece of ice that boosts the power of Ice-type moves."
+
+#. nombre
+#: data/items/occaberry.tres
+msgid "Baya Caoca"
+msgstr "Occa Berry"
+
+#. descripción
+#: data/items/occaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Fuego de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Fire-type attack."
+
+#. nombre
+#: data/items/oranberry.tres
+msgid "Baya Aranja"
+msgstr "Oran Berry"
+
+#. descripción
+#: data/items/oranberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para restaurar 10 PS."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can restore its own HP by 10 points during battle."
+
+#. nombre
+#: data/items/passhoberry.tres
+msgid "Baya Pasio"
+msgstr "Passho Berry"
+
+#. descripción
+#: data/items/passhoberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Agua de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Water-type attack."
+
+#. nombre
+#: data/items/payapaberry.tres
+msgid "Baya Payapa"
+msgstr "Payapa Berry"
+
+#. descripción
+#: data/items/payapaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Psíquico de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Psychic-type attack."
+
+#. nombre
+#: data/items/pechaberry.tres
+msgid "Baya Meloc"
+msgstr "Pecha Berry"
+
+#. descripción
+#: data/items/pechaberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para curarse del envenenamiento."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from poisoning on its own in battle."
+
+#. nombre
+#: data/items/persimberry.tres
+msgid "Baya Caquic"
+msgstr "Persim Berry"
+
+#. descripción
+#: data/items/persimberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para librarse de la confusión."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from confusion on its own in battle."
+
+#. nombre
+#: data/items/petayaberry.tres
+msgid "Baya Yapati"
+msgstr "Petaya Berry"
+
+#. descripción
+#: data/items/petayaberry.tres
+msgid "Si la lleva un Pokémon, le sube el Ataque Especial en un momento de apuro."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, its Sp. Atk stat will increase when it’s in a pinch."
+
+#. nombre
+#: data/items/poisonbarb.tres
+msgid "Flecha Venenosa"
+msgstr "Poison Barb"
+
+#. descripción
+#: data/items/poisonbarb.tres
+msgid "Flecha venenosa que refuerza los movimientos de tipo Veneno. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. This small, poisonous barb boosts the power of Poison-type moves."
+
+#. nombre
+#: data/items/quickclaw.tres
+msgid "Garra Rápida"
+msgstr "Quick Claw"
+
+#. descripción
+#: data/items/quickclaw.tres
+msgid "Garra ligera y afilada. Al terminar cada turno, el Pokémon que la lleva tiene un 20 % de probabilidad de que su siguiente turno llegue antes (casi un tercio de turno)."
+msgstr "A light, sharp claw. At the end of each turn, the holder has a 20% chance that its next turn comes sooner (almost a third of a turn)."
+
+#. nombre
+#: data/items/rawstberry.tres
+msgid "Baya Safre"
+msgstr "Rawst Berry"
+
+#. descripción
+#: data/items/rawstberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para curarse las quemaduras."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can recover from a burn on its own in battle."
+
+#. nombre
+#: data/items/rindoberry.tres
+msgid "Baya Tamar"
+msgstr "Rindo Berry"
+
+#. descripción
+#: data/items/rindoberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Planta de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Grass-type attack."
+
+#. nombre
+#: data/items/rockyhelmet.tres
+msgid "Casco Dentado"
+msgstr "Rocky Helmet"
+
+#. descripción
+#: data/items/rockyhelmet.tres
+msgid "Si el portador es alcanzado por un movimiento de contacto, el agresor también recibe daño."
+msgstr "An item to be held by a Pokémon. If the holder is hit, the attacker will also be damaged upon contact."
+
+#. nombre
+#: data/items/roseliberry.tres
+msgid "Roseli Berry"
+msgstr "Roseli Berry"
+
+#. nombre
+#: data/items/salacberry.tres
+msgid "Baya Aslac"
+msgstr "Salac Berry"
+
+#. descripción
+#: data/items/salacberry.tres
+msgid "Si la lleva un Pokémon, le sube la Velocidad en un momento de apuro."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, its Speed stat will increase when it’s in a pinch."
+
+#. nombre
+#: data/items/scopelens.tres
+msgid "Periscopio"
+msgstr "Scope Lens"
+
+#. descripción
+#: data/items/scopelens.tres
+msgid "Su lente aumenta la probabilidad que tiene el Pokémon que lo lleva de conseguir un golpe crítico."
+msgstr "An item to be held by a Pokémon. It’s a lens for scoping out weak points. It boosts the holder’s critical-hit ratio."
+
+#. nombre
+#: data/items/sharpbeak.tres
+msgid "Pico Afilado"
+msgstr "Sharp Beak"
+
+#. descripción
+#: data/items/sharpbeak.tres
+msgid "Pico largo y afilado que aumenta la potencia de los movimientos de tipo Volador. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a long, sharp beak that boosts the power of Flying-type moves."
+
+#. nombre
+#: data/items/shellbell.tres
+msgid "Cascabel Concha"
+msgstr "Shell Bell"
+
+#. descripción
+#: data/items/shellbell.tres
+msgid "Debe llevarlo un Pokémon. Cada vez que este inflige daño, recupera algunos PS."
+msgstr "An item to be held by a Pokémon. The holder restores a little HP every time it inflicts damage on others."
+
+#. nombre
+#: data/items/shucaberry.tres
+msgid "Baya Acardo"
+msgstr "Shuca Berry"
+
+#. descripción
+#: data/items/shucaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Tierra de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Ground-type attack."
+
+#. nombre
+#: data/items/silkscarf.tres
+msgid "Pañuelo de Seda"
+msgstr "Silk Scarf"
+
+#. descripción
+#: data/items/silkscarf.tres
+msgid "La delicadeza del pañuelo fortalece los movimientos de tipo Normal. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a sumptuous scarf that boosts the power of Normal-type moves."
+
+#. nombre
+#: data/items/silverpowder.tres
+msgid "Polvo Plata"
+msgstr "Silver Powder"
+
+#. descripción
+#: data/items/silverpowder.tres
+msgid "Polvo de brillo argénteo que fortalece los ataques de tipo Bicho. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a shiny silver powder that will boost the power of Bug-type moves."
+
+#. nombre
+#: data/items/sitrusberry.tres
+msgid "Baya Zidra"
+msgstr "Sitrus Berry"
+
+#. descripción
+#: data/items/sitrusberry.tres
+msgid "Los Pokémon pueden llevarla o usarla para restaurar algunos PS."
+msgstr "A Berry to be consumed by Pokémon. If a Pokémon holds one, it can restore its own HP by a small amount during battle."
+
+#. nombre
+#: data/items/smoothrock.tres
+msgid "Roca Suave"
+msgstr "Smooth Rock"
+
+#. descripción
+#: data/items/smoothrock.tres
+msgid "Prolonga la duración del movimiento Tormenta de Arena que use el Pokémon que la lleva."
+msgstr "An item to be held by a Pokémon. It extends the duration of the move Sandstorm when used by the holder."
+
+#. nombre
+#: data/items/softsand.tres
+msgid "Arena Fina"
+msgstr "Soft Sand"
+
+#. descripción
+#: data/items/softsand.tres
+msgid "Debe llevarla un Pokémon. La suavidad de la arena fortalece los movimientos de tipo Tierra."
+msgstr "An item to be held by a Pokémon. It’s a loose, silky sand that boosts the power of Ground-type moves."
+
+#. nombre
+#: data/items/spelltag.tres
+msgid "Hechizo"
+msgstr "Spell Tag"
+
+#. descripción
+#: data/items/spelltag.tres
+msgid "Misterioso y siniestro objeto que potencia los movimientos de tipo Fantasma. Debe llevarlo un Pokémon."
+msgstr "An item to be held by a Pokémon. It’s a sinister, eerie tag that boosts the power of Ghost-type moves."
+
+#. nombre
+#: data/items/tangaberry.tres
+msgid "Baya Yecana"
+msgstr "Tanga Berry"
+
+#. descripción
+#: data/items/tangaberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Bicho de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Bug-type attack."
+
+#. nombre
+#: data/items/thunderstone.tres
+msgid "Piedra Trueno"
+msgstr "Thunder Stone"
+
+#. descripción
+#: data/items/thunderstone.tres
+msgid "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Tiene grabado un rayo."
+msgstr "A peculiar stone that can make certain species of Pokémon evolve. It has a distinct thunderbolt pattern."
+
+#. nombre
+#: data/items/toxicorb.tres
+msgid "Toxisfera"
+msgstr "Toxic Orb"
+
+#. descripción
+#: data/items/toxicorb.tres
+msgid "Extraña esfera que envenena gravemente al Pokémon que la lleva en combate."
+msgstr "An item to be held by a Pokémon. It’s a bizarre orb that will badly poison the holder during battle."
+
+#. nombre
+#: data/items/twistedspoon.tres
+msgid "Cuchara Torcida"
+msgstr "Twisted Spoon"
+
+#. descripción
+#: data/items/twistedspoon.tres
+msgid "Cuchara imbuida de energía telequinética que potencia los movimientos de tipo Psíquico. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. This spoon is imbued with telekinetic power and boosts Psychic-type moves."
+
+#. nombre
+#: data/items/wacanberry.tres
+msgid "Baya Gualot"
+msgstr "Wacan Berry"
+
+#. descripción
+#: data/items/wacanberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Eléctrico de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Electric-type attack."
+
+#. nombre
+#: data/items/waterstone.tres
+msgid "Piedra Agua"
+msgstr "Water Stone"
+
+#. descripción
+#: data/items/waterstone.tres
+msgid "Curiosa piedra que hace evolucionar a determinadas especies de Pokémon. Es de color azul."
+msgstr "A peculiar stone that can make certain species of Pokémon evolve. It is the blue of a pool of clear water."
+
+#. nombre
+#: data/items/whiteherb.tres
+msgid "Hierba Blanca"
+msgstr "White Herb"
+
+#. descripción
+#: data/items/whiteherb.tres
+msgid "Restaura cualquier característica reducida en combate. Solo se puede usar una vez. Debe llevarla un Pokémon."
+msgstr "An item to be held by a Pokémon. It will restore any lowered stat in battle. It can be used only once."
+
+#. nombre
+#: data/items/widelens.tres
+msgid "Lupa"
+msgstr "Wide Lens"
+
+#. descripción
+#: data/items/widelens.tres
+msgid "Debe llevarla un Pokémon. Aumenta ligeramente la precisión de los movimientos."
+msgstr "An item to be held by a Pokémon. It’s a magnifying lens that slightly boosts the accuracy of moves."
+
+#. nombre
+#: data/items/wiseglasses.tres
+msgid "Gafas Especiales"
+msgstr "Wise Glasses"
+
+#. descripción
+#: data/items/wiseglasses.tres
+msgid "Potencian ligeramente los ataques especiales. Debe llevarlas un Pokémon."
+msgstr "An item to be held by a Pokémon. This thick pair of glasses slightly boosts the power of special moves."
+
+#. nombre
+#: data/items/yacheberry.tres
+msgid "Baya Rimoya"
+msgstr "Yache Berry"
+
+#. descripción
+#: data/items/yacheberry.tres
+msgid "Si la lleva un Pokémon, debilita un ataque supereficaz de tipo Hielo de un enemigo."
+msgstr "If held by a Pokémon, this Berry will lessen the damage taken from one supereffective Ice-type attack."

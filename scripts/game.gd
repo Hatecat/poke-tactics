@@ -49,6 +49,14 @@ var battle_speed := BATTLE_SPEED_MAX
 enum Quality { LOW, MEDIUM, HIGH }
 const QUALITY_NAMES := ["Baja", "Media", "Alta"]
 var graphics_quality := Quality.HIGH
+## Idiomas. El español es el original: los textos del juego son las claves (msgid) de las traducciones,
+## locale/<tema>/<idioma>.po. Un idioma está disponible si hay algún .po suyo; aquí solo su nombre en ese idioma.
+## language = "" usa el del sistema si está traducido (si no, inglés).
+const LOCALE_DIR := "res://locale/"
+const LANGUAGE_NAMES := {"es": "Español", "en": "English", "fr": "Français", "de": "Deutsch", "it": "Italiano",
+	"pt": "Português", "pt_BR": "Português (Brasil)", "ja": "日本語", "ko": "한국어", "zh_CN": "简体中文", "zh_TW": "繁體中文"}
+var languages: PackedStringArray = ["es"]
+var language := ""
 ## Equipo con el que se juega (el seleccionado).
 var player_team: Array[TeamMember]:
 	get:
@@ -73,6 +81,8 @@ func _ready() -> void:
 	rng.randomize()
 	_load_roster()
 	_load_save()
+	_load_translations()
+	apply_language()
 	apply_graphics()
 
 
@@ -179,6 +189,46 @@ func apply_graphics() -> void:
 		CameraRig.apply_quality(scene)
 
 
+## Carga todos los .po de locale/ (una carpeta por tema: ataques, objetos, interfaz...).
+func _load_translations() -> void:
+	for theme in DirAccess.get_directories_at(LOCALE_DIR):
+		for file in DirAccess.get_files_at(LOCALE_DIR + theme):
+			if not file.ends_with(".po"):
+				continue
+			var tr_res: Translation = load(LOCALE_DIR + theme + "/" + file)
+			if tr_res:
+				TranslationServer.add_translation(tr_res)
+				if tr_res.locale not in languages:
+					languages.append(tr_res.locale)
+
+
+func apply_language() -> void:
+	var code := language
+	if code == "" or code not in languages:
+		code = OS.get_locale()
+		if code not in languages:
+			code = OS.get_locale_language()
+		if code not in languages:
+			code = "en" if "en" in languages else "es"
+	TranslationServer.set_locale(code)
+
+
+## Desplegable de idioma (para Opciones). Al cambiarlo se vuelve a abrir la pantalla para rehacer sus textos.
+func language_picker() -> OptionButton:
+	var pick := OptionButton.new()
+	pick.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	var codes := languages
+	for code in codes:
+		pick.add_item(LANGUAGE_NAMES.get(code, TranslationServer.get_locale_name(code)))
+	pick.select(maxi(codes.find(TranslationServer.get_locale()), 0))
+	pick.item_selected.connect(func(i: int) -> void:
+		language = codes[i]
+		apply_language()
+		save()
+		get_tree().reload_current_scene.call_deferred())
+	return pick
+
+
 ## Desplegable de calidad gráfica (para Opciones y Pausa): la cambia y la aplica al momento.
 func quality_picker() -> OptionButton:
 	var pick := OptionButton.new()
@@ -229,6 +279,7 @@ func save() -> void:
 	cfg.set_value("options", "volumes", volumes)
 	cfg.set_value("options", "battle_speed", battle_speed)
 	cfg.set_value("options", "graphics_quality", graphics_quality)
+	cfg.set_value("options", "language", language)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("story", "run", story.to_dict() if story else {})
@@ -269,6 +320,7 @@ func _load_save() -> void:
 		volumes.merge(cfg.get_value("options", "volumes", {}), true)
 		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
 		graphics_quality = clampi(cfg.get_value("options", "graphics_quality", Quality.HIGH), Quality.LOW, Quality.HIGH) as Quality
+		language = cfg.get_value("options", "language", "")
 		tower_best = cfg.get_value("tower", "best", 0)
 		var run: Dictionary = cfg.get_value("tower", "run", {})
 		if not run.is_empty():
