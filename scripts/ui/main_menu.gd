@@ -194,7 +194,7 @@ func _build_map_dialog() -> void:
 
 	_random_options.add_child(UiKit.label(tr("Campo"), 18, Color(1, 1, 1, 0.75)))
 	var biome_grid := GridContainer.new()
-	biome_grid.columns = 3
+	biome_grid.columns = 5 # con 3 columnas el diálogo no cabe en 900 px de alto
 	biome_grid.add_theme_constant_override("h_separation", 8)
 	biome_grid.add_theme_constant_override("v_separation", 8)
 	_random_options.add_child(biome_grid)
@@ -206,7 +206,7 @@ func _build_map_dialog() -> void:
 			_selected_biome = item[0]
 			_refresh_dialog(), 18)
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(190, 44)
+		b.custom_minimum_size = Vector2(180, 40)
 		biome_grid.add_child(b)
 		_biome_buttons[item[0]] = b
 
