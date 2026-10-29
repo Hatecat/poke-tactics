@@ -53,8 +53,13 @@ Ver README.md para las reglas y la estructura de carpetas.
   sombras) + `CameraRig.apply_quality` (SSIL, SSAO, cascadas, PCSS). Alta = como siempre. El juego usa la GPU
   dedicada solo (Vulkan elige la discreta); en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*`
   de la misma versión que el driver (si no, corre en la Intel: compruébalo con `RenderingServer.get_video_adapter_name()`).
-- **Pokémon:** `Unit._vivid_materials` satura las texturas de los rips (salían desteñidas); `_fix_palette_materials`
+- **Pokémon:** `Unit._vivid_materials` usa la textura ajustada de `assets/models/pokemon/tuned/` (de
+  `tools/tune_textures.py`, por píxel y con `TUNE` por especie) o, si no hay, satura la original; `_fix_palette_materials`
   toma el color del nombre de la pieza en los modelos de paleta (Gastly) y su gas usa `HALO_SHADER` (halo fresnel).
+  Revisión de los 151 (octubre 2026): serpientes suavizadas (`smooth_serpent_weights.py`, Ekans/Arbok/Dratini),
+  brazos de Geodude/Hitmonlee/Hitmonchan, cola de Slowpoke y debilitados (`KO_STYLE`). Para revisarlos todos de un
+  vistazo: un script que crea un `Unit` por clip (idle, walk, fight_b, fight_d, hit, ko) y hace `seek` + `pause`.
+  Tras cambiar un animador, vuelve a pasar también `animate_status.py` con `--force` (las de estado salen del idle).
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la
   tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se
   acumulan. La fuerza del viento depende del clima (`WIND` en battle.gd).

@@ -459,6 +459,15 @@ cuerpo). Como enroscadas abultan menos que su largo, `COILED_HEIGHT` en `tools/b
 blender --background art/blender/ekans.blend --python tools/blender/animate_serpent.py
 ```
 
+El cuerpo de los rips de serpiente solo tiene anillos cada mucho trecho y cada vértice va con un solo hueso: al
+enroscarse se veían esquinas. `smooth_serpent_weights.py` añade anillos al tubo del cuerpo y reparte los pesos
+entre los huesos vecinos (la cabeza, las mandíbulas y la capucha de Arbok no se tocan); hecho en Ekans, Arbok y
+Dratini. Después hay que volver a animar con `--force` (las acciones de estado también) y exportar:
+
+```bash
+blender --background art/blender/ekans.blend --python tools/blender/smooth_serpent_weights.py
+```
+
 El resto de los que no tienen patas (Magikarp, Tentacool, Voltorb, Butterfree, Gyarados, Staryu...) usan un
 animador genérico: el cuerpo se balancea y embiste desde los huesos raíz y cada apéndice (cola, antenas,
 tentáculos, aletas, alas) ondula a lo largo de su cadena. Solo hace idle, walk, fight_b y fight_d; `TWEAKS`
@@ -504,3 +513,11 @@ Ajustes que no se deducen del esqueleto:
   (como las aves de los rips): se ve el vaivén pero no la altura de vuelo.
 - Las llamas de los rips (`FireCore` / `FireSten`, Rapidash y Magmar) traen máscaras en gris: `Unit` las cambia
   en el juego por un material de fuego.
+- `hold` en los `TWEAKS` de `animate_generic.py`: giros fijos de huesos, también espejados por lado (`DROP` baja
+  el hueso, `FWD` lo adelanta): los brazos de Geodude doblados con los puños cerrados.
+- `KO_STYLE` en `animate_status.py`: debilitados que no caen de lado: los lodos se derriten, Diglett y Dugtrio
+  se hunden en su agujero, Dewgong se tumba sobre la barriga y Kingler se desploma a medias.
+- **Color:** las texturas de los rips salen desteñidas con la luz del juego y el sol del tablero quemaba los
+  colores claros (Charizard amarillo). `python3 tools/tune_textures.py [especies]` escribe una versión ajustada
+  de cada textura en `assets/models/pokemon/tuned/` (los originales no se tocan) y `Unit` la usa si existe;
+  `TUNE` corrige especies sueltas frente a sus colores oficiales. Después, `godot --headless --path . --import`.

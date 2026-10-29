@@ -17,7 +17,7 @@ hueso Head, de la cabeza. Como en los juegos:
 | status_burn | encogido por el ardor: le dan punzadas de dolor y se sacude como para apagarse (el juego le pone las llamas y el tinte rojo) |
 | status_freeze | rígido en la primera pose del reposo, con un temblor cada poco (el juego le pone el hielo encima) |
 | hit | encaja el golpe: retrocede echando la cabeza atrás, se encoge y se recupera con un pequeño rebote |
-| ko | se echa atrás con un quejido, cae de lado (de bruces si es más ancho que alto), rebota y queda tendido |
+| ko | se echa atrás con un quejido, cae de lado (de bruces si es más ancho que alto), rebota y queda tendido; ver `KO_STYLE` |
 
 Los que flotan (aves, fantasmas) bajan al suelo al dormirse y al caer. No rehace las acciones que ya tienen
 movimiento salvo con --force; las que el .tres asigna en su anim_map (el ko de Mewtwo) no se crean.
@@ -294,14 +294,33 @@ def freeze(f, n):
     return pose(0.0, roll=1.2 * shiver, left=0.004 * shiver)
 
 
+# Cómo caen los que no caen de lado ni de bruces: flop (se tumba sobre la barriga, apenas ladeado: Dewgong de bruces
+# quedaba de pie sobre el morro y de lado, con una aleta al cielo), slump (se desploma a medias: las pinzas de
+# Kingler lo ponían vertical), melt (se derrite y se desparrama: los lodos volcaban enseñando la base) y sink (se
+# hunde en su madriguera: Diglett volcaba con ella).
+KO_STYLE = {"dewgong": "flop", "kingler": "slump", "grimer": "melt", "muk": "melt",
+            "diglett": "sink", "dugtrio": "sink"}.get(NAME, "fall")
+
+
 def ko(f, n):
-    pivot = GROUND + FWD * HALF_D if WIDE else GROUND - LEFT * SIDE * HALF_W  # el borde hacia el que cae
+    wide = WIDE and KO_STYLE != "flop"
+    pivot = GROUND + FWD * HALF_D if wide else GROUND - LEFT * SIDE * HALF_W  # el borde hacia el que cae
+    tilt = {"slump": 0.4, "flop": 0.25}.get(KO_STYLE, 1.0)
 
     def fall(deg, pitch):  # de lado (roll) o, si es ancho, de bruces (todo en pitch)
-        return {"roll": 0.0, "pitch": pitch + deg * 0.8} if WIDE else {"roll": deg * SIDE, "pitch": pitch}
+        deg *= tilt
+        return {"roll": 0.0, "pitch": pitch + deg * 0.8} if wide else {"roll": deg * SIDE, "pitch": pitch}
     if f <= 5:  # se echa atrás con un quejido
         k = math.sin(0.5 * math.pi * f / 5)
         return pose(f / ILEN, pitch=-8 * k, lift=0.02 * k, head=head_rot(pitch=-20 * k))
+    if KO_STYLE in ("melt", "sink"):  # se aplasta contra el suelo (y se desparrama si es lodo) y tiembla al quedar
+        x = min(1.0, (f - 5) / 14)
+        k = 1 - (1 - x) ** 2
+        wobble = 0.06 * math.sin(math.pi * (f - 19) / 3) * (1 - (f - 19) / 18) if f > 19 else 0.0
+        squash, spread = (0.38, 1.35) if KO_STYLE == "melt" else (0.45, 1.0)
+        return pose(5 / ILEN, pitch=-8 * (1 - k) + (5 if KO_STYLE == "melt" else -6) * k,
+                    up_scale=1 - (1 - squash) * k + wobble, side_scale=1 + (spread - 1) * k - wobble * 0.5,
+                    lift=-HOVER * k, head=head_rot(pitch=-20 + 45 * k))
     if f <= 19:  # cae de lado, cada vez más deprisa, y baja al suelo si flotaba
         k = ((f - 5) / 14) ** 2
         return pose(5 / ILEN, **fall(88 * k, -8 + 12 * k), lift=0.02 * (1 - k) - HOVER * k, pivot=pivot,

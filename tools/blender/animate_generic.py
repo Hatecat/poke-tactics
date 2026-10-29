@@ -51,7 +51,8 @@ ROOTS = [b for b in BONES if b.parent is None]
 # shell (huesos que van con el cuerpo, como la concha de Cloyster), roll (al avanzar rueda, como Voltorb),
 # legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal),
 # crab (anda de lado: se gira 90° y las patas solo suben y bajan, deprisa), hold (huesos con un giro fijo
-# hacia delante en todas las poses: regex -> grados sobre el eje de cabeceo).
+# en todas las poses: regex -> grados sobre el eje de cabeceo, o lista de (eje, grados) con eje "PITCH",
+# "DROP" (baja el hueso hacia el suelo) o "FWD" (lo lleva hacia delante); DROP y FWD van espejados por lado).
 TWEAKS = {
     "butterfree": {"hover": True, "freq": 4, "wings": r"[LR]Feeler[AB]\d*", "flap": (32, 10, 0.04, 6)},
     # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho.
@@ -63,6 +64,10 @@ TWEAKS = {
     "paras": {"legs": True, "amp": 5},
     # Las pinzas colgaban por debajo de las patas y el juego lo apoyaba en ellas: van levantadas hacia delante.
     "parasect": {"legs": True, "amp": 5, "hold": {r"[LR]ForeArm": -70}},
+    # Brazos en cruz del rip (más del doble de anchos que la roca): bajados, con el codo doblado adelante y
+    # los dedos cerrados en puño, como en el artwork.
+    "geodude": {"hold": {r"[LR]Arm": [("DROP", 12), ("FWD", 12)], r"[LR]ForeArm": [("FWD", 50), ("DROP", -35)],
+                         r"[LR]Finger[B-E]\d": [("FWD", 60)]}},
     "voltorb": {"roll": True},
     "electrode": {"roll": True},
     # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
@@ -161,7 +166,19 @@ def lquat(bone, axis, deg):
 
 
 # ---------- poses: dict con root=(adelante, arriba) en alturas, pitch del cuerpo y fase/amp de apéndices ----------
-HOLD = {b.name: lquat(b, PITCH, deg) for b in BONES for rx, deg in TWEAKS.get("hold", {}).items()
+def _hold(bone, spec):
+    if isinstance(spec, (int, float)):
+        return lquat(bone, PITCH, spec)
+    out = LEFT if bone.head_local.dot(LEFT) >= 0 else -LEFT  # hacia dónde sale el hueso del cuerpo
+    axes = {"PITCH": PITCH, "DROP": out.cross(-UP).normalized(), "FWD": out.cross(FWD).normalized()}
+    q = Quaternion()
+    for ax, deg in spec:
+        q = Quaternion(axes[ax], math.radians(deg)) @ q
+    rest = bone.matrix_local.to_quaternion()
+    return rest.inverted() @ q @ rest
+
+
+HOLD = {b.name: _hold(b, spec) for b in BONES for rx, spec in TWEAKS.get("hold", {}).items()
         if re.fullmatch(rx, _canon(b.name))}
 
 

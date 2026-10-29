@@ -93,6 +93,21 @@ NECK = _F[_lie + _nraise:]
 COIL = TAIL[1:]
 
 
+def _seg(name):
+    """Largo del hueso a lo largo del cuerpo: de su cabeza a la del siguiente de la cadena (el eje del hueso del
+    rip no va a lo largo del cuerpo); la punta, como el anterior."""
+    i = TAIL.index(name)
+    if i + 1 < len(TAIL):
+        return (_pos(TAIL[i + 1]) - _pos(name)).length
+    return (_pos(name) - _pos(TAIL[i - 1])).length
+
+
+# Parte de la vuelta que toma cada hueso de la cola: según su largo, para que la curva sea redonda (curvatura
+# constante). Con el mismo ángulo en todos, los huesos cortos de la punta la cerraban en un cuadradito.
+_coil_len = sum(_seg(n) for n in COIL) or 1.0
+COIL_SHARE = {n: _seg(n) / _coil_len for n in COIL}
+
+
 def lquat(name, rots):
     inv = B[name].matrix_local.to_3x3().inverted()
     q = Quaternion()
@@ -103,12 +118,15 @@ def lquat(name, rots):
 
 # ---------- poses (ángulos en grados; distancias en fracciones del largo del cuerpo) ----------
 def body(lift=1.0, lean=0.0, sway=0.0, head=0.0, jaw=0.0, coil=230.0, wave=0.0, phase=0.0, tail_whip=0.0,
-         root=(0, 0), hump=0.0, spiral=0.0):
+         root=(0, 0), hump=0.0, spiral=0.0, look=0.0, ripple=0.0, ripple_phase=0.0, tip=0.0):
     """Postura completa. lift: 1 = cuello vertical, menos = inclinado adelante, más = echado atrás;
     lean: grados que se inclina adelante la parte erguida; sway: grados que se ladea; head: cabeceo;
     coil: grados que se enrosca la cola; wave/phase: serpenteo por el suelo (grados por hueso, fase 0-1);
     tail_whip: grados extra en la cola, más en la punta; hump: joroba que recorre el cuerpo de la cola a la
-    cabeza (grados por hueso, oruga); spiral: grados que sube cada hueso de la cola (enroscada en espiral)."""
+    cabeza (grados por hueso, oruga); spiral: grados que sube cada hueso de la cola (enroscada en espiral);
+    look: grados que gira la cabeza a su izquierda (mira alrededor; el cuello la acompaña un poco);
+    ripple/ripple_phase: vaivén que sube por el cuello con retraso, como un látigo lento (grados, fase 0-1);
+    tip: grados que se curva la punta de la cola (los últimos huesos)."""
     p = {_F[0]: [(PITCH, 90)], TAIL[0]: [(PITCH, 90)]}
     ground = LIE + COIL
     for i, n in enumerate(ground):
@@ -116,18 +134,23 @@ def body(lift=1.0, lean=0.0, sway=0.0, head=0.0, jaw=0.0, coil=230.0, wave=0.0, 
         a = wave * math.sin(2 * math.pi * (phase - 1.2 * s))
         if n in COIL:
             k = COIL.index(n) / max(1, len(COIL) - 1)
-            a += coil / len(COIL) + tail_whip * (0.3 + k) / len(COIL)
+            a += coil * COIL_SHARE[n] + tail_whip * (0.3 + k) / len(COIL)
         p[n] = [(GROUND_YAW, a)]
         if hump:
             p[n].append((PITCH, hump * math.sin(2 * math.pi * (phase + 1.0 * s))))
         if spiral and n in COIL:
-            p[n].append((PITCH, -spiral))
+            p[n].append((PITCH, -spiral * COIL_SHARE[n] * len(COIL)))
+        if tip and n in COIL[-3:]:
+            p[n][0] = (GROUND_YAW, p[n][0][1] + tip / 3)
     for n in RAISE:
         p[n] = [(PITCH, -90 * lift / len(RAISE))]
-    for n in NECK:
-        p[n] = [(PITCH, lean / max(1, len(NECK))), (ROLL, sway / max(1, len(NECK)))]
-    # La cabeza compensa la inclinación para seguir mirando al frente, más el cabeceo.
-    p["Head"] = [(PITCH, 90 * (lift - 1) - lean * 0.6 + head), (ROLL, -sway * 0.5)]
+    for j, n in enumerate(NECK):
+        r = ripple * math.sin(2 * math.pi * (ripple_phase - 0.12 * j))
+        p[n] = [(PITCH, lean / max(1, len(NECK))), (ROLL, (sway + r) / max(1, len(NECK))),
+                (UP, look * 0.35 / max(1, len(NECK)))]
+    # La cabeza compensa la inclinación para seguir mirando al frente, más el cabeceo; y la mayor parte del giro.
+    head_r = ripple * math.sin(2 * math.pi * (ripple_phase - 0.12 * len(NECK)))
+    p["Head"] = [(PITCH, 90 * (lift - 1) - lean * 0.6 + head), (ROLL, -(sway + head_r) * 0.5), (UP, look * 0.65)]
     if JAW:
         p[JAW] = [(PITCH, jaw)]
     if UPPER_JAW:
@@ -143,7 +166,8 @@ TWEAKS = {
     "caterpie": {"crawl": True},
     "weedle": {"crawl": True},
 }.get(NAME, {})
-REST = dict(lift=0.75, lean=-10, coil=560, spiral=7) if TWEAKS.get("coiled") else {}
+# Ekans: una vuelta y poco, que con su largo da un rollo redondo sin que el cuerpo se atraviese.
+REST = dict(lift=0.75, lean=-10, coil=400, spiral=5) if TWEAKS.get("coiled") else {}
 
 
 def BASE():
@@ -155,9 +179,13 @@ def cycle(fn, frames):
 
 
 def idle_pose(t):
-    s = math.sin(2 * math.pi * t)
-    return body(**{**REST, "lift": REST.get("lift", 1.0) + 0.04 * s},
-                sway=5 * math.sin(2 * math.pi * t + 0.8), head=-2 * s, wave=2.5, phase=t)
+    """Cuatro segundos: respira dos veces, se mece con el vaivén subiendo por el cuello, mira a un lado y al otro
+    (y se queda un momento mirando) y la punta de la cola se curva despacio."""
+    s = math.sin(4 * math.pi * t)
+    look = 18 * math.sin(2 * math.pi * t) + 5 * math.sin(6 * math.pi * t)
+    return body(**{**REST, "lift": REST.get("lift", 1.0) + 0.05 * s},
+                sway=6 * math.sin(2 * math.pi * t + 0.8), head=-3 * s - 2 * math.sin(6 * math.pi * t + 1),
+                wave=3, phase=t, look=look, ripple=6, ripple_phase=2 * t, tip=25 * math.sin(2 * math.pi * t - 1.0))
 
 
 def walk_pose(t):
@@ -166,7 +194,11 @@ def walk_pose(t):
         s = math.sin(2 * math.pi * t)
         return body(lift=1.0 - 0.2 * s, lean=12 + 18 * s, head=-14 * s, coil=150, hump=35, phase=t,
                     sway=3 * math.sin(2 * math.pi * t + 0.5), root=(0.05 * s, 0.02 * max(0.0, -s)))
-    return body(lean=8, sway=4 * math.sin(2 * math.pi * t), wave=12, phase=t)
+    # Serpentea: el cuerpo se estira (poca vuelta en la cola) y una onda grande lo recorre hacia atrás; la cabeza
+    # se mantiene al frente girando contra la onda del cuello.
+    w = math.sin(2 * math.pi * t)
+    return body(lean=10, sway=3 * w, wave=24, phase=t, coil=50, look=-10 * math.sin(2 * math.pi * t - 0.4),
+                ripple=4, ripple_phase=t, head=-2 * math.sin(4 * math.pi * t))
 
 
 def strike(bite):
@@ -195,7 +227,7 @@ def special(jaw_open, lean=14, shake=0.0):
 
 
 ACTIONS = {
-    "idle": lambda: cycle(idle_pose, 48),
+    "idle": lambda: cycle(idle_pose, 96),
     "walk": lambda: cycle(walk_pose, 24),
     "fight_b": lambda: strike(bite=False),
     "fight_b_body": lambda: strike(bite=False),

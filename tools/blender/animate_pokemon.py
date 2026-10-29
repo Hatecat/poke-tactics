@@ -216,7 +216,9 @@ def _tail_lift(chain):
 # Ajustes por especie (el nombre del .blend), sobre lo que la herramienta deduce del esqueleto:
 #   arm_drop / arm2_drop: grados que bajan los brazos (y el segundo par) desde la horizontal (45 y 20);
 #   arm_fwd: grados que se adelantan los brazos (25); elbow: flexión extra de los codos;
-#   legs_in: grados que se cierran las piernas; hold: giros fijos de otros huesos (eje PITCH/YAW/ROLL, grados).
+#   legs_in: grados que se cierran las piernas; hold: giros fijos de otros huesos (eje PITCH/YAW/ROLL, grados);
+#   crouch: grados que se doblan las piernas en reposo (4); bounce: grados extra de rebote en el idle (dos por
+#   ciclo, con la cadera bajando lo que encogen las piernas); idle_arms: cuánto más se balancean los brazos.
 _STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: colgando junto al cuerpo
 TWEAKS = {
     "machop": _STRONG_ARMS,
@@ -231,6 +233,14 @@ TWEAKS = {
     "chansey": {"arm_drop": 15},
     "clefairy": {"arm_drop": 15, "arm_fwd": 0},
     "snorlax": {"arm_drop": 30},
+    # Brazos muy largos del rip: a 45° y adelante se veían en cruz. Hitmonlee los deja colgar; Hitmonchan, en guardia.
+    # Hitmonlee: de pie como luchador, con las rodillas flojas, rebotando sobre las piernas de muelle y los brazos
+    # sueltos con el codo algo doblado y la mano colgando (no tiesos como palos).
+    "hitmonlee": {"arm_drop": 78, "arm_fwd": 8, "elbow": -10, "crouch": 12, "bounce": 7, "idle_arms": 2.2},
+    "hitmonchan": {"arm_drop": 68, "arm_fwd": 30, "elbow": 95},
+    # La cola del rip sale hacia arriba desde la cadera: cae al suelo y sigue tendida detrás, como en el artwork.
+    "slowpoke": {"hold": {"Tail1": [("PITCH", -45)], "Tail2": [("PITCH", -25)], "Tail3": [("PITCH", 33)],
+                          "Tail4": [("PITCH", 25)], "Tail7": [("PITCH", 5)], "Tail8": [("PITCH", 5)]}},
     # Ave de suelo: alas plegadas a los costados (el puerro, en la mano izquierda, queda bajo el ala).
     "farfetchd": {"arm_drop": 80, "arm_fwd": 0, "hold": {"FeelerB1": [("PITCH", -90)]}},
 }.get(Path(bpy.data.filepath).stem, {})
@@ -308,6 +318,8 @@ for _side, _ahead in ARM_AHEAD.items():
 def _elbow_axis(side):
     """Eje sobre el que se dobla el codo hacia delante: perpendicular al antebrazo y a FWD. Con el
     brazo colgando es PITCH; con el brazo en cruz (Machop) PITCH lo retorcería sobre sí mismo."""
+    if side[0] + "ForeArm" + side[1:] not in B:  # pata de un hueso (Raticate, Gloom, Jigglypuff): sin codo
+        return -PITCH
     d = (_pos(side[0] + "Hand" + side[1:]) - _pos(side[0] + "ForeArm" + side[1:])).normalized()
     axis = d.cross(FWD)
     return axis.normalized() if axis.length > 0.3 else -PITCH
@@ -413,22 +425,41 @@ def pose(*parts, root=(0, 0, 0)):
     return d
 
 
+def _drop(a):
+    """Cuánto baja la cadera (en el `root` de las poses) al doblar las piernas con crouch(a): sin bajarla, los pies
+    se levantarían del suelo."""
+    if "LLeg" not in B:
+        return 0.0
+    tall = (_pos("LThigh") - _pos("LFoot")).dot(UP)
+    return tall * (1 - math.cos(math.radians(a))) / SCALE
+
+
+CROUCH = TWEAKS.get("crouch", 4)
+
+
 def BASE():
-    return pose(arms(), crouch(4), root=(0, 0, -0.002))
+    return pose(arms(), crouch(CROUCH), root=(0, 0, -_drop(CROUCH) if "crouch" in TWEAKS else -0.002))
 
 
 # ---------- ciclos (idle, walk): una pose por fotograma ----------
 def idle_pose(t):
     s = math.sin
+    k = TWEAKS.get("idle_arms", 1.0)
+    legs, root = {}, (0, 0, 0)
+    if TWEAKS.get("bounce"):  # rebota dos veces por ciclo y los brazos van un poco por detrás
+        c = CROUCH + TWEAKS["bounce"] * (0.5 - 0.5 * math.cos(2 * t))
+        legs, root = crouch(c), (0, 0, -_drop(c))
     return pose(
-        arms(fwd=2.5 * s(t + 0.8), up=1.5 * s(t), bend=2.5 * s(t + 1.4), r_fwd=2.5 * s(t + 1.3)),
+        arms(fwd=2.5 * k * s(t + 0.8), up=1.5 * k * s(t) + (1.5 * k * s(2 * t - 0.8) if legs else 0),
+             bend=2.5 * k * s(t + 1.4), r_fwd=2.5 * k * s(t + 1.3)),
+        legs,
         {"Spine1": [(PITCH, -1.2 * s(t)), (ROLL, 0.8 * s(t + 0.7))], "Spine2": [(PITCH, -1.6 * s(t - 0.3))]},
         {"LShoulder": [(ROLL, -2.0 * s(t - 0.2))], "RShoulder": [(ROLL, 2.0 * s(t - 0.2))]},
         {"Neck": [(YAW, 1.5 * s(t + 1.2)), (PITCH, 1.0 * s(t - 0.6))],
          "Head": [(YAW, 3.5 * s(t + 1.0) + s(2 * t + 0.4)), (PITCH, 1.2 * s(2 * t + 0.5) + s(t - 0.9)),
                   (ROLL, 1.2 * s(t + 2.0))],
          "Jaw": [(PITCH, 1.0 - s(t - 0.4))]},
-        tail_wave(t, amp=14, pitch_amp=4, step=0.45))
+        tail_wave(t, amp=14, pitch_amp=4, step=0.45), root=root)
 
 
 def walk_pose(t):

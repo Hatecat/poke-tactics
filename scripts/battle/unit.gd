@@ -883,6 +883,9 @@ static var _vivid_textures := {}
 ## melocotón en vez de naranja). Se sube la saturación y algo el contraste: el blanco sigue blanco.
 const VIVID_SATURATION := 1.6
 const VIVID_CONTRAST := 1.08
+## Versión ajustada de cada textura (tools/tune_textures.py): satura según cada píxel y oscurece los claros
+## saturados para que el sol del tablero no los queme (Charizard salía amarillo). Si no hay, se usa la saturación de arriba.
+const TUNED_DIR := "res://assets/models/pokemon/tuned/"
 
 
 ## Da más color a las texturas del modelo. Los materiales son del modelo
@@ -894,12 +897,26 @@ func _vivid_materials() -> void:
 			if mat == null or mat.has_meta("vivid") or mat.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED:
 				continue
 			mat.set_meta("vivid", true)
-			if mat.albedo_texture:  # los colores lisos ya vienen con su tono (Haunter): solo las texturas
+			if mat.albedo_texture:
 				mat.albedo_texture = _vivid_texture(mat.albedo_texture)
+			else:  # color liso (Haunter): el mismo ajuste que tools/tune_textures.py hace a cada píxel
+				mat.albedo_color = _tuned_color(mat.albedo_color)
+
+
+## Igual que `tune()` en tools/tune_textures.py: los pálidos ganan color, los fuertes bajan un poco, grises y blancos
+## quedan, y los claros saturados se oscurecen para que el sol no los queme.
+static func _tuned_color(c: Color) -> Color:
+	var w := smoothstep(0.1, 0.38, c.s) * 0.7
+	var s := c.s + (0.74 - c.s) * w
+	return Color.from_hsv(c.h, s, c.v * (1.0 - 0.24 * s * c.v), c.a)
 
 
 static func _vivid_texture(tex: Texture2D) -> Texture2D:
 	if _vivid_textures.has(tex):
+		return _vivid_textures[tex]
+	var tuned := TUNED_DIR + tex.resource_path.get_file()
+	if tex.resource_path and ResourceLoader.exists(tuned):
+		_vivid_textures[tex] = load(tuned)
 		return _vivid_textures[tex]
 	var img := tex.get_image()
 	if img == null:
