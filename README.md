@@ -89,7 +89,12 @@ La **lava** solo la pisan los de tipo Fuego y los que vuelan, y potencia los ata
 
 El **Gimnasio** tiene un estilo por tipo (18) y uno neutral: colores del suelo, líneas y columnas, y rasgos como
 piscinas (Agua, Veneno), fosos de lava (Fuego), jardín con árboles (Planta, Bicho), placas de hielo, arena o roca, y
-cristales o árboles secos en lugar de columnas. En la Torre usa el tipo del líder o entrenador; en Partida rápida
+cristales o árboles secos en lugar de columnas. Cada estilo con columnas tiene su propia forma: mármol estriado
+(neutral), pilar liso (Normal), poste de dojo con cuerdas (Lucha), columna con alas (Volador), pararrayos con
+bobinas encendidas (Eléctrico), anillos de oro y cuernos (Dragón), obsidiana con vetas rojas (Siniestro), acero
+remachado (Acero), basalto con brasas (Fuego), mármol con olas (Agua) y anillos tóxicos (Veneno). Los cristales
+toman el color del tipo (Hielo, Psíquico, Hada), los árboles secos de Fantasma llevan un fuego fatuo, las placas de
+hielo son azules y agrietadas, y en Planta y Bicho la arena es de césped segado con jardines de hierba alta a los lados. En la Torre usa el tipo del líder o entrenador; en Partida rápida
 sale al azar, y en el editor de escenarios se elige.
 La arena es un estadio: Poké Ball pintada en el centro, tarimas escalonadas del líder y del retador, luz LED y
 barandilla en el borde, gradas con público que salta, muros con estandartes, focos en las esquinas, la medalla
@@ -353,25 +358,25 @@ estrellitas, y si se escapa, la bola se abre de golpe y el Pokémon vuelve a sal
 
 Los terrenos se generan con geografía (`scripts/grid/biome.gd`): relieve de ruido fractal suavizado (sin picos
 sueltos), y luego el suelo según altura y pendiente, y los obstáculos donde tendrían sentido. Pradera: lomas, un
-sendero entre los dos bandos, una charca y bosquecillos. Bosque: arboleda con claros, un arroyo y hojarasca bajo la
+sendero entre los dos bandos, una charca (siempre de al menos 8 casillas) y bosquecillos. Bosque: arboleda con claros, un arroyo y hojarasca bajo la
 espesura (pinos en lo alto). Montaña: macizo central con valles verdes, roca y cumbres nevadas, pedregal al pie de
 los cortados. Desierto: dunas alineadas por el viento, mesetas de arenisca, un oasis con palmeras (tronco anillado y curvo,
 hojas con foliolos que cuelgan, cocos) y matorrales de cactus de tres tipos (columnar con brazos, barril con
 flores y nopal con tunas). Lago: cuenca
-central con playa de arena. Nieve: ventisqueros, estanque helado y pinares nevados. Cueva: crestas de roca,
+central con playa de arena. Nieve: ventisqueros con sombras azuladas, estanque de hielo agrietado, neveros sobre la roca y pinares nevados. Cueva: crestas de roca,
 charcas, estalagmitas y cristales. Pantano: terreno bajo con pozas, lodazales, juncales, nenúfares, sauces, árboles
 secos, luciérnagas y bruma verdosa. Ciudad: calles de dos carriles con línea discontinua, manzanas de edificios de
 1 a 3 plantas, farolas y un parque con fuente. Laboratorio: paneles con líneas guía luminosas, plataforma central
 elevada, bancos de consolas con pantallas y pilotos, e incubadoras de cristal con líquido que brilla. Volcán: crestas
 de basalto, río y pozas de lava (costra agrietada que se desliza sobre roca fundida que late y alumbra) con dos pasos
-de roca, ceniza, fumarolas humeantes, troncos calcinados, brasas que suben y calima. Playa: el mar en un costado con
+de roca o puentes de madera chamuscada, ceniza, fumarolas humeantes, troncos calcinados, brasas que suben y calima. Playa: el mar en un costado con
 orilla irregular, muelle de madera, sombrillas, palmeras, conchas y dunas con hierba tierra adentro. Cementerio:
 noche con neblina, hierba oscura, caminos de tierra, hileras de lápidas (losa o cruz), árboles secos, faroles y
-fuegos fatuos. Estudio: plató a oscuras con escenario elevado de madera, cinta amarilla alrededor, focos que lo
-alumbran y cámaras con piloto rojo que lo enfocan. Librería: parqué, alfombras granates en los pasillos y filas de
+fuegos fatuos. Estudio: plató a oscuras con escenario elevado de madera, cinta amarilla alrededor, focos con viseras que lo
+apuntan y lo alumbran con un cono de luz visible, y cámaras con piloto rojo que lo enfocan. Librería: parqué, alfombras granates en los pasillos y filas de
 estanterías llenas de libros de colores, con polvo al trasluz. Aeropuerto: pista de dos carriles con línea central,
-calle de rodaje, plataforma con aviones aparcados (ocupan 3×3), terminal y farolas. Cueva submarina: caverna
-inundada en azul con islotes de roca y arena, corales que se mecen, algas, cristales y burbujas que suben. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
+calle de rodaje, plataforma con aviones aparcados (ocupan 3×3), terminal acristalada con cubierta en voladizo y torre de control, y farolas. Cueva submarina: caverna
+inundada en azul con islotes de roca y arena, corales que se mecen, algas, cristales azules al pie de las paredes, cáusticas (la red de luz del oleaje) que ondulan sobre el fondo y burbujas que suben. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
 puente con barandilla), y al final de la generación se abre, si hace falta, un paso sin agua y uno de 3 casillas
 de ancho (quitando obstáculos y suavizando cuestas) entre los dos bandos. El terreno está vivo (`scripts/battle/terrain_fx.gd`): árboles, palmeras,
 hierba y juncos se mecen con el viento (más con lluvia o tormenta de arena, menos con sol); la hierba crece en zonas de

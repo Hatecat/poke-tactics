@@ -42,6 +42,13 @@ Ver README.md para las reglas y la estructura de carpetas.
   de arriba, laterales y detalles marcados con meta `"batch"`; los shaders leen lo de cada pieza de
   `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa.
   La hierba tiene una sola cara por hoja (material de dos caras, `TerrainFx._two_sided`).
+  Los obstáculos se funden al construirse (`BoardView._bake`): sus piezas opacas de color liso pasan a una malla
+  con color por vértice por acabado; las de viento, brillo o transparencia, y las que tienen hijos, quedan sueltas
+  (la Librería pasó de ~20.000 llamadas de dibujo a ~500). Las primitivas de `_cyl`/`_sphere`/`_capsule` se
+  comparten: no las modifiques después de crearlas.
+  La "carga" de ~6 s al empezar un combate es casi toda la intro de las Poké Balls (`_send_out_intro`, ~5,5 s);
+  la carga real es de 0,4-1,2 s. Los proyectores de luz (`light_projector`) salían negros con texturas hechas por
+  código: las cáusticas de la cueva submarina son una capa aditiva por casilla (`TerrainFx.CAUSTIC_SHADER`).
 - **Calidad gráfica** (`Game.graphics_quality`, Opciones y Pausa): `Game.apply_graphics` (MSAA/FXAA, atlas y filtro de
   sombras) + `CameraRig.apply_quality` (SSIL, SSAO, cascadas, PCSS). Alta = como siempre. El juego usa la GPU
   dedicada solo (Vulkan elige la discreta); en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*`

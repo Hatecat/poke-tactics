@@ -92,7 +92,7 @@ const GYM_STYLES := {
 		"pillar": Color(0.95, 0.8, 0.2), "prop": Prop.PILLAR, "feature": ""},
 	"grass": {"floor": Color(0.62, 0.52, 0.36), "line": Color(0.95, 0.85, 0.4), "side": Color(0.36, 0.28, 0.2),
 		"pillar": Color(0.5, 0.4, 0.3), "prop": Prop.TREE, "feature": "garden"},
-	"ice": {"floor": Color(0.84, 0.91, 0.97), "line": Color(0.4, 0.7, 0.95), "side": Color(0.6, 0.7, 0.8),
+	"ice": {"floor": Color(0.84, 0.91, 0.97), "line": Color(0.24, 0.48, 0.86), "side": Color(0.6, 0.7, 0.8),
 		"pillar": Color(0.76, 0.88, 0.98), "prop": Prop.CRYSTAL, "feature": "ice"},
 	"fighting": {"floor": Color(0.68, 0.52, 0.34), "line": Color(0.8, 0.2, 0.18), "side": Color(0.4, 0.28, 0.18),
 		"pillar": Color(0.5, 0.34, 0.22), "prop": Prop.PILLAR, "feature": ""},
@@ -195,6 +195,7 @@ static func _meadow(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictiona
 		grid.heights[c] = _levels(pow(hf[c], 1.3), 3.0, 2)
 	_smooth(grid, 2)
 	_lowest_pond(grid, hf, 0.07, clear, Tile.WATER)
+	_min_pond(grid, hf, clear, Tile.WATER, 8)
 	for c in _trail(grid, rng):
 		if grid.tiles[c] == Tile.GRASS:
 			grid.tiles[c] = Tile.DIRT
@@ -501,7 +502,7 @@ static func _volcano(grid: BoardGrid, rng: RandomNumberGenerator, clear: Diction
 		grid.heights[c] = 0
 	_bank(grid, flow)
 	_lowest_pond(grid, hf, 0.05, clear, Tile.LAVA)
-	var to_pass := _distance(grid, _fords(grid, rng, flow, {}, [Tile.ROCK]))
+	var to_pass := _distance(grid, _fords(grid, rng, flow, {}, [Tile.ROCK, Tile.BRIDGE]))  # paso de roca o puente
 	for c in grid.all_cells():
 		if grid.tiles[c] == Tile.LAVA:
 			continue
@@ -686,8 +687,8 @@ static func _underwater(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dict
 		var r := rng.randf()
 		if grid.tiles[c] == Tile.SAND and r < 0.2 or r < 0.05:
 			grid.props[c] = Prop.CORAL
-		elif gems[c] > 0.7 and r < 0.15:
-			grid.props[c] = Prop.CRYSTAL
+		elif _rise(grid, c) >= 1 and gems[c] > 0.5 and r < 0.3 or gems[c] > 0.66 and r < 0.18:
+			grid.props[c] = Prop.CRYSTAL  # drusas al pie de las paredes y en las vetas: alumbran el azul
 		elif r < 0.09:
 			grid.props[c] = Prop.STALAGMITE
 
@@ -886,6 +887,37 @@ static func _lowest_pond(grid: BoardGrid, hf: Dictionary, below: float, clear: D
 	for c in grid.all_cells():
 		if hf[c] < below and grid.heights[c] == 0 and not clear.has(c):
 			grid.tiles[c] = tile
+
+
+## Si la charca de la hondonada salió diminuta (o no salió), la agranda desde la casilla llana más honda
+## hasta `min_cells` casillas, por terreno de altura 0 y fuera de las zonas de despliegue.
+static func _min_pond(grid: BoardGrid, hf: Dictionary, clear: Dictionary, tile: Tile, min_cells: int) -> void:
+	var pond: Array[Vector2i] = []
+	var start := Vector2i(-1, -1)
+	for c in grid.all_cells():
+		if grid.tiles[c] == tile:
+			pond.append(c)
+		elif grid.heights[c] == 0 and not clear.has(c) and (start.x < 0 or hf[c] < hf[start]):
+			start = c
+	if pond.size() >= min_cells:
+		return
+	if pond.is_empty():
+		if start.x < 0:
+			return
+		pond.append(start)
+		grid.tiles[start] = tile
+	var i := 0
+	while pond.size() < min_cells and i < pond.size():
+		var options := grid.neighbors(pond[i]).filter(func(n: Vector2i) -> bool:
+			return grid.heights[n] == 0 and not clear.has(n) and grid.tiles[n] != tile)
+		options.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return hf[a] < hf[b])
+		for n: Vector2i in options:
+			if pond.size() >= min_cells:
+				break
+			grid.tiles[n] = tile
+			grid.props[n] = Prop.NONE
+			pond.append(n)
+		i += 1
 
 
 ## Oasis del desierto: un hoyo con agua en una hondonada lejos de los bandos, rodeado de hierba y palmeras.

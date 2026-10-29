@@ -70,6 +70,7 @@ func build(p_grid: BoardGrid) -> void:
 	_hail_piles.clear()
 	_crystal_lights.clear()
 	_hail_bounce = null
+	_caustic_mesh = null  # su forma depende de la topología
 	_tint_noise.seed = 7
 	_tint_noise.frequency = 0.18
 	_grass_noise.seed = grid.width * 131 + grid.height * 17 + grid.biome
@@ -128,7 +129,7 @@ func set_traps(traps: Dictionary) -> void:
 			_part(node, _cyl(0.0, 0.07, 0.22, 6), spots[2 - i] * 0.6 + Vector3.UP * 0.11, Color(0.65, 0.3, 0.8))
 		if t.rocks:
 			for i in 2:
-				var rock := _part(node, BoxMesh.new(), Vector3(-0.15 + i * 0.3, 0.55 + i * 0.1, 0), Color(0.55, 0.48, 0.4))
+				var rock := _part(node, _unit_box(), Vector3(-0.15 + i * 0.3, 0.55 + i * 0.1, 0), Color(0.55, 0.48, 0.4))
 				rock.scale = Vector3.ONE * 0.16
 				rock.rotation = Vector3(0.5, 0.8 * i, 0.3)
 
@@ -455,7 +456,9 @@ func _build_cell(c: Vector2i) -> void:
 		var surface := MeshInstance3D.new()
 		surface.mesh = _water_mesh()
 		surface.position = Vector3(top.x, top.y - WATER_DROP, top.z)
-		if tile_kind == Biome.Tile.LAVA:
+		# En el volcán los puentes cruzan la lava
+		var lava := tile_kind == Biome.Tile.LAVA or tile_kind == Biome.Tile.BRIDGE and grid.biome == Biome.Kind.VOLCANO
+		if lava:
 			surface.material_override = _live("lava", func() -> ShaderMaterial: return TerrainFx.lava_material())
 			if (c.x * 3 + c.y) % 4 == 0:  # la lava ilumina lo que tiene cerca (una luz cada pocas casillas)
 				var light := OmniLight3D.new()
@@ -500,6 +503,8 @@ func _build_cell(c: Vector2i) -> void:
 	root.add_child(side)
 
 	_decorate(root, c, tile_kind, top)
+	if grid.biome == Biome.Kind.UNDERWATER and not water:
+		_caustics(root, top)
 	if tile_kind == Biome.Tile.ROAD:
 		_road_marks(root, c, top)
 	_maybe_puddle(root, c, tile_kind, top)
@@ -519,6 +524,7 @@ func _build_cell(c: Vector2i) -> void:
 		p.position = top - (Vector3.UP * WATER_DROP if water else Vector3.ZERO)
 		root.add_child(p)
 		_root_sway(p, top.y)
+		_bake(p)
 
 	var overlay := MeshInstance3D.new()
 	overlay.mesh = _tile_mesh(0.02, 0.08)
@@ -671,9 +677,10 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				_part(node, _sphere(0.045, 0.085), p + Vector3(cos(a) * 0.06, -0.05 - 0.02 * (i % 2), sin(a) * 0.06), Color(0.4, 0.28, 0.14).darkened(0.1 * (i % 2)))
 			height = 1.25
 		Biome.Prop.PILLAR:
-			var marble: Color = Biome.gym_style(grid.gym_type).pillar if grid.biome == Biome.Kind.GYM else Color(0.82, 0.8, 0.76)
-			_part(node, _cyl(0.25, 0.28, 1.3), Vector3(0, 0.65, 0), marble)
-			_part(node, _cyl(0.33, 0.33, 0.1), Vector3(0, 1.32, 0), marble.darkened(0.15))
+			node.rotation.y = 0.0
+			node.scale = Vector3.ONE
+			_pillar(node, grid.gym_type if grid.biome == Biome.Kind.GYM else "")
+			height = 1.4
 		Biome.Prop.STALAGMITE:
 			# Grupo de estalagmitas de caliza: una alta y afilada con dos o tres pequeñas al pie, y cantos sueltos.
 			var main_h := 0.95 + float(h % 5) * 0.1
@@ -692,6 +699,14 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			# Drusa: una punta grande y varias pequeñas que salen inclinadas de una base de roca. Ilumina
 			# el suelo de alrededor con su color.
 			var tint := Color(0.65, 0.45, 0.95) if h % 3 else Color(0.45, 0.75, 1.0)
+			# En el gimnasio, del color de su tipo (hielo celeste, psíquico magenta, hada rosa); bajo el agua, azules
+			if grid.biome == Biome.Kind.GYM:
+				tint = {"ice": Color(0.55, 0.85, 1.0), "psychic": Color(0.95, 0.35, 0.75),
+					"fairy": Color(1.0, 0.6, 0.85)}.get(grid.gym_type, tint)
+				if h % 3 == 0:
+					tint = tint.lerp(Color.WHITE, 0.25)
+			elif grid.biome == Biome.Kind.UNDERWATER:
+				tint = Color(0.3, 0.7, 1.0) if h % 3 else Color(0.35, 0.95, 0.9)
 			var base := _part(node, TerrainFx.rock_mesh(h % 4), Vector3(0, 0.03, 0), Color(0.24, 0.22, 0.22))
 			base.scale = Vector3(0.6, 0.22, 0.54)
 			var count := 5 + h % 3
@@ -726,18 +741,34 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				branch.basis = Basis(Vector3(-sin(a), 0, cos(a)), 0.7 + 0.15 * (i % 2))
 				if i % 2 == 0:
 					_leaf(node, _cyl(0.0, 0.04, 0.22, 5), Vector3(cos(a) * 0.24, 0.62, sin(a) * 0.24), Color(0.4, 0.46, 0.3), 0.6, 0.6)
+			if grid.biome == Biome.Kind.GYM and grid.gym_type == "ghost":
+				# Gimnasio Fantasma: más alto, con un fuego fatuo morado flotando junto a una rama
+				node.scale *= 1.7
+				var wisp_pos := Vector3(0.28, 0.6, 0.12)
+				var wisp := _glow(_part(node, _sphere(0.05, 0.09), wisp_pos, Color.WHITE), Color(0.7, 0.45, 1.0), 2.5)
+				wisp.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				var light := OmniLight3D.new()
+				light.light_color = Color(0.6, 0.4, 1.0)
+				light.light_energy = 1.0
+				light.omni_range = 2.5
+				light.position = wisp_pos
+				node.add_child(light)
+				_crystal_lights.append(light)  # late como los cristales
 			height = 1.0
 		Biome.Prop.BUILDING:
 			# Edificio: bloque de 1 a 3 plantas en ladrillo, estuco u hormigón, con ventanas en cada cara,
 			# puerta, cornisa y a veces una caja en la azotea. No gira, para que las fachadas queden alineadas.
 			node.rotation.y = 0.0
 			node.scale = Vector3.ONE
+			if grid.biome == Biome.Kind.AIRPORT:
+				node.set_meta("sway_height", _terminal(node, c))
+				return node
 			var walls := [Color(0.62, 0.36, 0.28), Color(0.82, 0.76, 0.62), Color(0.62, 0.64, 0.66), Color(0.7, 0.55, 0.42)]
 			var wall: Color = walls[h % 4]
 			var floors := 1 + (h >> 2) % 3
 			var tall := 0.45 * floors + 0.2
-			_part(node, BoxMesh.new(), Vector3(0, tall * 0.5, 0), wall).scale = Vector3(0.9, tall, 0.9)
-			_part(node, BoxMesh.new(), Vector3(0, tall + 0.03, 0), wall.darkened(0.3)).scale = Vector3(0.96, 0.06, 0.96)
+			_part(node, _unit_box(), Vector3(0, tall * 0.5, 0), wall).scale = Vector3(0.9, tall, 0.9)
+			_part(node, _unit_box(), Vector3(0, tall + 0.03, 0), wall.darkened(0.3)).scale = Vector3(0.96, 0.06, 0.96)
 			var glass := Color(0.35, 0.5, 0.62)
 			for f in floors:
 				var y := 0.42 + 0.45 * f
@@ -745,11 +776,11 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 					var out := Vector3(cos(side * PI / 2), 0, sin(side * PI / 2))
 					var across := Vector3(-out.z, 0, out.x)
 					for k in [-1, 1]:
-						var win := _part(node, BoxMesh.new(), Vector3(0, y, 0) + out * 0.452 + across * 0.2 * k, glass.lightened(0.15 * ((h >> (f + side)) % 2)))
+						var win := _part(node, _unit_box(), Vector3(0, y, 0) + out * 0.452 + across * 0.2 * k, glass.lightened(0.15 * ((h >> (f + side)) % 2)))
 						win.scale = Vector3(0.02, 0.2, 0.02) + (across * 0.16).abs()
-			_part(node, BoxMesh.new(), Vector3(0, 0.15, 0.452), wall.darkened(0.45)).scale = Vector3(0.2, 0.3, 0.02)
+			_part(node, _unit_box(), Vector3(0, 0.15, 0.452), wall.darkened(0.45)).scale = Vector3(0.2, 0.3, 0.02)
 			if (h >> 5) % 2 == 0:
-				_part(node, BoxMesh.new(), Vector3(0.18, tall + 0.14, -0.15), Color(0.55, 0.56, 0.58)).scale = Vector3(0.25, 0.2, 0.22)
+				_part(node, _unit_box(), Vector3(0.18, tall + 0.14, -0.15), Color(0.55, 0.56, 0.58)).scale = Vector3(0.25, 0.2, 0.22)
 			height = tall
 		Biome.Prop.LAMP:
 			# Farola: poste negro con brazo y un farol que brilla tenue.
@@ -784,16 +815,16 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			node.rotation.y = float(h % 4) * PI / 2
 			node.scale = Vector3.ONE
 			var shell := Color(0.86, 0.88, 0.9)
-			_part(node, BoxMesh.new(), Vector3(0, 0.3, 0), shell).scale = Vector3(0.82, 0.6, 0.6)
-			_part(node, BoxMesh.new(), Vector3(0, 0.62, -0.18), shell.darkened(0.15)).scale = Vector3(0.82, 0.05, 0.25)
-			var screen := _part(node, BoxMesh.new(), Vector3(0, 0.82, -0.2), Color(0.1, 0.12, 0.15))
+			_part(node, _unit_box(), Vector3(0, 0.3, 0), shell).scale = Vector3(0.82, 0.6, 0.6)
+			_part(node, _unit_box(), Vector3(0, 0.62, -0.18), shell.darkened(0.15)).scale = Vector3(0.82, 0.05, 0.25)
+			var screen := _part(node, _unit_box(), Vector3(0, 0.82, -0.2), Color(0.1, 0.12, 0.15))
 			screen.scale = Vector3(0.66, 0.38, 0.04)
 			screen.rotation.x = -0.25
-			var face := _part(screen, BoxMesh.new(), Vector3(0, 0, 0.6), Color(0.2, 0.6, 0.8))
+			var face := _part(screen, _unit_box(), Vector3(0, 0, 0.6), Color(0.2, 0.6, 0.8))
 			face.scale = Vector3(0.9, 0.85, 0.3)
 			_glow(face, [Color(0.3, 0.85, 1.0), Color(0.4, 1.0, 0.6), Color(0.6, 0.5, 1.0)][h % 3], 1.6)
 			for i in 4:
-				var led := _part(node, BoxMesh.new(), Vector3(-0.27 + 0.18 * i, 0.5, 0.305), Color.WHITE)
+				var led := _part(node, _unit_box(), Vector3(-0.27 + 0.18 * i, 0.5, 0.305), Color.WHITE)
 				led.scale = Vector3(0.06, 0.04, 0.01)
 				_glow(led, [Color(1.0, 0.25, 0.2), Color(0.3, 1.0, 0.35), Color(1.0, 0.8, 0.2)][(h + i) % 3], 2.0)
 			height = 1.0
@@ -860,13 +891,13 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			node.scale = Vector3.ONE * (0.9 + float(h % 3) * 0.08)
 			var granite := Color(0.52, 0.52, 0.55).darkened(0.08 * (h % 3))
 			if h % 4 == 0:
-				_part(node, BoxMesh.new(), Vector3(0, 0.36, 0), granite).scale = Vector3(0.1, 0.72, 0.1)
-				_part(node, BoxMesh.new(), Vector3(0, 0.52, 0), granite).scale = Vector3(0.4, 0.1, 0.1)
+				_part(node, _unit_box(), Vector3(0, 0.36, 0), granite).scale = Vector3(0.1, 0.72, 0.1)
+				_part(node, _unit_box(), Vector3(0, 0.52, 0), granite).scale = Vector3(0.4, 0.1, 0.1)
 			else:
-				_part(node, BoxMesh.new(), Vector3(0, 0.25, 0), granite).scale = Vector3(0.44, 0.5, 0.1)
+				_part(node, _unit_box(), Vector3(0, 0.25, 0), granite).scale = Vector3(0.44, 0.5, 0.1)
 				var cap := _part(node, _cyl(0.22, 0.22, 0.1, 12), Vector3(0, 0.5, 0), granite)
 				cap.rotation.x = PI / 2
-			_part(node, BoxMesh.new(), Vector3(0, 0.03, 0.12), granite.darkened(0.2)).scale = Vector3(0.56, 0.06, 0.4)
+			_part(node, _unit_box(), Vector3(0, 0.03, 0.12), granite.darkened(0.2)).scale = Vector3(0.56, 0.06, 0.4)
 			_part(node, _sphere(0.12, 0.06), Vector3(-0.15, 0.06, 0.1), Color(0.28, 0.38, 0.2))
 			node.rotation.x = float(h % 5 - 2) * 0.04
 			height = 0.6
@@ -875,18 +906,18 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			node.rotation.y = 0.0
 			node.scale = Vector3.ONE
 			var wood := Color(0.42, 0.26, 0.15)
-			_part(node, BoxMesh.new(), Vector3(0, 0.75, 0), wood.darkened(0.25)).scale = Vector3(0.94, 1.5, 0.5)
+			_part(node, _unit_box(), Vector3(0, 0.75, 0), wood.darkened(0.25)).scale = Vector3(0.94, 1.5, 0.5)
 			var spines := [Color(0.6, 0.15, 0.15), Color(0.15, 0.3, 0.55), Color(0.2, 0.45, 0.25), Color(0.75, 0.6, 0.25), Color(0.4, 0.2, 0.45)]
 			for side in [-1, 1]:
 				for shelf in 4:
 					var y := 0.12 + shelf * 0.36
-					_part(node, BoxMesh.new(), Vector3(0, y - 0.02, side * 0.18), wood).scale = Vector3(0.92, 0.03, 0.16)
+					_part(node, _unit_box(), Vector3(0, y - 0.02, side * 0.18), wood).scale = Vector3(0.92, 0.03, 0.16)
 					var x := -0.42
 					var i := 0
 					while x < 0.38:
 						var w := 0.05 + float((h >> (i % 8)) % 3) * 0.02
 						var tall := 0.2 + float((h + i * 7 + shelf) % 4) * 0.025
-						var book := _part(node, BoxMesh.new(), Vector3(x + w * 0.5, y + tall * 0.5, side * 0.2), spines[(h + i + shelf * 3) % 5])
+						var book := _part(node, _unit_box(), Vector3(x + w * 0.5, y + tall * 0.5, side * 0.2), spines[(h + i + shelf * 3) % 5])
 						book.scale = Vector3(w * 0.9, tall, 0.14)
 						x += w
 						i += 1
@@ -897,20 +928,41 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			for i in 3:
 				var leg := _part(node, _cyl(0.015, 0.02, 1.0), Vector3(cos(i * 2.1) * 0.15, 0.48, sin(i * 2.1) * 0.15), black)
 				leg.basis = Basis(Vector3(-sin(i * 2.1), 0, cos(i * 2.1)), 0.18)
+			# Mira al centro del plató (el escenario) y lo alumbra con un cono de luz, como en un rodaje
+			var to_stage := -grid.to_world(c)
+			node.rotation.y = atan2(to_stage.x, to_stage.z)
+			node.scale = Vector3.ONE
+			var pitch := 0.22  # algo hacia abajo: el haz cae sobre el escenario
 			var head := Node3D.new()
 			head.position = Vector3(0, 1.05, 0)
-			head.rotation.x = -0.6
+			head.rotation.x = pitch
 			node.add_child(head)
 			_part(head, _cyl(0.13, 0.11, 0.3, 12), Vector3.ZERO, black).rotation.x = PI / 2
+			for k in [-1, 1]:  # viseras
+				var flap := _part(head, _unit_box(), Vector3(0.14 * k, 0, 0.19), black)
+				flap.scale = Vector3(0.02, 0.2, 0.1)
+				flap.rotation.y = 0.5 * k
 			var lens := _part(head, _cyl(0.1, 0.1, 0.02, 12), Vector3(0, 0, 0.16), Color.WHITE)
 			lens.rotation.x = PI / 2
 			_glow(lens, Color(1.0, 0.95, 0.8), 4.0)
-			var light := OmniLight3D.new()
-			light.light_color = Color(1.0, 0.92, 0.78)
-			light.light_energy = 1.4
-			light.omni_range = 3.5
-			light.position = Vector3(0, 0.9, 0.5)
-			node.add_child(light)
+			var dir := Vector3(0, -sin(pitch), cos(pitch))
+			var spot := SpotLight3D.new()
+			spot.light_color = Color(1.0, 0.93, 0.8)
+			spot.light_energy = 5.0
+			spot.spot_range = 9.0
+			spot.spot_angle = 24.0
+			spot.spot_attenuation = 0.6
+			spot.position = head.position + dir * 0.2
+			spot.basis = Basis.looking_at(dir, Vector3.UP)
+			node.add_child(spot)
+			# Haz visible: cono translúcido que se abre desde la lente
+			var beam := MeshInstance3D.new()
+			beam.mesh = _cyl(0.09, 0.75, 3.2, 16)
+			beam.position = head.position + dir * 1.75
+			beam.basis = Basis(Vector3.RIGHT, pitch - PI / 2)  # el extremo estrecho (arriba del cilindro) en la lente
+			beam.material_override = _beam_material()
+			beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			node.add_child(beam)
 			height = 1.2
 		Biome.Prop.CAMERA:
 			# Cámara de televisión sobre trípode con ruedas, objetivo largo y piloto rojo de grabación.
@@ -918,7 +970,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			for i in 3:
 				var leg := _part(node, _cyl(0.015, 0.02, 0.8), Vector3(cos(i * 2.1) * 0.13, 0.38, sin(i * 2.1) * 0.13), dark)
 				leg.basis = Basis(Vector3(-sin(i * 2.1), 0, cos(i * 2.1)), 0.2)
-			_part(node, BoxMesh.new(), Vector3(0, 0.88, -0.04), Color(0.25, 0.26, 0.28)).scale = Vector3(0.24, 0.24, 0.4)
+			_part(node, _unit_box(), Vector3(0, 0.88, -0.04), Color(0.25, 0.26, 0.28)).scale = Vector3(0.24, 0.24, 0.4)
 			_part(node, _cyl(0.07, 0.09, 0.26, 12), Vector3(0, 0.88, 0.28), dark).rotation.x = PI / 2
 			_glow(_part(node, _sphere(0.025, 0.05), Vector3(0.08, 1.02, 0.1), Color.WHITE), Color(1.0, 0.1, 0.1), 3.0)
 			# Mira al centro del tablero
@@ -942,10 +994,10 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			var band := _part(body, _cyl(0.325, 0.325, 2.0, 16), Vector3(0, 0.62, 0), stripe)
 			band.rotation.x = PI / 2
 			band.scale = Vector3(1.0, 1.0, 0.25)
-			_part(body, BoxMesh.new(), Vector3(0, 0.74, 0.2), Color(0.15, 0.2, 0.28)).scale = Vector3(0.66, 0.08, 1.8)
-			_part(body, BoxMesh.new(), Vector3(0, 0.55, 0.05), white.darkened(0.05)).scale = Vector3(2.9, 0.06, 0.55)
-			_part(body, BoxMesh.new(), Vector3(0, 0.66, -1.2), white.darkened(0.05)).scale = Vector3(1.1, 0.05, 0.3)
-			_part(body, BoxMesh.new(), Vector3(0, 1.0, -1.22), stripe).scale = Vector3(0.05, 0.6, 0.4)
+			_part(body, _unit_box(), Vector3(0, 0.74, 0.2), Color(0.15, 0.2, 0.28)).scale = Vector3(0.66, 0.08, 1.8)
+			_part(body, _unit_box(), Vector3(0, 0.55, 0.05), white.darkened(0.05)).scale = Vector3(2.9, 0.06, 0.55)
+			_part(body, _unit_box(), Vector3(0, 0.66, -1.2), white.darkened(0.05)).scale = Vector3(1.1, 0.05, 0.3)
+			_part(body, _unit_box(), Vector3(0, 1.0, -1.22), stripe).scale = Vector3(0.05, 0.6, 0.4)
 			for k in [-0.75, 0.75]:
 				var engine := _part(body, _cyl(0.13, 0.13, 0.42, 12), Vector3(k, 0.4, 0.15), Color(0.7, 0.72, 0.76))
 				engine.rotation.x = PI / 2
@@ -975,12 +1027,168 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 	return node
 
 
+## Columna del gimnasio con la forma de su tipo (los que no tienen otro obstáculo): clásica de mármol
+## (neutral), pilar liso (normal), poste de dojo con cuerdas (lucha), columna fina con alas (volador),
+## pararrayos con bobinas encendidas (eléctrico), con anillos de oro y cuernos (dragón), obsidiana con
+## vetas rojas (siniestro), acero remachado (acero), basalto con brasas (fuego), mármol con olas (agua) y
+## columna con anillos tóxicos (veneno).
+func _pillar(node: Node3D, type: String) -> void:
+	var style := Biome.gym_style(type)
+	var stone: Color = style.pillar
+	var line: Color = style.line
+	match type:
+		"normal":
+			_part(node, _unit_box(), Vector3(0, 0.05, 0), stone.darkened(0.15)).scale = Vector3(0.6, 0.1, 0.6)
+			_part(node, _unit_box(), Vector3(0, 0.7, 0), stone).scale = Vector3(0.44, 1.2, 0.44)
+			_part(node, _unit_box(), Vector3(0, 0.95, 0), line).scale = Vector3(0.46, 0.08, 0.46)
+			_part(node, _unit_box(), Vector3(0, 1.34, 0), stone.darkened(0.15)).scale = Vector3(0.58, 0.08, 0.58)
+		"fighting":
+			var wood := Color(0.5, 0.34, 0.2)
+			_part(node, _cyl(0.2, 0.22, 1.35, 8), Vector3(0, 0.68, 0), wood)
+			for y in [0.35, 0.5, 0.95, 1.1]:
+				_part(node, _cyl(0.23, 0.23, 0.07, 8), Vector3(0, y, 0), Color(0.86, 0.78, 0.6))  # cuerda
+			_part(node, _cyl(0.24, 0.24, 0.12, 8), Vector3(0, 0.72, 0), line)  # cinta roja del dojo
+			_part(node, _cyl(0.05, 0.26, 0.1, 8), Vector3(0, 1.4, 0), wood.darkened(0.3))
+		"flying":
+			_part(node, _cyl(0.16, 0.2, 1.25, 12), Vector3(0, 0.62, 0), stone)
+			_part(node, _cyl(0.26, 0.26, 0.08, 12), Vector3(0, 1.28, 0), line)
+			for k in [-1, 1]:
+				var wing := _part(node, _unit_box(), Vector3(0.24 * k, 1.42, 0), stone.lightened(0.1))
+				wing.scale = Vector3(0.42, 0.05, 0.18)
+				wing.rotation.z = 0.45 * k
+		"electric":
+			var metal := _finish(Color(0.24, 0.24, 0.27), 0.35, 0.7)
+			var shaft := _part(node, _cyl(0.14, 0.2, 1.2, 10), Vector3(0, 0.6, 0), Color.WHITE)
+			shaft.material_override = metal
+			for i in 3:
+				_glow(_part(node, _cyl(0.24, 0.24, 0.06, 12), Vector3(0, 0.4 + 0.3 * i, 0), Color.WHITE), line, 2.2)
+			_part(node, _cyl(0.0, 0.04, 0.35, 6), Vector3(0, 1.37, 0), Color.WHITE).material_override = metal
+			_glow(_part(node, _sphere(0.07, 0.14), Vector3(0, 1.56, 0), Color.WHITE), line.lightened(0.3), 3.0)
+		"dragon":
+			_part(node, _cyl(0.22, 0.27, 1.3, 10), Vector3(0, 0.65, 0), stone)
+			var gold := _finish(line, 0.25, 1.0)
+			for y in [0.15, 0.7, 1.25]:
+				_part(node, _cyl(0.29, 0.29, 0.07, 10), Vector3(0, y, 0), Color.WHITE).material_override = gold
+			for k in [-1, 1]:
+				var horn := _part(node, _cyl(0.0, 0.07, 0.45, 6), Vector3(0.13 * k, 1.45, 0), Color.WHITE)
+				horn.material_override = gold
+				horn.rotation.z = -0.4 * k
+		"dark":
+			var obsidian := _finish(stone, 0.2, 0.0)
+			_part(node, _cyl(0.26, 0.3, 1.35, 6), Vector3(0, 0.68, 0), Color.WHITE).material_override = obsidian
+			for i in 3:
+				var a := TAU * i / 3.0 + 0.5
+				var vein := _part(node, _unit_box(), Vector3(cos(a), 0, sin(a)) * 0.27 + Vector3(0, 0.7, 0), Color.WHITE)
+				vein.scale = Vector3(0.035, 0.9 + 0.15 * i, 0.035)
+				_glow(vein, line, 2.0)
+			_part(node, _cyl(0.0, 0.3, 0.22, 6), Vector3(0, 1.46, 0), Color.WHITE).material_override = obsidian
+		"steel":
+			var steel := _finish(stone.lightened(0.15), 0.35, 0.55)  # sin mucho que reflejar, el metal puro sale negro
+			_part(node, _cyl(0.24, 0.24, 1.3, 16), Vector3(0, 0.65, 0), Color.WHITE).material_override = steel
+			for y in [0.08, 1.32]:
+				_part(node, _cyl(0.32, 0.32, 0.1, 16), Vector3(0, y, 0), Color.WHITE).material_override = _finish(line.lightened(0.1), 0.4, 0.5)
+			for y in [0.45, 0.9]:
+				for i in 8:
+					var a := TAU * i / 8.0
+					_part(node, _sphere(0.025, 0.05), Vector3(cos(a) * 0.245, y, sin(a) * 0.245), Color.WHITE).material_override = steel
+		"fire":
+			_part(node, _cyl(0.24, 0.3, 1.2, 8), Vector3(0, 0.6, 0), stone)
+			_part(node, _cyl(0.34, 0.22, 0.2, 8), Vector3(0, 1.3, 0), stone.darkened(0.3))
+			_glow(_part(node, _cyl(0.28, 0.28, 0.03, 8), Vector3(0, 1.39, 0), Color.WHITE), Color(1.0, 0.45, 0.1), 3.0)
+			for i in 2:
+				_glow(_part(node, _cyl(0.245 + 0.02 * i, 0.245 + 0.02 * i, 0.04, 8), Vector3(0, 0.5 + 0.35 * i, 0), Color.WHITE), line, 1.6)
+		"water":
+			_part(node, _cyl(0.22, 0.26, 1.3, 14), Vector3(0, 0.65, 0), stone)
+			for i in 3:
+				_part(node, _cyl(0.25, 0.25, 0.06, 14), Vector3(0, 0.35 + 0.3 * i, 0), line.lightened(0.15 * i))  # olas
+			_part(node, _cyl(0.34, 0.28, 0.1, 14), Vector3(0, 1.33, 0), stone.darkened(0.1))
+		"poison":
+			_part(node, _cyl(0.22, 0.27, 1.3, 10), Vector3(0, 0.65, 0), stone)
+			for i in 2:
+				_glow(_part(node, _cyl(0.26, 0.26, 0.08, 10), Vector3(0, 0.45 + 0.5 * i, 0), Color.WHITE), Color(0.75, 0.35, 0.95), 1.8)
+			_part(node, _sphere(0.2, 0.3), Vector3(0, 1.38, 0), stone.darkened(0.2))
+		_:
+			# Neutral (y cualquier columna fuera del gimnasio): mármol clásico con basa, fuste y capitel.
+			_part(node, _unit_box(), Vector3(0, 0.06, 0), stone.darkened(0.12)).scale = Vector3(0.66, 0.12, 0.66)
+			_part(node, _cyl(0.32, 0.32, 0.08, 16), Vector3(0, 0.16, 0), stone)
+			_part(node, _cyl(0.23, 0.27, 1.05, 16), Vector3(0, 0.72, 0), stone)
+			for i in 8:
+				var a := TAU * i / 8.0
+				_part(node, _cyl(0.03, 0.035, 1.0, 5), Vector3(cos(a), 0, sin(a)) * 0.245 + Vector3(0, 0.72, 0), stone.darkened(0.08))
+			_part(node, _cyl(0.33, 0.25, 0.12, 16), Vector3(0, 1.3, 0), stone)
+			_part(node, _unit_box(), Vector3(0, 1.39, 0), stone.darkened(0.12)).scale = Vector3(0.7, 0.07, 0.7)
+			if type == "" and grid.biome == Biome.Kind.GYM:
+				_part(node, _cyl(0.275, 0.275, 0.05, 16), Vector3(0, 0.3, 0), line)
+
+
+## Tramo de la terminal del aeropuerto (una casilla de la fila): fachada de cristal con montantes blancos,
+## zócalo de hormigón y cubierta en voladizo; la casilla central lleva la torre de control. Devuelve la altura.
+func _terminal(node: Node3D, c: Vector2i) -> float:
+	var white := Color(0.92, 0.93, 0.95)
+	var concrete := Color(0.7, 0.69, 0.66)
+	var glass := _finish(Color(0.32, 0.5, 0.64), 0.08, 0.4)
+	_part(node, _unit_box(), Vector3(0, 0.06, 0), concrete).scale = Vector3(1.0, 0.12, 0.9)
+	var pane := _part(node, _unit_box(), Vector3(0, 0.52, 0), Color.WHITE)
+	pane.scale = Vector3(0.98, 0.8, 0.8)
+	pane.material_override = glass
+	for i in 5:
+		var x := -0.48 + 0.24 * i
+		for z in [-0.405, 0.405]:
+			_part(node, _unit_box(), Vector3(x, 0.52, z), white).scale = Vector3(0.03, 0.8, 0.02)
+	for z in [-0.405, 0.405]:
+		_part(node, _unit_box(), Vector3(0, 0.5, z), white).scale = Vector3(0.98, 0.025, 0.02)
+	_part(node, _unit_box(), Vector3(0, 0.96, 0), white).scale = Vector3(1.04, 0.08, 1.1)  # cubierta en voladizo
+	_part(node, _unit_box(), Vector3(0, 1.01, 0), concrete.darkened(0.2)).scale = Vector3(1.02, 0.02, 1.06)
+	if c.x != grid.width / 2:
+		return 1.0
+	# Torre de control: fuste, cabina acristalada (más ancha) con techo oscuro y antena con baliza roja
+	_part(node, _cyl(0.16, 0.2, 1.4, 12), Vector3(0, 1.7, 0), white)
+	_part(node, _cyl(0.36, 0.26, 0.12, 12), Vector3(0, 2.44, 0), white)
+	_part(node, _cyl(0.38, 0.32, 0.36, 12), Vector3(0, 2.68, 0), Color.WHITE).material_override = glass
+	_part(node, _cyl(0.2, 0.42, 0.1, 12), Vector3(0, 2.91, 0), Color(0.25, 0.27, 0.3))
+	_part(node, _cyl(0.012, 0.012, 0.4, 5), Vector3(0, 3.16, 0), Color(0.6, 0.62, 0.65))
+	_glow(_part(node, _sphere(0.035, 0.07), Vector3(0, 3.38, 0), Color.WHITE), Color(1.0, 0.15, 0.1), 4.0)
+	return 3.4
+
+
+var _beam_mat: StandardMaterial3D
+
+
+## Haz de luz de los focos: aditivo, sin sombra y que se desvanece hacia los lados.
+func _beam_material() -> StandardMaterial3D:
+	if _beam_mat == null:
+		_beam_mat = StandardMaterial3D.new()
+		_beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_beam_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_beam_mat.albedo_color = Color(1.0, 0.92, 0.75, 0.07)
+		_beam_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+		_beam_mat.rim_enabled = false
+		_beam_mat.proximity_fade_enabled = true
+		_beam_mat.proximity_fade_distance = 0.6
+	return _beam_mat
+
+
+## Material con acabado propio (metal, obsidiana pulida), compartido por color y acabado.
+func _finish(color: Color, roughness: float, metallic: float) -> StandardMaterial3D:
+	var key := "finish_%s_%.2f_%.2f" % [color.to_html(), roughness, metallic]
+	if not _mats.has(key):
+		var m := StandardMaterial3D.new()
+		m.albedo_color = color
+		m.roughness = roughness
+		m.metallic = metallic
+		_mats[key] = m
+	return _mats[key]
+
+
 ## Puente de madera sobre el agua: tablones atravesados al paso, vigas por debajo y, en los lados que
 ## dan al agua, barandilla con postes.
 func _bridge(root: Node3D, c: Vector2i, top: Vector3) -> void:
-	var wood := Color(0.52, 0.37, 0.23)
+	var liquid := Biome.Tile.LAVA if grid.biome == Biome.Kind.VOLCANO else Biome.Tile.WATER
+	var wood := Color(0.3, 0.24, 0.2) if liquid == Biome.Tile.LAVA else Color(0.52, 0.37, 0.23)  # chamuscada sobre la lava
 	var on_water := func(n: Vector2i) -> bool:
-		return not grid.is_inside(n) or grid.tiles.get(n, 0) in [Biome.Tile.WATER, Biome.Tile.BRIDGE]
+		return not grid.is_inside(n) or grid.tiles.get(n, 0) in [liquid, Biome.Tile.BRIDGE]
 	# Los tablones van de lado a lado (hacia donde hay agua o más puente) y se suceden en el sentido del paso
 	var across := Vector3.RIGHT
 	if grid.topology == BoardGrid.Topology.SQUARE and not (on_water.call(c + Vector2i(1, 0)) and on_water.call(c - Vector2i(1, 0))):
@@ -988,23 +1196,23 @@ func _bridge(root: Node3D, c: Vector2i, top: Vector3) -> void:
 	var along := Vector3(-across.z, 0, across.x)
 	var count := 5
 	for i in count:
-		var plank := _part(root, BoxMesh.new(), top + Vector3(0, -0.035, 0) + along * ((i + 0.5) / count - 0.5), wood.darkened(0.06 * ((hash(c) + i) % 3)))
+		var plank := _part(root, _unit_box(), top + Vector3(0, -0.035, 0) + along * ((i + 0.5) / count - 0.5), wood.darkened(0.06 * ((hash(c) + i) % 3)))
 		plank.scale = (across * 0.98 + along * (0.9 / count)).abs() + Vector3(0, 0.05, 0)
 	for k in [-0.3, 0.3]:
-		var beam := _part(root, BoxMesh.new(), top + Vector3(0, -0.1, 0) + across * k, wood.darkened(0.3))
+		var beam := _part(root, _unit_box(), top + Vector3(0, -0.1, 0) + across * k, wood.darkened(0.3))
 		beam.scale = (along + across * 0.08).abs() + Vector3(0, 0.08, 0)
 	var edge := 1.0 if grid.topology == BoardGrid.Topology.SQUARE else 1.0 / sqrt(3.0)
 	for n in grid.neighbors(c):
-		if grid.tiles.get(n, 0) != Biome.Tile.WATER:
+		if grid.tiles.get(n, 0) != liquid:
 			continue
 		var out := grid.to_world(n) - grid.to_world(c)
 		out.y = 0.0
 		out = out.normalized()
 		var side := Vector3(-out.z, 0, out.x)
-		var rail := _part(root, BoxMesh.new(), top + out * 0.44 + Vector3(0, 0.3, 0), wood.darkened(0.1))
+		var rail := _part(root, _unit_box(), top + out * 0.44 + Vector3(0, 0.3, 0), wood.darkened(0.1))
 		rail.scale = (side * edge + out * 0.06).abs() + Vector3(0, 0.05, 0)
 		for k in [-0.5, 0.5]:
-			var post := _part(root, BoxMesh.new(), top + out * 0.44 + side * edge * k * 0.9 + Vector3(0, 0.05, 0), wood.darkened(0.2))
+			var post := _part(root, _unit_box(), top + out * 0.44 + side * edge * k * 0.9 + Vector3(0, 0.05, 0), wood.darkened(0.2))
 			post.scale = Vector3(0.07, 0.6, 0.07)
 
 
@@ -1017,7 +1225,7 @@ func _road_marks(root: Node3D, c: Vector2i, top: Vector3) -> void:
 		var side := Vector2i(-d.y, d.x)
 		# El otro carril está en `d`, al otro lado no hay calle y la calle sigue recta hacia los dos lados
 		if road.call(c + d) and not road.call(c - d) and road.call(c + side) and road.call(c - side):
-			var dash := _part(root, BoxMesh.new(), top + Vector3(d.x, 0, d.y) * 0.5 + Vector3(0, 0.004, 0), Color(0.92, 0.9, 0.82))
+			var dash := _part(root, _unit_box(), top + Vector3(d.x, 0, d.y) * 0.5 + Vector3(0, 0.004, 0), Color(0.92, 0.9, 0.82))
 			dash.scale = (Vector3(side.x, 0, side.y) * 0.45 + Vector3(d.x, 0, d.y) * 0.06).abs() + Vector3(0, 0.008, 0)
 			dash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
@@ -1103,9 +1311,16 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 		color = Biome.TILE_COLORS[tile_kind].lerp(Color(0.25, 0.45, 0.6), 0.35)  # todo teñido de azul
 	elif grid.biome == Biome.Kind.GYM and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Biome.gym_style(grid.gym_type).floor if tile_kind == Biome.Tile.FLOOR else Biome.gym_style(grid.gym_type).line
+	elif tile_kind == Biome.Tile.ICE:
+		# Más azul que la nieve; en el gimnasio de Hielo, cian verdoso para no confundirse con sus líneas azules
+		color = Color(0.58, 0.88, 0.9) if grid.biome == Biome.Kind.GYM else Color(0.5, 0.76, 0.93)
 	var w := grid.to_world(c)
 	var n := snappedf(_tint_noise.get_noise_2d(w.x, w.z), 0.25)
-	if tile_kind == Biome.Tile.GRASS:
+	if tile_kind == Biome.Tile.SNOW:
+		# Nieve: ventisqueros iluminados y hondonadas en sombra azulada, en vez de un blanco plano
+		# (el blanco puro se quema al sol: la nieve base es algo más gris para que se noten las sombras)
+		color = Color(0.86, 0.89, 0.95).lerp(Color(0.97, 0.98, 1.0) if n > 0 else Color(0.62, 0.69, 0.86), minf(absf(n) * 1.4, 1.0))
+	elif tile_kind == Biome.Tile.GRASS:
 		color = color.lerp(Color(0.62, 0.7, 0.32) if n > 0 else Color(0.26, 0.52, 0.26), absf(n) * 0.45)
 		if _tall_grass(c):
 			color = color.darkened(0.12)  # bajo la hierba alta el suelo queda en sombra
@@ -1155,6 +1370,8 @@ func _shore(c: Vector2i) -> Vector4:
 	var out := Vector4.ZERO
 	var dirs := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 	var same := [Biome.Tile.LAVA] if grid.tiles.get(c, 0) == Biome.Tile.LAVA else [Biome.Tile.WATER, Biome.Tile.BRIDGE]
+	if grid.biome == Biome.Kind.VOLCANO:
+		same = [Biome.Tile.LAVA, Biome.Tile.BRIDGE]
 	for i in 4:
 		var n: Vector2i = c + dirs[i]
 		if grid.is_inside(n) and grid.tiles.get(n, 0) not in same:
@@ -1166,6 +1383,11 @@ func _shore(c: Vector2i) -> Vector4:
 func _tall_grass(c: Vector2i) -> bool:
 	if grid.tiles.get(c, -1) != Biome.Tile.GRASS or grid.props.get(c, Biome.Prop.NONE) != Biome.Prop.NONE:
 		return false
+	if grid.biome == Biome.Kind.GYM:
+		# Gimnasio Planta/Bicho: césped segado en la arena y jardines de hierba alta a los lados
+		var mid := grid.height / 2
+		var side := c.x >= 2 and c.x <= 5 or c.x >= grid.width - 6 and c.x <= grid.width - 3
+		return side and absi(c.y - mid) <= 4
 	var w := grid.to_world(c)
 	var threshold := 0.05
 	match grid.biome:
@@ -1219,8 +1441,13 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			if r1 < 0.3: list.append(["pebbles", stone, 0.0, 0.1])
 			if r2 > 0.75: list.append(["stones", stone, 0.0, 0.1])
 			if b == Biome.Kind.MOUNTAIN and r2 < 0.15: list.append(["grass", grass.darkened(0.1), 0.6, 0.13])
+			# Neveros en la roca de las cumbres y en la del bioma nevado
+			if (b == Biome.Kind.SNOW or b == Biome.Kind.MOUNTAIN and grid.get_height(c) >= 2) and r1 > 0.5:
+				list.append(["mound", Color(0.95, 0.97, 1.0), 0.0, 0.1])
+		Biome.Tile.ICE:
+			if r1 < 0.6: list.append(["cracks", Color(0.88, 0.96, 1.0), 0.0, 0.1])
 		Biome.Tile.SNOW:
-			if r1 < 0.25: list.append(["mound", Color(0.95, 0.97, 1.0), 0.0, 0.1])
+			if r1 < 0.45: list.append(["mound", Color(0.95, 0.97, 1.0), 0.0, 0.1])
 			if r2 < 0.08: list.append(["grass", Color(0.62, 0.55, 0.38), 0.6, 0.13])
 		Biome.Tile.CAVE:
 			if r1 < 0.6: list.append(["pebbles", stone, 0.0, 0.1])
@@ -1342,6 +1569,114 @@ func _stalagmite(parent: Node3D, v: int, pos: Vector3, size: Vector3) -> MeshIns
 	return mi
 
 
+var _caustic_mesh: Mesh
+var _caustic_mat: ShaderMaterial
+
+
+## Cueva submarina: capa de cáusticas (TerrainFx.CAUSTIC_SHADER) sobre la cara de arriba de la casilla. Una
+## malla y un material compartidos: en combate se agrupan como los detalles del suelo.
+func _caustics(root: Node3D, top: Vector3) -> void:
+	if _caustic_mesh == null:
+		_caustic_mesh = _tile_mesh(0.002, 0.0)
+		_caustic_mat = TerrainFx.caustic_material()
+	var mi := MeshInstance3D.new()
+	mi.mesh = _caustic_mesh
+	mi.material_override = _caustic_mat
+	mi.position = Vector3(top.x, top.y + 0.004, top.z)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.set_meta("batch", "decor")
+	mi.set_meta("sway_base", Vector2(top.y, 0.0))
+	root.add_child(mi)
+
+
+## Funde en una sola malla (color por vértice) las piezas opacas de color liso de un obstáculo: se ve igual
+## y se dibuja en una llamada en vez de una por pieza (una estantería tenía ~100 libros sueltos). Las
+## piezas con viento, brillo o transparencia se quedan como están. Una malla por cada acabado (mate,
+## brillante, metálico).
+func _bake(node: Node3D) -> void:
+	var groups := {}  # acabado -> [vértices, normales, colores, índices, material de muestra]
+	for mi: MeshInstance3D in node.find_children("*", "MeshInstance3D", true, false):
+		# Las que llevan piezas colgando (la pantalla con su imagen encendida) se quedan sueltas
+		var m := mi.material_override as StandardMaterial3D
+		if m == null or m.emission_enabled or m.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED \
+				or m.albedo_texture or mi.mesh == null or mi.mesh.get_surface_count() != 1 or mi.get_child_count() > 0:
+			continue
+		if not _mesh_arrays.has(mi.mesh):  # las primitivas compartidas se leen una sola vez
+			_mesh_arrays[mi.mesh] = mi.mesh.surface_get_arrays(0)
+		var arrays: Array = _mesh_arrays[mi.mesh]
+		if arrays[Mesh.ARRAY_NORMAL] == null:
+			continue
+		var xf := _relative_transform(mi, node)
+		var key := "%.2f_%.2f_%.2f" % [m.roughness, m.metallic, m.metallic_specular]
+		if not groups.has(key):
+			groups[key] = [PackedVector3Array(), PackedVector3Array(), PackedColorArray(), PackedInt32Array(), m]
+		var g: Array = groups[key]
+		var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		var colors = arrays[Mesh.ARRAY_COLOR]
+		var nb := xf.basis.inverse().transposed()
+		var base: int = g[0].size()
+		for i in verts.size():
+			g[0].append(xf * verts[i])
+			g[1].append((nb * normals[i]).normalized())
+			var col: Color = m.albedo_color
+			if m.vertex_color_use_as_albedo and colors != null:
+				col *= colors[i]
+			g[2].append(col)
+		var indices = arrays[Mesh.ARRAY_INDEX]
+		if indices == null:
+			for i in verts.size():
+				g[3].append(base + i)
+		else:
+			# Un reflejo (escala negativa) invierte el orden de los triángulos
+			var flip := xf.basis.determinant() < 0.0
+			for i in range(0, indices.size(), 3):
+				g[3].append(base + indices[i])
+				g[3].append(base + indices[i + (2 if flip else 1)])
+				g[3].append(base + indices[i + (1 if flip else 2)])
+		mi.get_parent().remove_child(mi)
+		mi.free()
+	for key: String in groups:
+		var g: Array = groups[key]
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = g[0]
+		arrays[Mesh.ARRAY_NORMAL] = g[1]
+		arrays[Mesh.ARRAY_COLOR] = g[2]
+		arrays[Mesh.ARRAY_INDEX] = g[3]
+		var mesh := ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var mi := MeshInstance3D.new()
+		mi.mesh = mesh
+		mi.material_override = _baked_material(g[4])
+		node.add_child(mi)
+
+
+## Transformación de `mi` en el espacio de `node` (sus padres intermedios incluidos).
+func _relative_transform(mi: Node3D, node: Node3D) -> Transform3D:
+	var xf := mi.transform
+	var p := mi.get_parent() as Node3D
+	while p and p != node:
+		xf = p.transform * xf
+		p = p.get_parent() as Node3D
+	return xf
+
+
+## Material de las piezas fundidas: el acabado de `like` con el color de cada vértice. Compartido y
+## registrado para que también se moje con la lluvia.
+func _baked_material(like: StandardMaterial3D) -> StandardMaterial3D:
+	var key := "baked_%.2f_%.2f_%.2f" % [like.roughness, like.metallic, like.metallic_specular]
+	if not _mats.has(key):
+		var m := StandardMaterial3D.new()
+		m.vertex_color_use_as_albedo = true
+		m.vertex_color_is_srgb = true
+		m.roughness = like.roughness
+		m.metallic = like.metallic
+		m.metallic_specular = like.metallic_specular
+		_mats[key] = m
+	return _mats[key]
+
+
 var _vcol_mat: StandardMaterial3D
 
 
@@ -1364,29 +1699,50 @@ func _part(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstan
 	return mi
 
 
+## Las primitivas se comparten por medidas (nadie las modifica después de crearlas).
+var _prims := {}
+var _mesh_arrays := {}  # malla -> sus datos (para fundir obstáculos sin leerla cada vez)
+
+
+## Caja de lado 1 compartida: las piezas le dan su tamaño con la escala.
+func _unit_box() -> BoxMesh:
+	if not _prims.has("box"):
+		_prims["box"] = BoxMesh.new()
+	return _prims["box"]
+
+
 func _cyl(top_r: float, bottom_r: float, h: float, segments := 10) -> CylinderMesh:
-	var m := CylinderMesh.new()
-	m.top_radius = top_r
-	m.bottom_radius = bottom_r
-	m.height = h
-	m.radial_segments = segments
-	return m
+	var key := "c%.4f_%.4f_%.4f_%d" % [top_r, bottom_r, h, segments]
+	if not _prims.has(key):
+		var m := CylinderMesh.new()
+		m.top_radius = top_r
+		m.bottom_radius = bottom_r
+		m.height = h
+		m.radial_segments = segments
+		_prims[key] = m
+	return _prims[key]
 
 
 func _sphere(r: float, h: float) -> SphereMesh:
-	var m := SphereMesh.new()
-	m.radius = r
-	m.height = h
-	m.radial_segments = 12
-	m.rings = 6
-	return m
+	var key := "s%.4f_%.4f" % [r, h]
+	if not _prims.has(key):
+		var m := SphereMesh.new()
+		m.radius = r
+		m.height = h
+		m.radial_segments = 12
+		m.rings = 6
+		_prims[key] = m
+	return _prims[key]
 
 
 func _capsule(r: float, h: float) -> CapsuleMesh:
-	var m := CapsuleMesh.new()
-	m.radius = r
-	m.height = h
-	return m
+	var key := "k%.4f_%.4f" % [r, h]
+	if not _prims.has(key):
+		var m := CapsuleMesh.new()
+		m.radius = r
+		m.height = h
+		_prims[key] = m
+	return _prims[key]
 
 
 ## Prisma de la forma de la casilla. `inset` encoge la casilla por los lados.

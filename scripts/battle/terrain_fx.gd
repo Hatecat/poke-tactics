@@ -637,6 +637,17 @@ static func decor_mesh(kind: String, v: int, tint: Color) -> Mesh:
 		"hailstones":
 			for i in rng.randi_range(6, 12):
 				_blossom(st, _spot(rng, 0.44) + Vector3.UP * 0.01, rng.randf_range(0.018, 0.03), tint.darkened(rng.randf_range(0.0, 0.15)))
+		"cracks":
+			# Grietas del hielo: dos o tres líneas quebradas muy finas, casi a ras de la superficie.
+			for i in rng.randi_range(2, 3):
+				var p := _spot(rng, 0.3)
+				var a := rng.randf() * TAU
+				for j in rng.randi_range(2, 4):
+					var len := rng.randf_range(0.1, 0.22)
+					_box(st, p + Vector3(cos(a), 0, sin(a)) * len * 0.5 + Vector3.UP * 0.004,
+						Vector3(len, 0.008, 0.012), tint, -a)
+					p += Vector3(cos(a), 0, sin(a)) * len
+					a += rng.randf_range(-0.9, 0.9)
 		"mound":
 			for i in rng.randi_range(1, 2):
 				var p := _spot(rng, 0.3)
@@ -1120,6 +1131,53 @@ static func ambient(kind: Biome.Kind, center: Vector3, size: Vector2) -> CPUPart
 	p.preprocess = p.lifetime
 	p.color_ramp = _fade_ramp()
 	return p
+
+
+## Cáusticas: la red de luz que el oleaje concentra en el fondo, animada y calculada en el mundo para que
+## siga de una casilla a la vecina. Capa aditiva fina sobre el suelo (cueva submarina).
+const CAUSTIC_SHADER := "
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, shadows_disabled, cull_back;
+uniform vec4 color : source_color = vec4(0.45, 0.85, 1.0, 1.0);
+uniform float strength = 0.7;
+uniform float scale = 1.6;
+uniform float speed = 0.35;
+uniform bool instanced = false;
+varying vec3 wpos;
+
+void vertex() {
+	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+// Agua que se repite (iteración de senos): da líneas brillantes que se cruzan y se deforman con el tiempo.
+float caustic(vec2 uv, float t) {
+	vec2 p = mod(uv * 6.28318, 6.28318) - 250.0;
+	vec2 i = p;
+	float c = 1.0;
+	float inten = 0.005;
+	for (int n = 0; n < 4; n++) {
+		float tt = t * (1.0 - (3.5 / float(n + 1)));
+		i = p + vec2(cos(tt - i.x) + sin(tt + i.y), sin(tt - i.y) + cos(tt + i.x));
+		c += 1.0 / length(vec2(p.x / (sin(i.x + tt) / inten), p.y / (cos(i.y + tt) / inten)));
+	}
+	c /= 4.0;
+	c = 1.17 - pow(c, 1.4);
+	return clamp(pow(abs(c), 8.0), 0.0, 1.0);
+}
+
+void fragment() {
+	vec2 uv = wpos.xz * scale * 0.1;
+	float t = TIME * speed + 23.0;
+	float c = caustic(uv, t) * 0.65 + caustic(uv * 1.3 + 0.37, t * 0.8) * 0.35;
+	ALBEDO = color.rgb * c * strength;
+}
+"
+
+
+static func caustic_material() -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = shader(CAUSTIC_SHADER)
+	return m
 
 
 static func _ramp(colors: Array) -> Gradient:
