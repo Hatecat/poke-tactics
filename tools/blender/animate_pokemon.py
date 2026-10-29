@@ -259,7 +259,7 @@ STYLES = {
     "pidgeotto": _BIRD,
     "pidgeot": _BIRD,
     "spearow": _BIRD,
-    "fearow": _BIRD,
+    "fearow": dict(_BIRD, flap=(14, 22)),  # alas enormes: con el batido entero apuntaban al suelo
     "articuno": _BIRD,
     "aerodactyl": _BIRD,
     "zapdos": dict(_BIRD, wings=["LShoulder", "RShoulder"]),  # las plumas en punta cuelgan del hombro

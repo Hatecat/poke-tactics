@@ -62,6 +62,9 @@ Ver README.md para las reglas y la estructura de carpetas.
   vistazo: un script que crea un `Unit` por clip (idle, walk, fight_b, fight_d, hit, ko) y hace `seek` + `pause`.
   El preview del editor/visor (`pokemon_preview.gd` `_fit_width`) reduce el modelo si no cabe a lo ancho.
   Tras cambiar un animador, vuelve a pasar también `animate_status.py` con `--force` (las de estado salen del idle).
+  **Apoyo:** `data/pokemon_ground.json` (de `tools/bake_ground.gd`) sube o baja cada clip por fotograma con el nodo
+  `Unit._lift`; voladores en `bake_ground.FLYERS`; agua y lava con `Unit.set_surface`. Tras tocar animaciones o modelos,
+  rehaz el bake y pasa `tools/check_ground.gd` (y `tools/ground_biomes.gd` para verlo en los 18 biomas).
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la
   tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se
   acumulan. La fuerza del viento depende del clima (`WIND` en battle.gd).

@@ -546,3 +546,19 @@ Ajustes que no se deducen del esqueleto:
   `TUNE` corrige especies sueltas frente a sus colores oficiales. Después, `godot --headless --path . --import`.
   Los modelos de color liso sin textura (Haunter) toman su color de `FLAT_COLORS` en `unit.gd`, y las piezas con
   metálico alto pierden el brillo metálico salvo en los de tipo Acero (salían grisáceas).
+- **Apoyo en el suelo:** `Unit.fit_model` apoya el modelo con el primer fotograma del reposo, y lo que las
+  animaciones bajan o suben después (aleteos, vaivenes, posturas de estado) lo hundía en la casilla o lo dejaba en
+  el aire. `tools/bake_ground.gd` mide el punto más bajo de la malla ~60 veces por segundo en cada clip y guarda en
+  `data/pokemon_ground.json` cuánto subir o bajar cada fotograma; `Unit` lo aplica con su nodo `_lift`. Los
+  voladores y levitadores (`FLYERS`, con su holgura) flotan a una altura fija, se posan dormidos o congelados y
+  bajan al debilitarse; Diglett y Dugtrio (`IN_GROUND`) pueden meterse en su agujero. En el reposo, al andar y en
+  los estados el punto más bajo va siempre pegado al suelo; en ataques y golpes se respetan los saltos. En agua
+  (al menos media huella) los de tipo Agua se hunden un 30 % de su altura y el resto de terrestres un 10 % (lo
+  mismo en lava); el anillo del equipo baja a la superficie (`Unit.set_surface`, desde `battle.gd` `_place`).
+  **Tras cambiar animaciones o modelos, vuelve a hacer el bake** y compruébalo:
+
+```bash
+godot --headless --path . --script tools/bake_ground.gd [-- especie1,especie2]   # ~10 min las 151
+godot --headless --path . --script tools/check_ground.gd                          # sale con 1 si algo se hunde o flota >2 %
+POKE_TACTICS_NO_SAVE=1 OUT=carpeta/ godot --path . --resolution 1600x900 --script tools/ground_biomes.gd  # 18 biomas
+```

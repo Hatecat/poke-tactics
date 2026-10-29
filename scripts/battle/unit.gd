@@ -22,6 +22,9 @@ const POISON_STRENGTH := Vector2(0.65, 0.95)
 const PARALYSIS_TINT := Color(1.0, 0.92, 0.2)
 ## Altura de la etiqueta (nombre, PS, estado) sobre la cabeza: por encima de las estrellas del confuso.
 const LABEL_HEIGHT := 0.6
+## Parte de la altura que queda bajo la superficie al nadar y al vadear (set_surface).
+const SWIM_DRAFT := 0.3
+const WADE_DRAFT := 0.1
 ## Radio del anillo de equipo según el tamaño del Pokémon.
 const RING_SCALE := [1.0, 1.0, 2.1, 2.9]
 ## Las mejoras de stats duran estos turnos propios (aplicar otra reinicia la cuenta).
@@ -88,6 +91,18 @@ var protect_streak := 0
 var intimidated := {}
 
 var _model: Node3D
+## Sostiene el modelo y lo sube o baja según el clip para que se apoye en la casilla (data/pokemon_ground.json,
+## de tools/bake_ground.gd): voladores a su altura, sin hundirse ni flotar. Lo visual no toca la casilla, la
+## colisión del clic ni el combate.
+var _lift: Node3D
+## Apoyo de esta especie: "lift" (altura de vuelo, fracción de model_height) y "clips" (corrección por clip,
+## muestreada a lo largo del clip).
+var _ground := {}
+## Hundimiento extra por la casilla que pisa (agua, lava), en metros: lo pone set_surface.
+var _surface_drop := 0.0
+## Con false no se aplica (lo usa tools/bake_ground.gd para medir los clips tal cual).
+var ground_enabled := true
+static var _ground_table: Dictionary
 var _anim: AnimationPlayer
 var _label: Label3D
 var _ring: MeshInstance3D
@@ -339,8 +354,10 @@ func set_active(on: bool) -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
+	if _lift:
+		_lift.position.y = lerpf(_lift.position.y, ground_offset(), 1.0 - exp(-delta * 18.0))
 	if _active:
-		_marker.position.y = data.model_height + LABEL_HEIGHT + 0.4 + sin(_time * 4.0) * 0.1
+		_marker.position.y = top_height() + LABEL_HEIGHT + 0.4 + sin(_time * 4.0) * 0.1
 		_marker.rotation.y += delta * 2.0
 		var pulse := 0.5 + 0.5 * sin(_time * 5.0)
 		_ring_mat.emission_energy_multiplier = 0.6 + pulse * 2.0
@@ -369,6 +386,46 @@ func _process(delta: float) -> void:
 		_set_dizzy(dizzy)
 	if _dizzy:
 		_dizzy.rotation = Vector3(0.18 * sin(_time * 2.0), _time * 3.5, 0.18 * cos(_time * 2.0))
+
+
+static func ground_table() -> Dictionary:
+	if _ground_table.is_empty():
+		var path := "res://data/pokemon_ground.json"
+		var parsed = JSON.parse_string(FileAccess.get_file_as_string(path)) if FileAccess.file_exists(path) else null
+		_ground_table = parsed if parsed is Dictionary else {}
+	return _ground_table
+
+
+## Altura (en metros, sobre la casilla) a la que va el modelo ahora: la corrección del clip en curso
+## interpolada en su posición, o la altura de vuelo si el clip no la necesita; más lo que hunda la casilla.
+func ground_offset() -> float:
+	var off: float = _ground.get("lift", 0.0)
+	if _anim and _anim.assigned_animation:
+		var curve: Array = _ground.get("clips", {}).get(_anim.assigned_animation, [])
+		var length := _anim.get_animation(_anim.assigned_animation).length
+		if curve.size() > 1 and length > 0.0:
+			var x := clampf(_anim.current_animation_position / length, 0.0, 1.0) * (curve.size() - 1)
+			var i := mini(int(x), curve.size() - 2)
+			off = lerpf(curve[i], curve[i + 1], x - i)
+	return off * data.model_height - _surface_drop
+
+
+## Altura de la parte de arriba del Pokémon sobre la casilla, contando la altura de vuelo (para el cartel).
+func top_height() -> float:
+	return data.model_height * (1.0 + _ground.get("lift", 0.0))
+
+
+## Casilla de agua o lava (`liquid`): si se mete en ella (`sinks`), quien nada va medio sumergido y quien vadea
+## mete las patas bajo la superficie. Los que vuelan no se hunden.
+func set_surface(liquid: bool, sinks: bool, swims: bool) -> void:
+	# El anillo y la flecha de equipo van sobre la superficie del líquido, no sobre el fondo de la casilla.
+	var surface := -BoardView.WATER_DROP if liquid else 0.0
+	_ring.position.y = 0.02 + surface
+	_facing_arrow.position.y = surface
+	if not sinks or _ground.get("lift", 0.0) > 0.0:
+		_surface_drop = 0.0
+	else:
+		_surface_drop = BoardView.WATER_DROP + (SWIM_DRAFT if swims else WADE_DRAFT) * data.model_height
 
 
 ## Clip de reposo según el estado: congelado, dormido, paralizado, confuso, envenenado o el normal.
@@ -481,7 +538,7 @@ func materialize(from: Vector3, duration := 0.45, color := Color.WHITE) -> void:
 	_in_ball = true
 	visible = true
 	set_energy(color, 1.0)
-	_model.position = to_local(from)
+	_model.position = _lift.to_local(from)
 	_model.scale = _model_base_scale * 0.02
 	var tw := create_tween().set_parallel()
 	tw.tween_property(_model, "position", _model_base_pos, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
@@ -499,7 +556,7 @@ func dematerialize(to: Vector3, duration := 0.4) -> void:
 	var red := Color(1.0, 0.3, 0.32)
 	var tw := create_tween()
 	tw.tween_method(func(a: float) -> void: set_energy(red, a), 0.0, 1.0, 0.15)
-	tw.tween_property(_model, "position", to_local(to), duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(_model, "position", _lift.to_local(to), duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 	tw.parallel().tween_property(_model, "scale", _model_base_scale * 0.02, duration).set_ease(Tween.EASE_IN)
 	await tw.finished
 	visible = false
@@ -704,7 +761,7 @@ func transform_into(t: Unit) -> void:
 	_set_look(_look)  # el modelo nuevo aún no lleva la capa de hielo o el tinte
 	_set_dizzy(_dizzy != null)  # a la altura del modelo nuevo
 	_model.rotation.y = rot
-	_label.position.y = data.model_height + LABEL_HEIGHT
+	_label.position.y = top_height() + LABEL_HEIGHT
 	refresh_label()
 
 
@@ -766,7 +823,7 @@ func _build_visuals() -> void:
 	_label.font_size = 22
 	_label.outline_size = 8
 	_label.modulate = TEAM_COLORS[team].lightened(0.5)
-	_label.position.y = data.model_height + LABEL_HEIGHT
+	_label.position.y = top_height() + LABEL_HEIGHT
 	add_child(_label)
 	refresh_label()
 
@@ -784,7 +841,11 @@ func _build_visuals() -> void:
 
 func _load_model() -> void:
 	_model = data.model.instantiate()
-	add_child(_model)
+	if _lift == null:
+		_lift = Node3D.new()
+		add_child(_lift)
+	_lift.add_child(_model)
+	_ground = ground_table().get(data.id, {}) if ground_enabled else {}
 	_fix_fire_materials()
 	_fix_palette_materials()
 	_vivid_materials()
@@ -804,6 +865,7 @@ func _load_model() -> void:
 	if data.id in GAS:
 		_gas = Fx.toxic_gas(self, data.model_height, GAS[data.id][0], GAS[data.id][1])
 	play("idle")
+	_lift.position.y = ground_offset()
 
 
 ## Las llamas de los rips (Rapidash, Magmar: FireCore / FireSten) traen máscaras en gris que en los

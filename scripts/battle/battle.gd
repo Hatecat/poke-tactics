@@ -428,6 +428,13 @@ func _finish_deploy() -> void:
 func _place(u: Unit, anchor: Vector2i) -> void:
 	u.cell = anchor
 	u.footprint = grid.footprint(anchor, u.data.size)
+	# Solo visual: en el agua o la lava (al menos media huella) el modelo se hunde hasta la superficie (nada o
+	# vadea); el que vuela no.
+	var wet := u.footprint.filter(func(c: Vector2i) -> bool:
+		return grid.tiles.get(c, Biome.Tile.GRASS) in [Biome.Tile.WATER, Biome.Tile.LAVA])
+	var liquid := wet.size() * 2 >= u.footprint.size()
+	var swimmer := "water" in u.data.types
+	u.set_surface(liquid, liquid and (swimmer or effects == null or effects.field.grounded(u)), swimmer)
 
 
 ## La huella cabe en el tablero, no pisa a otro Pokémon y el suelo es lo bastante llano.
