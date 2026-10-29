@@ -25,6 +25,8 @@ const POKEMON_DIR := "res://data/pokemon/"
 ## que entren en el repo y en las builds) y escenarios del jugador.
 const GAME_MAPS_DIR := "res://data/maps/"
 const USER_MAPS_DIR := "user://maps/"
+## Tamaño mínimo de la ventana (por debajo, la interfaz se encoge hasta no leerse).
+const MIN_WINDOW := Vector2i(1024, 576)
 
 var roster: Array[PokemonData] = []
 var teams: Array[TeamSlot] = []
@@ -85,6 +87,26 @@ func _ready() -> void:
 	_load_save()
 	apply_language()
 	apply_graphics()
+	_fit_window()
+
+
+## Ajusta la ventana a la pantalla: si la de 1600×900 no cabe (portátiles, escalado del sistema), la reduce
+## en 16:9 y la centra, para que no quede parte del menú fuera; y fija el tamaño mínimo.
+func _fit_window() -> void:
+	var window := get_window()
+	if DisplayServer.get_name() == "headless":
+		return
+	var screen := DisplayServer.screen_get_usable_rect(window.current_screen)
+	window.min_size = Vector2i(mini(MIN_WINDOW.x, screen.size.x), mini(MIN_WINDOW.y, screen.size.y))
+	if window.mode != Window.MODE_WINDOWED:
+		return
+	# Margen para la barra de título y los bordes, que no cuentan en el tamaño de la ventana.
+	var room := Vector2(screen.size) - Vector2(16, 64)
+	if window.size.x <= room.x and window.size.y <= room.y:
+		return
+	var k := minf(room.x / window.size.x, room.y / window.size.y)
+	window.size = Vector2i(Vector2(window.size) * k).max(window.min_size)
+	window.position = screen.position + (screen.size - window.size) / 2
 
 
 func _load_roster() -> void:

@@ -119,7 +119,9 @@ func _show_type(t: String) -> void:
 	var users := Game.roster.filter(func(p: PokemonData) -> bool: return t in p.types)
 	if not users.is_empty():
 		_info.add_child(HSeparator.new())
-		_info.add_child(UiKit.label(tr("En el roster:") + " " + ", ".join(users.map(func(p: PokemonData) -> String: return p.species_name)), 15, Color(1, 1, 1, 0.75)))
+		var roster_label := UiKit.label(tr("En el roster:") + " " + ", ".join(users.map(func(p: PokemonData) -> String: return p.species_name)), 15, Color(1, 1, 1, 0.75))
+		roster_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_info.add_child(roster_label)
 
 	var idx := TypeChart.TYPES.find(t)
 	for key: Vector2i in _cells:
