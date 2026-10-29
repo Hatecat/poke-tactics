@@ -57,8 +57,10 @@ Ver README.md para las reglas y la estructura de carpetas.
   `tools/tune_textures.py`, por píxel y con `TUNE` por especie) o, si no hay, satura la original; `_fix_palette_materials`
   toma el color del nombre de la pieza en los modelos de paleta (Gastly) y su gas usa `HALO_SHADER` (halo fresnel).
   Revisión de los 151 (octubre 2026): serpientes suavizadas (`smooth_serpent_weights.py`, Ekans/Arbok/Dratini),
-  brazos de Geodude/Hitmonlee/Hitmonchan, cola de Slowpoke y debilitados (`KO_STYLE`). Para revisarlos todos de un
+  brazos de Geodude/Graveler/Hitmonlee/Hitmonchan, Ekans más grueso (`thicken_serpent.py`), cola de Raichu y liana de Victreebel (`smooth_chain.py` una vez en el .blend; `sway_chain.py` tras animate_status), `FLAT_COLORS`
+  para colores lisos (Haunter), metálico solo en tipo Acero, cola de Slowpoke y debilitados (`KO_STYLE`). Para revisarlos todos de un
   vistazo: un script que crea un `Unit` por clip (idle, walk, fight_b, fight_d, hit, ko) y hace `seek` + `pause`.
+  El preview del editor/visor (`pokemon_preview.gd` `_fit_width`) reduce el modelo si no cabe a lo ancho.
   Tras cambiar un animador, vuelve a pasar también `animate_status.py` con `--force` (las de estado salen del idle).
 - **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la
   tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se

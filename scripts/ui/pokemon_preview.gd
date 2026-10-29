@@ -95,6 +95,26 @@ func show_pokemon(data: PokemonData) -> void:
 	# La cámara mira 12° hacia abajo: se sube para que el centro de la vista quede a media altura.
 	_camera.size = 1.6
 	_camera.position = Vector3(0, 0.55 + 6.0 * tan(deg_to_rad(12.0)), 6)
+	_fit_width.call_deferred(_action_serial)
+
+
+## Los anchos y largos (los brazos de Geodude, la cola de Arbok, Grimer al derretirse) se salían por los lados:
+## con la pose del idle ya puesta, se aleja hasta que quepa el círculo que barre al girar (y algo más, para el
+## debilitado).
+func _fit_width(serial: int) -> void:
+	await get_tree().process_frame
+	if serial != _action_serial or _unit == null or _unit._model == null:
+		return
+	var radius := 0.0
+	for m: MeshInstance3D in _unit._model.find_children("*", "MeshInstance3D", true, false):
+		var a := Unit._skinned_aabb(_unit, m)
+		for x in [a.position.x, a.end.x]:
+			for z in [a.position.z, a.end.z]:
+				radius = maxf(radius, Vector2(x, z).length())
+	var aspect := size.x / maxf(size.y, 1.0)
+	var room := _camera.size * aspect * 0.5 * 0.92  # medio ancho de la vista, con margen
+	if radius * _pivot.scale.x > room:
+		_pivot.scale = Vector3.ONE * (room / radius)
 
 
 ## Reproduce una acción (idle, walk, fight_b, hit, ko...) y, si no es un bucle, vuelve a idle al

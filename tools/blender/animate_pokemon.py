@@ -225,6 +225,8 @@ TWEAKS = {
     "machoke": _STRONG_ARMS,
     "machamp": dict(_STRONG_ARMS, arm2_drop=40),
     "golem": {"arm_drop": 62, "elbow": 45, "legs_in": 10},  # brazos largos: doblados, para que no parezcan patas
+    # Los cuatro brazos iban muy abiertos: doblados, con los puños arriba.
+    "graveler": {"arm_drop": 45, "arm_fwd": 22, "elbow": 55},
     # Patas delanteras cortas y adelantadas: con el pecho más bajo, las manos van bajo los hombros.
     "nidoranf": {"chest": 10, "front_back": 0.18},
     # Brazos que en el modelo ya apuntan adelante: la mano quedaba delante del pecho y parecía otra cabeza.

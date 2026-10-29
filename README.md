@@ -468,6 +468,28 @@ Dratini. Después hay que volver a animar con `--force` (las acciones de estado 
 blender --background art/blender/ekans.blend --python tools/blender/smooth_serpent_weights.py
 ```
 
+El cuerpo del rip de Ekans es más delgado que el del artwork: `thicken_serpent.py` aleja cada vértice del centro
+de su anillo (`--factor`, 1,35 en Ekans) y vuelve a 1 justo debajo de la cabeza para que el cuello empalme. Los
+huesos y las acciones no cambian; después, solo exportar:
+
+```bash
+blender --background art/blender/ekans.blend --python tools/blender/thicken_serpent.py -- --factor 1.35
+```
+
+Las cadenas largas de algunos rips (la cola de Raichu, la liana de Victreebel) traen los huesos con los ejes
+girados: los giros de los animadores solo las retorcían y quedaban como un palo recto. `sway_chain.py` prueba
+qué eje de cada hueso las dobla de verdad y suma a todas las acciones una curva fija y una onda que baja hasta la
+punta (`CHAINS` por especie). Va después del animador y de `animate_status.py`, y antes de exportar:
+
+Antes, `smooth_chain.py` les añade anillos (la cola de Raichu tenía cinco en todo su largo y se doblaba en codos)
+y reparte los pesos a lo largo de la cadena, sin tocar la punta (el rayo, la hoja). A la cola de Raichu le pone
+además un material liso oscuro (`TailDark`, color en `FLAT_COLORS` de `unit.gd`):
+
+```bash
+blender --background art/blender/raichu.blend --python tools/blender/smooth_chain.py
+blender --background art/blender/raichu.blend --python tools/blender/sway_chain.py
+```
+
 El resto de los que no tienen patas (Magikarp, Tentacool, Voltorb, Butterfree, Gyarados, Staryu...) usan un
 animador genérico: el cuerpo se balancea y embiste desde los huesos raíz y cada apéndice (cola, antenas,
 tentáculos, aletas, alas) ondula a lo largo de su cadena. Solo hace idle, walk, fight_b y fight_d; `TWEAKS`
@@ -512,12 +534,15 @@ Ajustes que no se deducen del esqueleto:
   `sit` (Persian) se sienta como un gato en el reposo. En el juego el modelo se apoya igualmente en el suelo
   (como las aves de los rips): se ve el vaivén pero no la altura de vuelo.
 - Las llamas de los rips (`FireCore` / `FireSten`, Rapidash y Magmar) traen máscaras en gris: `Unit` las cambia
-  en el juego por un material de fuego.
+  en el juego por un material de fuego. Las llamas de Moltres (`fire_*`) pasan a un material sin luz ni metal.
 - `hold` en los `TWEAKS` de `animate_generic.py`: giros fijos de huesos, también espejados por lado (`DROP` baja
   el hueso, `FWD` lo adelanta): los brazos de Geodude doblados con los puños cerrados.
+- `flap_follow` en `animate_generic.py`: retraso y amplitud de la punta del ala (Moltres bate despacio y ondula).
 - `KO_STYLE` en `animate_status.py`: debilitados que no caen de lado: los lodos se derriten, Diglett y Dugtrio
   se hunden en su agujero, Dewgong se tumba sobre la barriga y Kingler se desploma a medias.
 - **Color:** las texturas de los rips salen desteñidas con la luz del juego y el sol del tablero quemaba los
   colores claros (Charizard amarillo). `python3 tools/tune_textures.py [especies]` escribe una versión ajustada
   de cada textura en `assets/models/pokemon/tuned/` (los originales no se tocan) y `Unit` la usa si existe;
   `TUNE` corrige especies sueltas frente a sus colores oficiales. Después, `godot --headless --path . --import`.
+  Los modelos de color liso sin textura (Haunter) toman su color de `FLAT_COLORS` en `unit.gd`, y las piezas con
+  metálico alto pierden el brillo metálico salvo en los de tipo Acero (salían grisáceas).

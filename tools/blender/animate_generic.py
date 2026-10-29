@@ -47,7 +47,9 @@ ROOTS = [b for b in BONES if b.parent is None]
 # Ajustes por especie: amp (grados del vaivén de apéndices), freq (vaivenes por ciclo de reposo), hover
 # (flota: insectos voladores), float (flota subiendo y bajando mucho, sin saltar al avanzar), puff (se hincha
 # en el ataque especial: escala del cuerpo), wings (cadenas de alas: aletean las dos a la vez, arriba y abajo;
-# "flap" = (grados, grados de alas alzadas, retraso de las de detrás en ciclos, aleteos por ciclo de reposo)),
+# "flap" = (grados, grados de alas alzadas, retraso de las de detrás en ciclos, aleteos por ciclo de reposo);
+# "flap_follow" = (retraso por hueso hacia la punta en ciclos, amplitud de los huesos de la punta), por defecto
+# (0.06, 0.35)),
 # shell (huesos que van con el cuerpo, como la concha de Cloyster), roll (al avanzar rueda, como Voltorb),
 # legs (patas de araña abiertas a los lados, como Paras: al andar barren adelante y atrás en diagonal),
 # crab (anda de lado: se gira 90° y las patas solo suben y bajan, deprisa), hold (huesos con un giro fijo
@@ -67,7 +69,8 @@ TWEAKS = {
     # Brazos en cruz del rip (más del doble de anchos que la roca): bajados, con el codo doblado adelante y
     # los dedos cerrados en puño, como en el artwork.
     "geodude": {"hold": {r"[LR]Arm": [("DROP", 12), ("FWD", 12)], r"[LR]ForeArm": [("FWD", 50), ("DROP", -35)],
-                         r"[LR]Finger[B-E]\d": [("FWD", 60)]}},
+                         r"[LR]Finger[B-E]\d": [("FWD", 60)],
+                         r"[LR]FingerA\d": [("FWD", 35), ("DROP", 30)]}},
     "voltorb": {"roll": True},
     "electrode": {"roll": True},
     # Bolas de gas con esqueleto automático (setup_animations.auto_rig): flotan y se hinchan.
@@ -90,7 +93,9 @@ TWEAKS = {
     "kingler": {"amp": 6, "legs": True, "crab": True},
     # Rips con esqueletos propios (Bone001..., L_UpperArm...): sin la convención de Charmander.
     "zubat": {"hover": True, "amp": 24, "freq": 3},
-    "moltres": {"hover": True, "freq": 2, "wings": r"[LR]_(UpperArm|Forearm|Hand|Wing_ex)", "flap": (30, 8, 0.0, 4)},
+    # Moltres bate despacio y amplio (un batido por segundo) y la punta del ala llega tarde: ondula como un ave.
+    "moltres": {"hover": True, "freq": 2, "wings": r"[LR]_(UpperArm|Forearm|Hand|Wing_ex)", "flap": (36, 10, 0.0, 2),
+                "flap_follow": (0.11, 0.6)},
     "onix": {"amp": 7},
     "ditto": {"amp": 6},
     "grimer": {"amp": 7},
@@ -270,10 +275,11 @@ def apply_pose(frame, p):
                     lquat(bone, FWD, side * (30 if CRAB else 24) * max(0.0, -math.sin(ph)))
         elif bone in WINGS:
             amp, lift, lag, beats = TWEAKS["flap"]
+            follow, tip = TWEAKS.get("flap_follow", (0.06, 0.35))
             d = DEPTH[bone.name]
             back = lag if re.search(r"B\d*$", _canon(bone.name)) else 0.0
-            ph = p["wing"] - back - 0.06 * d
-            a = amp * math.sin(2 * math.pi * ph) * (1 if d == 0 else 0.35) + (lift if d == 0 else 0)
+            ph = p["wing"] - back - follow * d
+            a = amp * math.sin(2 * math.pi * ph) * (1 if d == 0 else tip) + (lift if d == 0 else 0)
             q = lquat(bone, AXIS[bone.name], a)
         elif bone.name in AXIS:
             d = DEPTH[bone.name]
@@ -302,7 +308,28 @@ def has_motion(action):
     return False
 
 
+def _between(a, b, k):
+    """Pose intermedia entre dos P (factor k); la fase del aleteo sigue saliendo del fotograma."""
+    out = dict(a)
+    for key in ("pitch", "yaw", "amp", "phase", "spread", "scale"):
+        out[key] = a[key] + (b[key] - a[key]) * k
+    out["root"] = tuple(x + (y - x) * k for x, y in zip(a["root"], b["root"]))
+    return out
+
+
+def densify(keys, step=2):
+    """Con alas, una clave cada `step` fotogramas: entre claves lejanas el aleteo saltaría de fase."""
+    out = []
+    for (fa, a), (fb, b) in zip(keys, keys[1:]):
+        for f in range(fa, fb, step):
+            k = (f - fa) / (fb - fa)
+            out.append((f, _between(a, b, k * k * (3 - 2 * k))))
+    return out + [keys[-1]]
+
+
 def build(name, keys):
+    if WINGS and name not in ("idle", "walk"):
+        keys = densify(keys)
     old = bpy.data.actions.get(name)
     if old:
         bpy.data.actions.remove(old)

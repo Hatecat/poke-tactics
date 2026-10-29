@@ -51,12 +51,17 @@ TUNE = {
     "ponyta_Image_1": {"sat": 0.85, "exposure": 0.0},
     # Todo él es fuego: se queda luminoso.
     "moltres": {"exposure": 0.0},
+    # Amarillos que quedaban chillones frente al artwork (amarillo dorado, no limón).
+    "abra": {"sat": 0.6},
+    "drowzee": {"sat": 0.6},
+    "hypno": {"sat": 0.6},
+    "electabuzz": {"sat": 0.62},
     # Roca gris media: con el sol del tablero la textura (gris claro) salía casi blanca.
     "geodude_pm0074_00_Body": {"bright": 0.72},
     "graveler_pm0075_00_Body": {"bright": 0.75},
     # Las texturas de Grimer y Muk son lavanda azulado: en los juegos el shader las tiñe de morado.
-    "grimer": {"hue": 55},
-    "muk": {"hue": 55},
+    "grimer": {"hue": 55, "bright": 0.68, "sat": 0.62},
+    "muk": {"hue": 50, "bright": 0.72, "sat": 0.62},
 }
 
 

@@ -812,7 +812,20 @@ func _fix_fire_materials() -> void:
 	for m: MeshInstance3D in _model.find_children("*", "MeshInstance3D", true, false):
 		for i in m.mesh.get_surface_count():
 			var mat := m.get_active_material(i) as BaseMaterial3D
-			if mat == null or not (mat.resource_name.begins_with("FireCore") or mat.resource_name.begins_with("FireSten")):
+			if mat == null:
+				continue
+			if mat.resource_name.begins_with("fire_"):
+				# Llamas de Moltres: láminas ya pintadas; sin luz ni metal para que no salgan manchadas.
+				var flame := StandardMaterial3D.new()
+				flame.albedo_texture = mat.albedo_texture
+				flame.albedo_color = Color(1.0, 0.72, 0.45)
+				flame.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				flame.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				flame.cull_mode = BaseMaterial3D.CULL_DISABLED
+				flame.set_meta("vivid", true)
+				m.set_surface_override_material(i, flame)
+				continue
+			if not (mat.resource_name.begins_with("FireCore") or mat.resource_name.begins_with("FireSten")):
 				continue
 			var fire := StandardMaterial3D.new()
 			fire.albedo_texture = mat.albedo_texture
@@ -886,6 +899,10 @@ const VIVID_CONTRAST := 1.08
 ## Versión ajustada de cada textura (tools/tune_textures.py): satura según cada píxel y oscurece los claros
 ## saturados para que el sol del tablero no los queme (Charizard salía amarillo). Si no hay, se usa la saturación de arriba.
 const TUNED_DIR := "res://assets/models/pokemon/tuned/"
+## Color oficial de las piezas de color liso que el ajuste general deja lejos (por especie y nombre del material):
+## Haunter traía un violeta chillón (#c64eff) en vez del morado medio del artwork.
+const FLAT_COLORS := {"haunter": {"Body": Color("5a3f94"), "Tongue": Color("d65a92")},
+		"raichu": {"TailDark": Color("3b2e27")}}
 
 
 ## Da más color a las texturas del modelo. Los materiales son del modelo
@@ -897,9 +914,15 @@ func _vivid_materials() -> void:
 			if mat == null or mat.has_meta("vivid") or mat.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED:
 				continue
 			mat.set_meta("vivid", true)
+			# Algunos rips marcan como metal pieles y lodos (Haunter, Grimer, Beedrill, Koffing): solo reflejaban el
+			# cielo y el color no se veía. Metal de verdad solo en los de tipo acero (Magnemite, Magneton).
+			if mat.metallic > 0.4 and not "steel" in data.types:
+				mat.metallic = 0.0
 			if mat.albedo_texture:
 				mat.albedo_texture = _vivid_texture(mat.albedo_texture)
-			else:  # color liso (Haunter): el mismo ajuste que tools/tune_textures.py hace a cada píxel
+			elif FLAT_COLORS.get(data.id, {}).has(mat.resource_name):
+				mat.albedo_color = FLAT_COLORS[data.id][mat.resource_name]
+			else:  # color liso: el mismo ajuste que tools/tune_textures.py hace a cada píxel
 				mat.albedo_color = _tuned_color(mat.albedo_color)
 
 
