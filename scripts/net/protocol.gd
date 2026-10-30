@@ -6,7 +6,7 @@ extends RefCounted
 ## `bytes_to_var` no puede crear nada ejecutable). Lo usan el autoload `Net` (clientes) y tools/vs_server.gd (relay).
 
 ## Súbelo cuando cambie la forma de algún mensaje o la manera de simular una acción.
-const VERSION := 2
+const VERSION := 3
 const DEFAULT_PORT := 24680
 ## Tamaño máximo de un paquete (un resync con el estado completo cabe de sobra).
 const MAX_PACKET := 64 * 1024
@@ -117,11 +117,13 @@ static func data_hash() -> String:
 	return _data_hash
 
 
-## Propiedades guardadas de un recurso como texto (en orden fijo, sin la ruta ni el script).
+## Propiedades guardadas de un recurso como texto (en orden fijo, sin la ruta ni el script). Sin las que son
+## objetos (modelo, icono): son visuales y la build del servidor (sin gráficos) las tiene distintas.
 static func _resource_text(res: Resource) -> String:
 	var out := PackedStringArray()
 	for prop in res.get_property_list():
-		if prop.usage & PROPERTY_USAGE_STORAGE and not prop.name.begins_with("resource_") and prop.name != "script":
+		if prop.usage & PROPERTY_USAGE_STORAGE and not prop.name.begins_with("resource_") and prop.name != "script" \
+				and prop.type != TYPE_OBJECT:
 			out.append("%s=%s" % [prop.name, var_to_str(res.get(prop.name))])
 	return "\n".join(out)
 

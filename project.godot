@@ -12,6 +12,8 @@ config_version=5
 
 config/name="poke-tactics"
 run/main_scene="res://scenes/main_menu.tscn"
+run/main_scene.dedicated_server="res://scenes/vs_server.tscn"
+run/flush_stdout_on_print.dedicated_server=true
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
