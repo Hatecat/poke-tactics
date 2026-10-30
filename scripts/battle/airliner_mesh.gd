@@ -34,11 +34,12 @@ void fragment() {
 		float door = abs(box(vec2(lp.z, lp.y), vec2(dz, 0.62), vec2(0.05, 0.11), 0.02));
 		col = mix(col, vec3(0.55, 0.57, 0.6), side * smoothstep(0.006, 0.0, door));
 	}
-	// Cabina: cristales oscuros en el morro, con montantes
-	float cz = lp.z - 1.24;
-	float cy = lp.y - (0.735 - cz * 0.3);
-	float cab = step(abs(cz), 0.06) * step(abs(cy), 0.028) * step(0.025, abs(lp.x));
-	col = mix(col, vec3(0.08, 0.1, 0.14), cab * step(0.006, abs(fract(lp.x / 0.08) - 0.5) * 0.08));
+	// Cabina: banda de cristales que rodea el morro por arriba, en paneles separados por montantes
+	float ang = abs(atan(lp.x, lp.y - 0.6));  // 0 arriba, PI/2 a los lados
+	float zc = 1.27 - ang * 0.06;
+	float cab = step(abs(lp.z - zc), 0.03) * step(0.12, ang) * step(ang, 1.15) * step(0.62, lp.y);
+	float pane = abs(fract(ang / 0.26) - 0.5);
+	col = mix(col, vec3(0.06, 0.08, 0.12), cab * step(0.08, pane));
 	ALBEDO = col * shade;
 	ROUGHNESS = 0.3;
 	SPECULAR = 0.6;

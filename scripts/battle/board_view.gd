@@ -31,10 +31,11 @@ var _relief_tiles := {}
 var _relief_flat := {}
 var _relief_noise: FastNoiseLite
 var _relief_ridge: FastNoiseLite
-## Biomas con relieve fuera del tablero: los naturales (los interiores y urbanos siguen llanos).
+## Biomas con relieve fuera del tablero: todos menos los interiores y urbanos (Gimnasio, Ciudad, Laboratorio,
+## Estudio, Librería y Aeropuerto siguen llanos). El Test toma el aspecto de la Pradera.
 const RELIEF_KINDS := [Biome.Kind.MEADOW, Biome.Kind.FOREST, Biome.Kind.MOUNTAIN, Biome.Kind.DESERT,
 	Biome.Kind.LAKE, Biome.Kind.SNOW, Biome.Kind.CAVE, Biome.Kind.SWAMP, Biome.Kind.VOLCANO, Biome.Kind.BEACH,
-	Biome.Kind.CEMETERY]
+	Biome.Kind.CEMETERY, Biome.Kind.UNDERWATER]
 ## Resolución de la malla de relieve (vértices por casilla y lado).
 const RELIEF_RES := 2
 ## Pendiente máxima del relieve vista desde el tablero (alto / distancia al borde): con la cámara a 35°,
@@ -718,16 +719,20 @@ func _relief_height(p: Vector2) -> float:
 			shape = (r * r * 0.9 + n * 0.25) * 3.6
 		Biome.Kind.CAVE:
 			# Paredes de roca que cierran la cueva, con salientes
-			shape = smoothstep(3.0, 11.0, d) * 7.0 + (r * 0.8 + n * 0.4) * 1.6
+			shape = smoothstep(2.5, 9.0, d) * 7.0 + (r * 0.9 + n * 0.5) * 2.2
 		Biome.Kind.SWAMP:
-			shape = n * n * 0.9
+			shape = (n * n * 0.9 + r * 0.35) * 1.8  # montículos bajos entre charcas
 		Biome.Kind.BEACH:
 			var u := Vector2(p.x * 0.6 + p.y * 0.8, -p.x * 0.8 + p.y * 0.6)
-			shape = (1.0 - absf(_relief_ridge.get_noise_2d(u.x * 0.8, u.y * 2.0))) * 1.5 + n * 0.4
+			shape = (1.0 - absf(_relief_ridge.get_noise_2d(u.x * 0.8, u.y * 2.0))) * 2.3 + n * 0.7
 		Biome.Kind.FOREST:
-			shape = (n * 0.8 + r * 0.35) * 2.8
+			shape = (n * 0.85 + r * 0.4) * 3.6
+		Biome.Kind.UNDERWATER:
+			# Fondo marino: ondas de arena cerca y, más lejos, arrecifes de roca que cierran la cueva
+			var ripple := sin(p.x * 1.3 + p.y * 0.6 + n * 4.0) * 0.12
+			shape = ripple + n * 1.4 + smoothstep(3.0, 10.0, d) * (r * 4.0 + 2.0)
 		_:  # praderas, lago, cementerio: lomas suaves
-			shape = (n * 0.85 + r * 0.2) * 2.0
+			shape = (n * 0.85 + r * 0.3) * 3.2
 	var h := shape * smoothstep(0.5, 5.0, d)
 	var flat := _flat_at(p)
 	var radius := 4.0 if _look == Biome.Kind.BEACH else 2.5
@@ -844,8 +849,10 @@ func _relief_color(c: Vector2i, tile: int, h: float, steep: float, rock: Color) 
 	match _look:
 		Biome.Kind.DESERT, Biome.Kind.BEACH:
 			col = col.lightened(clampf(h * 0.05, 0.0, 0.12)).darkened(clampf(steep * 0.6, 0.0, 0.2))
-		Biome.Kind.MOUNTAIN, Biome.Kind.VOLCANO, Biome.Kind.CAVE:
+		Biome.Kind.MOUNTAIN, Biome.Kind.VOLCANO, Biome.Kind.CAVE, Biome.Kind.UNDERWATER:
 			col = col.lerp(rock.darkened(dim), smoothstep(0.15, 0.45, steep) * 0.6)
+			if _look in [Biome.Kind.CAVE, Biome.Kind.UNDERWATER]:  # en la penumbra, paredes algo más claras para leerlas
+				col = col.lightened(clampf(h * 0.03, 0.0, 0.18))
 			if _look == Biome.Kind.MOUNTAIN and h > 4.5:  # cumbres nevadas
 				col = col.lerp(Color(0.92, 0.94, 0.98).darkened(dim * 0.8), smoothstep(4.5, 6.0, h) * (1.0 - smoothstep(0.3, 0.6, steep)))
 		Biome.Kind.SNOW:
@@ -853,7 +860,7 @@ func _relief_color(c: Vector2i, tile: int, h: float, steep: float, rock: Color) 
 			col = col.lerp(Color(0.62, 0.7, 0.85).darkened(dim), clampf(steep * 1.6, 0.0, 0.45))
 			col = col.lerp(rock.darkened(dim), smoothstep(0.35, 0.6, steep) * 0.7)
 		_:
-			col = col.darkened(clampf(steep * 0.35, 0.0, 0.15))
+			col = col.darkened(clampf(steep * 0.5, 0.0, 0.22)).lightened(clampf(h * 0.025, 0.0, 0.08))
 	return col
 
 
@@ -1162,8 +1169,8 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 	# campo costaba más que el tablero entero)
 	if not decor or _outside(c) <= SCENERY_GRASS:
 		_decorate(root, c, tile_kind, top)
-	if _look == Biome.Kind.UNDERWATER and not water:
-		_caustics(root, top)
+	if _look == Biome.Kind.UNDERWATER and not water and not (decor and _relief_on and _relief_at.get(c, 0.0) > 0.05):
+		_caustics(root, top)  # sobre el relieve inclinado quedarían flotando
 	if tile_kind == Biome.Tile.ROAD:
 		_road_marks(root, c, top)
 	_maybe_puddle(root, c, tile_kind, top)
@@ -1837,19 +1844,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			plane.mesh = _planes[key]
 			body.add_child(plane)
 			if not _building_scenery:
-				# Equipo de tierra: tractor con dos carros de equipaje detrás del ala, escalera en la puerta y conos
-				var tug := Color(0.95, 0.75, 0.15)
-				_part(body, _bevel_box(), Vector3(-0.85, 0.1, -0.6), tug).scale = Vector3(0.2, 0.14, 0.3)
-				_part(body, _unit_box(), Vector3(-0.85, 0.22, -0.66), Color(0.15, 0.15, 0.17)).scale = Vector3(0.16, 0.1, 0.12)
-				for k in 2:
-					var cz := -0.95 - 0.3 * k
-					_part(body, _unit_box(), Vector3(-0.85, 0.08, cz), Color(0.45, 0.47, 0.5)).scale = Vector3(0.22, 0.03, 0.24)
-					_part(body, _unit_box(), Vector3(-0.85, 0.16, cz), [Color(0.3, 0.45, 0.75), Color(0.6, 0.3, 0.25), Color(0.25, 0.25, 0.28)][(h + k) % 3]).scale = Vector3(0.18, 0.12, 0.2)
-				var stairs := _part(body, _wing_mesh(), Vector3(0.5, 0.05, 0.95), Color(0.85, 0.87, 0.9))
-				stairs.scale = Vector3(0.25, 4.0, 0.2)
-				stairs.rotation = Vector3(0, PI / 2, 0.55)
-				for cone in [Vector3(1.45, 0, 0.2), Vector3(-1.45, 0, 0.2), Vector3(0, 0, 1.45)]:
-					_part(body, _cyl(0.0, 0.04, 0.12, 8), cone + Vector3(0, 0.06, 0), Color(1.0, 0.45, 0.1))
+				_ground_crew(body, h)
 			height = 1.3
 		Biome.Prop.PLANE_PART:
 			pass  # lo dibuja el avión de la casilla ancla
@@ -2699,6 +2694,91 @@ func _vcol_material() -> StandardMaterial3D:
 		_mats["vcol"] = _vcol_mat  # para que también se moje
 		_vcol_mat.roughness = 0.9
 	return _vcol_mat
+
+
+## Equipo de tierra del avión: tractor con cabina abierta y luz giratoria tirando de dos carros de equipaje con
+## toldo y maletas (detrás del ala izquierda), camión escalera con peldaños, barandillas y plataforma en la puerta
+## delantera derecha, y conos alrededor.
+func _ground_crew(body: Node3D, h: int) -> void:
+	var yellow := Color(0.95, 0.75, 0.15)
+	var tire := Color(0.08, 0.08, 0.09)
+	var steel := Color(0.6, 0.62, 0.66)
+	var dark := Color(0.15, 0.15, 0.17)
+	var wheels := func(at: Vector3, half: Vector2, r: float) -> void:
+		for sx in [-1.0, 1.0]:
+			for sz in [-1.0, 1.0]:
+				var p := at + Vector3(half.x * sx, r, half.y * sz)
+				_part(body, _cyl(r, r, 0.035, 12), p, tire).rotation.z = PI / 2
+				_part(body, _cyl(r * 0.45, r * 0.45, 0.04, 8), p, steel).rotation.z = PI / 2
+	var bar := func(from: Vector3, to: Vector3, r: float, color: Color) -> void:  # tubo entre dos puntos
+		var d := to - from
+		var tube := _part(body, _cyl(r, r, d.length(), 6), (from + to) * 0.5, color)
+		tube.basis = Basis(Quaternion(Vector3.UP, d.normalized()))
+	# Tractor: chasis, capó, asiento con arco antivuelco y techo, faros y luz giratoria
+	var t := Vector3(-0.85, 0, -0.5)
+	_part(body, _bevel_box(), t + Vector3(0, 0.1, 0), yellow).scale = Vector3(0.2, 0.07, 0.32)
+	_part(body, _bevel_box(), t + Vector3(0, 0.16, 0.08), yellow).scale = Vector3(0.18, 0.06, 0.15)
+	_part(body, _bevel_box(), t + Vector3(0, 0.17, -0.07), dark).scale = Vector3(0.1, 0.05, 0.08)  # asiento
+	_part(body, _bevel_box(), t + Vector3(0, 0.21, -0.11), dark).scale = Vector3(0.1, 0.07, 0.02)
+	for sx in [-0.085, 0.085]:
+		for sz in [-0.13, 0.0]:
+			bar.call(t + Vector3(sx, 0.14, sz), t + Vector3(sx, 0.31, sz), 0.008, dark)
+		_part(body, _unit_box(), t + Vector3(sx * 0.8, 0.16, 0.16), Color(1.0, 0.95, 0.75)).scale = Vector3(0.035, 0.02, 0.01)
+	_part(body, _bevel_box(), t + Vector3(0, 0.315, -0.065), yellow.darkened(0.15)).scale = Vector3(0.2, 0.015, 0.18)
+	_part(body, _cyl(0.015, 0.015, 0.025, 8), t + Vector3(0, 0.335, -0.065), Color(1.0, 0.5, 0.1))
+	bar.call(t + Vector3(0, 0.2, 0.0), t + Vector3(0, 0.24, 0.05), 0.006, dark)  # volante
+	wheels.call(t, Vector2(0.105, 0.1), 0.045)
+	# Carros de equipaje: plataforma, postes, toldo de color y maletas de varios tamaños
+	var prev := t + Vector3(0, 0.07, -0.16)
+	for k in 2:
+		var cart := t + Vector3(0, 0, -0.45 - 0.34 * k)
+		bar.call(prev, cart + Vector3(0, 0.07, 0.14), 0.007, dark)  # enganche
+		_part(body, _bevel_box(), cart + Vector3(0, 0.085, 0), steel).scale = Vector3(0.22, 0.025, 0.26)
+		var hood: Color = [Color(0.25, 0.42, 0.75), Color(0.3, 0.32, 0.36), Color(0.75, 0.3, 0.25)][(h + k) % 3]
+		for sx in [-0.1, 0.1]:
+			for sz in [-0.115, 0.115]:
+				bar.call(cart + Vector3(sx, 0.1, sz), cart + Vector3(sx, 0.29, sz), 0.006, steel)
+		_part(body, _bevel_box(), cart + Vector3(0, 0.3, 0), hood).scale = Vector3(0.24, 0.02, 0.28)
+		for i in 4:
+			var r := (h >> (i + k * 3)) % 4
+			var size := Vector3(0.07 + 0.02 * (r % 2), 0.05 + 0.02 * (r / 2), 0.1)
+			var suitcase: Color = [Color(0.2, 0.22, 0.3), Color(0.55, 0.15, 0.15), Color(0.2, 0.4, 0.3), Color(0.5, 0.42, 0.3)][(r + i) % 4]
+			_part(body, _bevel_box(), cart + Vector3(-0.05 + 0.1 * (i % 2), 0.1 + size.y * 0.5, -0.06 + 0.12 * (i / 2)), suitcase).scale = size
+		wheels.call(cart, Vector2(0.1, 0.09), 0.035)
+		prev = cart + Vector3(0, 0.07, -0.14)
+	# Camión escalera en la puerta delantera derecha: chasis y cabina, escalera con peldaños, largueros,
+	# barandillas y puntales, y plataforma a la altura de la puerta
+	var z := 0.98
+	_part(body, _bevel_box(), Vector3(0.82, 0.1, z), yellow).scale = Vector3(0.7, 0.06, 0.2)
+	_part(body, _bevel_box(), Vector3(1.1, 0.21, z), yellow).scale = Vector3(0.17, 0.16, 0.2)
+	_part(body, _unit_box(), Vector3(1.19, 0.24, z), Color(0.12, 0.16, 0.22)).scale = Vector3(0.01, 0.07, 0.16)  # parabrisas
+	_part(body, _unit_box(), Vector3(1.1, 0.24, z - 0.101), Color(0.12, 0.16, 0.22)).scale = Vector3(0.1, 0.06, 0.01)
+	_part(body, _unit_box(), Vector3(1.1, 0.24, z + 0.101), Color(0.12, 0.16, 0.22)).scale = Vector3(0.1, 0.06, 0.01)
+	_part(body, _cyl(0.015, 0.015, 0.025, 8), Vector3(1.1, 0.3, z), Color(1.0, 0.5, 0.1))
+	wheels.call(Vector3(0.82, 0, z), Vector2(0.27, 0.1), 0.045)
+	var low := Vector3(0.98, 0.15, z)
+	var high := Vector3(0.44, 0.53, z)
+	for i in 9:
+		var p := low.lerp(high, (i + 0.5) / 9.0)
+		_part(body, _unit_box(), p, steel.lightened(0.2)).scale = Vector3(0.05, 0.012, 0.15)
+	for sz in [-0.08, 0.08]:
+		var off := Vector3(0, 0, sz)
+		bar.call(low + off, high + off, 0.012, steel)  # larguero
+		bar.call(low + off + Vector3(0, 0.15, 0), high + off + Vector3(-0.08, 0.15, 0), 0.006, steel)  # barandilla
+		for i in 4:
+			var p: Vector3 = low.lerp(high, i / 3.0) + off
+			bar.call(p, p + Vector3(0, 0.15, 0), 0.005, steel)
+		bar.call(Vector3(0.58, 0.13, z + sz), low.lerp(high, 0.7) + off, 0.01, dark)  # puntal
+	_part(body, _bevel_box(), Vector3(0.38, 0.53, z), steel).scale = Vector3(0.14, 0.02, 0.18)
+	bar.call(Vector3(0.36, 0.53, z + 0.09), Vector3(0.36, 0.68, z + 0.09), 0.005, steel)
+	bar.call(Vector3(0.36, 0.68, z + 0.09), Vector3(0.44, 0.68, z + 0.09), 0.005, steel)
+	bar.call(Vector3(0.36, 0.53, z - 0.09), Vector3(0.36, 0.68, z - 0.09), 0.005, steel)
+	bar.call(Vector3(0.36, 0.68, z - 0.09), Vector3(0.44, 0.68, z - 0.09), 0.005, steel)
+	# Conos con franja blanca
+	for cone in [Vector3(1.45, 0, 0.2), Vector3(-1.45, 0, 0.2), Vector3(0, 0, 1.45), Vector3(0.2, 0, -1.6)]:
+		_part(body, _cyl(0.0, 0.04, 0.12, 10), cone + Vector3(0, 0.07, 0), Color(1.0, 0.45, 0.1))
+		_part(body, _cyl(0.026, 0.031, 0.025, 10), cone + Vector3(0, 0.08, 0), Color.WHITE)
+		_part(body, _unit_box(), cone + Vector3(0, 0.005, 0), Color(1.0, 0.45, 0.1)).scale = Vector3(0.1, 0.01, 0.1)
 
 
 func _part(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
