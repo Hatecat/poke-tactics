@@ -21,6 +21,10 @@ var _game: Node
 var _fails := 0
 
 
+## Plazo en tiempo real (con --fixed-fps los temporizadores de Godot corren mucho más rápido que el reloj).
+var _deadline_ms := 0
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -32,9 +36,7 @@ func _run() -> void:
 	var seeds: Array = Array(args[0].split(",")).map(func(s: String) -> int: return int(s)) if not args.is_empty() else [1, 2, 3]
 	var max_turns := int(args[1]) if args.size() > 1 else MAX_TURNS
 	var bad := args.size() > 2 and args[2] == "mal"
-	create_timer(DEADLINE_PER_SEED * seeds.size(), true, false, true).timeout.connect(func() -> void:
-		printerr("vs_test: tiempo agotado")
-		quit(1))
+	_deadline_ms = Time.get_ticks_msec() + int((DEADLINE_PER_SEED * seeds.size()) * 1000.0)
 	for s: int in seeds:
 		_setup(s)
 		var log: Variant = await _play(s, max_turns, null)
@@ -107,3 +109,11 @@ func _play(s: int, max_turns: int, replay: Variant) -> Variant:
 	if next < replay.size():
 		return {"ok": false, "text": "solo se aplicaron %d de %d" % [next, replay.size()]}
 	return {"ok": true, "text": "repetida igual (%d turnos, %s)" % [b._turn_count, "terminada" if b.state == b.State.GAME_OVER else "cortada"]}
+
+
+func _process(_delta: float) -> bool:
+	if _deadline_ms > 0 and Time.get_ticks_msec() > _deadline_ms:
+		_deadline_ms = 0
+		printerr("vs_test: tiempo agotado")
+		quit(1)
+	return false

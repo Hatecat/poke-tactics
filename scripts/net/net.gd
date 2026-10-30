@@ -33,10 +33,18 @@ var _peer: ENetMultiplayerPeer
 var _remote := 0
 var _accepted := false
 var _was_connected := false
-var _wait := 0.0
+## Instante (ms, tiempo real) en que se agota el saludo pendiente: no depende de Engine.time_scale ni de --fixed-fps.
+var _deadline := 0
 ## Altas y bajas de ENet de este fotograma: se atienden después de `poll()`, porque cerrar el peer desde una
 ## señal emitida dentro de `poll()` tumba el motor.
 var _events: Array[Array] = []
+## Mensajes que llegaron sin nadie escuchando `message` (entre dos escenas): se entregan al conectarse alguien.
+var _held: Array[Dictionary] = []
+
+
+func _ready() -> void:
+	# La red sigue viva con el menú de pausa abierto (el rival no se para).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 ## Aloja una partida directa en `port`; espera a un solo rival.
@@ -66,6 +74,8 @@ func close() -> void:
 	var p := _peer
 	_peer = null  # antes de cerrar: las señales que lleguen mientras tanto se ignoran
 	if p:
+		# Lo último que se mandó (rendición, aviso de desincronización...) sale antes de cortar.
+		p.poll()
 		p.close()
 	mode = Mode.OFF
 	side = -1
@@ -73,6 +83,7 @@ func close() -> void:
 	_remote = 0
 	_accepted = false
 	_was_connected = false
+	_held.clear()
 
 
 func is_online() -> bool:
@@ -99,13 +110,18 @@ func _open(new_mode: Mode, address: String, port: int) -> Error:
 	_peer.peer_connected.connect(func(id: int) -> void: _events.append([true, id]))
 	_peer.peer_disconnected.connect(func(id: int) -> void: _events.append([false, id]))
 	mode = new_mode
-	_wait = HANDSHAKE_TIMEOUT
+	_deadline = Time.get_ticks_msec() + int(HANDSHAKE_TIMEOUT * 1000.0)
 	# Calcula ya la huella de los datos para no frenar el saludo.
 	Protocol.data_hash()
 	return OK
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
+	if not _held.is_empty() and not message.get_connections().is_empty():
+		var held := _held.duplicate()
+		_held.clear()
+		for msg in held:
+			message.emit(msg)
 	if not _peer:
 		return
 	_events.clear()
@@ -123,8 +139,7 @@ func _process(delta: float) -> void:
 		_fail("lost" if _was_connected else "unreachable")
 		return
 	if not _accepted and (mode != Mode.HOST or _remote != 0):
-		_wait -= delta
-		if _wait <= 0.0:
+		if Time.get_ticks_msec() > _deadline:
 			if mode == Mode.HOST:  # el anfitrión despide al que no saluda y sigue esperando
 				_reject(_remote, "timeout")
 				_remote = 0
@@ -167,7 +182,11 @@ func _handle(from: int, msg: Dictionary) -> void:
 				opponent = {}
 				opponent_left.emit(msg.code)
 		_:
-			if _accepted:
+			if not _accepted:
+				return
+			if message.get_connections().is_empty():
+				_held.append(msg)
+			else:
 				message.emit(msg)
 
 
@@ -203,7 +222,7 @@ func _on_peer_connected(id: int) -> void:
 			_reject(id, "full")
 			return
 		_remote = id
-		_wait = HANDSHAKE_TIMEOUT
+		_deadline = Time.get_ticks_msec() + int(HANDSHAKE_TIMEOUT * 1000.0)
 	else:
 		_was_connected = true
 		_remote = 1
