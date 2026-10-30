@@ -322,27 +322,30 @@ func _build_ui() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
 
-	var top := HBoxContainer.new()
-	top.position = Vector2(16, 16)
-	top.add_theme_constant_override("separation", 8)
-	root.add_child(top)
-	top.add_child(UiKit.button(tr("← Menú"), func() -> void:
+	# Barra superior: volver, título, nombre, guardar, cargar y probar.
+	var bar := UiKit.panel()
+	bar.position = Vector2(16, 12)
+	root.add_child(bar)
+	var top := UiKit.screen_header(tr("Editor de escenarios"), tr("← Menú"), func() -> void:
 		Game.editor_map = null
-		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label(tr("  Editor de escenarios  "), 26, UiKit.ACCENT))
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
+	top.add_theme_constant_override("separation", UiKit.SPACE_3)
+	bar.add_child(top)
 	_name_edit = LineEdit.new()
 	_name_edit.placeholder_text = tr("Nombre del escenario")
 	_name_edit.custom_minimum_size.x = 260
 	top.add_child(_name_edit)
-	top.add_child(UiKit.button(tr("💾 Guardar"), _save))
+	top.add_child(UiKit.primary_button(tr("💾 Guardar"), _save, 17))
 	_load_pick = OptionButton.new()
 	_load_pick.custom_minimum_size.x = 200
 	top.add_child(_load_pick)
 	top.add_child(UiKit.button(tr("Cargar"), _load_selected))
 	top.add_child(UiKit.button(tr("▶ Probar"), _test))
+	for c in top.get_children():
+		(c as Control).size_flags_vertical = Control.SIZE_SHRINK_CENTER
 
 	var panel := UiKit.panel()
-	panel.position = Vector2(16, 76)
+	panel.position = Vector2(16, 96)
 	panel.custom_minimum_size.x = 300
 	_panel = panel
 	root.add_child(panel)
@@ -350,14 +353,14 @@ func _build_ui() -> void:
 	col.add_theme_constant_override("separation", 8)
 	panel.add_child(col)
 
-	col.add_child(UiKit.label(tr("Tablero"), 18, UiKit.ACCENT))
+	col.add_child(_section(tr("Tablero")))
 	var size_row := HBoxContainer.new()
 	col.add_child(size_row)
 	_width = _spin(10, 30, 20)
 	_height = _spin(10, 30, 20)
-	size_row.add_child(UiKit.label(tr("Ancho "), 15))
+	size_row.add_child(UiKit.label(tr("Ancho "), 15, UiKit.TEXT_DIM))
 	size_row.add_child(_width)
-	size_row.add_child(UiKit.label(tr("  Alto "), 15))
+	size_row.add_child(UiKit.label(tr("  Alto "), 15, UiKit.TEXT_DIM))
 	size_row.add_child(_height)
 	_topology = OptionButton.new()
 	_topology.add_item(tr("▦ Cuadrícula"))
@@ -387,21 +390,26 @@ func _build_ui() -> void:
 	col.add_child(gen_row)
 	gen_row.add_child(UiKit.button(tr("Generar al azar"), _new_map.bind(true)))
 	gen_row.add_child(UiKit.button(tr("Vacío"), _new_map.bind(false)))
-	col.add_child(UiKit.label(tr("Cambiar tamaño o tablero rehace el mapa."), 13, Color(1, 1, 1, 0.5)))
+	col.add_child(UiKit.hint(tr("Cambiar tamaño o tablero rehace el mapa.")))
 
 	col.add_child(HSeparator.new())
-	col.add_child(UiKit.label(tr("Herramienta"), 18, UiKit.ACCENT))
+	col.add_child(_section(tr("Herramienta")))
 	var group := ButtonGroup.new()
 	var tools := [[Tool.HEIGHT, tr("⛰ Altura")], [Tool.TILE, tr("🟩 Suelo")], [Tool.PROP, tr("🌲 Obstáculo")],
 		[Tool.PLAYER_ZONE, tr("🔵 Zona jugador")], [Tool.ENEMY_ZONE, tr("🔴 Zona rival")], [Tool.ENEMY, tr("👾 Rival")]]
 	var tool_grid := GridContainer.new()
 	tool_grid.columns = 2
+	tool_grid.add_theme_constant_override("h_separation", UiKit.SPACE_1 + 2)
+	tool_grid.add_theme_constant_override("v_separation", UiKit.SPACE_1 + 2)
 	col.add_child(tool_grid)
 	for t in tools:
 		var b := UiKit.button(t[1], _set_tool.bind(t[0]), 15)
+		b.theme_type_variation = UiKit.CARD_BUTTON
 		b.toggle_mode = true
 		b.button_group = group
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.custom_minimum_size.x = 136
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		tool_grid.add_child(b)
 		_tool_buttons[t[0]] = b
 	_brush_pick = _option(col, tr("Pincel"), [tr("1 casilla"), tr("Radio 1"), tr("Radio 2")])
@@ -412,32 +420,45 @@ func _build_ui() -> void:
 	_enemy_pick = _option(col, tr("Rival"), Game.roster.map(func(p: PokemonData) -> String: return "#%03d %s" % [p.dex_number, p.species_name]))
 	_enemy_pick.item_selected.connect(func(_i: int) -> void: _set_tool(Tool.ENEMY))
 
+	# Barra inferior: ayuda de la herramienta y estado (crece hacia arriba desde el borde).
+	var hud := UiKit.panel()
+	hud.anchor_left = 0.5
+	hud.anchor_right = 0.5
+	hud.anchor_top = 1.0
+	hud.anchor_bottom = 1.0
+	hud.offset_bottom = -16
+	hud.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	hud.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(hud)
+	var hud_col := VBoxContainer.new()
+	hud_col.add_theme_constant_override("separation", 2)
+	hud.add_child(hud_col)
 	_help = UiKit.label("", 15)
-	_help.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_help.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_help.offset_bottom = -44
-	_help.add_theme_constant_override("outline_size", 6)
-	_help.add_theme_color_override("font_outline_color", Color.BLACK)
-	root.add_child(_help)
-	_status = UiKit.label("", 15, UiKit.ACCENT)
-	_status.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_status.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_status.offset_bottom = -18
-	_status.add_theme_constant_override("outline_size", 6)
-	_status.add_theme_color_override("font_outline_color", Color.BLACK)
-	root.add_child(_status)
-	var keys := UiKit.label(tr("Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"), 14, Color(1, 1, 1, 0.8))
-	keys.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	keys.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	keys.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	keys.offset_right = -16
-	keys.offset_bottom = -16
-	keys.add_theme_constant_override("outline_size", 5)
-	keys.add_theme_color_override("font_outline_color", Color.BLACK)
-	root.add_child(keys)
+	_help.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hud_col.add_child(_help)
+	_status = UiKit.label("", 15, UiKit.NEON)
+	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hud_col.add_child(_status)
+	var keys_panel := UiKit.panel(UiKit.CARD)
+	keys_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	keys_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	keys_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	keys_panel.offset_right = -16
+	keys_panel.offset_bottom = -16
+	keys_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	keys_panel.self_modulate = Color(1, 1, 1, 0.85)
+	root.add_child(keys_panel)
+	keys_panel.add_child(UiKit.hint(tr("Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"), 14))
 
 	_refresh_load_list()
 	_set_tool(Tool.HEIGHT)
+
+
+func _section(text: String) -> Label:
+	var l := UiKit.section(text, 18)
+	l.add_theme_color_override("font_color", UiKit.ACCENT)
+	return l
 
 
 func _spin(lo: int, hi: int, value: int) -> SpinBox:
@@ -450,7 +471,7 @@ func _spin(lo: int, hi: int, value: int) -> SpinBox:
 
 func _option(parent: Control, caption: String, items: Array) -> OptionButton:
 	var row := HBoxContainer.new()
-	var l := UiKit.label(caption, 15, Color(1, 1, 1, 0.75))
+	var l := UiKit.label(caption, 15, UiKit.TEXT_DIM)
 	l.custom_minimum_size.x = 84
 	row.add_child(l)
 	var o := OptionButton.new()
