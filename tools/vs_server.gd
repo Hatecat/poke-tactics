@@ -16,8 +16,6 @@ extends SceneTree
 const MAX_CLIENTS := 256
 const MAX_ROOMS := 128
 const HANDSHAKE_MS := 8000
-## Mensajes por segundo que admite un cliente antes de echarlo.
-const RATE_MAX := 60
 const CODE_CHARS := "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const CODE_LEN := 5
 
@@ -94,7 +92,7 @@ func _flooding(id: int, now: int) -> bool:
 		c.win_start = now
 		c.win_count = 0
 	c.win_count += 1
-	if c.win_count > RATE_MAX:
+	if c.win_count > Protocol.RATE_MAX:
 		_kick(id, "flood")
 		return true
 	return false

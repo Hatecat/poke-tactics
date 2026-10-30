@@ -12,6 +12,8 @@ const DEFAULT_PORT := 24680
 const MAX_PACKET := 64 * 1024
 const NICK_MAX := 16
 const ROOM_NAME_MAX := 24
+## Mensajes por segundo que se admiten del otro lado (servidor o anfitrión) antes de echarlo por "flood".
+const RATE_MAX := 60
 ## Segundos que el servidor guarda el sitio de un jugador que perdió la conexión en plena partida.
 const RECONNECT_TIME := 60
 
@@ -85,9 +87,11 @@ static func clean_nick(nick: String) -> String:
 	return nick if not nick.is_empty() else TranslationServer.translate("Entrenador")
 
 
-## Texto de una línea sin caracteres de control ni espacios de más, recortado a `max_len`.
+## Texto de una línea sin caracteres de control ni espacios de más, recortado a `max_len`. Sin corchetes: los
+## apodos y nombres de sala acaban en etiquetas con BBCode.
 static func clean_text(text: String, max_len: int) -> String:
-	return " ".join(text.strip_escapes().split(" ", false)).left(max_len)
+	text = text.strip_escapes().replace("[", "(").replace("]", ")")
+	return " ".join(text.split(" ", false)).left(max_len)
 
 
 ## Huella de los datos del juego (Pokémon, ataques, objetos y habilidades). Se calcula con el contenido de los

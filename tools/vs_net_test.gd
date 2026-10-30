@@ -12,10 +12,13 @@ extends SceneTree
 ##   unreachable    se conecta a un puerto sin nadie: espera el fallo "unreachable"
 ##   idle           se conecta a un anfitrión y se queda quieto (para llenar la partida)
 ##   full           se conecta a un anfitrión que ya tiene rival: espera el rechazo "full"
+##   flood          se conecta a un anfitrión y le manda FLOOD mensajes de golpe: espera que le eche ("flood")
+##   flood-relay    lo mismo contra el servidor de salas
 ##
 ## Sale con 0 si el rol termina como se espera y con 1 si no (o a los TIMEOUT segundos).
 
 const PINGS := 5
+const FLOOD := 200
 const TIMEOUT := 20.0
 
 var _net: Node
@@ -45,7 +48,10 @@ func _run() -> void:
 	_net.connected.connect(func() -> void:
 		print("[%s] saludo aceptado (protocolo %d, datos %s)" % [_role, Protocol.VERSION, Protocol.data_hash()])
 		if _role == "relay":
-			_net.send({"t": "room_join", "code": ""}))
+			_net.send({"t": "room_join", "code": ""})
+		elif _role.begins_with("flood"):
+			for i in FLOOD:
+				_net.send({"t": "lobby_list"} if _role == "flood-relay" else {"t": "intent", "k": i}))
 	_net.opponent_found.connect(_on_opponent)
 	_net.message.connect(_on_message)
 	_net.opponent_left.connect(func(code: String) -> void: print("[%s] el rival se fue: %s" % [_role, Protocol.reason_text(code)]))
@@ -55,9 +61,9 @@ func _run() -> void:
 		"host":
 			err = _net.host(port)
 			print("[host] alojando en el puerto %d" % port)
-		"join", "unreachable", "idle", "full":
+		"join", "unreachable", "idle", "full", "flood":
 			err = _net.join(address, port)
-		"relay":
+		"relay", "flood-relay":
 			err = _net.join_relay(address, port)
 		"bad-version", "bad-data":
 			_raw = ENetMultiplayerPeer.new()
@@ -130,7 +136,7 @@ func _on_failed(code: String) -> void:
 	if _quit_in >= 0.0:
 		return
 	print("[%s] red cerrada: %s (%s)" % [_role, code, Protocol.reason_text(code)])
-	_finish(0 if _role in ["unreachable", "full"] and code == _role else 1)
+	_finish(0 if _role in ["unreachable", "full"] and code == _role or _role.begins_with("flood") and code == "flood" else 1)
 
 
 ## Termina tras medio segundo, para que salgan los últimos paquetes.

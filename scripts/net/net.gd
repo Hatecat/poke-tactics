@@ -66,6 +66,9 @@ var _recv_seq := 0
 var _sent_log: Array[Dictionary] = []
 ## Reconectando: hasta cuándo se intenta (0 = no) y cuándo toca el siguiente intento.
 var _reconnect_until := 0
+## Ventana de un segundo para contar los mensajes del invitado (anfitrión).
+var _rate_start := 0
+var _rate_count := 0
 var _retry_at := 0
 
 
@@ -237,6 +240,9 @@ func _process(_delta: float) -> void:
 				return
 	while _peer and _peer.get_available_packet_count() > 0:
 		var from := _peer.get_packet_peer()
+		if mode == Mode.HOST and from == _remote and _flooding():
+			_peer.get_packet()
+			continue
 		var msg := Protocol.decode(_peer.get_packet())
 		if not msg.is_empty():
 			_handle(from, msg)
@@ -313,7 +319,8 @@ func _handle(from: int, msg: Dictionary) -> void:
 			if not _accepted:
 				return
 			if msg.t == "room":
-				room = {"code": msg.code, "name": str(msg.get("name", "")), "public": msg.get("public", true) == true}
+				room = {"code": Protocol.clean_text(msg.code, 8), "name": Protocol.clean_text(str(msg.get("name", "")), Protocol.ROOM_NAME_MAX),
+					"public": msg.get("public", true) == true}
 			if msg.get("n") is int:
 				if msg.n <= _recv_seq:
 					return  # repetido tras una reconexión
@@ -401,6 +408,18 @@ func _on_peer_disconnected(id: int) -> void:
 			opponent_left.emit("left")
 	elif id == 1 and _reconnect_until == 0:
 		_lost_link()
+
+
+## El invitado manda demasiados mensajes en el último segundo: se le echa (una vez).
+func _flooding() -> bool:
+	var now := Time.get_ticks_msec()
+	if now - _rate_start > 1000:
+		_rate_start = now
+		_rate_count = 0
+	_rate_count += 1
+	if _rate_count == Protocol.RATE_MAX + 1:
+		_reject(_remote, "flood")
+	return _rate_count > Protocol.RATE_MAX
 
 
 ## Rechaza a un peer: le manda el motivo y lo desconecta cuando el paquete haya salido.
