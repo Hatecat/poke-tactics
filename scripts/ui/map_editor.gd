@@ -34,6 +34,8 @@ var _width: SpinBox
 var _height: SpinBox
 var _topology: OptionButton
 var _biome: OptionButton
+## Panel de herramientas de la izquierda (la cámara encuadra el tablero a su derecha).
+var _panel: PanelContainer
 var _gym: OptionButton  # estilo del gimnasio (tipo)
 var _weather: OptionButton
 var _tile_pick: OptionButton
@@ -109,9 +111,12 @@ func _open(m: MapData) -> void:
 			old.queue_free()
 	CameraRig.build_environment(self, grid.biome)
 	_cam.rotation_step = 90.0 if grid.topology == BoardGrid.Topology.SQUARE else 60.0
-	_cam.camera.size = maxf(m.width, m.height) * 0.75
-	_cam.position = Vector3.ZERO
+	# Como en combate: el mapa a pantalla completa, con el campo de su bioma alrededor y encuadrado entero
+	# junto al panel de herramientas
+	_board.scenery = true
 	_board.build(grid)
+	_cam.safe_left = _panel.position.x + _panel.get_combined_minimum_size().x
+	_cam.frame(_board.board_box(), _board.scenery_reach)
 	_rebuild_enemies()
 	_refresh_highlights()
 
@@ -339,6 +344,7 @@ func _build_ui() -> void:
 	var panel := UiKit.panel()
 	panel.position = Vector2(16, 76)
 	panel.custom_minimum_size.x = 300
+	_panel = panel
 	root.add_child(panel)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 8)

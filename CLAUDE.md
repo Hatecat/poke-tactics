@@ -38,17 +38,22 @@ Ver README.md para las reglas y la estructura de carpetas.
   `Biome._clear_prop`, que quita el avión completo.
 - **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
   agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
-- **Bioma `TEST` (Test):** copia de la Pradera para probar el mapa a pantalla completa. `Biome.look(kind)` da el
-  bioma del que se toma el aspecto (Test → Pradera; BoardView usa `_look` en vez de `grid.biome`, y también el cielo,
-  el clima y la música) y `Biome.full_view(kind)` activa la presentación: `BoardView.scenery` monta alrededor del
-  tablero un campo de adorno con las mismas piezas (`_build_scenery`, casillas fuera de la rejilla, sin colisión, más
-  oscuro y sin ajedrezado, hierba solo junto al borde, árboles agrupados con `_loose_parts`; sus colores se oscurecen
-  según la distancia al tablero, `_scenery_dim` y `SCENERY_SHADE*`, como la referencia del usuario) y `CameraRig.frame`
-  encuadra el tablero entero, deja sitio al panel izquierdo (`safe_left` + `h_offset`), recalcula al girar o cambiar
-  la ventana y limita zoom y desplazamiento al campo. `Biome.random_kind` lo deja fuera del azar.
+- **Mapa a pantalla completa (todos los biomas, combate y editor):** `BoardView.scenery` monta alrededor del
+  tablero un campo de adorno del mismo bioma (`_build_scenery`, casillas fuera de la rejilla, sin colisión, siempre
+  agrupadas en MultiMesh por zonas; suelo = `Biome.default_tile`, los ríos/senderos del borde continúan
+  serpenteando (`_scenery_trail`, `SCENERY_TRAILS`, `SCENERY_BEND`; las carreteras rectas), la Playa tiene mar
+  abierto que sigue su orilla (`_beach_coast`), el agua de fuera se oscurece igual que el suelo, y los adornos salen de `SCENERY_PROPS`, por bioma y con pesos; el Gimnasio deja libre el
+  estadio). Sus colores se oscurecen según la distancia al tablero (`_scenery_dim`, `SCENERY_SHADE*`, como la
+  referencia del usuario). `BoardView.board_box()` + `CameraRig.frame` encuadran el tablero entero, dejan sitio al
+  panel izquierdo (`safe_left` + `h_offset`), recalculan al girar o cambiar la ventana y limitan zoom y desplazamiento
+  al campo. Al pintar en el editor solo se rehacen las casillas de dentro.
+- **Bioma `TEST` (Test):** copia de la Pradera. `Biome.look(kind)` da el bioma del que se toma el aspecto (Test →
+  Pradera; BoardView usa `_look` en vez de `grid.biome`, y también el cielo, el clima y la música).
+  `Biome.random_kind` lo deja fuera del azar.
 - **Rendimiento:** en combate `BoardView.batching` agrupa en MultiMesh (por zonas de `CHUNK` casillas) las caras
   de arriba, laterales y detalles marcados con meta `"batch"`; los shaders leen lo de cada pieza de
-  `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa.
+  `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa
+  el tablero (sí el campo de adorno).
   La hierba tiene una sola cara por hoja (material de dos caras, `TerrainFx._two_sided`).
   Los obstáculos se funden al construirse (`BoardView._bake`): sus piezas opacas de color liso pasan a una malla
   con color por vértice por acabado; las de viento, brillo o transparencia, y las que tienen hijos, quedan sueltas

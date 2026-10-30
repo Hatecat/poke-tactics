@@ -81,8 +81,9 @@ Si retocas un `.tres` a mano, ten en cuenta que volver a ejecutar `build_data.py
 
 Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva, Gimnasio, Pantano, Ciudad, Laboratorio, Volcán, Playa,
 Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina. Además, **Test**: la Pradera tal cual (mismo
-generador, suelos, obstáculos, cielo, clima y música) con el mapa a pantalla completa en combate; sirve para probar
-esa presentación y no sale al elegir campo al azar ni en la Torre.
+generador, suelos, obstáculos, cielo, clima y música); no sale al elegir campo al azar ni en la Torre.
+En combate y en el editor el mapa se ve a pantalla completa: el tablero queda encuadrado entero y rodeado de un
+campo más oscuro de su propio bioma (bosque de pinos, dunas con cactus, calles con edificios, gradas del gimnasio…).
 Cada uno genera alturas, suelos y obstáculos (árboles, rocas, cactus, columnas, cristales, edificios, farolas,
 máquinas, incubadoras, fumarolas, sombrillas, lápidas, estanterías, focos, cámaras, aviones, corales) al azar, garantizando un camino entre
 las dos zonas para todos: también para los que no pueden entrar al agua (Roca, Acero, Tierra) y para los de talla

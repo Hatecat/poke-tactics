@@ -125,14 +125,9 @@ const GYM_STYLES := {
 
 
 ## Bioma cuyo aspecto toma `kind`: Test es una copia de la Pradera (mismo terreno, detalles, cielo, clima y
-## música) que solo cambia cómo se presenta el mapa en combate (ver `full_view`).
+## música), para pruebas.
 static func look(kind: Kind) -> Kind:
 	return Kind.MEADOW if kind == Kind.TEST else kind
-
-
-## En combate, el mapa ocupa toda la pantalla: campo alrededor del tablero y cámara que lo encuadra entero.
-static func full_view(kind: Kind) -> bool:
-	return kind == Kind.TEST
 
 
 ## Bioma al azar para la partida rápida y la Torre (Test es solo para pruebas y no sale).

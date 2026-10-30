@@ -17,8 +17,8 @@ var batching := false
 ## Lado (en casillas) de cada zona del tablero en que se agrupan: cada cascada de sombra y la cámara solo
 ## dibujan las zonas que ven.
 const CHUNK := 5
-## Combate a pantalla completa (`Biome.full_view`): campo de adorno alrededor del tablero para que el mapa
-## llene la pantalla sin vacío en los bordes. Solo es decorado: sin colisión ni resaltado y fuera de la
+## Combate a pantalla completa: campo de adorno alrededor del tablero para que el mapa llene la pantalla sin
+## vacío en los bordes. Solo es decorado: sin colisión ni resaltado y fuera de la
 ## lógica del tablero (`grid` no lo guarda).
 var scenery := false
 var _building_scenery := false
@@ -38,6 +38,36 @@ const SCENERY_CHUNK := 16
 const SCENERY_SHADE := 0.5
 const SCENERY_SHADE_FAR := 0.8
 const SCENERY_PROP_SHADE := 0.7
+## Campo de adorno de cada bioma: densidad de obstáculos (0-1, en las arboledas más lejanas) y los que lleva,
+## con su peso: el paisaje que rodearía ese campo de batalla (bosque alrededor del claro, manzanas de casas
+## junto a las calles, maquinaria en el laboratorio, sombrillas y palmeras en la playa...). Sin los que llevan
+## luces (focos, cristales): cientos de ellos costarían demasiado.
+const SCENERY_PROPS := {
+	Biome.Kind.MEADOW: [0.3, [Biome.Prop.TREE, 8], [Biome.Prop.BOULDER, 1]],
+	Biome.Kind.FOREST: [0.55, [Biome.Prop.PINE, 5], [Biome.Prop.TREE, 4], [Biome.Prop.BOULDER, 1]],
+	Biome.Kind.MOUNTAIN: [0.35, [Biome.Prop.BOULDER, 5], [Biome.Prop.PINE, 4]],
+	Biome.Kind.DESERT: [0.2, [Biome.Prop.CACTUS, 5], [Biome.Prop.BOULDER, 4], [Biome.Prop.PALM, 1]],
+	Biome.Kind.LAKE: [0.3, [Biome.Prop.TREE, 6], [Biome.Prop.PINE, 2], [Biome.Prop.BOULDER, 2]],
+	Biome.Kind.SNOW: [0.35, [Biome.Prop.PINE, 7], [Biome.Prop.BOULDER, 3]],
+	Biome.Kind.CAVE: [0.35, [Biome.Prop.STALAGMITE, 7], [Biome.Prop.BOULDER, 3]],
+	Biome.Kind.SWAMP: [0.35, [Biome.Prop.DEAD_TREE, 5], [Biome.Prop.TREE, 4], [Biome.Prop.BOULDER, 1]],
+	Biome.Kind.CITY: [0.4, [Biome.Prop.BUILDING, 6], [Biome.Prop.TREE, 3], [Biome.Prop.LAMP, 1]],
+	Biome.Kind.LAB: [0.15, [Biome.Prop.MACHINE, 8], [Biome.Prop.TANK, 2]],
+	Biome.Kind.VOLCANO: [0.25, [Biome.Prop.BOULDER, 8], [Biome.Prop.DEAD_TREE, 2]],
+	Biome.Kind.BEACH: [0.2, [Biome.Prop.PALM, 6], [Biome.Prop.PARASOL, 2], [Biome.Prop.BOULDER, 2]],
+	Biome.Kind.CEMETERY: [0.35, [Biome.Prop.GRAVE, 6], [Biome.Prop.DEAD_TREE, 3], [Biome.Prop.PINE, 1]],
+	Biome.Kind.STUDIO: [0.12, [Biome.Prop.CAMERA, 5], [Biome.Prop.PILLAR, 3], [Biome.Prop.SHELF, 2]],
+	Biome.Kind.LIBRARY: [0.35, [Biome.Prop.SHELF, 9], [Biome.Prop.PILLAR, 1]],
+	Biome.Kind.AIRPORT: [0.15, [Biome.Prop.TREE, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.LAMP, 2]],
+	Biome.Kind.UNDERWATER: [0.3, [Biome.Prop.CORAL, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.STALAGMITE, 2]],
+}
+## Suelos que, si salen por el borde a ras de suelo, siguen fuera del tablero (ríos, caminos, lava...).
+const SCENERY_TRAILS := [Biome.Tile.WATER, Biome.Tile.DIRT, Biome.Tile.SAND, Biome.Tile.LAVA, Biome.Tile.ROAD,
+	Biome.Tile.MUD, Biome.Tile.ICE]
+## Cuántas casillas a lo sumo se apartan de su línea los ríos y senderos del campo de adorno.
+const SCENERY_BEND := 6.0
+## Gimnasio: casillas alrededor del tablero que ocupa el estadio (GymDressing): ahí no va campo de adorno.
+const SCENERY_GYM_GAP := 7
 ## Casillas del campo de adorno junto al tablero que llevan hierba y flores.
 const SCENERY_GRASS := 3
 var _cells := {} # Vector2i -> Node3D con todo lo de esa casilla
@@ -489,8 +519,9 @@ func _contrast(c: Vector2i, color: Color) -> Color:
 	return color
 
 
-## Campo de adorno: un llano alrededor del tablero, con el agua y los caminos que salen por el borde a ras
-## de suelo, y árboles más tupidos cuanto más lejos, como el bosque que rodea un claro. Se monta con las
+## Campo de adorno: un llano del suelo del bioma alrededor del tablero, con el agua, los caminos y la lava que
+## salen por el borde a ras de suelo, y sus obstáculos (árboles, cactus, estanterías...) más tupidos cuanto
+## más lejos, como el bosque que rodea un claro. Se monta con las
 ## mismas piezas que las casillas (se mece con el viento y se moja con la lluvia), pero más oscuro y sin el
 ## ajedrezado, para que se vea dónde acaba el tablero: lo que está alto en el borde queda como un escalón.
 func _build_scenery() -> void:
@@ -504,6 +535,10 @@ func _build_scenery() -> void:
 	noise.seed = grid.width * 7 + grid.height * 3
 	noise.frequency = 0.15
 	var extra := {}  # zona -> [celdas]
+	var coast := _beach_coast(margin) if _look == Biome.Kind.BEACH else {}
+	var bends := FastNoiseLite.new()  # curvas de los ríos y senderos al salir del tablero
+	bends.seed = grid.width * 5 + grid.height * 13
+	bends.frequency = 0.07
 	for y in range(-margin, grid.height + margin):
 		for x in range(-margin, grid.width + margin):
 			var c := Vector2i(x, y)
@@ -512,19 +547,26 @@ func _build_scenery() -> void:
 			var w := grid.to_world(c)
 			if Vector2(w.x - center.x, w.z - center.z).length() > reach:
 				continue
-			var edge := Vector2i(clampi(x, 0, grid.width - 1), clampi(y, 0, grid.height - 1))
 			var far := _outside(c)
-			var tile: int = grid.tiles[edge]
-			# El agua y los caminos que salen a ras de suelo siguen en línea recta; en las esquinas, hierba.
-			if (x != edge.x and y != edge.y) or tile not in [Biome.Tile.WATER, Biome.Tile.DIRT, Biome.Tile.SAND] \
-					or grid.heights[edge] != 0:
-				tile = Biome.Tile.GRASS
+			if _look == Biome.Kind.GYM and far <= SCENERY_GYM_GAP:
+				continue
+			var ground := Biome.default_tile(_look)
+			var tile := ground
+			if not coast.is_empty():
+				# Playa: el mar abierto sigue la orilla del tablero en vez de un río recto
+				var d: int = x if coast.left else grid.width - 1 - x
+				tile = Biome.Tile.WATER if d < coast.line[y] else ground
+			else:
+				var trail := _scenery_trail(c, bends)
+				if trail >= 0:
+					tile = trail
 			var prop := Biome.Prop.NONE
 			var h := hash(c)
-			if tile == Biome.Tile.GRASS and far >= 2:
+			var props: Array = SCENERY_PROPS.get(_look, [])
+			if tile == ground and far >= 2 and not props.is_empty():
 				var dense := clampf((far - 1) / 6.0, 0.0, 1.0) * (1.0 if noise.get_noise_2d(x, y) > -0.1 else 0.25)
-				if float(h % 1000) / 1000.0 < dense * 0.3:
-					prop = Biome.Prop.TREE if h % 9 else Biome.Prop.BOULDER
+				if float(h % 1000) / 1000.0 < dense * props[0]:
+					prop = _pick_weighted(props, (h >> 10) % 1000 / 1000.0)
 			grid.heights[c] = 0
 			grid.tiles[c] = tile
 			grid.props[c] = prop
@@ -541,8 +583,7 @@ func _build_scenery() -> void:
 		for c: Vector2i in extra[zone]:
 			_build_cell(c, true)
 			roots.append(_cells[c])
-		if batching:
-			_collect(roots, groups, SCENERY_CHUNK)
+		_collect(roots, groups, SCENERY_CHUNK)  # también en el editor: el campo de adorno no se edita
 	_emit(groups)
 	_building_scenery = false
 	# Fuera de la lógica: el tablero vuelve a ser solo sus casillas.
@@ -551,6 +592,73 @@ func _build_scenery() -> void:
 			grid.heights.erase(c)
 			grid.tiles.erase(c)
 			grid.props.erase(c)
+
+
+## Río o sendero que sale del tablero y pasa por `c` (-1 si no hay). Al salir siguen la casilla del borde y
+## luego serpentean (desplazamiento lateral con ruido, nulo junto al borde); también pueden doblar hacia las
+## esquinas. Las carreteras siguen rectas. Se mira también el desplazamiento de la fila anterior para que un
+## cambio de carril no deje el cauce unido solo por una esquina.
+func _scenery_trail(c: Vector2i, bends: FastNoiseLite) -> int:
+	var out_x := maxi(maxi(-c.x, c.x - (grid.width - 1)), 0)
+	var out_y := maxi(maxi(-c.y, c.y - (grid.height - 1)), 0)
+	var across := out_x >= out_y  # sale por la izquierda/derecha (si no, por arriba/abajo)
+	var t := out_x if across else out_y
+	var lateral := c.y if across else c.x
+	var length := grid.height if across else grid.width
+	var side := (0 if c.x < 0 else 1) if across else (2 if c.y < 0 else 3)
+	var edge_of := func(i: int) -> Vector2i:
+		return Vector2i(0 if side == 0 else grid.width - 1, i) if across else Vector2i(i, 0 if side == 2 else grid.height - 1)
+	if out_x == 0 or out_y == 0:
+		var e: Vector2i = edge_of.call(lateral)
+		if grid.tiles[e] == Biome.Tile.ROAD and grid.heights[e] == 0:
+			return Biome.Tile.ROAD
+	for k in [t, t - 1]:
+		if k < 1:
+			continue
+		var shift := roundi(bends.get_noise_1d(k + side * 97.0) * SCENERY_BEND * smoothstep(0.0, 5.0, k))
+		var from: int = lateral - shift
+		if from < 0 or from >= length:
+			continue
+		var e: Vector2i = edge_of.call(from)
+		var tile: int = grid.tiles[e]
+		if tile in SCENERY_TRAILS and tile != Biome.Tile.ROAD and grid.heights[e] == 0:
+			return tile
+	return -1
+
+
+## Playa: lado del mar (`left`) y, por fila (también las de fuera del tablero), cuántas casillas de agua hay
+## desde ese borde (`line`). Dentro, la orilla del tablero; fuera, se suaviza hacia la media con olas suaves.
+## Vacío si el tablero no toca el mar (p. ej. un mapa vacío del editor).
+func _beach_coast(margin: int) -> Dictionary:
+	var sea := [0, 0]
+	for y in grid.height:
+		for i in 2:
+			if grid.tiles[Vector2i(0 if i == 0 else grid.width - 1, y)] in [Biome.Tile.WATER, Biome.Tile.BRIDGE]:
+				sea[i] += 1
+	if sea[0] == 0 and sea[1] == 0:
+		return {}
+	var left: bool = sea[0] >= sea[1]
+	var rows := {}
+	var total := 0.0
+	for y in grid.height:
+		var d := 0
+		while d < grid.width:
+			var c := Vector2i(d if left else grid.width - 1 - d, y)
+			if grid.tiles[c] not in [Biome.Tile.WATER, Biome.Tile.BRIDGE]:
+				break
+			d += 1
+		rows[y] = float(d)
+		total += d
+	var mean := total / grid.height
+	var waves := FastNoiseLite.new()
+	waves.seed = grid.width * 11 + grid.height
+	waves.frequency = 0.08
+	var line := {}
+	for y in range(-margin, grid.height + margin):
+		var row := clampi(y, 0, grid.height - 1)
+		var out := float(absi(y - row))
+		line[y] = lerpf(rows[row], mean, smoothstep(0.0, 6.0, out)) + waves.get_noise_1d(y) * 2.5 * smoothstep(0.0, 4.0, out)
+	return {"left": left, "line": line}
 
 
 ## Sombra del campo de adorno en `c` (0-1, lo que se oscurecen sus colores): ya fuerte junto al borde y casi
@@ -565,11 +673,33 @@ func _scenery_dim(c: Vector2i) -> float:
 ## Color del suelo del campo de adorno: el del suelo sin las manchas escalonadas ni el ajedrezado de las
 ## casillas (fuera se verían como un mosaico), con su sombra.
 func _scenery_color(c: Vector2i, tile_kind: int) -> Color:
-	var color: Color = Biome.TILE_COLORS[tile_kind]
-	if tile_kind == Biome.Tile.GRASS:
+	var color := _base_color(tile_kind)
+	if tile_kind == Biome.Tile.GRASS and _look in [Biome.Kind.MEADOW, Biome.Kind.LAKE]:
 		var w := grid.to_world(c)
 		color = color.lerp(Color(0.32, 0.55, 0.16), 0.5 + _tint_noise.get_noise_2d(w.x * 0.5, w.z * 0.5) * 0.5)
 	return color.darkened(_scenery_dim(c))
+
+
+## Obstáculo de una lista de `SCENERY_PROPS` ([densidad, [obstáculo, peso]...]) según `r` (0-1).
+func _pick_weighted(props: Array, r: float) -> int:
+	var total := 0.0
+	for i in range(1, props.size()):
+		total += props[i][1]
+	r *= total
+	for i in range(1, props.size()):
+		r -= props[i][1]
+		if r < 0.0:
+			return props[i][0]
+	return props[-1][0]
+
+
+## Caja que ocupa el tablero en el mundo (casillas y relieve), para encuadrarlo a pantalla completa.
+func board_box() -> AABB:
+	var box := AABB(grid.to_world(Vector2i.ZERO), Vector3.ZERO)
+	for c in grid.all_cells():
+		var w := grid.to_world(c)
+		box = box.expand(w + Vector3(-0.5, -BASE_THICKNESS, -0.5)).expand(w + Vector3(0.5, 0.0, 0.5))
+	return box
 
 
 ## Casillas que separan `c` del tablero (0 = dentro).
@@ -627,6 +757,9 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 		else:
 			var tint: Array = Biome.gym_style(grid.gym_type).get("water", [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]) \
 					if _look == Biome.Kind.GYM else [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]
+			if _building_scenery:  # el agua de fuera se apaga como el suelo, por escalones para agrupar
+				var dim := snappedf(_scenery_dim(c), 0.1)
+				tint = [tint[0].darkened(dim), tint[1].darkened(dim)]
 			surface.material_override = _live("water_%s" % tint[0].to_html(), func() -> ShaderMaterial:
 				return TerrainFx.water_material(tint[0], tint[1]))
 		surface.set_instance_shader_parameter("shore", _shore(c))
@@ -686,7 +819,7 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 		root.add_child(p)
 		_root_sway(p, top.y)
 		_bake(p)
-		if decor and batching:
+		if decor:
 			_loose_parts(root, p, top.y)
 	if decor:
 		return
@@ -1461,11 +1594,8 @@ func _live(key: String, make: Callable) -> ShaderMaterial:
 	return _live_mats[key]
 
 
-## Color de la cara de arriba: el del suelo con manchas suaves (hierba más seca o más verde, arena más
-## clara...), algo más claro cuanto más alto, y un ajedrezado tenue para distinguir las casillas.
-func _tile_color(c: Vector2i, tile_kind: int) -> Color:
-	if _building_scenery:
-		return _scenery_color(c, tile_kind)
+## Color propio de cada suelo en este bioma (y estilo de gimnasio), antes de manchas y ajedrezado.
+func _base_color(tile_kind: int) -> Color:
 	var color: Color = Biome.TILE_COLORS[tile_kind]
 	if tile_kind == Biome.Tile.GRASS and _look == Biome.Kind.FOREST:
 		color = Color(0.32, 0.56, 0.28)
@@ -1492,6 +1622,15 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 	elif tile_kind == Biome.Tile.ICE:
 		# Más azul que la nieve; en el gimnasio de Hielo, cian verdoso para no confundirse con sus líneas azules
 		color = Color(0.58, 0.88, 0.9) if _look == Biome.Kind.GYM else Color(0.5, 0.76, 0.93)
+	return color
+
+
+## Color de la cara de arriba: el del suelo con manchas suaves (hierba más seca o más verde, arena más
+## clara...), algo más claro cuanto más alto, y un ajedrezado tenue para distinguir las casillas.
+func _tile_color(c: Vector2i, tile_kind: int) -> Color:
+	if _building_scenery:
+		return _scenery_color(c, tile_kind)
+	var color := _base_color(tile_kind)
 	var w := grid.to_world(c)
 	var n := snappedf(_tint_noise.get_noise_2d(w.x, w.z), 0.25)
 	if tile_kind == Biome.Tile.SNOW:
