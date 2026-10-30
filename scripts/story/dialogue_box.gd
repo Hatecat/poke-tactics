@@ -18,6 +18,8 @@ var _catcher: Control
 var _box: PanelContainer
 var _box_style: StyleBoxFlat
 var _portrait_frame: PanelContainer
+var _portrait_style: StyleBoxFlat
+var _name_plate: PanelContainer
 var _portrait: TextureRect
 var _initial: Label
 var _name: Label
@@ -48,12 +50,22 @@ func _ready() -> void:
 	_box.offset_right = 640
 	_box.offset_top = -BOX_HEIGHT - 24
 	_box.offset_bottom = -24
+	# Si las opciones no caben en el alto fijo, el cuadro crece hacia arriba (no por debajo de la pantalla).
+	_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Estilo propio (no compartido): say() cambia su margen izquierdo según haya retrato o no.
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.07, 0.12, 0.93)
-	style.border_color = Color(0.85, 0.75, 0.45)
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(10)
+	style.bg_color = Color(UiKit.SURFACE_0, 0.95)
+	style.border_color = Color(UiKit.NEON, 0.45)
+	style.set_border_width_all(1)
+	style.border_width_top = 2
+	style.set_corner_radius_all(UiKit.RADIUS_L)
+	style.corner_detail = 1
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_top_right = 0
+	style.shadow_color = Color(0, 0, 0, 0.45)
+	style.shadow_size = 16
+	style.shadow_offset = Vector2(0, 6)
 	style.content_margin_left = PORTRAIT_SIZE.x + 48
 	style.content_margin_right = 28
 	style.content_margin_top = 18
@@ -61,14 +73,24 @@ func _ready() -> void:
 	_box.add_theme_stylebox_override("panel", style)
 	_box_style = style
 	add_child(_box)
+	UiKit.brackets(_box, Color(UiKit.NEON, 0.7), 18.0, 6.0)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 6)
 	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_box.add_child(col)
-	_name = UiKit.label("", 24, UiKit.ACCENT)
-	_name.add_theme_constant_override("outline_size", 6)
-	_name.add_theme_color_override("font_outline_color", Color.BLACK)
-	col.add_child(_name)
+	# Nombre en una placa dorada inclinada, como las etiquetas de los menús.
+	_name_plate = PanelContainer.new()
+	_name_plate.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_name_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var plate := UiKit.flat_style(UiKit.ACCENT, UiKit.RADIUS_S, 2).duplicate() as StyleBoxFlat
+	plate.skew = Vector2(0.22, 0)
+	plate.content_margin_left = UiKit.SPACE_4
+	plate.content_margin_right = UiKit.SPACE_4
+	_name_plate.add_theme_stylebox_override("panel", plate)
+	col.add_child(_name_plate)
+	_name = UiKit.label("", 22, UiKit.TEXT_ON_ACCENT)
+	_name.add_theme_font_override("font", UiKit.bold_font())
+	_name_plate.add_child(_name)
 	_text = RichTextLabel.new()
 	_text.bbcode_enabled = true
 	_text.fit_content = true
@@ -82,7 +104,7 @@ func _ready() -> void:
 	_options.add_theme_constant_override("h_separation", 8)
 	_options.visible = false
 	col.add_child(_options)
-	_arrow = UiKit.label("▼", 18, UiKit.ACCENT)
+	_arrow = UiKit.label("▼", 18, UiKit.NEON)
 	_arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	col.add_child(_arrow)
 
@@ -97,6 +119,17 @@ func _ready() -> void:
 	_portrait_frame.offset_top = -BOX_HEIGHT - 24 - 40
 	_portrait_frame.offset_bottom = -BOX_HEIGHT - 24 - 40 + PORTRAIT_SIZE.y
 	_portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_style = StyleBoxFlat.new()
+	_portrait_style.border_color = UiKit.ACCENT
+	_portrait_style.set_border_width_all(3)
+	_portrait_style.set_corner_radius_all(UiKit.RADIUS_M)
+	_portrait_style.corner_detail = 1
+	_portrait_style.corner_radius_bottom_left = 0
+	_portrait_style.corner_radius_top_right = 0
+	_portrait_style.shadow_color = Color(UiKit.ACCENT, 0.3)
+	_portrait_style.shadow_size = 10
+	_portrait_style.set_content_margin_all(4)
+	_portrait_frame.add_theme_stylebox_override("panel", _portrait_style)
 	add_child(_portrait_frame)
 	_portrait = TextureRect.new()
 	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -122,7 +155,7 @@ func say(who: Dictionary, text: String, feeling := false) -> void:
 	var narration := who.is_empty()
 	_portrait_frame.visible = not narration
 	_box_style.content_margin_left = 40 if narration else PORTRAIT_SIZE.x + 48
-	_name.visible = not narration
+	_name_plate.visible = not narration
 	_name.text = tr(who.get("nombre", "")) if who.get("nombre", "") else ""
 	if not narration:
 		_set_portrait(who)
@@ -143,6 +176,8 @@ func choose(who: Dictionary, text: String, options: PackedStringArray) -> int:
 	UiKit.clear(_options)
 	for i in options.size():
 		var b := UiKit.button(options[i], chosen.emit.bind(i), 18)
+		b.theme_type_variation = UiKit.CARD_BUTTON
+		b.custom_minimum_size.x = 160
 		b.focus_mode = Control.FOCUS_NONE
 		_options.add_child(b)
 	_choosing = true
@@ -166,13 +201,7 @@ func _set_portrait(who: Dictionary) -> void:
 	_initial.visible = tex == null
 	_initial.text = tr(String(who.get("nombre", "?"))).left(1)
 	var color := Color(who.get("color", "#5a6278"))
-	var style := StyleBoxFlat.new()
-	style.bg_color = color.darkened(0.25) if tex == null else Color(0.05, 0.05, 0.08)
-	style.border_color = Color(0.85, 0.75, 0.45)
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(4)
-	_portrait_frame.add_theme_stylebox_override("panel", style)
+	_portrait_style.bg_color = color.darkened(0.25) if tex == null else Color(0.05, 0.05, 0.08)
 
 
 func _process(delta: float) -> void:
