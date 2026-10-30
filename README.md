@@ -9,6 +9,7 @@ Los 151 Pokémon de Kanto, con sus ataques aprendibles traducidos a reglas táct
 ~/Godot_v4.7.2-stable_linux.x86_64 --path ~/Documentos/poke-tactics          # jugar
 ~/Godot_v4.7.2-stable_linux.x86_64 -e --path ~/Documentos/poke-tactics       # abrir el editor
 tools/export_demo.sh                                                          # builds Windows + Linux
+tools/publish_mega.sh --export                                                # exportarlas y subirlas a MEGA (MEGAcmd)
 ```
 
 **Historia:** *Kanto: Huellas en la niebla*. Cristina, de Pueblo Lavanda, sale de viaje con Eevee y Pidgey
