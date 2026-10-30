@@ -81,6 +81,13 @@ mapa a pantalla completa con campo de adorno, calidad gráfica, idiomas (es/en) 
   aditiva, `TerrainFx.CAUSTIC_SHADER`).
 - **Campo de adorno** (`BoardView._build_scenery`, `SCENERY_*`): fuera de la rejilla, sin colisión; se oscurece
   con la distancia (`_scenery_dim`). La cámara encuadra con `BoardView.board_box()` + `CameraRig.frame`.
+  Lab y Estudio siguen un plano (`_scenery_layout`); la Librería, `_library_scenery`. En los biomas naturales
+  (`RELIEF_KINDS`) `_build_relief` pone relieve (dunas, lomas, laderas) llano junto al borde, orillas y senderos,
+  con pendiente máxima `RELIEF_SLOPE` para no tapar casillas; los adornos se asientan con `_relief_at`.
+- **Objetos detallados:** `_bevel_box`, `_wing_mesh`, `_screen_material` (en `_screen_mats`, no en `_mats`). El
+  avión es `AirlinerMesh` (airliner_mesh.gd; `PlaneMesh` ya es una clase de Godot): fuselaje de una pieza, perfiles
+  de ala y motores torneados, ventanillas por shader. El público del gimnasio (`GymDressing._person_mesh`) es de
+  piezas redondeadas, pieza por color de vértice, cara y pelo pintados por `CROWD_SHADER`, mirando a la arena.
 - **GPU:** en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*` de la misma versión que el
   driver; si no, corre en la Intel (compruébalo con `RenderingServer.get_video_adapter_name()`).
 - **Modelos de Pokémon:** texturas ajustadas en `assets/models/pokemon/tuned/` (`tools/tune_textures.py`);

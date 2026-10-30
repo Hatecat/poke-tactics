@@ -22,6 +22,24 @@ const CHUNK := 5
 ## lógica del tablero (`grid` no lo guarda).
 var scenery := false
 var _building_scenery := false
+## Relieve del campo de adorno (biomas naturales): una malla de terreno sin colisión sustituye al suelo llano
+## de fuera, con dunas, lomas, laderas o paredes de roca según el bioma. `_relief_at` da la altura de cada
+## casilla de fuera, para asentar en ella sus árboles y rocas.
+var _relief_on := false
+var _relief_at := {}
+var _relief_tiles := {}
+var _relief_flat := {}
+var _relief_noise: FastNoiseLite
+var _relief_ridge: FastNoiseLite
+## Biomas con relieve fuera del tablero: los naturales (los interiores y urbanos siguen llanos).
+const RELIEF_KINDS := [Biome.Kind.MEADOW, Biome.Kind.FOREST, Biome.Kind.MOUNTAIN, Biome.Kind.DESERT,
+	Biome.Kind.LAKE, Biome.Kind.SNOW, Biome.Kind.CAVE, Biome.Kind.SWAMP, Biome.Kind.VOLCANO, Biome.Kind.BEACH,
+	Biome.Kind.CEMETERY]
+## Resolución de la malla de relieve (vértices por casilla y lado).
+const RELIEF_RES := 2
+## Pendiente máxima del relieve vista desde el tablero (alto / distancia al borde): con la cámara a 35°,
+## por debajo de ~0,7 una loma nunca tapa las casillas, se gire como se gire la vista.
+const RELIEF_SLOPE := 0.55
 ## Mallas de las caras de arriba y los laterales agrupados (las mismas en todas las zonas).
 var _batch_meshes: Array[Mesh] = []
 ## Alcance del campo de adorno, en veces la media diagonal del tablero: cubre el encuadre de `CameraRig`
@@ -52,12 +70,9 @@ const SCENERY_PROPS := {
 	Biome.Kind.CAVE: [0.35, [Biome.Prop.STALAGMITE, 7], [Biome.Prop.BOULDER, 3]],
 	Biome.Kind.SWAMP: [0.35, [Biome.Prop.DEAD_TREE, 5], [Biome.Prop.TREE, 4], [Biome.Prop.BOULDER, 1]],
 	Biome.Kind.CITY: [0.4, [Biome.Prop.BUILDING, 6], [Biome.Prop.TREE, 3], [Biome.Prop.LAMP, 1]],
-	Biome.Kind.LAB: [0.15, [Biome.Prop.MACHINE, 8], [Biome.Prop.TANK, 2]],
 	Biome.Kind.VOLCANO: [0.25, [Biome.Prop.BOULDER, 8], [Biome.Prop.DEAD_TREE, 2]],
 	Biome.Kind.BEACH: [0.2, [Biome.Prop.PALM, 6], [Biome.Prop.PARASOL, 2], [Biome.Prop.BOULDER, 2]],
 	Biome.Kind.CEMETERY: [0.35, [Biome.Prop.GRAVE, 6], [Biome.Prop.DEAD_TREE, 3], [Biome.Prop.PINE, 1]],
-	Biome.Kind.STUDIO: [0.12, [Biome.Prop.CAMERA, 5], [Biome.Prop.PILLAR, 3], [Biome.Prop.SHELF, 2]],
-	Biome.Kind.LIBRARY: [0.35, [Biome.Prop.SHELF, 9], [Biome.Prop.PILLAR, 1]],  # en hileras: `_library_scenery`
 	Biome.Kind.AIRPORT: [0.15, [Biome.Prop.TREE, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.LAMP, 2]],
 	Biome.Kind.UNDERWATER: [0.3, [Biome.Prop.CORAL, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.STALAGMITE, 2]],
 }
@@ -574,7 +589,7 @@ func _build_scenery() -> void:
 	var coast := _beach_coast(margin) if _look == Biome.Kind.BEACH else {}
 	var bends := FastNoiseLite.new()  # curvas de los ríos y senderos al salir del tablero
 	bends.seed = grid.width * 5 + grid.height * 13
-	bends.frequency = 0.07
+	bends.frequency = 0.045  # curvas largas: con casillas, un giro brusco se ve a escalones
 	for y in range(-margin, grid.height + margin):
 		for x in range(-margin, grid.width + margin):
 			var c := Vector2i(x, y)
@@ -599,8 +614,12 @@ func _build_scenery() -> void:
 			var prop := Biome.Prop.NONE
 			var h := hash(c)
 			var props: Array = SCENERY_PROPS.get(_look, [])
+			var layout := [] if _look == Biome.Kind.LIBRARY else _scenery_layout(c, far, tile, ground)
 			if tile == ground and far >= 2 and _look == Biome.Kind.LIBRARY:
-				prop = _library_scenery(x, y, h)
+				prop = _library_scenery(x, y, h)  # en hileras, como la librería del tablero
+			elif not layout.is_empty():
+				tile = layout[0]
+				prop = layout[1]
 			elif tile == ground and far >= 2 and not props.is_empty():
 				var dense := clampf((far - 1) / 6.0, 0.0, 1.0) * (1.0 if noise.get_noise_2d(x, y) > -0.1 else 0.25)
 				if float(h % 1000) / 1000.0 < dense * props[0]:
@@ -608,10 +627,14 @@ func _build_scenery() -> void:
 			grid.heights[c] = 0
 			grid.tiles[c] = tile
 			grid.props[c] = prop
+			_relief_tiles[c] = tile
 			var zone := Vector2i(floori(x / float(CHUNK)), floori(y / float(CHUNK)))
 			if not extra.has(zone):
 				extra[zone] = []
 			extra[zone].append(c)
+	_relief_on = _look in RELIEF_KINDS
+	if _relief_on:
+		_prepare_relief(reach)
 	# Zona a zona, recogiendo las piezas de cada una al terminarla: con todo suelto a la vez se agotan los
 	# parámetros por instancia de los shaders.
 	_building_scenery = true
@@ -625,13 +648,255 @@ func _build_scenery() -> void:
 		if _look in SCENERY_MERGED:
 			_merge_baked(roots)
 	_emit(groups)
+	if _relief_on:
+		_build_relief(center, reach)
 	_building_scenery = false
+	_relief_on = false
+	_relief_at.clear()
+	_relief_tiles.clear()
+	_relief_flat.clear()
 	# Fuera de la lógica: el tablero vuelve a ser solo sus casillas.
 	for zone: Vector2i in extra:
 		for c: Vector2i in extra[zone]:
 			grid.heights.erase(c)
 			grid.tiles.erase(c)
 			grid.props.erase(c)
+
+
+## Relieve: distancia (en casillas) de cada casilla de fuera al agua, la lava o un sendero, que aplanan el
+## terreno a su alrededor (orillas y caminos llanos), y altura de cada casilla para sus adornos.
+func _prepare_relief(reach: float) -> void:
+	_relief_noise = FastNoiseLite.new()
+	_relief_noise.seed = grid.width * 31 + grid.height * 17 + _look
+	_relief_noise.frequency = 0.05
+	_relief_noise.fractal_octaves = 3
+	_relief_ridge = FastNoiseLite.new()
+	_relief_ridge.seed = _relief_noise.seed + 7
+	_relief_ridge.frequency = 0.035
+	_relief_ridge.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	_relief_ridge.fractal_octaves = 3
+	var ground := Biome.default_tile(_look)
+	var queue: Array[Vector2i] = []
+	for c: Vector2i in _relief_tiles:
+		if _relief_tiles[c] != ground:
+			_relief_flat[c] = 0
+			queue.append(c)
+	var i := 0
+	while i < queue.size():  # distancia por anchura: cada casilla, la del vecino más cercano + 1
+		var c := queue[i]
+		i += 1
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var n: Vector2i = c + d
+			if _relief_tiles.has(n) and not _relief_flat.has(n):
+				_relief_flat[n] = _relief_flat[c] + 1
+				if _relief_flat[n] < 6:
+					queue.append(n)
+	for c: Vector2i in _relief_tiles:
+		var w := grid.to_world(c)
+		_relief_at[c] = 0.0 if _relief_tiles[c] in [Biome.Tile.WATER, Biome.Tile.LAVA, Biome.Tile.BRIDGE] \
+				else maxf(_relief_height(Vector2(w.x, w.z)), 0.0)
+
+
+## Altura del relieve en el punto `p` del mundo: la forma del bioma, que crece al alejarse del tablero (junto
+## al borde es llano, a ras de las casillas), se aplana cerca del agua y los senderos, y se hunde en los cauces.
+func _relief_height(p: Vector2) -> float:
+	var d := _board_distance(p)
+	var shape := 0.0
+	var n := _relief_noise.get_noise_2d(p.x, p.y) * 0.5 + 0.5
+	var r := _relief_ridge.get_noise_2d(p.x, p.y) * 0.5 + 0.5
+	match _look:
+		Biome.Kind.DESERT:
+			# Dunas: crestas alargadas a lo ancho del viento, con valles entre ellas
+			var u := Vector2(p.x * 0.87 + p.y * 0.5, -p.x * 0.5 + p.y * 0.87)
+			var crest := 1.0 - absf(_relief_ridge.get_noise_2d(u.x * 0.7, u.y * 2.2))
+			shape = (crest * crest * 0.75 + n * 0.35) * 3.4
+		Biome.Kind.MOUNTAIN:
+			shape = (r * 0.75 + n * 0.3) * (2.5 + d * 0.3)
+		Biome.Kind.SNOW:
+			shape = (n * 0.7 + r * 0.45) * 3.2
+		Biome.Kind.VOLCANO:
+			shape = (r * r * 0.9 + n * 0.25) * 3.6
+		Biome.Kind.CAVE:
+			# Paredes de roca que cierran la cueva, con salientes
+			shape = smoothstep(3.0, 11.0, d) * 7.0 + (r * 0.8 + n * 0.4) * 1.6
+		Biome.Kind.SWAMP:
+			shape = n * n * 0.9
+		Biome.Kind.BEACH:
+			var u := Vector2(p.x * 0.6 + p.y * 0.8, -p.x * 0.8 + p.y * 0.6)
+			shape = (1.0 - absf(_relief_ridge.get_noise_2d(u.x * 0.8, u.y * 2.0))) * 1.5 + n * 0.4
+		Biome.Kind.FOREST:
+			shape = (n * 0.8 + r * 0.35) * 2.8
+		_:  # praderas, lago, cementerio: lomas suaves
+			shape = (n * 0.85 + r * 0.2) * 2.0
+	var h := shape * smoothstep(0.5, 5.0, d)
+	var flat := _flat_at(p)
+	var radius := 4.0 if _look == Biome.Kind.BEACH else 2.5
+	h *= smoothstep(0.5, radius, flat)
+	h -= 0.45 * (1.0 - smoothstep(0.0, 0.9, flat)) if _wet_near(p) else 0.0
+	return minf(h, RELIEF_SLOPE * maxf(d - 0.5, 0.0)) - 0.02  # algo bajo las casillas del borde: sin parpadeo
+
+
+## Distancia (mundo) al rectángulo del tablero.
+func _board_distance(p: Vector2) -> float:
+	var w0 := grid.to_world(Vector2i.ZERO)
+	var w1 := grid.to_world(Vector2i(grid.width - 1, grid.height - 1))
+	var lo := Vector2(minf(w0.x, w1.x) - 0.5, minf(w0.z, w1.z) - 0.5)
+	var hi := Vector2(maxf(w0.x, w1.x) + 0.5, maxf(w0.z, w1.z) + 0.5)
+	return Vector2(maxf(maxf(lo.x - p.x, p.x - hi.x), 0.0), maxf(maxf(lo.y - p.y, p.y - hi.y), 0.0)).length()
+
+
+## Distancia suavizada (en casillas) al agua o senderos más cercanos: media de las casillas de alrededor.
+func _flat_at(p: Vector2) -> float:
+	var total := 0.0
+	for o in [Vector2(-0.35, -0.35), Vector2(0.35, -0.35), Vector2(-0.35, 0.35), Vector2(0.35, 0.35)]:
+		var c := grid.world_to_cell(Vector3(p.x + o.x, 0.0, p.y + o.y))
+		total += float(_relief_flat.get(c, 6))
+	return total * 0.25
+
+
+## Si lo más cercano que aplana es agua o lava (el terreno se hunde bajo su superficie) y no un sendero.
+func _wet_near(p: Vector2) -> bool:
+	var c := grid.world_to_cell(Vector3(p.x, 0.0, p.y))
+	for d in [Vector2i.ZERO, Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+		if _relief_tiles.get(c + d, -1) in [Biome.Tile.WATER, Biome.Tile.LAVA, Biome.Tile.BRIDGE]:
+			return true
+	return false
+
+
+## Malla del relieve: rejilla de vértices sobre todo el campo de adorno (sin los cuadros que caen dentro del
+## tablero), con el color de suelo de cada casilla de fuera y su sombra, y matices por pendiente y altura
+## (roca en las laderas, crestas de duna más claras, nieve en las cumbres).
+func _build_relief(center: Vector3, reach: float) -> void:
+	var step := 1.0 / RELIEF_RES
+	var n := ceili((reach + 1.0) / step)
+	var size := n * 2 + 1
+	var heights := PackedFloat32Array()
+	heights.resize(size * size)
+	var origin := Vector2(center.x, center.z) - Vector2(n, n) * step
+	for j in size:
+		for i in size:
+			heights[j * size + i] = _relief_height(origin + Vector2(i, j) * step)
+	var ground := Biome.default_tile(_look)
+	var verts := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var colors := PackedColorArray()
+	var index := PackedInt32Array()
+	var ids := PackedInt32Array()
+	ids.resize(size * size)
+	ids.fill(-1)
+	var rock := _base_color(Biome.Tile.ROCK)
+	for j in size:
+		for i in size:
+			var p := origin + Vector2(i, j) * step
+			if Vector2(p.x - center.x, p.y - center.z).length() > reach + 1.0:
+				continue
+			var h := heights[j * size + i]
+			var hx := heights[j * size + clampi(i + 1, 0, size - 1)] - heights[j * size + clampi(i - 1, 0, size - 1)]
+			var hz := heights[clampi(j + 1, 0, size - 1) * size + i] - heights[clampi(j - 1, 0, size - 1) * size + i]
+			var normal := Vector3(-hx, 2.0 * step, -hz).normalized()
+			var c := grid.world_to_cell(Vector3(p.x, 0.0, p.y))
+			var tile: int = _relief_tiles.get(c, ground)
+			if tile in [Biome.Tile.WATER, Biome.Tile.LAVA, Biome.Tile.BRIDGE]:
+				tile = Biome.Tile.SAND if _look in [Biome.Kind.BEACH, Biome.Kind.DESERT] else Biome.Tile.DIRT
+			var col := _relief_color(c, tile, h, 1.0 - normal.y, rock)
+			ids[j * size + i] = verts.size()
+			verts.append(Vector3(p.x, h, p.y))
+			normals.append(normal)
+			colors.append(col)
+	for j in size - 1:
+		for i in size - 1:
+			var a := ids[j * size + i]
+			var b := ids[j * size + i + 1]
+			var c2 := ids[(j + 1) * size + i]
+			var d := ids[(j + 1) * size + i + 1]
+			if a < 0 or b < 0 or c2 < 0 or d < 0:
+				continue
+			var mid := origin + Vector2(i + 0.5, j + 0.5) * step
+			if grid.is_inside(grid.world_to_cell(Vector3(mid.x, 0.0, mid.y))) and _board_distance(mid) <= 0.0:
+				continue  # bajo el tablero
+			index.append_array([a, b, c2, b, d, c2])
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_INDEX] = index
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var mi := MeshInstance3D.new()
+	mi.name = "Relieve"
+	mi.mesh = mesh
+	var m := StandardMaterial3D.new()
+	m.vertex_color_use_as_albedo = true
+	m.vertex_color_is_srgb = true
+	m.roughness = 0.95
+	m.metallic_specular = 0.2 if _look != Biome.Kind.SNOW else 0.4
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	add_child(mi)
+
+
+## Color del relieve en un vértice: el del suelo de su casilla (con la sombra del campo de adorno), con roca
+## en las laderas empinadas de montaña, nieve y volcán, crestas de duna más claras y valles más oscuros.
+func _relief_color(c: Vector2i, tile: int, h: float, steep: float, rock: Color) -> Color:
+	var col := _scenery_color(c, tile)
+	var dim := _scenery_dim(c)
+	match _look:
+		Biome.Kind.DESERT, Biome.Kind.BEACH:
+			col = col.lightened(clampf(h * 0.05, 0.0, 0.12)).darkened(clampf(steep * 0.6, 0.0, 0.2))
+		Biome.Kind.MOUNTAIN, Biome.Kind.VOLCANO, Biome.Kind.CAVE:
+			col = col.lerp(rock.darkened(dim), smoothstep(0.15, 0.45, steep) * 0.6)
+			if _look == Biome.Kind.MOUNTAIN and h > 4.5:  # cumbres nevadas
+				col = col.lerp(Color(0.92, 0.94, 0.98).darkened(dim * 0.8), smoothstep(4.5, 6.0, h) * (1.0 - smoothstep(0.3, 0.6, steep)))
+		Biome.Kind.SNOW:
+			# El blanco apenas toma sombra: laderas algo azuladas y más oscuras para que se lean las lomas
+			col = col.lerp(Color(0.62, 0.7, 0.85).darkened(dim), clampf(steep * 1.6, 0.0, 0.45))
+			col = col.lerp(rock.darkened(dim), smoothstep(0.35, 0.6, steep) * 0.7)
+		_:
+			col = col.darkened(clampf(steep * 0.35, 0.0, 0.15))
+	return col
+
+
+## Interiores (Laboratorio, Librería, Estudio): el campo de adorno sigue un plano ordenado en vez de piezas
+## al azar, que ahí parecían trastos tirados. Devuelve [suelo, obstáculo], o vacío para el reparto al azar.
+func _scenery_layout(c: Vector2i, far: int, tile: int, ground: int) -> Array:
+	if _look not in [Biome.Kind.LAB, Biome.Kind.LIBRARY, Biome.Kind.STUDIO]:
+		return []
+	if tile != ground or far < 2:
+		return [tile, Biome.Prop.NONE]
+	match _look:
+		Biome.Kind.LIBRARY:
+			# Pasillos de estanterías en tramos de cinco, con dos filas de paso entre hileras y cruces
+			if posmod(c.y, 3) == 0 and posmod(c.x, 7) < 5:
+				return [tile, Biome.Prop.SHELF]
+		Biome.Kind.LAB:
+			# Salas separadas por líneas de luz en el suelo; en cada una, dos bancos de máquinas espalda con
+			# espalda y un par de incubadoras
+			var l := Vector2i(posmod(c.x, 10), posmod(c.y, 8))
+			if l.x == 0 or l.y == 0:
+				return [Biome.Tile.FLOOR_LINE, Biome.Prop.NONE]
+			if l.y in [3, 4] and l.x in [2, 3, 4, 6, 7, 8]:
+				return [tile, Biome.Prop.MACHINE]
+			if l.y == 6 and l.x in [2, 8]:
+				return [tile, Biome.Prop.TANK]
+		Biome.Kind.STUDIO:
+			# Otros platós alrededor: escenarios de madera rodeados de cinta, cámaras o focos en sus trípodes
+			var block := Vector2i(floori(c.x / 9.0), floori(c.y / 9.0))
+			var l := Vector2i(posmod(c.x, 9), posmod(c.y, 9))
+			var edge := mini(mini(l.x, l.y), mini(8 - l.x, 8 - l.y))
+			match hash(block) % 3:
+				0:
+					if edge >= 2:
+						return [Biome.Tile.WOOD, Biome.Prop.NONE]
+					if edge == 1 and (l.x + l.y) % 2 == 0:  # cinta a trozos, como las marcas de un plató
+						return [Biome.Tile.FLOOR_LINE, Biome.Prop.NONE]
+				1:
+					if l in [Vector2i(2, 2), Vector2i(6, 2), Vector2i(4, 6)]:
+						return [tile, Biome.Prop.CAMERA]
+				2:
+					if l in [Vector2i(1, 1), Vector2i(1, 7), Vector2i(7, 1), Vector2i(7, 7)]:
+						return [tile, Biome.Prop.SPOTLIGHT]
+	return [tile, Biome.Prop.NONE]
 
 
 ## Río o sendero que sale del tablero y pasa por `c` (-1 si no hay). Al salir siguen la casilla del borde y
@@ -650,8 +915,10 @@ func _scenery_trail(c: Vector2i, bends: FastNoiseLite) -> int:
 		return Vector2i(0 if side == 0 else grid.width - 1, i) if across else Vector2i(i, 0 if side == 2 else grid.height - 1)
 	if out_x == 0 or out_y == 0:
 		var e: Vector2i = edge_of.call(lateral)
-		if grid.tiles[e] == Biome.Tile.ROAD and grid.heights[e] == 0:
-			return Biome.Tile.ROAD
+		var straight: int = grid.tiles[e]
+		if (straight == Biome.Tile.ROAD or straight == Biome.Tile.FLOOR_LINE and _look == Biome.Kind.LIBRARY) \
+				and grid.heights[e] == 0:
+			return straight  # carreteras y la alfombra de la Librería, rectas
 	for k in [t, t - 1]:
 		if k < 1:
 			continue
@@ -806,6 +1073,8 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 	add_child(root)
 	_cells[c] = root
 	var top := grid.to_world(c)
+	if _building_scenery:
+		top.y += _relief_at.get(c, 0.0)  # sobre el relieve (el suelo lo pone la malla de `_build_relief`)
 	var thickness := BASE_THICKNESS + top.y
 	var tile_kind: int = grid.tiles.get(c, Biome.Tile.GRASS)
 
@@ -817,8 +1086,16 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 		# En el volcán los puentes cruzan la lava
 		var lava := tile_kind == Biome.Tile.LAVA or tile_kind == Biome.Tile.BRIDGE and _look == Biome.Kind.VOLCANO
 		if lava:
-			surface.material_override = _live("lava", func() -> ShaderMaterial: return TerrainFx.lava_material())
-			if (c.x * 3 + c.y) % 4 == 0:  # la lava ilumina lo que tiene cerca (una luz cada pocas casillas)
+			if _building_scenery:  # fuera, la lava se enfría y apaga con la distancia
+				var cool := snappedf(_scenery_dim(c), 0.1)
+				surface.material_override = _live("lava_%.1f" % cool, func() -> ShaderMaterial:
+					var m := TerrainFx.lava_material()
+					m.set_shader_parameter("hot", Color(1.0, 0.45, 0.08).lerp(Color(0.55, 0.12, 0.04), cool))
+					m.set_shader_parameter("crust", Color(0.16, 0.08, 0.06).darkened(cool * 0.5))
+					return m)
+			else:
+				surface.material_override = _live("lava", func() -> ShaderMaterial: return TerrainFx.lava_material())
+			if (c.x * 3 + c.y) % 4 == 0 and not _building_scenery:  # la lava ilumina lo que tiene cerca (una luz cada pocas casillas)
 				var light := OmniLight3D.new()
 				light.light_color = Color(1.0, 0.45, 0.15)
 				light.light_energy = 0.9
@@ -829,16 +1106,22 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 			var tint: Array = Biome.gym_style(grid.gym_type).get("water", [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]) \
 					if _look == Biome.Kind.GYM else [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]
 			if _building_scenery:  # el agua de fuera se apaga como el suelo, por escalones para agrupar
+				if _look == Biome.Kind.SWAMP:  # y en el pantano se enturbia, verdosa, lejos del tablero
+					var murk := snappedf(smoothstep(1.0, 5.0, _outside(c)), 0.25) * 0.8
+					tint = [tint[0].lerp(Color(0.13, 0.2, 0.1), murk), tint[1].lerp(Color(0.32, 0.38, 0.2), murk)]
 				var dim := snappedf(_scenery_dim(c), 0.1)
 				tint = [tint[0].darkened(dim), tint[1].darkened(dim)]
-			surface.material_override = _live("water_%s" % tint[0].to_html(), func() -> ShaderMaterial:
-				return TerrainFx.water_material(tint[0], tint[1]))
+			var gloss := 1.0 - snappedf(_scenery_dim(c), 0.1) if _building_scenery else 1.0
+			surface.material_override = _live("water_%s_%.1f" % [tint[0].to_html(), gloss], func() -> ShaderMaterial:
+				var m := TerrainFx.water_material(tint[0], tint[1])
+				m.set_shader_parameter("gloss", gloss)
+				return m)
 		surface.set_instance_shader_parameter("shore", _shore(c))
 		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(surface)
 		if tile_kind == Biome.Tile.BRIDGE:
 			_bridge(root, c, top)
-	else:
+	elif not (decor and _relief_on):
 		var top_mesh := MeshInstance3D.new()
 		top_mesh.mesh = _tile_mesh(TOP_THICKNESS, 0.0)
 		top_mesh.position = Vector3(top.x, top.y - TOP_THICKNESS * 0.5, top.z)
@@ -1199,23 +1482,46 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			_part(tilt, _sphere(0.035, 0.07), Vector3(0, 1.13, 0), Color(0.95, 0.95, 0.92))
 			height = 1.15
 		Biome.Prop.MACHINE:
-			# Máquina de laboratorio: consola blanca con pantalla encendida inclinada y pilotos de colores.
+			# Máquina de laboratorio: consola de chapa pintada con cantos biselados, zócalo de goma, rejillas de
+			# ventilación, teclado, pantalla con una interfaz de análisis en marcha, pilotos y cable al suelo.
 			node.rotation.y = float(h % 4) * PI / 2
 			node.scale = Vector3.ONE
 			var shell := Color(0.86, 0.88, 0.9)
-			_part(node, _unit_box(), Vector3(0, 0.3, 0), shell).scale = Vector3(0.82, 0.6, 0.6)
-			_part(node, _unit_box(), Vector3(0, 0.62, -0.18), shell.darkened(0.15)).scale = Vector3(0.82, 0.05, 0.25)
-			var screen := _part(node, _unit_box(), Vector3(0, 0.82, -0.2), Color(0.1, 0.12, 0.15))
-			screen.scale = Vector3(0.66, 0.38, 0.04)
+			var dark := Color(0.16, 0.17, 0.19)
+			_part(node, _unit_box(), Vector3(0, 0.025, 0), dark).scale = Vector3(0.78, 0.05, 0.56)  # zócalo
+			_part(node, _bevel_box(), Vector3(0, 0.32, 0), shell).scale = Vector3(0.82, 0.56, 0.6)
+			for k in 0 if _building_scenery else 3:  # rejillas a los lados (fuera no se distinguen)
+				for sx in [-1, 1]:
+					_part(node, _unit_box(), Vector3(0.412 * sx, 0.18 + 0.07 * k, 0.05), dark).scale = Vector3(0.01, 0.025, 0.32)
+			_part(node, _unit_box(), Vector3(0, 0.45, 0.301), shell.darkened(0.2)).scale = Vector3(0.6, 0.004, 0.01)  # junta de la puerta
+			# Teclado inclinado sobre la consola
+			var deck := _part(node, _bevel_box(), Vector3(0, 0.62, 0.1), shell.darkened(0.12))
+			deck.scale = Vector3(0.74, 0.05, 0.3)
+			deck.rotation.x = 0.18
+			var keys := _part(node, _unit_box(), Vector3(0, 0.655, 0.12), Color(0.3, 0.32, 0.36))
+			keys.scale = Vector3(0.5, 0.012, 0.16)
+			keys.rotation.x = 0.18
+			# Monitor con su marco y la interfaz encendida
+			var screen := _part(node, _bevel_box(), Vector3(0, 0.86, -0.18), dark)
+			screen.scale = Vector3(0.66, 0.4, 0.05)
 			screen.rotation.x = -0.25
-			var face := _part(screen, _unit_box(), Vector3(0, 0, 0.6), Color(0.2, 0.6, 0.8))
-			face.scale = Vector3(0.9, 0.85, 0.3)
-			_glow(face, [Color(0.3, 0.85, 1.0), Color(0.4, 1.0, 0.6), Color(0.6, 0.5, 1.0)][h % 3], 1.6)
-			for i in 4:
+			var face := MeshInstance3D.new()
+			face.mesh = _quad(0.58, 0.32)
+			face.position = Vector3(0, 0.86, -0.18) + Basis(Vector3.RIGHT, -0.25) * Vector3(0, 0, 0.027)
+			face.rotation.x = -0.25
+			face.material_override = _screen_material([Color(0.3, 0.85, 1.0), Color(0.4, 1.0, 0.6), Color(0.6, 0.5, 1.0)][h % 3], h % 7)
+			face.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			node.add_child(face)
+			if not _building_scenery:
+				_part(node, _cyl(0.03, 0.05, 0.12, 8), Vector3(0, 0.66, -0.2), dark)  # pie del monitor
+			for i in 0 if _building_scenery else 4:  # pilotos: fuera no se distinguen y no se pueden fundir
 				var led := _part(node, _unit_box(), Vector3(-0.27 + 0.18 * i, 0.5, 0.305), Color.WHITE)
 				led.scale = Vector3(0.06, 0.04, 0.01)
 				_glow(led, [Color(1.0, 0.25, 0.2), Color(0.3, 1.0, 0.35), Color(1.0, 0.8, 0.2)][(h + i) % 3], 2.0)
-			height = 1.0
+			if not _building_scenery:  # cable de la parte de atrás hasta el suelo
+				_part(node, _cyl(0.018, 0.018, 0.3, 6), Vector3(0.28, 0.2, -0.32), dark)
+				_part(node, _cyl(0.018, 0.018, 0.22, 6), Vector3(0.28, 0.02, -0.42), dark).rotation.x = PI / 2
+			height = 1.05
 		Biome.Prop.TANK:
 			# Incubadora: cilindro de cristal con líquido luminoso y burbujas, sobre base y bajo tapa metálicas.
 			node.rotation.y = 0.0
@@ -1236,6 +1542,18 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			gm.metallic_specular = 1.0
 			glass.material_override = gm
 			glass.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			# Tornillos de la base y la tapa, y dos tubos que bajan por detrás hasta el suelo
+			for k in 0 if _building_scenery else 8:  # tornillos: cubitos (fuera ni se ven)
+				var a := TAU * k / 8.0
+				for y in [0.17, 1.28]:
+					_part(node, _unit_box(), Vector3(cos(a) * 0.35, y, sin(a) * 0.35), metal.darkened(0.3)).scale = Vector3.ONE * 0.03
+			for sx in [-0.1, 0.1]:
+				_part(node, _cyl(0.025, 0.025, 1.3, 8), Vector3(sx, 0.75, -0.36), metal.lightened(0.15))
+				_part(node, _cyl(0.025, 0.025, 0.1, 8), Vector3(sx, 1.4, -0.31), metal.lightened(0.15)).rotation.x = PI / 2
+			_part(node, _bevel_box(), Vector3(0, 0.3, 0.38), Color(0.2, 0.21, 0.24)).scale = Vector3(0.2, 0.14, 0.04)  # panel
+			if not _building_scenery:
+				var lamp := _part(node, _sphere(0.02, 0.04), Vector3(0.05, 0.33, 0.405), Color.WHITE)
+				_glow(lamp, tint, 3.0)
 			height = 1.45
 		Biome.Prop.VENT:
 			# Fumarola: cono de basalto con la boca al rojo y una columna de humo que sube y se deshace.
@@ -1435,6 +1753,8 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			lens.rotation.x = PI / 2
 			_glow(lens, Color(1.0, 0.95, 0.8), 4.0)
 			var dir := Vector3(0, -sin(pitch), cos(pitch))
+			if _building_scenery:  # fuera del plató: el foco apagado del todo no, pero sin luz ni haz (caros)
+				return node
 			var spot := SpotLight3D.new()
 			spot.light_color = Color(1.0, 0.93, 0.8)
 			spot.light_energy = 5.0
@@ -1454,20 +1774,46 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			node.add_child(beam)
 			height = 1.2
 		Biome.Prop.CAMERA:
-			# Cámara de televisión sobre trípode con ruedas, objetivo largo y piloto rojo de grabación.
+			# Cámara de estudio sobre pedestal con ruedas: base de tres brazos, columna, cabeza con mandos,
+			# cuerpo biselado con visor encendido, objetivo con parasol, piloto rojo y cable por el suelo.
 			var dark := Color(0.16, 0.16, 0.18)
+			var metal := _finish(Color(0.55, 0.57, 0.6), 0.35, 0.6)
 			for i in 3:
-				var leg := _part(node, _cyl(0.015, 0.02, 0.8), Vector3(cos(i * 2.1) * 0.13, 0.38, sin(i * 2.1) * 0.13), dark)
-				leg.basis = Basis(Vector3(-sin(i * 2.1), 0, cos(i * 2.1)), 0.2)
-			_part(node, _unit_box(), Vector3(0, 0.88, -0.04), Color(0.25, 0.26, 0.28)).scale = Vector3(0.24, 0.24, 0.4)
-			_part(node, _cyl(0.07, 0.09, 0.26, 12), Vector3(0, 0.88, 0.28), dark).rotation.x = PI / 2
-			_glow(_part(node, _sphere(0.025, 0.05), Vector3(0.08, 1.02, 0.1), Color.WHITE), Color(1.0, 0.1, 0.1), 3.0)
+				var a := i * TAU / 3.0
+				var arm := _part(node, _unit_box(), Vector3(cos(a) * 0.14, 0.06, sin(a) * 0.14), dark)
+				arm.scale = Vector3(0.3, 0.04, 0.05)
+				arm.rotation.y = -a
+				_part(node, _sphere(0.04, 0.08), Vector3(cos(a) * 0.28, 0.04, sin(a) * 0.28), Color(0.08, 0.08, 0.09))  # rueda
+			_part(node, _cyl(0.04, 0.05, 0.72, 10), Vector3(0, 0.42, 0), Color.WHITE).material_override = metal
+			_part(node, _cyl(0.08, 0.08, 0.06, 12), Vector3(0, 0.8, 0), dark)
+			for sx in [-1, 1]:  # barras de mando hacia atrás
+				var bar := _part(node, _cyl(0.012, 0.012, 0.36, 6), Vector3(0.1 * sx, 0.84, -0.22), dark)
+				bar.rotation.x = PI / 2 - 0.3
+			_part(node, _bevel_box(), Vector3(0, 0.95, -0.02), Color(0.24, 0.25, 0.27)).scale = Vector3(0.24, 0.24, 0.42)
+			_part(node, _unit_box(), Vector3(0.122, 0.95, 0.0), Color(0.33, 0.34, 0.37)).scale = Vector3(0.005, 0.16, 0.3)
+			var lens := _part(node, _cyl(0.07, 0.08, 0.24, 14), Vector3(0, 0.95, 0.3), dark)
+			lens.rotation.x = PI / 2
+			var hood := _part(node, _cyl(0.1, 0.08, 0.07, 14), Vector3(0, 0.95, 0.44), Color(0.1, 0.1, 0.11))
+			hood.rotation.x = PI / 2
+			_part(node, _bevel_box(), Vector3(0, 1.1, -0.12), dark).scale = Vector3(0.14, 0.09, 0.12)  # visor
+			if not _building_scenery:
+				var view := MeshInstance3D.new()
+				view.mesh = _quad(0.11, 0.065)
+				view.position = Vector3(0, 1.1, -0.181)
+				view.rotation.y = PI
+				view.material_override = _screen_material(Color(0.6, 0.8, 1.0), h % 7)
+				node.add_child(view)
+				_glow(_part(node, _sphere(0.02, 0.04), Vector3(0.08, 1.08, 0.12), Color.WHITE), Color(1.0, 0.1, 0.1), 3.0)
+			_part(node, _cyl(0.012, 0.012, 0.5, 6), Vector3(0, 0.012, -0.4), dark).rotation.x = PI / 2  # cable
 			# Mira al centro del tablero
 			var to_center := -grid.to_world(c)
 			node.rotation.y = atan2(to_center.x, to_center.z)
-			height = 1.0
+			height = 1.15
 		Biome.Prop.PLANE:
-			# Avión aparcado sobre su huella de 3×3: fuselaje blanco con ventanillas, alas, motores y cola.
+			# Avión de pasajeros aparcado sobre su huella de 3×3: fuselaje con morro afilado y cola levantada,
+			# cabina, fila de ventanillas, puertas y franja de la aerolínea; alas en flecha con winglets, motores
+			# con toma de aire y pilón, estabilizadores, deriva, tren de aterrizaje y, alrededor, el equipo de
+			# tierra (tractor con carros de equipaje, escalera y conos).
 			node.scale = Vector3.ONE
 			var cells := grid.footprint(c, 3)
 			var mid := grid.footprint_center(cells) - grid.to_world(c)
@@ -1476,23 +1822,34 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			body.position = Vector3(mid.x, 0, mid.z)
 			body.rotation.y = PI / 2 if h % 2 else 0.0
 			node.add_child(body)
-			var white := Color(0.94, 0.95, 0.97)
+			# Fuselaje, alas, motores, deriva y tren en una malla de superficies suaves (AirlinerMesh), con
+			# ventanillas, cabina y puertas pintadas por shader; una por aerolínea, compartida
 			var stripe: Color = [Color(0.85, 0.2, 0.2), Color(0.2, 0.4, 0.8), Color(0.95, 0.65, 0.15)][h % 3]
-			var fus := _part(body, _capsule(0.32, 2.8), Vector3(0, 0.62, 0), white)
-			fus.rotation.x = PI / 2
-			var band := _part(body, _cyl(0.325, 0.325, 2.0, 16), Vector3(0, 0.62, 0), stripe)
-			band.rotation.x = PI / 2
-			band.scale = Vector3(1.0, 1.0, 0.25)
-			_part(body, _unit_box(), Vector3(0, 0.74, 0.2), Color(0.15, 0.2, 0.28)).scale = Vector3(0.66, 0.08, 1.8)
-			_part(body, _unit_box(), Vector3(0, 0.55, 0.05), white.darkened(0.05)).scale = Vector3(2.9, 0.06, 0.55)
-			_part(body, _unit_box(), Vector3(0, 0.66, -1.2), white.darkened(0.05)).scale = Vector3(1.1, 0.05, 0.3)
-			_part(body, _unit_box(), Vector3(0, 1.0, -1.22), stripe).scale = Vector3(0.05, 0.6, 0.4)
-			for k in [-0.75, 0.75]:
-				var engine := _part(body, _cyl(0.13, 0.13, 0.42, 12), Vector3(k, 0.4, 0.15), Color(0.7, 0.72, 0.76))
-				engine.rotation.x = PI / 2
-			for k in [-0.35, 0.35]:
-				_part(body, _cyl(0.06, 0.06, 0.2, 8), Vector3(k, 0.1, -0.2), Color(0.12, 0.12, 0.12)).rotation.z = PI / 2
-			_part(body, _cyl(0.06, 0.06, 0.2, 8), Vector3(0, 0.1, 1.0), Color(0.12, 0.12, 0.12)).rotation.z = PI / 2
+			var key := "%d_%s" % [h % 3, _building_scenery]
+			if not _planes.has(key):
+				var mesh := AirlinerMesh.build(stripe)
+				var shade := 1.0 - SCENERY_PROP_SHADE if _building_scenery else 1.0
+				var mats := AirlinerMesh.materials(stripe, shade)
+				for i in mats.size():
+					mesh.surface_set_material(i, mats[i])
+				_planes[key] = mesh
+			var plane := MeshInstance3D.new()
+			plane.mesh = _planes[key]
+			body.add_child(plane)
+			if not _building_scenery:
+				# Equipo de tierra: tractor con dos carros de equipaje detrás del ala, escalera en la puerta y conos
+				var tug := Color(0.95, 0.75, 0.15)
+				_part(body, _bevel_box(), Vector3(-0.85, 0.1, -0.6), tug).scale = Vector3(0.2, 0.14, 0.3)
+				_part(body, _unit_box(), Vector3(-0.85, 0.22, -0.66), Color(0.15, 0.15, 0.17)).scale = Vector3(0.16, 0.1, 0.12)
+				for k in 2:
+					var cz := -0.95 - 0.3 * k
+					_part(body, _unit_box(), Vector3(-0.85, 0.08, cz), Color(0.45, 0.47, 0.5)).scale = Vector3(0.22, 0.03, 0.24)
+					_part(body, _unit_box(), Vector3(-0.85, 0.16, cz), [Color(0.3, 0.45, 0.75), Color(0.6, 0.3, 0.25), Color(0.25, 0.25, 0.28)][(h + k) % 3]).scale = Vector3(0.18, 0.12, 0.2)
+				var stairs := _part(body, _wing_mesh(), Vector3(0.5, 0.05, 0.95), Color(0.85, 0.87, 0.9))
+				stairs.scale = Vector3(0.25, 4.0, 0.2)
+				stairs.rotation = Vector3(0, PI / 2, 0.55)
+				for cone in [Vector3(1.45, 0, 0.2), Vector3(-1.45, 0, 0.2), Vector3(0, 0, 1.45)]:
+					_part(body, _cyl(0.0, 0.04, 0.12, 8), cone + Vector3(0, 0.06, 0), Color(1.0, 0.45, 0.1))
 			height = 1.3
 		Biome.Prop.PLANE_PART:
 			pass  # lo dibuja el avión de la casilla ancla
@@ -1764,6 +2121,18 @@ func _terminal(node: Node3D, c: Vector2i) -> float:
 		_part(node, _unit_box(), Vector3(0, 0.5, z), white).scale = Vector3(0.98, 0.025, 0.02)
 	_part(node, _unit_box(), Vector3(0, 0.96, 0), white).scale = Vector3(1.04, 0.08, 1.1)  # cubierta en voladizo
 	_part(node, _unit_box(), Vector3(0, 1.01, 0), concrete.darkened(0.2)).scale = Vector3(1.02, 0.02, 1.06)
+	# Aleros verticales sobre la fachada y, en el tejado, máquinas de climatización con rejilla
+	for x in [-0.36, 0.0, 0.36]:
+		for z in [-0.5, 0.5]:
+			_part(node, _unit_box(), Vector3(x, 0.92, z), white.darkened(0.05)).scale = Vector3(0.04, 0.1, 0.12)
+	if (c.x + c.y) % 3 == 0:
+		_part(node, _bevel_box(), Vector3(0.18, 1.1, -0.1), Color(0.75, 0.76, 0.78)).scale = Vector3(0.3, 0.16, 0.26)
+		_part(node, _cyl(0.07, 0.07, 0.02, 12), Vector3(0.18, 1.19, -0.1), Color(0.3, 0.31, 0.33))
+	if c.x % 4 == 1:  # puerta de entrada con su marquesina y letrero luminoso
+		_part(node, _unit_box(), Vector3(0, 0.3, 0.42), Color(0.2, 0.22, 0.26)).scale = Vector3(0.34, 0.48, 0.01)
+		_part(node, _unit_box(), Vector3(0, 0.6, 0.48), white).scale = Vector3(0.5, 0.03, 0.14)
+		if not _building_scenery:
+			_glow(_part(node, _unit_box(), Vector3(0, 0.74, 0.415), Color.WHITE), Color(0.35, 0.6, 1.0), 1.5).scale = Vector3(0.4, 0.08, 0.01)
 	if c.x != grid.width / 2:
 		return 1.0
 	# Torre de control: fuste, cabina acristalada (más ancha) con techo oscuro y antena con baliza roja
@@ -2349,6 +2718,152 @@ var _mesh_arrays := {}  # malla -> sus datos (para fundir obstáculos sin leerla
 
 
 ## Caja de lado 1 compartida: las piezas le dan su tamaño con la escala.
+## Cubo unidad con los cantos biselados (para escalar como `_unit_box`): las aristas reflejan la luz en una
+## franja fina en vez de cortarse en seco, como la chapa y el plástico moldeado de verdad.
+func _bevel_box() -> Mesh:
+	if _building_scenery:
+		return _unit_box()  # fuera, a esa distancia, el bisel no se distingue
+	if _prims.has("bevel"):
+		return _prims["bevel"]
+	var b := 0.07  # parte biselada de cada cara
+	var pts := PackedVector3Array()
+	for sx in [-1, 1]:
+		for sy in [-1, 1]:
+			for sz in [-1, 1]:
+				var corner := Vector3(sx, sy, sz) * 0.5
+				pts.append(corner - Vector3(sx * b, 0, 0))
+				pts.append(corner - Vector3(0, sy * b, 0))
+				pts.append(corner - Vector3(0, 0, sz * b))
+	# Envolvente convexa de los 24 puntos (cada esquina recortada en tres): caras, biseles y esquinas
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for f: Array in _hull_faces(pts):
+		var poly: PackedVector3Array = f[1]
+		for k in range(1, poly.size() - 1):
+			for v in [poly[0], poly[k + 1], poly[k]]:  # Godot: caras de frente en sentido horario
+				st.set_normal(f[0])
+				st.add_vertex(v)
+	_prims["bevel"] = st.commit()
+	return _prims["bevel"]
+
+
+## Caras de la envolvente convexa de `pts` (pocos puntos): [normal, polígono ordenado].
+func _hull_faces(pts: PackedVector3Array) -> Array:
+	var faces := []
+	var seen := {}
+	var n := pts.size()
+	for i in n:
+		for j in range(i + 1, n):
+			for k in range(j + 1, n):
+				var normal := (pts[j] - pts[i]).cross(pts[k] - pts[i])
+				if normal.length() < 1e-6:
+					continue
+				normal = normal.normalized()
+				var d := normal.dot(pts[i])
+				var above := false
+				var below := false
+				for p in pts:
+					var e := normal.dot(p) - d
+					if e > 1e-5:
+						above = true
+					elif e < -1e-5:
+						below = true
+				if above and below:
+					continue
+				if above:
+					normal = -normal
+					d = -d
+				var key := "%.3f_%.3f_%.3f" % [normal.x, normal.y, normal.z]
+				if seen.has(key):
+					continue
+				seen[key] = true
+				var on: Array[Vector3] = []
+				for p in pts:
+					if absf(normal.dot(p) - d) < 1e-5 and p not in on:
+						on.append(p)
+				var c := Vector3.ZERO
+				for p in on:
+					c += p
+				c /= on.size()
+				var u := (on[0] - c).normalized()
+				var v := normal.cross(u)
+				on.sort_custom(func(a: Vector3, b: Vector3) -> bool:
+					return atan2((a - c).dot(v), (a - c).dot(u)) < atan2((b - c).dot(v), (b - c).dot(u)))
+				faces.append([normal, PackedVector3Array(on)])
+	return faces
+
+
+## Ala en flecha y estrechándose hacia la punta (para alas, estabilizadores y deriva): raíz en x = 0, punta
+## en x = 1,3; en z, la cuerda (de 0,7 en la raíz a 0,22 en la punta, echada hacia atrás).
+func _wing_mesh() -> Mesh:
+	if _prims.has("wing"):
+		return _prims["wing"]
+	var t := 0.035
+	var pts := PackedVector3Array([
+		Vector3(0, -t, 0.35), Vector3(0, -t, -0.35), Vector3(1.3, -t * 0.5, -0.35), Vector3(1.3, -t * 0.5, -0.57),
+		Vector3(0, t, 0.35), Vector3(0, t, -0.35), Vector3(1.3, t * 0.5, -0.35), Vector3(1.3, t * 0.5, -0.57)])
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for f: Array in _hull_faces(pts):
+		var poly: PackedVector3Array = f[1]
+		for k in range(1, poly.size() - 1):
+			for v in [poly[0], poly[k + 1], poly[k]]:  # Godot: caras de frente en sentido horario
+				st.set_normal(f[0])
+				st.add_vertex(v)
+	_prims["wing"] = st.commit()
+	return _prims["wing"]
+
+
+func _quad(w: float, h: float) -> QuadMesh:
+	var key := "q%.3f_%.3f" % [w, h]
+	if not _prims.has(key):
+		var m := QuadMesh.new()
+		m.size = Vector2(w, h)
+		_prims[key] = m
+	return _prims[key]
+
+
+## Pantalla encendida con una interfaz de análisis: rejilla, una gráfica que avanza, barras que suben y bajan
+## y una línea de estado que parpadea. Sin luz propia (emisión), compartida por color y variante.
+func _screen_material(color: Color, variant: int) -> ShaderMaterial:
+	var key := "%s_%d" % [color.to_html(), variant]
+	if not _screen_mats.has(key):
+		var m := ShaderMaterial.new()
+		m.shader = TerrainFx.shader(SCREEN_SHADER)
+		m.set_shader_parameter("tint", color)
+		m.set_shader_parameter("seed", float(variant))
+		_screen_mats[key] = m
+	return _screen_mats[key]
+
+
+var _planes := {}  # aerolínea y adorno -> malla del avión con sus materiales
+var _screen_mats := {}  # aparte de `_mats`: la lluvia moja esos y estas no son StandardMaterial3D
+const SCREEN_SHADER := """
+shader_type spatial;
+render_mode unshaded;
+uniform vec4 tint : source_color = vec4(0.3, 0.85, 1.0, 1.0);
+uniform float seed = 0.0;
+void fragment() {
+	vec2 uv = UV;
+	float t = TIME * (0.6 + fract(seed * 0.37) * 0.6) + seed * 3.0;
+	vec3 col = tint.rgb * 0.08;
+	vec2 g = abs(fract(uv * vec2(8.0, 5.0)) - 0.5);
+	col += tint.rgb * 0.12 * step(0.46, max(g.x, g.y));
+	float wave = 0.55 + 0.2 * sin(uv.x * 14.0 + t * 2.0) * sin(uv.x * 5.0 - t);
+	if (uv.x < 0.62) {
+		col += tint.rgb * smoothstep(0.03, 0.0, abs(uv.y - wave)) * step(uv.x, fract(t * 0.25) * 0.62 + 0.02);
+	} else {
+		float bar = floor((uv.x - 0.62) / 0.076);
+		float hgt = 0.25 + 0.5 * fract(sin(bar * 12.9 + floor(t * 1.5) + seed) * 437.5);
+		col += tint.rgb * 0.8 * step(1.0 - uv.y, hgt) * step(0.015, fract((uv.x - 0.62) / 0.076)) * step(0.15, uv.y);
+	}
+	col += vec3(1.0) * 0.6 * step(uv.y, 0.08) * step(uv.x, 0.3) * step(0.5, fract(t * 0.8));
+	ALBEDO = col;
+	EMISSION = col * 1.6;
+}
+"""
+
+
 func _unit_box() -> BoxMesh:
 	if not _prims.has("box"):
 		_prims["box"] = BoxMesh.new()
@@ -2363,6 +2878,7 @@ func _cyl(top_r: float, bottom_r: float, h: float, segments := 10) -> CylinderMe
 		m.bottom_radius = bottom_r
 		m.height = h
 		m.radial_segments = segments
+		m.rings = 0  # lados rectos: los anillos intermedios no cambian nada y multiplican los triángulos
 		_prims[key] = m
 	return _prims[key]
 

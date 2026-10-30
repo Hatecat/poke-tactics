@@ -196,6 +196,8 @@ uniform vec4 shallow : source_color = vec4(0.3, 0.62, 0.88, 1.0);
 uniform float wind = 1.0;
 uniform float waves = 1.0;
 uniform float rain = 0.0;
+// Brillo (destellos y reflejo del cielo); el agua del campo de adorno lo baja para no verse pálida.
+uniform float gloss = 1.0;
 instance uniform vec4 shore = vec4(0.0);
 varying vec3 wpos;
 
@@ -240,9 +242,9 @@ void fragment() {
 	vec4 near = shore * (1.0 - smoothstep(0.0, 0.16 + 0.04 * sin(TIME * 2.0 + wpos.x * 3.0 + wpos.z * 2.0), 1.0 - edge));
 	float foam = max(max(near.x, near.y), max(near.z, near.w));
 	float drops = rain * min(ripples(wpos.xz, TIME), 1.0);
-	ALBEDO = mix(col + sp * 0.7 + drops * 0.45, vec3(0.92, 0.97, 1.0), foam * 0.75);
-	ROUGHNESS = mix(0.06, 0.6, foam);
-	SPECULAR = 0.8;
+	ALBEDO = mix(col + (sp * 0.7 + drops * 0.45) * gloss, vec3(0.92, 0.97, 1.0) * mix(0.6, 1.0, gloss), foam * 0.75);
+	ROUGHNESS = mix(mix(0.45, 0.06, gloss), 0.6, foam);
+	SPECULAR = 0.8 * gloss;
 }
 "
 

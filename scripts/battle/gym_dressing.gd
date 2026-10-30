@@ -25,16 +25,90 @@ const STATUES := {
 const CROWD_COLORS := [Color(0.85, 0.25, 0.22), Color(0.22, 0.45, 0.85), Color(0.95, 0.8, 0.25),
 	Color(0.3, 0.7, 0.35), Color(0.9, 0.9, 0.9), Color(0.55, 0.3, 0.7), Color(0.95, 0.55, 0.2), Color(0.2, 0.2, 0.25)]
 const SKIN := [Color(0.96, 0.8, 0.66), Color(0.84, 0.64, 0.48), Color(0.6, 0.42, 0.3), Color(0.98, 0.86, 0.74)]
+## Público: una malla de persona sentada (piernas, torso, brazos, cabeza y pelo) con el tipo de pieza en el
+## color de cada vértice (r) y, en los brazos, el lado (g). Por instancia (INSTANCE_CUSTOM): colores de ropa,
+## piel y pelo, el ánimo (tranquilo, aplaude, levanta los brazos) y la fase, para que no se muevan a la vez.
 const CROWD_SHADER := """
 shader_type spatial;
-// Público: cada persona (instancia) da saltitos con su propio ritmo; cuerpo y cabeza comparten índice.
-void vertex() {
-	float id = float(INSTANCE_ID);
-	float hop = max(0.0, sin(TIME * (2.0 + fract(id * 0.37) * 2.5) + id * 1.7));
-	VERTEX.y += hop * hop * 0.07;
+const vec3 SHIRTS[10] = vec3[10](vec3(0.85, 0.25, 0.22), vec3(0.22, 0.45, 0.85), vec3(0.95, 0.8, 0.25),
+	vec3(0.3, 0.68, 0.35), vec3(0.92, 0.92, 0.9), vec3(0.55, 0.3, 0.7), vec3(0.95, 0.55, 0.2),
+	vec3(0.22, 0.23, 0.28), vec3(0.4, 0.75, 0.85), vec3(0.85, 0.45, 0.6));
+const vec3 PANTS[5] = vec3[5](vec3(0.2, 0.25, 0.4), vec3(0.15, 0.15, 0.17), vec3(0.45, 0.38, 0.3),
+	vec3(0.3, 0.35, 0.45), vec3(0.55, 0.52, 0.48));
+const vec3 SKIN[5] = vec3[5](vec3(0.96, 0.8, 0.66), vec3(0.84, 0.64, 0.48), vec3(0.6, 0.42, 0.3),
+	vec3(0.98, 0.86, 0.74), vec3(0.45, 0.3, 0.22));
+const vec3 HAIR[5] = vec3[5](vec3(0.1, 0.08, 0.07), vec3(0.35, 0.22, 0.12), vec3(0.85, 0.7, 0.4),
+	vec3(0.6, 0.25, 0.12), vec3(0.75, 0.75, 0.75));
+varying vec3 tint;
+varying vec3 rest;  // posición sin animar, para dibujar la cara y el pelo sobre la cabeza
+varying vec3 hair;
+varying float hair_style;
+varying float head;
+
+vec3 turn_x(vec3 v, vec3 pivot, float a) {
+	vec3 d = v - pivot;
+	return pivot + vec3(d.x, d.y * cos(a) - d.z * sin(a), d.y * sin(a) + d.z * cos(a));
 }
+
+void vertex() {
+	vec4 k = INSTANCE_CUSTOM;
+	float part = floor(COLOR.r * 8.0 + 0.5);
+	rest = VERTEX;
+	head = step(5.5, part) * step(part, 6.5);
+	float phase = k.w * 6.2831;
+	// Ánimo por rachas: cada grupo se anima y se calma a su ritmo
+	float wave = smoothstep(0.2, 0.9, sin(TIME * 0.35 + k.w * 9.0) * 0.5 + 0.5);
+	float mood = k.z;  // 0 tranquilo, 0,5 aplaude, 1 levanta los brazos
+	if (COLOR.g > 0.1) {
+		float side = COLOR.g > 0.75 ? 1.0 : -1.0;
+		vec3 shoulder = vec3(0.17 * side, 0.6, 0.0);
+		float a = 0.15 + 0.05 * sin(TIME * 1.3 + phase);  // en reposo, sobre las rodillas
+		if (mood > 0.75) {
+			a = mix(a, 2.6 + 0.25 * sin(TIME * 7.0 + phase), wave);  // brazos arriba, agitándolos
+		} else if (mood > 0.25) {
+			a = mix(a, 1.05, wave);  // brazos al frente
+			VERTEX.x -= side * wave * (0.04 + 0.04 * sin(TIME * 12.0 + phase)) * smoothstep(0.45, 0.2, VERTEX.y);
+		}
+		VERTEX = turn_x(VERTEX, shoulder, -a);
+	}
+	if (part < 3.5 || part > 5.5) {  // torso, cabeza y brazos se inclinan hacia la arena al animarse
+		VERTEX = turn_x(VERTEX, vec3(0.0, 0.25, 0.0), -0.12 * wave * step(0.25, mood));
+	}
+	VERTEX.y += max(0.0, sin(TIME * 6.0 + phase)) * 0.035 * wave * step(0.75, mood);
+	int ks = int(k.x * 10.0) % 10;
+	int kp = int(k.y * 5.0) % 5;
+	int kh = int(k.x * 37.0) % 5;
+	int kk = int(k.y * 23.0) % 5;
+	hair = HAIR[kh];
+	hair_style = fract(k.x * 13.0);
+	bool short_sleeves = fract(k.y * 7.0) > 0.5;
+	if (part < 0.5) tint = SHIRTS[ks];
+	else if (part < 1.5 || part > 5.5) tint = SKIN[kk];
+	else if (part < 2.5) tint = HAIR[kh];
+	else if (part < 3.5) tint = SHIRTS[ks] * 0.88;
+	else if (part < 4.5) tint = PANTS[kp];
+	else tint = vec3(0.12, 0.12, 0.13);
+	if (part > 6.5 && !short_sleeves) tint = SHIRTS[ks] * 0.88;  // antebrazo: manga larga o piel
+}
+
 void fragment() {
-	ALBEDO = pow(COLOR.rgb, vec3(2.2));
+	vec3 col = tint;
+	if (head > 0.5) {
+		// Coordenadas sobre la cabeza como esfera unidad (la cara mira a -z)
+		vec3 n = (rest - vec3(0.0, 0.775, 0.0)) / vec3(0.08, 0.095, 0.085);
+		// Pelo: corto, largo (baja por la nuca) o casi calvo, con la línea de la frente
+		float back = hair_style < 0.4 ? -0.35 : (hair_style < 0.8 ? -0.95 : 0.25);
+		float front = hair_style < 0.8 ? 0.4 : 0.7;
+		float line = mix(back, front, smoothstep(0.2, -0.5, n.z));
+		col = mix(col, hair, step(line, n.y));
+		// Cara sencilla: dos ojos y una sonrisa
+		float face = step(n.z, -0.55);
+		float eye = min(length(vec2(abs(n.x) - 0.36, (n.y - 0.08) * 0.8)), 1.0);
+		col = mix(col, vec3(0.06, 0.05, 0.05), face * step(eye, 0.11));
+		float smile = abs(n.y - (-0.38 + 0.6 * n.x * n.x));
+		col = mix(col, vec3(0.45, 0.15, 0.13), face * step(smile, 0.05) * step(abs(n.x), 0.26));
+	}
+	ALBEDO = pow(col, vec3(2.2));
 	ROUGHNESS = 0.85;
 }
 """
@@ -189,43 +263,156 @@ func _side(origin: Vector3, out: Vector3, half_len: float, role: String) -> void
 		side.add_child(d)
 
 
-## Público en las gradas: una MultiMesh de cuerpos y otra de cabezas con el mismo orden (saltan juntos).
+## Público en las gradas: asientos con respaldo (algunos vacíos), pasillos con escaleras cada pocos asientos y
+## personas sentadas de cara a la arena, de distinta talla y complexión, todas en una MultiMesh (una llamada).
+## Delante, un panel de luz con los colores del gimnasio.
 func _crowd(side: Node3D, length: float, gap: float) -> void:
 	var spots: Array[Vector3] = []
+	var seats: Array[Vector3] = []
+	var aisle_every := 9
 	for i in TIERS:
 		var x := -length + 0.3
+		var n := 0
 		while x < length - 0.3:
-			if absf(x) > gap + 0.2 and _rng.randf() > 0.22:
-				spots.append(Vector3(x + _rng.randf_range(-0.08, 0.08), TIER_RISE * (i + 1), STAND_GAP + TIER_DEPTH * (i + 0.6)))
+			if absf(x) > gap + 0.2:
+				var p := Vector3(x, TIER_RISE * (i + 1), STAND_GAP + TIER_DEPTH * (i + 0.62))
+				if n % aisle_every == aisle_every - 1:
+					if i < TIERS - 1:  # escalones del pasillo, a media altura entre gradas
+						_mesh(side, _box(Vector3(0.4, TIER_RISE * 0.5, TIER_DEPTH * 0.5)),
+							Vector3(x, TIER_RISE * (i + 1.25), STAND_GAP + TIER_DEPTH * (i + 1.25)), (_style.side as Color).darkened(0.35))
+				else:
+					seats.append(p)
+					if _rng.randf() > 0.18:
+						spots.append(p + Vector3(_rng.randf_range(-0.03, 0.03), 0.06, 0.0))
 			x += 0.46
+			n += 1
+	# Asientos: una malla de banqueta con respaldo
+	var seat_mesh := _seat_mesh()
+	var seat_mm := MultiMesh.new()
+	seat_mm.transform_format = MultiMesh.TRANSFORM_3D
+	seat_mm.mesh = seat_mesh
+	seat_mm.instance_count = seats.size()
+	for i in seats.size():
+		seat_mm.set_instance_transform(i, Transform3D(Basis(), seats[i]))
+	var seat_mmi := MultiMeshInstance3D.new()
+	seat_mmi.multimesh = seat_mm
+	seat_mmi.material_override = _mat((_style.line as Color).darkened(0.25), 0.45)
+	side.add_child(seat_mmi)
+	# Personas
 	var shader := Shader.new()
 	shader.code = CROWD_SHADER
 	var mat := ShaderMaterial.new()
 	mat.shader = shader
-	var body := CapsuleMesh.new()
-	body.radius = 0.13
-	body.height = 0.44
-	body.radial_segments = 8
-	body.rings = 2
-	var head := SphereMesh.new()
-	head.radius = 0.1
-	head.height = 0.2
-	head.radial_segments = 8
-	head.rings = 4
-	for part in [[body, 0.22], [head, 0.52]]:
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.use_colors = true
-		mm.mesh = part[0]
-		mm.instance_count = spots.size()
-		for i in spots.size():
-			mm.set_instance_transform(i, Transform3D(Basis(), spots[i] + Vector3.UP * part[1]))
-			var col: Color = CROWD_COLORS[(i * 7 + 3) % CROWD_COLORS.size()] if part[0] == body else SKIN[(i * 5) % SKIN.size()]
-			mm.set_instance_color(i, col)
-		var mmi := MultiMeshInstance3D.new()
-		mmi.multimesh = mm
-		mmi.material_override = mat
-		side.add_child(mmi)
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
+	mm.mesh = _person_mesh()
+	mm.instance_count = spots.size()
+	for i in spots.size():
+		var tall := _rng.randf_range(0.9, 1.1)
+		var wide := _rng.randf_range(0.9, 1.15)
+		# Cada uno mira hacia el centro de la arena (algo por delante de su lado), con un ligero desvío
+		var turn := clampf(atan2(spots[i].x, spots[i].z + 5.0), -0.7, 0.7) + _rng.randf_range(-0.06, 0.06)
+		var basis := Basis(Vector3.UP, turn).scaled(Vector3(wide, tall, wide))
+		mm.set_instance_transform(i, Transform3D(basis, spots[i]))
+		var mood: float = [0.0, 0.0, 0.5, 0.5, 1.0][_rng.randi() % 5]
+		mm.set_instance_custom_data(i, Color(_rng.randf(), _rng.randf(), mood, _rng.randf()))
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.material_override = mat
+	side.add_child(mmi)
+	# Panel de luz al pie de las gradas: franjas del color del gimnasio sobre fondo oscuro
+	var panel_z := STAND_GAP - 0.1
+	for seg in ([[-length, -gap], [gap, length]] if gap > 0.0 else [[-length, length]]):
+		var w: float = seg[1] - seg[0]
+		var mid: float = (seg[0] + seg[1]) * 0.5
+		_mesh(side, _box(Vector3(w, 0.42, 0.08)), Vector3(mid, 0.21, panel_z), Color(0.06, 0.06, 0.08))
+		var count := int(w / 1.6)
+		for k in count:
+			var bx := mid + (float(k) - (count - 1) * 0.5) * 1.6
+			var strip := _mesh(side, _box(Vector3(1.3, 0.26, 0.02)), Vector3(bx, 0.21, panel_z - 0.05), Color.WHITE)
+			strip.material_override = _glow_mat((_style.line as Color) if k % 2 == 0 else (_style.floor as Color).lightened(0.3), 1.1)
+			strip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
+## Persona sentada de cara a -z (hacia la arena) para la MultiMesh del público, hecha de piezas redondeadas
+## continuas (tronco con cintura y hombros, brazo y antebrazo, muslo y pierna, zapatos, cuello y cabeza). El
+## color de cada vértice dice qué pieza es (r: 0 camiseta, 1 piel, 3 mangas, 4 pantalón, 5 zapatos, 6 cabeza,
+## 7 antebrazo) y, en los brazos, el lado (g). La cara y el pelo los pinta el shader sobre la cabeza.
+func _person_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var count := [0]
+	# Tubo por una línea de puntos con su radio (0 cierra la punta, redondeada); `flat` aplasta la sección
+	var tube := func(pts: Array, radii: Array, kind: int, arm := 0.0, seg := 8, flat := 1.0) -> void:
+		var col := Color(kind / 8.0, arm, 0.0)
+		var base: int = count[0]
+		for i in pts.size():
+			var tan: Vector3 = (pts[mini(i + 1, pts.size() - 1)] - pts[maxi(i - 1, 0)]).normalized()
+			var u := Vector3.RIGHT if absf(tan.x) < 0.9 else Vector3.UP
+			u = (u - tan * u.dot(tan)).normalized()
+			var v := tan.cross(u)
+			for j in seg:
+				var a := TAU * j / seg
+				st.set_color(col)
+				st.add_vertex(pts[i] + (u * cos(a) + v * sin(a) * flat) * float(radii[i]))
+		for i in pts.size() - 1:
+			for j in seg:
+				var a := base + i * seg + j
+				var b := base + i * seg + (j + 1) % seg
+				st.add_index(a)
+				st.add_index(a + seg)
+				st.add_index(b)
+				st.add_index(b)
+				st.add_index(a + seg)
+				st.add_index(b + seg)
+		count[0] += pts.size() * seg
+	# Elipsoide como tubo vertical
+	var blob := func(c: Vector3, r: Vector3, kind: int, arm := 0.0, seg := 8) -> void:
+		var pts: Array = []
+		var radii: Array = []
+		for i in 7:
+			var t := PI * i / 6.0
+			pts.append(c + Vector3(0, -cos(t) * r.y, 0))
+			radii.append(sin(t) * r.x)
+		tube.call(pts, radii, kind, arm, seg, r.z / r.x)
+	# Tronco: cadera, cintura, pecho y hombros redondeados
+	var body_y := [0.2, 0.24, 0.34, 0.46, 0.56, 0.61, 0.645]
+	var body_r := [0.0, 0.115, 0.105, 0.125, 0.14, 0.12, 0.0]
+	var body: Array = []
+	for y in body_y:
+		body.append(Vector3(0, y, 0.02 + (0.6 - y) * 0.06))
+	tube.call(body, body_r, 0, 0.0, 10, 0.68)
+	tube.call([Vector3(0, 0.6, 0.02), Vector3(0, 0.66, 0.015), Vector3(0, 0.7, 0.01)], [0.042, 0.04, 0.04], 1)  # cuello
+	blob.call(Vector3(0, 0.775, 0), Vector3(0.08, 0.095, 0.085), 6, 0.0, 10)
+	for side in [-1.0, 1.0]:
+		var arm := 1.0 if side > 0 else 0.5
+		# Brazo: del hombro al codo, y el antebrazo hacia las rodillas, con la mano
+		var sh := Vector3(0.155 * side, 0.57, 0.01)
+		var elbow := Vector3(0.175 * side, 0.4, -0.03)
+		var wrist := Vector3(0.14 * side, 0.32, -0.18)
+		tube.call([sh + Vector3(0, 0.035, 0), sh, sh.lerp(elbow, 0.5), elbow], [0.0, 0.05, 0.043, 0.038], 3, arm)
+		tube.call([elbow, elbow.lerp(wrist, 0.5), wrist], [0.038, 0.034, 0.028], 7, arm)
+		blob.call(wrist + Vector3(0, -0.005, -0.03), Vector3(0.028, 0.032, 0.04), 1, arm, 6)
+		# Pierna sentada: muslo hacia delante, pierna hasta el escalón y zapato
+		var hip := Vector3(0.068 * side, 0.24, 0.0)
+		var knee := Vector3(0.075 * side, 0.25, -0.27)
+		var ankle := Vector3(0.075 * side, 0.0, -0.3)
+		tube.call([hip + Vector3(0, 0, 0.04), hip, hip.lerp(knee, 0.5), knee, knee + Vector3(0, 0, -0.04)], [0.0, 0.065, 0.06, 0.05, 0.0], 4)
+		tube.call([knee, knee.lerp(ankle, 0.5), ankle], [0.048, 0.042, 0.034], 4)
+		blob.call(Vector3(0.075 * side, -0.025, -0.33), Vector3(0.042, 0.03, 0.075), 5, 0.0, 6)
+	st.generate_normals()
+	return st.commit()
+
+
+## Asiento de grada: banqueta con respaldo.
+func _seat_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for b in [[Vector3(0.38, 0.06, 0.32), Vector3(0, 0.14, -0.02)], [Vector3(0.38, 0.34, 0.05), Vector3(0, 0.3, 0.15)],
+			[Vector3(0.06, 0.12, 0.06), Vector3(0, 0.06, 0.0)]]:
+		st.append_from(_box(b[0]), 0, Transform3D(Basis(), b[1]))
+	return st.commit()
 
 
 ## Estandarte colgado del muro: tela del color de las líneas con un círculo y una franja.
