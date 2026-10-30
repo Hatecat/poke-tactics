@@ -58,9 +58,24 @@ func _init() -> void:
 	pedestal.mesh = cyl
 	pedestal.position.y = -0.04
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.25, 0.3, 0.4)
+	mat.albedo_color = Color(0.14, 0.19, 0.32)
+	mat.metallic = 0.3
+	mat.roughness = 0.45
 	pedestal.material_override = mat
 	_pivot.add_child(pedestal)
+	# Aro de neón que brilla en el borde del pedestal (el NEON de la interfaz).
+	var ring := MeshInstance3D.new()
+	var torus := TorusMesh.new()
+	torus.inner_radius = 1.0
+	torus.outer_radius = 1.025
+	torus.rings = 48
+	ring.mesh = torus
+	var ring_mat := StandardMaterial3D.new()
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring_mat.albedo_color = UiKit.NEON
+	ring.material_override = ring_mat
+	ring.scale.y = 0.3
+	_pivot.add_child(ring)
 
 	_camera = Camera3D.new()
 	_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
