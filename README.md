@@ -38,7 +38,7 @@ WASD/flechas o botón central para mover la cámara · **R** revancha al termina
 | `scripts/story/` | Modo historia: partida (`StoryRun`), escenas (`cutscene.gd`), cuadro de diálogo y figuras |
 | `assets/portraits/` | Retratos de los personajes para los diálogos (`<id>.png`) |
 | `locale/<tema>/` | Traducciones gettext por tema (`<tema>.pot` + `<idioma>.po`); guía para traducir en `locale/LEEME.md` |
-| `scripts/ui/` | Menú, editor de equipo, editor de escenarios, tabla de tipos, vista 3D, kit de UI |
+| `scripts/ui/` | Menú, editor de equipo, editor de escenarios, tabla de tipos, vista 3D, kit de UI (`UiKit`, `UiDialog`) |
 | `tools/` | Generación de datos, importación de modelos, Blender y exportación |
 | `art/` | Fuentes de arte (`.blend`); Godot las ignora (`.gdignore`) |
 
@@ -282,6 +282,17 @@ gestión, el recuadro *Tienda* (junto al equipo) vende siempre Poké Balls (200 
 piso 20 y Ultra Balls (1200 ₽) tras el 40. Cada piso añade un lote al azar que se compra una vez: a veces Super
 (40 %), Ultra (25 %) o Master Ball (5 %, 5000 ₽) si aún no se venden siempre, y 6 objetos (200/500/1200 ₽ según
 rareza, piedras 1500 ₽).
+
+## Interfaz
+
+Estilo moderno con toques cyberpunk: fondo índigo con bandas, rejilla en perspectiva y líneas de barrido;
+paneles con esquinas cortadas y borde neón; títulos con efecto glitch; acentos en dorado (acción principal),
+cian y magenta. Todo sale de `scripts/ui/ui_kit.gd` (`UiKit`): colores, radios, espaciados y tamaños como
+constantes, un único `Theme` con variantes (`PrimaryButton`, `GhostButton`, `DangerButton`, `Card`,
+`CardButton`, `MenuItem`, `DialogPanel`, `Title`...) y piezas comunes (`dialog`, `screen_header`, `menu_item`,
+`type_chip`, `category_chip`, `move_button`, `hp_bar`, `brackets`, `background`). Los diálogos modales son
+`UiDialog` (`scripts/ui/ui_dialog.gd`): velo, título, ✕, Escape para cerrar y animación de apertura.
+Para una pantalla nueva, usa estas piezas en vez de crear estilos sueltos.
 
 ## Calidad gráfica
 

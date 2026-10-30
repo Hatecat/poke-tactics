@@ -28,7 +28,7 @@ msgid "Arrastra el modelo para girarlo. ← → cambian de Pokémon."
 msgstr "Drag the model to rotate it. ← → switch Pokémon."
 
 #: scripts/ui/animation_viewer.gd:92
-#: scripts/ui/main_menu.gd:393
+#: scripts/ui/main_menu.gd:412
 msgid "Cerrar"
 msgstr "Close"
 
@@ -161,167 +161,171 @@ msgid "Congelado"
 msgstr "Frozen"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/main_menu.gd:44
+#: scripts/ui/main_menu.gd:54
 msgid "Prototipo · Godot 4 · %d Pokémon"
 msgstr "Prototype · Godot 4 · %d Pokémon"
 
-#: scripts/ui/main_menu.gd:49
+#: scripts/ui/main_menu.gd:59
 msgid "Historia  (continuar)"
 msgstr "Story  (continue)"
 
-#: scripts/ui/main_menu.gd:51
+#: scripts/ui/main_menu.gd:61
 msgid "Historia"
 msgstr "Story"
 
-#: scripts/ui/main_menu.gd:52
-#: scripts/ui/main_menu.gd:132
+#: scripts/ui/main_menu.gd:62
+#: scripts/ui/main_menu.gd:176
 msgid "Partida rápida"
 msgstr "Quick battle"
 
-#: scripts/ui/main_menu.gd:53
+#: scripts/ui/main_menu.gd:63
+#: scripts/ui/tower.gd:32
 msgid "Torre de Batallas"
 msgstr "Battle Tower"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/main_menu.gd:53
+#: scripts/ui/main_menu.gd:63
 msgid "(piso %d)"
 msgstr "(floor %d)"
 
-#: scripts/ui/main_menu.gd:55
+#: scripts/ui/main_menu.gd:65
+#: scripts/ui/team_editor.gd:46
 msgid "Editor de equipo"
 msgstr "Team editor"
 
-#: scripts/ui/main_menu.gd:56
+#: scripts/ui/main_menu.gd:66
+#: scripts/ui/map_editor.gd:329
 msgid "Editor de escenarios"
 msgstr "Map editor"
 
-#: scripts/ui/main_menu.gd:57
+#: scripts/ui/main_menu.gd:67
+#: scripts/ui/type_chart_screen.gd:31
 msgid "Tabla de tipos"
 msgstr "Type chart"
 
-#: scripts/ui/main_menu.gd:58
-#: scripts/ui/main_menu.gd:300
+#: scripts/ui/main_menu.gd:68
+#: scripts/ui/main_menu.gd:332
 msgid "Opciones"
 msgstr "Options"
 
-#: scripts/ui/main_menu.gd:59
-#: scripts/ui/main_menu.gd:381
+#: scripts/ui/main_menu.gd:69
+#: scripts/ui/main_menu.gd:399
 msgid "Acerca de"
 msgstr "About"
 
-#: scripts/ui/main_menu.gd:60
+#: scripts/ui/main_menu.gd:70
 msgid "Salir"
 msgstr "Quit"
 
-#: scripts/ui/main_menu.gd:62
+#: scripts/ui/main_menu.gd:74
 msgid "vacío"
 msgstr "empty"
 
-#: scripts/ui/main_menu.gd:138
-#: scripts/ui/tower.gd:124
+#: scripts/ui/main_menu.gd:183
+#: scripts/ui/tower.gd:125
 msgid "Tu equipo:"
 msgstr "Your team:"
 
-#: scripts/ui/main_menu.gd:153
+#: scripts/ui/main_menu.gd:198
 msgid "Dificultad:"
 msgstr "Difficulty:"
 
-#: scripts/ui/main_menu.gd:170
+#: scripts/ui/main_menu.gd:215
 msgid "Escenario:"
 msgstr "Map:"
 
-#: scripts/ui/main_menu.gd:182
-#: scripts/ui/map_editor.gd:353
-#: scripts/ui/tower.gd:76
+#: scripts/ui/main_menu.gd:227
+#: scripts/ui/map_editor.gd:356
+#: scripts/ui/tower.gd:75
 msgid "Tablero"
 msgstr "Board"
 
-#: scripts/ui/main_menu.gd:186
+#: scripts/ui/main_menu.gd:231
 msgid "▦  Cuadrícula"
 msgstr "▦  Square grid"
 
-#: scripts/ui/main_menu.gd:186
+#: scripts/ui/main_menu.gd:231
 msgid "⬢  Hexágonos"
 msgstr "⬢  Hexagons"
 
-#: scripts/ui/main_menu.gd:195
+#: scripts/ui/main_menu.gd:240
 msgid "Campo"
 msgstr "Field"
 
-#: scripts/ui/main_menu.gd:201
+#: scripts/ui/main_menu.gd:246
 msgid "🎲  Aleatorio"
 msgstr "🎲  Random"
 
-#: scripts/ui/main_menu.gd:213
+#: scripts/ui/main_menu.gd:258
 msgid "Clima"
 msgstr "Weather"
 
-#: scripts/ui/main_menu.gd:217
+#: scripts/ui/main_menu.gd:262
 msgid "🎲 Aleatorio"
 msgstr "🎲 Random"
 
-#: scripts/ui/main_menu.gd:229
+#: scripts/ui/main_menu.gd:274
 msgid "El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo."
 msgstr "The rival is random (Pokémon and moves), with as many Pokémon as your team."
 
-#: scripts/ui/main_menu.gd:234
-#: scripts/ui/tower.gd:406
+#: scripts/ui/main_menu.gd:279
+#: scripts/ui/tower.gd:409
 msgid "Cancelar"
 msgstr "Cancel"
 
-#: scripts/ui/main_menu.gd:235
+#: scripts/ui/main_menu.gd:280
 msgid "¡A combatir!"
 msgstr "Battle!"
 
-#: scripts/ui/main_menu.gd:242
+#: scripts/ui/main_menu.gd:287
 msgid "Partida rápida (¡arma tu equipo!)"
 msgstr "Quick battle (build your team!)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/main_menu.gd:246
+#: scripts/ui/main_menu.gd:291
 msgid "%s  (%d Pokémon)"
 msgstr "%s  (%d Pokémon)"
 
-#: scripts/ui/main_menu.gd:249
+#: scripts/ui/main_menu.gd:294
 msgid "Generado al azar"
 msgstr "Randomly generated"
 
-#: scripts/ui/main_menu.gd:260
+#: scripts/ui/main_menu.gd:305
 msgid "Este equipo está vacío: elige otro o complétalo en el editor."
 msgstr "This team is empty: pick another one or fill it in the editor."
 
-#: scripts/ui/main_menu.gd:308
-#: scripts/ui/pause_menu.gd:38
+#: scripts/ui/main_menu.gd:341
+#: scripts/ui/pause_menu.gd:27
 msgid "General"
 msgstr "Master"
 
-#: scripts/ui/main_menu.gd:308
-#: scripts/ui/pause_menu.gd:38
+#: scripts/ui/main_menu.gd:341
+#: scripts/ui/pause_menu.gd:27
 msgid "Música"
 msgstr "Music"
 
-#: scripts/ui/main_menu.gd:308
-#: scripts/ui/pause_menu.gd:38
+#: scripts/ui/main_menu.gd:341
+#: scripts/ui/pause_menu.gd:27
 msgid "Efectos"
 msgstr "Sound effects"
 
-#: scripts/ui/main_menu.gd:327
+#: scripts/ui/main_menu.gd:360
 msgid "Velocidad de combate"
 msgstr "Battle speed"
 
-#: scripts/ui/main_menu.gd:332
+#: scripts/ui/main_menu.gd:365
 msgid "Calidad gráfica"
 msgstr "Graphics quality"
 
-#: scripts/ui/main_menu.gd:335
+#: scripts/ui/main_menu.gd:368
 msgid "Idioma"
 msgstr "Language"
 
-#: scripts/ui/main_menu.gd:338
+#: scripts/ui/main_menu.gd:371
 msgid "Listo"
 msgstr "Done"
 
-#: scripts/ui/main_menu.gd:347
+#: scripts/ui/main_menu.gd:378
 msgid ""
 "[center][b]Poké Tactics[/b] es un proyecto de fans, gratuito y sin ánimo de lucro.\n"
 "No está afiliado a Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.[/center]\n"
@@ -414,131 +418,129 @@ msgid "Cargado: %s"
 msgstr "Loaded: %s"
 
 #: scripts/ui/map_editor.gd:329
-#: scripts/ui/tower.gd:34
+#: scripts/ui/team_editor.gd:46
+#: scripts/ui/tower.gd:32
+#: scripts/ui/type_chart_screen.gd:31
 msgid "← Menú"
 msgstr "← Menu"
 
-#: scripts/ui/map_editor.gd:332
-msgid "  Editor de escenarios  "
-msgstr "  Map editor  "
-
-#: scripts/ui/map_editor.gd:334
+#: scripts/ui/map_editor.gd:335
 msgid "Nombre del escenario"
 msgstr "Map name"
 
-#: scripts/ui/map_editor.gd:337
+#: scripts/ui/map_editor.gd:338
 msgid "💾 Guardar"
 msgstr "💾 Save"
 
-#: scripts/ui/map_editor.gd:341
+#: scripts/ui/map_editor.gd:342
 msgid "Cargar"
 msgstr "Load"
 
-#: scripts/ui/map_editor.gd:342
+#: scripts/ui/map_editor.gd:343
 msgid "▶ Probar"
 msgstr "▶ Test"
 
-#: scripts/ui/map_editor.gd:358
+#: scripts/ui/map_editor.gd:361
 msgid "Ancho "
 msgstr "Width "
 
-#: scripts/ui/map_editor.gd:360
+#: scripts/ui/map_editor.gd:363
 msgid "  Alto "
 msgstr "  Height "
 
-#: scripts/ui/map_editor.gd:363
+#: scripts/ui/map_editor.gd:366
 #: scripts/ui/tower.gd:80
 msgid "▦ Cuadrícula"
 msgstr "▦ Square grid"
 
-#: scripts/ui/map_editor.gd:364
+#: scripts/ui/map_editor.gd:367
 #: scripts/ui/tower.gd:80
 msgid "⬢ Hexágonos"
 msgstr "⬢ Hexagons"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:372
+#: scripts/ui/map_editor.gd:375
 msgid "Gimnasio: %s"
 msgstr "Gym: %s"
 
-#: scripts/ui/map_editor.gd:372
+#: scripts/ui/map_editor.gd:375
 msgid "neutral"
 msgstr "neutral"
 
-#: scripts/ui/map_editor.gd:373
+#: scripts/ui/map_editor.gd:376
 msgid "Estilo del gimnasio (solo cuenta en el campo Gimnasio)"
 msgstr "Gym style (only used on the Gym field)"
 
-#: scripts/ui/map_editor.gd:388
+#: scripts/ui/map_editor.gd:391
 msgid "Generar al azar"
 msgstr "Generate randomly"
 
-#: scripts/ui/map_editor.gd:389
+#: scripts/ui/map_editor.gd:392
 msgid "Vacío"
 msgstr "Empty"
 
-#: scripts/ui/map_editor.gd:390
+#: scripts/ui/map_editor.gd:393
 msgid "Cambiar tamaño o tablero rehace el mapa."
 msgstr "Changing the size or board rebuilds the map."
 
-#: scripts/ui/map_editor.gd:393
+#: scripts/ui/map_editor.gd:396
 msgid "Herramienta"
 msgstr "Tool"
 
-#: scripts/ui/map_editor.gd:395
+#: scripts/ui/map_editor.gd:398
 msgid "⛰ Altura"
 msgstr "⛰ Height"
 
-#: scripts/ui/map_editor.gd:395
+#: scripts/ui/map_editor.gd:398
 msgid "🟩 Suelo"
 msgstr "🟩 Ground"
 
-#: scripts/ui/map_editor.gd:395
+#: scripts/ui/map_editor.gd:398
 msgid "🌲 Obstáculo"
 msgstr "🌲 Obstacle"
 
-#: scripts/ui/map_editor.gd:396
+#: scripts/ui/map_editor.gd:399
 msgid "🔵 Zona jugador"
 msgstr "🔵 Player zone"
 
-#: scripts/ui/map_editor.gd:396
+#: scripts/ui/map_editor.gd:399
 msgid "🔴 Zona rival"
 msgstr "🔴 Rival zone"
 
-#: scripts/ui/map_editor.gd:396
+#: scripts/ui/map_editor.gd:399
 msgid "👾 Rival"
 msgstr "👾 Rival"
 
-#: scripts/ui/map_editor.gd:407
+#: scripts/ui/map_editor.gd:415
 msgid "Pincel"
 msgstr "Brush"
 
-#: scripts/ui/map_editor.gd:407
+#: scripts/ui/map_editor.gd:415
 msgid "1 casilla"
 msgstr "1 tile"
 
-#: scripts/ui/map_editor.gd:407
+#: scripts/ui/map_editor.gd:415
 msgid "Radio 1"
 msgstr "Radius 1"
 
-#: scripts/ui/map_editor.gd:407
+#: scripts/ui/map_editor.gd:415
 msgid "Radio 2"
 msgstr "Radius 2"
 
-#: scripts/ui/map_editor.gd:409
+#: scripts/ui/map_editor.gd:417
 #: scripts/grid/biome.gd:27
 msgid "Suelo"
 msgstr "Ground"
 
-#: scripts/ui/map_editor.gd:411
+#: scripts/ui/map_editor.gd:419
 msgid "Obstáculo"
 msgstr "Obstacle"
 
-#: scripts/ui/map_editor.gd:412
+#: scripts/ui/map_editor.gd:420
 msgid "Rival"
 msgstr "Rival"
 
-#: scripts/ui/map_editor.gd:429
+#: scripts/ui/map_editor.gd:452
 msgid "Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
 msgstr "Q/E: rotate · Wheel: zoom · WASD/middle button: move camera"
 
@@ -570,63 +572,59 @@ msgstr "Left click: place the chosen rival (with its default moves) · Right cli
 msgid "Abandonar (volver al menú)"
 msgstr "Quit (back to menu)"
 
-#: scripts/ui/pause_menu.gd:28
+#: scripts/ui/pause_menu.gd:15
 msgid "Pausa"
 msgstr "Pause"
 
-#: scripts/ui/pause_menu.gd:31
+#: scripts/ui/pause_menu.gd:19
 msgid "Continuar"
 msgstr "Continue"
 
-#: scripts/ui/pause_menu.gd:51
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/pause_menu.gd:40
+#: scripts/ui/ui_kit.gd:58
 msgid "Velocidad"
 msgstr "Speed"
 
-#: scripts/ui/pause_menu.gd:53
+#: scripts/ui/pause_menu.gd:42
 msgid "Gráficos"
 msgstr "Graphics"
 
-#: scripts/ui/team_editor.gd:49
-msgid "  Editor de equipo"
-msgstr "  Team editor"
-
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:63
+#: scripts/ui/team_editor.gd:61
 msgid "Pokémon disponibles (%d)"
 msgstr "Available Pokémon (%d)"
 
-#: scripts/ui/team_editor.gd:65
+#: scripts/ui/team_editor.gd:63
 msgid "Buscar por nombre, número o tipo…"
 msgstr "Search by name, number or type…"
 
-#: scripts/ui/team_editor.gd:101
+#: scripts/ui/team_editor.gd:99
 msgid "Ver animaciones"
 msgstr "View animations"
 
-#: scripts/ui/team_editor.gd:102
+#: scripts/ui/team_editor.gd:101
 msgid "Reproduce sus animaciones y las de cada ataque"
 msgstr "Plays its animations and those of each move"
 
-#: scripts/ui/team_editor.gd:108
+#: scripts/ui/team_editor.gd:107
 msgid "Agregar al equipo"
 msgstr "Add to team"
 
-#: scripts/ui/team_editor.gd:130
+#: scripts/ui/team_editor.gd:129
 msgid "Nombre del equipo"
 msgstr "Team name"
 
-#: scripts/ui/team_editor.gd:135
-#: scripts/ui/team_editor.gd:485
-#: scripts/ui/team_editor.gd:487
+#: scripts/ui/team_editor.gd:134
+#: scripts/ui/team_editor.gd:518
+#: scripts/ui/team_editor.gd:520
 msgid "Borrar"
 msgstr "Delete"
 
-#: scripts/ui/team_editor.gd:136
+#: scripts/ui/team_editor.gd:135
 msgid "Borrar este equipo"
 msgstr "Delete this team"
 
-#: scripts/ui/team_editor.gd:144
+#: scripts/ui/team_editor.gd:143
 msgid ""
 "Clic en un miembro del equipo para\n"
 "elegir sus ataques. El orden del equipo\n"
@@ -645,105 +643,105 @@ msgid "Todos los tipos"
 msgstr "All types"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:263
+#: scripts/ui/team_editor.gd:284
 msgid "(%d nadando)"
 msgstr "(%d swimming)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:264
+#: scripts/ui/team_editor.gd:285
 msgid "Movimiento %d%s · Salto %d · Talla %s"
 msgstr "Move %d%s · Jump %d · Size %s"
 
-#: scripts/ui/team_editor.gd:267
-#: scripts/ui/type_chart_screen.gd:115
+#: scripts/ui/team_editor.gd:288
+#: scripts/ui/type_chart_screen.gd:148
 msgid "Débil a"
 msgstr "Weak to"
 
-#: scripts/ui/team_editor.gd:267
-#: scripts/ui/type_chart_screen.gd:116
+#: scripts/ui/team_editor.gd:288
+#: scripts/ui/type_chart_screen.gd:149
 msgid "Resiste"
 msgstr "Resists"
 
-#: scripts/ui/team_editor.gd:267
-#: scripts/ui/type_chart_screen.gd:117
+#: scripts/ui/team_editor.gd:288
+#: scripts/ui/type_chart_screen.gd:150
 msgid "Inmune a"
 msgstr "Immune to"
 
-#: scripts/ui/team_editor.gd:292
+#: scripts/ui/team_editor.gd:313
 msgid "Género:"
 msgstr "Gender:"
 
-#: scripts/ui/team_editor.gd:295
+#: scripts/ui/team_editor.gd:316
 msgid "sin género"
 msgstr "genderless"
 
-#: scripts/ui/team_editor.gd:318
+#: scripts/ui/team_editor.gd:339
 msgid "Objeto:"
 msgstr "Item:"
 
-#: scripts/ui/team_editor.gd:323
+#: scripts/ui/team_editor.gd:344
 msgid "— ninguno —"
 msgstr "— none —"
 
-#: scripts/ui/team_editor.gd:347
+#: scripts/ui/team_editor.gd:368
 msgid "Habilidad:"
 msgstr "Ability:"
 
-#: scripts/ui/team_editor.gd:352
+#: scripts/ui/team_editor.gd:373
 msgid "(oculta)"
 msgstr "(hidden)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:374
+#: scripts/ui/team_editor.gd:395
 msgid "Ataques de tu %s (%d/%d)"
 msgstr "Your %s's moves (%d/%d)"
 
-#: scripts/ui/team_editor.gd:375
+#: scripts/ui/team_editor.gd:396
 msgid "Ataques por defecto"
 msgstr "Default moves"
 
-#: scripts/ui/team_editor.gd:392
+#: scripts/ui/team_editor.gd:426
 msgid "Olvidar este ataque"
 msgstr "Forget this move"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:421
+#: scripts/ui/team_editor.gd:454
 msgid "Puede aprender %d ataques: quita uno (✕) para elegir otro"
 msgstr "Can learn %d moves: remove one (✕) to pick another"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:422
+#: scripts/ui/team_editor.gd:455
 msgid "Puede aprender %d ataques: clic para enseñárselo"
 msgstr "Can learn %d moves: click to teach it"
 
-#: scripts/ui/team_editor.gd:454
+#: scripts/ui/team_editor.gd:487
 msgid "+ Nuevo"
 msgstr "+ New"
 
-#: scripts/ui/team_editor.gd:482
-#: scripts/ui/team_editor.gd:483
+#: scripts/ui/team_editor.gd:515
+#: scripts/ui/team_editor.gd:516
 msgid "¿Seguro?"
 msgstr "Sure?"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:495
+#: scripts/ui/team_editor.gd:528
 msgid "Tu equipo (%d/%d)"
 msgstr "Your team (%d/%d)"
 
-#: scripts/ui/team_editor.gd:512
+#: scripts/ui/team_editor.gd:546
 msgid "Quitar del equipo"
 msgstr "Remove from team"
 
-#: scripts/ui/team_editor.gd:520
+#: scripts/ui/team_editor.gd:554
 msgid "— vacío —"
 msgstr "— empty —"
 
-#: scripts/ui/team_editor.gd:533
+#: scripts/ui/team_editor.gd:578
 msgid "Equipo completo (6/6)"
 msgstr "Team full (6/6)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/team_editor.gd:533
+#: scripts/ui/team_editor.gd:578
 msgid "Agregar %s al equipo"
 msgstr "Add %s to the team"
 
@@ -759,15 +757,11 @@ msgstr "Spe"
 msgid "Est"
 msgstr "Sta"
 
-#: scripts/ui/tower.gd:37
-msgid "  Torre de Batallas"
-msgstr "  Battle Tower"
-
-#: scripts/ui/tower.gd:73
+#: scripts/ui/tower.gd:72
 msgid "Nueva subida a la Torre"
 msgstr "New Tower climb"
 
-#: scripts/ui/tower.gd:74
+#: scripts/ui/tower.gd:73
 msgid ""
 "Elige 4 Pokémon básicos (de 6 al azar cada vez), empiezan a nivel 5.\n"
 "Cada piso es un combate contra Pokémon salvajes: captúralos con Poké Balls,\n"
@@ -778,8 +772,8 @@ msgstr ""
 "level up, evolve and climb as high as you can."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:75
-#: scripts/ui/tower.gd:183
+#: scripts/ui/tower.gd:74
+#: scripts/ui/tower.gd:212
 msgid "Récord: piso %d"
 msgstr "Record: floor %d"
 
@@ -787,68 +781,68 @@ msgstr "Record: floor %d"
 msgid "Dificultad"
 msgstr "Difficulty"
 
-#: scripts/ui/tower.gd:104
+#: scripts/ui/tower.gd:105
 msgid "¡Empezar!"
 msgstr "Start!"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:122
+#: scripts/ui/tower.gd:123
 msgid "Elige tu Pokémon (%d de %d)"
 msgstr "Choose your Pokémon (%d of %d)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:154
+#: scripts/ui/tower.gd:157
 msgid "Total de stats: %d · Mov %d"
 msgstr "Stat total: %d · Move %d"
 
-#: scripts/ui/tower.gd:155
+#: scripts/ui/tower.gd:158
 msgid "Ataques a nivel 5:"
 msgstr "Moves at level 5:"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:156
+#: scripts/ui/tower.gd:159
 msgid "Evoluciona a nivel %d"
 msgstr "Evolves at level %d"
 
-#: scripts/ui/tower.gd:156
+#: scripts/ui/tower.gd:159
 msgid "No evoluciona"
 msgstr "Doesn't evolve"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:176
+#: scripts/ui/tower.gd:203
 msgid "Piso %d"
 msgstr "Floor %d"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:178
+#: scripts/ui/tower.gd:207
 msgid "Medallas: %d"
 msgstr "Badges: %d"
 
-#: scripts/ui/tower.gd:179
+#: scripts/ui/tower.gd:208
 msgid "Vence a los líderes de gimnasio (cada 10 pisos)."
 msgstr "Beat the Gym Leaders (every 10 floors)."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:184
+#: scripts/ui/tower.gd:213
 msgid "Dificultad: %s"
 msgstr "Difficulty: %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:188
+#: scripts/ui/tower.gd:219
 msgid "Próximo piso: %s"
 msgstr "Next floor: %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:202
+#: scripts/ui/tower.gd:235
 msgid "Equipo (%d/%d)"
 msgstr "Team (%d/%d)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:206
+#: scripts/ui/tower.gd:239
 msgid "Caja (%d)"
 msgstr "Box (%d)"
 
-#: scripts/ui/tower.gd:215
+#: scripts/ui/tower.gd:248
 msgid ""
 "Captura Pokémon salvajes con Poké Balls\n"
 "durante los combates."
@@ -856,15 +850,15 @@ msgstr ""
 "Catch wild Pokémon with Poké Balls\n"
 "during battles."
 
-#: scripts/ui/tower.gd:235
+#: scripts/ui/tower.gd:269
 msgid "Último combate"
 msgstr "Last battle"
 
-#: scripts/ui/tower.gd:235
+#: scripts/ui/tower.gd:269
 msgid "Antes de subir"
 msgstr "Before climbing"
 
-#: scripts/ui/tower.gd:241
+#: scripts/ui/tower.gd:275
 msgid ""
 "Tu equipo se cura por completo antes de cada piso.\n"
 "\n"
@@ -874,35 +868,36 @@ msgstr ""
 "\n"
 "Choose the 4 moves of each Pokémon among the ones it has learned, and swap team members for the ones you caught."
 
-#: scripts/ui/tower.gd:244
+#: scripts/ui/tower.gd:278
 msgid "Mochila"
 msgstr "Bag"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:245
+#: scripts/ui/tower.gd:279
 msgid "Clic: equipar a %s (o usar la piedra)."
 msgstr "Click: give it to %s (or use the stone)."
 
-#: scripts/ui/tower.gd:255
+#: scripts/ui/tower.gd:291
 msgid "Vacía: a veces ganas un objeto al superar un piso, o cómpralos en la Tienda."
 msgstr "Empty: sometimes you win an item when clearing a floor, or buy them in the Shop."
 
-#: scripts/ui/tower.gd:274
+#: scripts/ui/tower.gd:311
+#: scripts/ui/tower.gd:753
 msgid "Abandonar la torre"
 msgstr "Leave the tower"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:275
+#: scripts/ui/tower.gd:312
 msgid "¡Subir al piso %d!"
 msgstr "Climb to floor %d!"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:322
+#: scripts/ui/tower.gd:339
 msgid "¡Piso %d superado!"
 msgstr "Floor %d cleared!"
 
-#: scripts/ui/tower.gd:353
-#: scripts/ui/tower.gd:429
+#: scripts/ui/tower.gd:373
+#: scripts/ui/tower.gd:431
 msgid "¡Genial!"
 msgstr "Great!"
 
@@ -912,316 +907,312 @@ msgid "¿Eh? ¡%s está evolucionando!"
 msgstr "What? %s is evolving!"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:427
+#: scripts/ui/tower.gd:429
 msgid "¡Enhorabuena! ¡%s evolucionó a %s!"
 msgstr "Congratulations! %s evolved into %s!"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:443
+#: scripts/ui/tower.gd:445
 msgid "¿Eh? %s dejó de evolucionar."
 msgstr "Huh? %s stopped evolving."
 
-#: scripts/ui/tower.gd:444
+#: scripts/ui/tower.gd:446
 msgid "Puedes evolucionarlo luego desde su ficha."
 msgstr "You can evolve it later from its summary."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:444
+#: scripts/ui/tower.gd:446
 msgid "No se ha gastado: %s."
 msgstr "Not used up: %s."
 
-#: scripts/ui/tower.gd:445
+#: scripts/ui/tower.gd:447
 msgid "Vale"
 msgstr "OK"
 
-#: scripts/ui/tower.gd:499
+#: scripts/ui/tower.gd:492
 msgid "Tienda"
 msgstr "Shop"
 
-#: scripts/ui/tower.gd:502
+#: scripts/ui/tower.gd:495
 msgid "Bloqueada"
 msgstr "Locked"
 
-#: scripts/ui/tower.gd:502
+#: scripts/ui/tower.gd:495
 msgid "Bloquear"
 msgstr "Lock"
 
-#: scripts/ui/tower.gd:510
+#: scripts/ui/tower.gd:503
 msgid "Con el candado puesto, al superar el piso la tienda conserva lo que queda a la venta (el candado se quita solo al llegar)."
 msgstr "While locked, the shop keeps what is left for sale when you clear the floor (the lock is removed on arrival)."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:516
+#: scripts/ui/tower.gd:509
 msgid "Tienes %d ₽ · se guarda para el próximo piso."
 msgstr "You have %d ₽ · kept for the next floor."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:516
+#: scripts/ui/tower.gd:509
 msgid "Tienes %d ₽ · los objetos cambian en cada piso."
 msgstr "You have %d ₽ · items change every floor."
 
-#: scripts/ui/tower.gd:531
+#: scripts/ui/tower.gd:526
 msgid "No queda nada más a la venta en este piso."
 msgstr "Nothing else is for sale on this floor."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:549
+#: scripts/ui/tower.gd:544
 msgid "%s Tienes %d."
 msgstr "%s You have %d."
 
-#: scripts/ui/tower.gd:601
+#: scripts/ui/tower.gd:600
 msgid "Comprar"
 msgstr "Buy"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:624
-#: scripts/ui/tower.gd:669
+#: scripts/ui/tower.gd:625
+#: scripts/ui/tower.gd:671
 msgid "%s  Nv. %d"
 msgstr "%s  Lv. %d"
 
-#: scripts/ui/tower.gd:646
+#: scripts/ui/tower.gd:647
 msgid "Mandar a la caja"
 msgstr "Send to box"
 
-#: scripts/ui/tower.gd:646
+#: scripts/ui/tower.gd:647
 msgid "Pasar al equipo"
 msgstr "Move to team"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:671
+#: scripts/ui/tower.gd:673
 msgid "Experiencia: %d / %d"
 msgstr "Experience: %d / %d"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:672
+#: scripts/ui/tower.gd:674
 msgid "Habilidad: %s"
 msgstr "Ability: %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:674
+#: scripts/ui/tower.gd:676
 msgid "Objeto: %s"
 msgstr "Item: %s"
 
-#: scripts/ui/tower.gd:683
+#: scripts/ui/tower.gd:685
 msgid "Quitar"
 msgstr "Remove"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:690
+#: scripts/ui/tower.gd:692
 msgid "Evoluciona con: %s"
 msgstr "Evolves with: %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:693
+#: scripts/ui/tower.gd:695
 msgid "Evoluciona a %s a nivel %d"
 msgstr "Evolves into %s at level %d"
 
-#: scripts/ui/tower.gd:695
+#: scripts/ui/tower.gd:697
 msgid "Evolucionar"
 msgstr "Evolve"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:698
+#: scripts/ui/tower.gd:700
 msgid "Ataques (%d/4) — clic para quitar o añadir"
 msgstr "Moves (%d/4) — click to remove or add"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:702
+#: scripts/ui/tower.gd:707
 msgid "Pot %d"
 msgstr "Pow %d"
 
-#: scripts/ui/tower.gd:712
+#: scripts/ui/tower.gd:717
 msgid "(sin ataques aprendidos por nivel)"
 msgstr "(no moves learned by level)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:729
+#: scripts/ui/tower.gd:734
 msgid "%s no reacciona: %s."
 msgstr "%s doesn't react: %s."
 
-#: scripts/ui/tower.gd:749
+#: scripts/ui/tower.gd:759
 msgid "¿Abandonar esta subida? Se pierde el equipo (el récord se conserva)."
 msgstr "Leave this climb? The team is lost (the record is kept)."
 
-#: scripts/ui/tower.gd:750
-msgid "Abandonar"
-msgstr "Leave"
-
-#: scripts/ui/tower.gd:751
+#: scripts/ui/tower.gd:764
 msgid "Seguir"
 msgstr "Keep going"
 
-#: scripts/ui/tower.gd:772
+#: scripts/ui/tower.gd:765
+msgid "Abandonar"
+msgstr "Leave"
+
+#: scripts/ui/tower.gd:786
 msgid "Fin de la subida"
 msgstr "Climb over"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:773
+#: scripts/ui/tower.gd:787
 msgid "Llegaste al piso %d. Récord: piso %d."
 msgstr "You reached floor %d. Record: floor %d."
 
-#: scripts/ui/tower.gd:776
+#: scripts/ui/tower.gd:790
 msgid "Tu equipo final:"
 msgstr "Your final team:"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:776
+#: scripts/ui/tower.gd:790
 msgid "%s Nv.%d"
 msgstr "%s Lv.%d"
 
-#: scripts/ui/tower.gd:777
+#: scripts/ui/tower.gd:791
 msgid "Nueva subida"
 msgstr "New climb"
 
-#: scripts/ui/type_chart_screen.gd:27
-msgid "  Tabla de tipos"
-msgstr "  Type chart"
-
-#: scripts/ui/type_chart_screen.gd:38
+#: scripts/ui/type_chart_screen.gd:44
 msgid "Filas: tipo del ataque · Columnas: tipo del Pokémon que lo recibe · Clic en un tipo para ver su ficha"
 msgstr "Rows: move type · Columns: type of the Pokémon hit · Click a type to see its details"
 
-#: scripts/ui/type_chart_screen.gd:45
+#: scripts/ui/type_chart_screen.gd:54
 msgid "ATQ \\ DEF"
 msgstr "ATK \\ DEF"
 
-#: scripts/ui/type_chart_screen.gd:68
+#: scripts/ui/type_chart_screen.gd:83
 msgid "Muy eficaz"
 msgstr "Super effective"
 
-#: scripts/ui/type_chart_screen.gd:68
+#: scripts/ui/type_chart_screen.gd:83
 msgid "Poco eficaz"
 msgstr "Not very effective"
 
-#: scripts/ui/type_chart_screen.gd:68
+#: scripts/ui/type_chart_screen.gd:83
 msgid "Sin efecto"
 msgstr "No effect"
 
-#: scripts/ui/type_chart_screen.gd:109
+#: scripts/ui/type_chart_screen.gd:143
 msgid "Atacando"
 msgstr "Attacking"
 
-#: scripts/ui/type_chart_screen.gd:110
+#: scripts/ui/type_chart_screen.gd:144
 msgid "Muy eficaz contra"
 msgstr "Super effective against"
 
-#: scripts/ui/type_chart_screen.gd:111
+#: scripts/ui/type_chart_screen.gd:145
 msgid "Poco eficaz contra"
 msgstr "Not very effective against"
 
-#: scripts/ui/type_chart_screen.gd:112
+#: scripts/ui/type_chart_screen.gd:146
 msgid "No afecta a"
 msgstr "Doesn't affect"
 
-#: scripts/ui/type_chart_screen.gd:114
+#: scripts/ui/type_chart_screen.gd:147
 msgid "Defendiendo"
 msgstr "Defending"
 
-#: scripts/ui/type_chart_screen.gd:122
+#: scripts/ui/type_chart_screen.gd:155
 msgid "En el roster:"
 msgstr "In the roster:"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "NOR"
 msgstr "NOR"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "FUE"
 msgstr "FIR"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "AGU"
 msgstr "WAT"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "ELÉ"
 msgstr "ELE"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "PLA"
 msgstr "GRA"
 
-#: scripts/ui/ui_kit.gd:8
+#: scripts/ui/ui_kit.gd:51
 msgid "HIE"
 msgstr "ICE"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "LUC"
 msgstr "FIG"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "VEN"
 msgstr "POI"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "TIE"
 msgstr "GRO"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "VOL"
 msgstr "FLY"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "PSÍ"
 msgstr "PSY"
 
-#: scripts/ui/ui_kit.gd:9
+#: scripts/ui/ui_kit.gd:52
 msgid "BIC"
 msgstr "BUG"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "ROC"
 msgstr "ROC"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "FAN"
 msgstr "GHO"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "DRA"
 msgstr "DRA"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "SIN"
 msgstr "DAR"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "ACE"
 msgstr "STE"
 
-#: scripts/ui/ui_kit.gd:10
+#: scripts/ui/ui_kit.gd:53
 msgid "HAD"
 msgstr "FAI"
 
-#: scripts/ui/ui_kit.gd:13
+#: scripts/ui/ui_kit.gd:56
 msgid "Fís."
 msgstr "Phys."
 
-#: scripts/ui/ui_kit.gd:13
+#: scripts/ui/ui_kit.gd:56
 msgid "Esp."
 msgstr "Spec."
 
-#: scripts/ui/ui_kit.gd:13
+#: scripts/ui/ui_kit.gd:56
 msgid "Est."
 msgstr "Stat."
 
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/ui_kit.gd:58
 msgid "PS"
 msgstr "HP"
 
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/ui_kit.gd:58
 msgid "Ataque"
 msgstr "Attack"
 
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/ui_kit.gd:58
 msgid "Defensa"
 msgstr "Defense"
 
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/ui_kit.gd:58
 msgid "At. Esp."
 msgstr "Sp. Atk"
 
-#: scripts/ui/ui_kit.gd:15
+#: scripts/ui/ui_kit.gd:58
 msgid "Def. Esp."
 msgstr "Sp. Def"
 

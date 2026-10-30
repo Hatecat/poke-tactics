@@ -10,665 +10,665 @@ msgid "[Sin efecto en el tablero (todavía).]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:232
+#: scripts/battle/battle.gd:233
 msgid "%s · %s · %s %s. Coloca a tu equipo en la zona azul."
 msgstr ""
 
-#: scripts/battle/battle.gd:233
+#: scripts/battle/battle.gd:234
 msgid "tablero cuadrado"
 msgstr ""
 
-#: scripts/battle/battle.gd:233
+#: scripts/battle/battle.gd:234
 msgid "tablero hexagonal"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:238
+#: scripts/battle/battle.gd:239
 msgid "[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:239
+#: scripts/battle/battle.gd:240
 msgid "¡%s quiere luchar!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:313
+#: scripts/battle/battle.gd:314
 msgid "  [color=#aaaaaa](~%d rondas)[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:314
+#: scripts/battle/battle.gd:315
 msgid "%s (anulado)"
 msgstr ""
 
-#: scripts/battle/battle.gd:323
+#: scripts/battle/battle.gd:324
 msgid "Viento Afín (tuyo)"
 msgstr ""
 
-#: scripts/battle/battle.gd:323
+#: scripts/battle/battle.gd:324
 msgid "Viento Afín (rival)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:364
+#: scripts/battle/battle.gd:365
 msgid "¡%s se debilitó!"
 msgstr ""
 
-#: scripts/battle/battle.gd:402
+#: scripts/battle/battle.gd:403
 msgid "Despliegue: clic en uno de tus Pokémon y luego en una casilla de la zona azul"
 msgstr ""
 
-#: scripts/battle/battle.gd:447
+#: scripts/battle/battle.gd:448
 msgid "¡Comienza el combate!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:515
+#: scripts/battle/battle.gd:516
 msgid "El %s terminó."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:520
+#: scripts/battle/battle.gd:521
 msgid "Terminó: %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:529
+#: scripts/battle/battle.gd:530
 msgid "[b]— Turno de %s%s —[/b]"
 msgstr ""
 
-#: scripts/battle/battle.gd:529
+#: scripts/battle/battle.gd:530
 msgid " (otra vez)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:530
+#: scripts/battle/battle.gd:531
 msgid "¡%s vuelve a actuar!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:530
+#: scripts/battle/battle.gd:531
 msgid "Turno de %s"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:557
+#: scripts/battle/battle.gd:558
 msgid "Los cambios de {0} de {1} se disiparon."
 msgstr ""
 
-#: scripts/battle/battle.gd:564
+#: scripts/battle/battle.gd:565
 msgid "Zzz"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:565
+#: scripts/battle/battle.gd:566
 msgid "%s está dormido."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:569
+#: scripts/battle/battle.gd:570
 msgid "%s se despertó."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:574
+#: scripts/battle/battle.gd:575
 msgid "¡%s se descongeló!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:577
+#: scripts/battle/battle.gd:578
 msgid "%s está congelado."
 msgstr ""
 
-#: scripts/battle/battle.gd:581
+#: scripts/battle/battle.gd:582
 msgid "¡PAR!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:582
+#: scripts/battle/battle.gd:583
 msgid "%s está paralizado y no puede moverse."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:600
+#: scripts/battle/battle.gd:601
 msgid "%s sufre por el %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:611
+#: scripts/battle/battle.gd:612
 msgid "%s sufre por estar %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:625
+#: scripts/battle/battle.gd:626
 msgid "¡La Garra Rápida de %s le hará actuar antes!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:658
+#: scripts/battle/battle.gd:659
 msgid "¿Hacia dónde mira %s? Clic en una casilla · Enter: dejarlo así"
 msgstr ""
 
-#: scripts/battle/battle.gd:679
+#: scripts/battle/battle.gd:680
 msgid "¡Victoria!"
 msgstr ""
 
-#: scripts/battle/battle.gd:679
+#: scripts/battle/battle.gd:680
 msgid "Derrota..."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:681
+#: scripts/battle/battle.gd:682
 msgid "Derrota en el piso %d..."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:703
+#: scripts/battle/battle.gd:704
 msgid "Elige una acción para %s"
 msgstr ""
 
-#: scripts/battle/battle.gd:716
+#: scripts/battle/battle.gd:717
 msgid "Elige una casilla de destino (clic derecho: cancelar)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:730
+#: scripts/battle/battle.gd:731
 msgid "%s: elige el objetivo (clic derecho: cancelar)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:794
+#: scripts/battle/battle.gd:795
 msgid "%s: %d%% de captura · %s: %d"
 msgstr ""
 
-#: scripts/battle/battle.gd:835
+#: scripts/battle/battle.gd:836
 msgid "[color=#ffb060]¡Hay algo en medio! El ataque chocará antes.[/color]\n"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:838
+#: scripts/battle/battle.gd:839
 msgid "[color=#ffb060]¡%s está en la línea de tiro![/color]\n"
 msgstr ""
 
-#: scripts/battle/battle.gd:838
+#: scripts/battle/battle.gd:839
 msgid "Alguien"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:850
+#: scripts/battle/battle.gd:851
 msgid "%s: [color=#99ccff]está protegido[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:854
+#: scripts/battle/battle.gd:855
 msgid "%s: [color=#999999]su %s lo anula[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:858
-#: scripts/battle/battle.gd:861
+#: scripts/battle/battle.gd:859
+#: scripts/battle/battle.gd:862
 msgid "%s: %s (%d%% de acierto)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:864
+#: scripts/battle/battle.gd:865
 msgid "%d%% de acierto"
 msgstr ""
 
-#: scripts/battle/battle.gd:880
+#: scripts/battle/battle.gd:881
 msgid "[color=#888888]sin efecto[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:881
+#: scripts/battle/battle.gd:882
 msgid "[color=#7ee07e]×%s muy eficaz[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:882
+#: scripts/battle/battle.gd:883
 msgid "[color=#e08a7e]×%s poco eficaz[/color]"
 msgstr ""
 
-#: scripts/battle/battle.gd:883
+#: scripts/battle/battle.gd:884
 msgid "  [color=#ffcc44]¡puede debilitarlo![/color]"
 msgstr ""
 
-#: scripts/battle/battle.gd:884
+#: scripts/battle/battle.gd:885
 msgid "  [color=#ff7070](¡aliado!)[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:888
+#: scripts/battle/battle.gd:889
 msgid " · crít. %d%%"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:890
+#: scripts/battle/battle.gd:891
 msgid " · retroceso %d%%"
 msgstr ""
 
-#: scripts/battle/battle.gd:896
+#: scripts/battle/battle.gd:897
 msgid "desde arriba"
 msgstr ""
 
-#: scripts/battle/battle.gd:896
+#: scripts/battle/battle.gd:897
 msgid "desde abajo"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:898
+#: scripts/battle/battle.gd:899
 msgid " · %s golpes"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:899
+#: scripts/battle/battle.gd:900
 msgid "%s: %s · %d-%d de daño (PS %d)%s%s%s"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:904
+#: scripts/battle/battle.gd:905
 msgid "recupera %d PS"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:909
+#: scripts/battle/battle.gd:910
 msgid "pierde %d PS"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:911
+#: scripts/battle/battle.gd:912
 msgid "el clima pasa a %s"
 msgstr ""
 
-#: scripts/battle/battle.gd:918
+#: scripts/battle/battle.gd:919
 msgid "[color=#aaaaaa]Nadie en el área[/color]"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:964
+#: scripts/battle/battle.gd:965
 msgid "%d (%d nadando)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1005
+#: scripts/battle/battle.gd:1006
 msgid "%s no tiene nada que lanzar."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1018
+#: scripts/battle/battle.gd:1019
 msgid "%s usó [b]%s[/b]."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1033
+#: scripts/battle/battle.gd:1034
 msgid "¡Pero %s no tiene PS suficientes!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1039
+#: scripts/battle/battle.gd:1040
 msgid "¡Humedad impide %s!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1049
+#: scripts/battle/battle.gd:1050
 msgid "¡El ataque chocó contra un obstáculo!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1053
+#: scripts/battle/battle.gd:1054
 msgid "¡%s se interpuso en la trayectoria!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1069
+#: scripts/battle/battle.gd:1070
 msgid "¡Protegido!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1070
+#: scripts/battle/battle.gd:1071
 msgid "¡%s se protegió!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1073
+#: scripts/battle/battle.gd:1074
 msgid "¡El sustituto de %s lo bloqueó!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1083
+#: scripts/battle/battle.gd:1084
 msgid "Falló"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1084
+#: scripts/battle/battle.gd:1085
 msgid "¡%s esquivó el ataque!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1110
+#: scripts/battle/battle.gd:1111
 msgid "¡Golpeó %d vez! %s recibe %d de daño en total."
 msgid_plural "¡Golpeó %d veces! %s recibe %d de daño en total."
 msgstr[0] ""
 msgstr[1] ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1112
+#: scripts/battle/battle.gd:1113
 msgid "¡%d golpes!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1112
+#: scripts/battle/battle.gd:1113
 msgid "1 golpe"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1122
+#: scripts/battle/battle.gd:1123
 msgid "No tiene efecto en %s: %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1125
+#: scripts/battle/battle.gd:1126
 msgid "No tiene efecto en %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1128
+#: scripts/battle/battle.gd:1129
 msgid "No afecta a %s (mismo sexo o sin género)."
 msgstr ""
 
-#: scripts/battle/battle.gd:1136
+#: scripts/battle/battle.gd:1137
 msgid "...pero no había nadie."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1140
+#: scripts/battle/battle.gd:1141
 msgid "%s lanzó su %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1146
+#: scripts/battle/battle.gd:1147
 msgid "¡%s recuperó su %s!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1148
-#: scripts/battle/battle.gd:1247
-#: scripts/battle/battle.gd:1421
+#: scripts/battle/battle.gd:1149
+#: scripts/battle/battle.gd:1248
+#: scripts/battle/battle.gd:1422
 #: scripts/battle/effects.gd:693
 #: scripts/battle/effects.gd:701
 msgid "¡Pero falló!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1152
+#: scripts/battle/battle.gd:1153
 msgid "La Vidasfera daña a %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1156
+#: scripts/battle/battle.gd:1157
 #: scripts/battle/effects.gd:268
 msgid "¡%s absorbió Viscosecreción!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1168
+#: scripts/battle/battle.gd:1169
 msgid "%s sufre %d de daño por el retroceso."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1175
+#: scripts/battle/battle.gd:1176
 msgid "¡El clima cambió: %s %s!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1210
+#: scripts/battle/battle.gd:1211
 msgid "No pasará nada."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1213
+#: scripts/battle/battle.gd:1214
 msgid "Se transformará en %s: tipos, stats, habilidad y ataques."
 msgstr ""
 
-#: scripts/battle/battle.gd:1214
+#: scripts/battle/battle.gd:1215
 msgid "Aparecerá aquí al instante."
 msgstr ""
 
-#: scripts/battle/battle.gd:1226
+#: scripts/battle/battle.gd:1227
 msgid "¡Pero no pasó nada!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1241
+#: scripts/battle/battle.gd:1242
 msgid "¡%s se teletransportó!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1264
+#: scripts/battle/battle.gd:1265
 msgid "¡%s se transformó en %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1306
+#: scripts/battle/battle.gd:1307
 msgid "¡{0} de {1} lo hace inmune!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1308
+#: scripts/battle/battle.gd:1309
 msgid "¡{0} de {1} absorbe el ataque!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1313
+#: scripts/battle/battle.gd:1314
 msgid "¡{0} de {1} potencia sus ataques de fuego!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1315
+#: scripts/battle/battle.gd:1316
 msgid "¡{0} de {1} atrae el ataque!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1318
+#: scripts/battle/battle.gd:1319
 msgid "Globo Helio"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1319
+#: scripts/battle/battle.gd:1320
 msgid "¡%s flota con su Globo Helio!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1360
+#: scripts/battle/battle.gd:1361
 msgid "¡Golpe crítico!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1362
+#: scripts/battle/battle.gd:1363
 msgid "No afecta a %s..."
 msgstr ""
 
-#: scripts/battle/battle.gd:1365
+#: scripts/battle/battle.gd:1366
 msgid "¡Es muy eficaz!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1365
+#: scripts/battle/battle.gd:1366
 msgid "No es muy eficaz..."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1367
+#: scripts/battle/battle.gd:1368
 msgid "¡Es muy eficaz! (%d)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1369
+#: scripts/battle/battle.gd:1370
 msgid "No es muy eficaz... (%d)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1371
+#: scripts/battle/battle.gd:1372
 msgid "%s recibe %d de daño."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1386
+#: scripts/battle/battle.gd:1387
 msgid "¡%s retrocedió! Su turno se retrasa."
 msgstr ""
 
-#: scripts/battle/battle.gd:1387
+#: scripts/battle/battle.gd:1388
 msgid "¡Retrocede!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1405
+#: scripts/battle/battle.gd:1406
 msgid "¡{0} robó la {1} de {2}!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1410
+#: scripts/battle/battle.gd:1411
 msgid "¡%s perdió su %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1419
+#: scripts/battle/battle.gd:1420
 msgid "¡%s intercambió objetos con %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1424
+#: scripts/battle/battle.gd:1425
 msgid "¡{0} se comió la {1} de {2}!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1441
+#: scripts/battle/battle.gd:1442
 msgid "¡La {0} de {1} se quemó!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1486
+#: scripts/battle/battle.gd:1487
 msgid "%s recupera %d PS."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:1491
+#: scripts/battle/battle.gd:1492
 msgid "¡%s está arraigado y no se mueve!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1886
-#: scripts/battle/battle.gd:2384
+#: scripts/battle/battle.gd:1890
+#: scripts/battle/battle.gd:2407
 msgid "Mover"
 msgstr ""
 
-#: scripts/battle/battle.gd:1888
+#: scripts/battle/battle.gd:1892
 msgid "Terminar turno"
 msgstr ""
 
-#: scripts/battle/battle.gd:1895
+#: scripts/battle/battle.gd:1899
 msgid ""
 "Elige un Pokémon tuyo y luego\n"
 "una casilla azul para moverlo."
 msgstr ""
 
-#: scripts/battle/battle.gd:1897
+#: scripts/battle/battle.gd:1901
 msgid "¡Comenzar combate!"
 msgstr ""
 
-#: scripts/battle/battle.gd:1908
-#: scripts/battle/battle.gd:2061
+#: scripts/battle/battle.gd:1912
+#: scripts/battle/battle.gd:2090
 msgid "Volver al editor"
 msgstr ""
 
-#: scripts/battle/battle.gd:1909
+#: scripts/battle/battle.gd:1913
 msgid "Salir (el piso se reintenta después)"
 msgstr ""
 
-#: scripts/battle/battle.gd:1937
+#: scripts/battle/battle.gd:1941
 msgid "Orden si terminas ahora"
 msgstr ""
 
-#: scripts/battle/battle.gd:1999
+#: scripts/battle/battle.gd:2015
 msgid "Clic: seleccionar · Clic der.: cancelar · Esc: pausa · Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
 msgstr ""
 
-#: scripts/battle/battle.gd:2053
+#: scripts/battle/battle.gd:2082
 msgid "Reintentar"
 msgstr ""
 
-#: scripts/battle/battle.gd:2054
-#: scripts/battle/battle.gd:2061
+#: scripts/battle/battle.gd:2083
+#: scripts/battle/battle.gd:2090
 msgid "Menú principal"
 msgstr ""
 
-#: scripts/battle/battle.gd:2056
+#: scripts/battle/battle.gd:2085
 msgid "Revancha"
 msgstr ""
 
-#: scripts/battle/battle.gd:2057
+#: scripts/battle/battle.gd:2086
 msgid "Nuevo rival"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2120
+#: scripts/battle/battle.gd:2149
 msgid "¡%s se une al combate de tu lado!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2155
+#: scripts/battle/battle.gd:2184
 msgid "¡Victoria! Cada Pokémon de Cristina gana %d de experiencia."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2201
+#: scripts/battle/battle.gd:2230
 msgid "%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2208
+#: scripts/battle/battle.gd:2237
 msgid "¡%s lanza una %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2233
+#: scripts/battle/battle.gd:2262
 msgid "La %s no llegó a ningún Pokémon salvaje..."
 msgstr ""
 
-#: scripts/battle/battle.gd:2252
+#: scripts/battle/battle.gd:2281
 msgid "¡Se escapó!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2253
+#: scripts/battle/battle.gd:2282
 msgid "¡%s se escapó de la %s!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2258
+#: scripts/battle/battle.gd:2287
 msgid "¡%s ha sido capturado!"
 msgstr ""
 
-#: scripts/battle/battle.gd:2259
+#: scripts/battle/battle.gd:2288
 msgid "¡Capturado!"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2319
+#: scripts/battle/battle.gd:2350
 msgid "PP %d/%d"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2351
+#: scripts/battle/battle.gd:2374
 msgid "Intenta capturar a un Pokémon salvaje (mejor si está herido o dormido). %s"
 msgstr ""
 
-#: scripts/battle/battle.gd:2384
+#: scripts/battle/battle.gd:2407
 msgid "Mover  (inmovilizado)"
 msgstr ""
 
-#: scripts/battle/battle.gd:2389
+#: scripts/battle/battle.gd:2412
 msgid "Turno rival..."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2407
+#: scripts/battle/battle.gd:2430
 msgid "[color=#%s]%s %+d[/color] (%d t.)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/battle/battle.gd:2410
+#: scripts/battle/battle.gd:2435
 msgid ""
 "[b]%s[/b]  Nv.%d\n"
 "%s\n"
@@ -681,7 +681,7 @@ msgid ""
 "%s[font_size=14]Débil a: %s[/font_size]"
 msgstr ""
 
-#: scripts/battle/battle.gd:2415
+#: scripts/battle/battle.gd:2440
 msgid "Mejoras: "
 msgstr ""
 
