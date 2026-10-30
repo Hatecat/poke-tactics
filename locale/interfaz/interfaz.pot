@@ -1785,3 +1785,39 @@ msgstr ""
 #: scripts/grid/biome.gd:37
 msgid "Mesa de lectura"
 msgstr ""
+
+#: scripts/net/protocol.gd:73
+msgid "Entrenador"
+msgstr ""
+
+#: scripts/net/protocol.gd:118
+msgid "El otro jugador tiene otra versión del juego."
+msgstr ""
+
+#: scripts/net/protocol.gd:120
+msgid "Los datos del juego no coinciden con los del otro jugador."
+msgstr ""
+
+#: scripts/net/protocol.gd:122
+msgid "La partida ya tiene dos jugadores."
+msgstr ""
+
+#: scripts/net/protocol.gd:124
+msgid "El otro lado no respondió a tiempo."
+msgstr ""
+
+#: scripts/net/protocol.gd:126
+msgid "No se pudo conectar. Revisa la dirección y el puerto."
+msgstr ""
+
+#: scripts/net/protocol.gd:128
+msgid "El rival se ha ido."
+msgstr ""
+
+#: scripts/net/protocol.gd:130
+msgid "Se perdió la conexión."
+msgstr ""
+
+#: scripts/net/protocol.gd:131
+msgid "Error de red."
+msgstr ""

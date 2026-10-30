@@ -1818,3 +1818,39 @@ msgstr "Coral"
 #: scripts/grid/biome.gd:37
 msgid "Mesa de lectura"
 msgstr "Reading table"
+
+#: scripts/net/protocol.gd:73
+msgid "Entrenador"
+msgstr "Trainer"
+
+#: scripts/net/protocol.gd:118
+msgid "El otro jugador tiene otra versión del juego."
+msgstr "The other player has a different version of the game."
+
+#: scripts/net/protocol.gd:120
+msgid "Los datos del juego no coinciden con los del otro jugador."
+msgstr "Your game data doesn't match the other player's."
+
+#: scripts/net/protocol.gd:122
+msgid "La partida ya tiene dos jugadores."
+msgstr "This match already has two players."
+
+#: scripts/net/protocol.gd:124
+msgid "El otro lado no respondió a tiempo."
+msgstr "The other side didn't respond in time."
+
+#: scripts/net/protocol.gd:126
+msgid "No se pudo conectar. Revisa la dirección y el puerto."
+msgstr "Couldn't connect. Check the address and port."
+
+#: scripts/net/protocol.gd:128
+msgid "El rival se ha ido."
+msgstr "Your opponent left."
+
+#: scripts/net/protocol.gd:130
+msgid "Se perdió la conexión."
+msgstr "The connection was lost."
+
+#: scripts/net/protocol.gd:131
+msgid "Error de red."
+msgstr "Network error."

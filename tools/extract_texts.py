@@ -32,7 +32,7 @@ LOCALE = PROJECT / "locale"
 # Tema → scripts (en orden: un texto repetido se queda en el primer tema).
 THEMES = {
     "interfaz": ["scripts/ui/*.gd", "scripts/game.gd", "scripts/audio.gd", "scripts/tower_run.gd", "scripts/data/*.gd",
-                 "scripts/grid/*.gd"],
+                 "scripts/grid/*.gd", "scripts/net/*.gd"],
     "combate": ["scripts/battle/*.gd"],
     "historia": ["scripts/story/*.gd", "data/story/*.json"],
 }
