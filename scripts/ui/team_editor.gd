@@ -43,7 +43,7 @@ func _ready() -> void:
 	root.add_theme_constant_override("separation", 12)
 	add_child(root)
 
-	root.add_child(UiKit.screen_header(tr("Editor de equipo"), "← Menú", func() -> void:
+	root.add_child(UiKit.screen_header(tr("Editor de equipo"), tr("← Menú"), func() -> void:
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
 
 	var columns := HBoxContainer.new()
