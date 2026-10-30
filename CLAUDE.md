@@ -38,9 +38,9 @@ Pokémon Showdown y PokeAPI (ver README): retocar un `.tres` a mano se pierde al
 ## Arquitectura
 
 - **Autoloads:** `Game` (scripts/game.gd) guarda todo el estado entre escenas: roster, equipos, `player_team` /
-  `enemy_team`, `mode` (`"quick"`, `"tower"`, `"story"`), `biome`, `weather`, `map`, `rng`, opciones, y
+  `enemy_team`, `mode` (`"quick"`, `"tower"`, `"story"`, `"vs"`), `biome`, `weather`, `map`, `rng`, opciones, y
   `story` (`StoryRun`) / `tower` (`TowerRun`). Las escenas se cambian con `change_scene_to_file` y leen de `Game`.
-  `Audio` lleva música y efectos.
+  `Audio` lleva música y efectos. `Net` (scripts/net/net.gd) es la red del modo VS.
 - **Escenas** (scenes/*.tscn): casi vacías; cada una tiene un script que monta todo por código (menú, editor de
   equipo, editor de mapas, torre, historia, tabla de tipos, batalla).
 - **Batalla:** `battle.gd` es el controlador (estados `State`, input, IA, UI, final según el modo). Delega en
@@ -61,7 +61,8 @@ Hechos: 18 biomas (incluido `TEST`, copia de la Pradera fuera del azar) con gene
 terreno vivo con shaders, clima visual, estados alterados con efecto, Poké Balls (salida y captura en la Torre),
 mapa a pantalla completa con campo de adorno, calidad gráfica, idiomas (es/en) y el capítulo 1 del modo historia
 (termina en "Continuará... Capítulo 2 · Ciudad Fucsia"; biblia narrativa en
-~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx). Detalle de cada parte en el README.
+~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx) y el modo **Combate VS** 1v1 en red (por servidor de salas
+o IP directa). Detalle de cada parte en el README.
 
 ## Trampas y reglas del código
 
@@ -101,6 +102,12 @@ mapa a pantalla completa con campo de adorno, calidad gráfica, idiomas (es/en) 
   data/story/capituloN.json: "titulo" y "escena" en story.tscn (`cutscene.gd`), "combate" en battle.tscn con
   `Game.mode = "story"`. Retratos en assets/portraits/<id>.png; `Unit.ally_ai` es el aliado de la IA. Los ataques
   que no caben van a `StoryRun.pending_moves` y la escena siguiente pregunta cuál olvidar (`DialogueBox.choose`).
+- **Modo VS:** cada PC simula el combate entero con la misma semilla (`Game.vs`) y solo viajan acciones: toda
+  acción de combate pasa por `battle.apply_intent` (clic, IA y red usan el mismo camino) y tras cada una se compara
+  `state_digest()`. Cualquier cambio en reglas o en el uso de `battle.rng` puede desincronizar: pruébalo con
+  `tools/vs_test.gd` y `tools/vs_match.sh`, y si cambia un mensaje sube `Protocol.VERSION`. Red sin RPC:
+  `Net.send` (directo y servidor), `Protocol` (mensajes, huella de datos), `VsRelay` (servidor;
+  `tools/vs_server.gd` lo lanza, el preset "Linux Server" lo exporta). Pruebas de red: `tools/vs_smoke.sh`.
 - **Idiomas:** gettext en `locale/<tema>/`; ataques/objetos/habilidades con `tools/build_translations.py`, el
   resto con `tools/extract_texts.py`. Los capítulos se escriben en español y `DialogueBox.say` aplica `tr`.
 
