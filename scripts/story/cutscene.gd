@@ -34,6 +34,7 @@ var _cells := {} # id -> Vector2i
 var _dialogue: DialogueBox
 var _fade: ColorRect
 var _place_label: Label
+var _place_plate: PanelContainer
 var _last_speaker := ""
 var _done := false
 
@@ -110,10 +111,14 @@ func _build_place() -> void:
 	_cam_rig.position.y = 0.0
 	if place.has("nombre"):
 		_place_label.text = tr(place.nombre)
+		# La placa entra deslizándose desde la izquierda y se desvanece.
+		var x := _place_plate.position.x
+		_place_plate.position.x = x - 24
 		var tw := create_tween()
-		tw.tween_property(_place_label, "modulate:a", 1.0, 0.6)
+		tw.tween_property(_place_plate, "modulate:a", 1.0, 0.6)
+		tw.parallel().tween_property(_place_plate, "position:x", x, 0.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		tw.tween_interval(3.0)
-		tw.tween_property(_place_label, "modulate:a", 0.0, 1.0)
+		tw.tween_property(_place_plate, "modulate:a", 0.0, 1.0)
 
 
 ## Luz de atardecer: sol bajo y anaranjado y cielo más cálido.
@@ -493,29 +498,49 @@ func _learn_moves() -> void:
 	_dialogue.close()
 
 
+## Rótulo de capítulo: el fondo de los menús con el título en glitch, una línea de neón que se dibuja y el
+## subtítulo debajo. Aparece y se va sobre negro.
 func _title_card() -> void:
 	_fade.color.a = 1.0
+	var card := UiKit.background()
+	card.modulate.a = 0.0
+	_fade.add_child(card)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(center)
 	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER)
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.grow_vertical = Control.GROW_DIRECTION_BOTH
-	box.modulate.a = 0.0
-	_fade.add_child(box)
-	for line: Array in [[_step.get("titulo", ""), 54, UiKit.ACCENT], [_step.get("subtitulo", ""), 26, Color(1, 1, 1, 0.85)]]:
-		if line[0] == "":
-			continue
-		var l := UiKit.label(tr(line[0]), line[1], line[2])
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.add_theme_constant_override("outline_size", 10)
-		l.add_theme_color_override("font_outline_color", Color.BLACK)
-		box.add_child(l)
+	box.add_theme_constant_override("separation", UiKit.SPACE_4)
+	center.add_child(box)
+	if _step.get("titulo", "") != "":
+		var title := UiKit.glitch_title(tr(_step.titulo), 72)
+		title.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		title.add_theme_constant_override("outline_size", 14)
+		box.add_child(title)
+	var line := ColorRect.new()
+	line.color = UiKit.NEON
+	line.custom_minimum_size = Vector2(0, 2)
+	line.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	box.add_child(line)
+	if _step.get("subtitulo", "") != "":
+		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.add_theme_constant_override("separation", UiKit.SPACE_3)
+		box.add_child(row)
+		row.add_child(UiKit.barcode(48.0, 14.0))
+		var sub := UiKit.label(tr(_step.subtitulo), 26, UiKit.TEXT_DIM)
+		sub.add_theme_constant_override("outline_size", 8)
+		sub.add_theme_color_override("font_outline_color", Color.BLACK)
+		row.add_child(sub)
+		row.add_child(UiKit.barcode(48.0, 14.0))
 	Audio.music(_step.get("musica", "menu"))
 	var tw := create_tween()
-	tw.tween_property(box, "modulate:a", 1.0, 1.0)
+	tw.tween_property(card, "modulate:a", 1.0, 1.0)
+	tw.parallel().tween_property(line, "custom_minimum_size:x", 560.0, 1.2).set_delay(0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	await _wait(TITLE_TIME)
 	tw = create_tween()
-	tw.tween_property(box, "modulate:a", 0.0, 0.8)
+	tw.tween_property(card, "modulate:a", 0.0, 0.8)
 	await tw.finished
 
 
@@ -534,21 +559,40 @@ func _build_ui() -> void:
 	_fade.color = Color(0, 0, 0, 0)
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_fade)
-	_place_label = UiKit.label("", 30, UiKit.ACCENT)
-	_place_label.position = Vector2(40, 32)
-	_place_label.add_theme_constant_override("outline_size", 10)
-	_place_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	_place_label.modulate.a = 0.0
-	root.add_child(_place_label)
+	# Placa del lugar: inclinada, con franja de neón y código de barras, como las etiquetas de los menús.
+	_place_plate = PanelContainer.new()
+	_place_plate.position = Vector2(40, 28)
+	_place_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_place_plate.modulate.a = 0.0
+	var plate := UiKit.flat_style(Color(UiKit.SURFACE_0, 0.9), UiKit.RADIUS_S, 2).duplicate() as StyleBoxFlat
+	plate.skew = Vector2(0.22, 0)
+	plate.border_color = UiKit.NEON
+	plate.border_width_left = 4
+	plate.border_width_bottom = 1
+	plate.content_margin_left = UiKit.SPACE_5
+	plate.content_margin_right = UiKit.SPACE_5
+	plate.content_margin_top = UiKit.SPACE_2
+	plate.content_margin_bottom = UiKit.SPACE_2
+	_place_plate.add_theme_stylebox_override("panel", plate)
+	root.add_child(_place_plate)
+	var place_row := HBoxContainer.new()
+	place_row.add_theme_constant_override("separation", UiKit.SPACE_3)
+	_place_plate.add_child(place_row)
+	var code := UiKit.barcode(36.0, 14.0)
+	code.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	place_row.add_child(code)
+	_place_label = UiKit.label("", 28, UiKit.ACCENT)
+	_place_label.add_theme_font_override("font", UiKit.bold_font())
+	place_row.add_child(_place_label)
 	_dialogue = DialogueBox.new()
 	root.add_child(_dialogue)
-	var skip := UiKit.button(tr("Saltar escena ▸▸"), _finish, 16)
+	var skip := UiKit.button(tr("Saltar escena ▸▸"), _finish)
 	skip.anchor_left = 1.0
 	skip.anchor_right = 1.0
 	skip.offset_left = -200
 	skip.offset_right = -24
 	skip.offset_top = 24
-	skip.offset_bottom = 60
+	skip.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	skip.focus_mode = Control.FOCUS_NONE
 	root.add_child(skip)
 

@@ -6,31 +6,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:483
+#: scripts/story/cutscene.gd:488
 msgid "Olvidar %s"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:484
+#: scripts/story/cutscene.gd:489
 msgid "No aprender %s"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:485
+#: scripts/story/cutscene.gd:490
 msgid "%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:489
+#: scripts/story/cutscene.gd:494
 msgid "1, 2 y... ¡listo! %s olvidó %s y aprendió %s."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:491
+#: scripts/story/cutscene.gd:496
 msgid "%s no aprendió %s."
 msgstr ""
 
-#: scripts/story/cutscene.gd:545
+#: scripts/story/cutscene.gd:589
 msgid "Saltar escena ▸▸"
 msgstr ""
 

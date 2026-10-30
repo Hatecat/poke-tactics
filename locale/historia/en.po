@@ -8,31 +8,31 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:483
+#: scripts/story/cutscene.gd:488
 msgid "Olvidar %s"
 msgstr "Forget %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:484
+#: scripts/story/cutscene.gd:489
 msgid "No aprender %s"
 msgstr "Don't learn %s"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:485
+#: scripts/story/cutscene.gd:490
 msgid "%s quiere aprender %s, pero ya conoce cuatro ataques. ¿Cuál olvida?"
 msgstr "%s wants to learn %s, but it already knows four moves. Which one should it forget?"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:489
+#: scripts/story/cutscene.gd:494
 msgid "1, 2 y... ¡listo! %s olvidó %s y aprendió %s."
 msgstr "1, 2 and... poof! %s forgot %s and learned %s."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/story/cutscene.gd:491
+#: scripts/story/cutscene.gd:496
 msgid "%s no aprendió %s."
 msgstr "%s did not learn %s."
 
-#: scripts/story/cutscene.gd:545
+#: scripts/story/cutscene.gd:589
 msgid "Saltar escena ▸▸"
 msgstr "Skip scene ▸▸"
 
