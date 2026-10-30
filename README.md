@@ -18,7 +18,8 @@ combates; ver [Modo historia](#modo-historia).
 **Flujo:** Menú principal → *Editor de equipo* (hasta 6 Pokémon con 4 ataques cada uno, se guarda solo) →
 *Partida rápida* (escenario guardado, o tablero + campo + clima, cada uno elegible o al azar) → despliegue en tu zona azul → combate contra un rival
 aleatorio (Pokémon y ataques) del mismo tamaño. *Editor de escenarios* crea escenarios fijos.
-*Tabla de tipos* muestra las 18×18 efectividades.
+*Tabla de tipos* muestra las 18×18 efectividades. *Combate VS* enfrenta a dos jugadores por Internet o por IP;
+ver [Combate VS](#combate-vs-multijugador).
 
 **Controles:** clic para seleccionar · clic derecho/Esc para cancelar · Q/E rotar · rueda zoom ·
 WASD/flechas o botón central para mover la cámara · **R** revancha al terminar.
@@ -38,6 +39,7 @@ WASD/flechas o botón central para mover la cámara · **R** revancha al termina
 | `scripts/story/` | Modo historia: partida (`StoryRun`), escenas (`cutscene.gd`), cuadro de diálogo y figuras |
 | `assets/portraits/` | Retratos de los personajes para los diálogos (`<id>.png`) |
 | `locale/<tema>/` | Traducciones gettext por tema (`<tema>.pot` + `<idioma>.po`); guía para traducir en `locale/LEEME.md` |
+| `scripts/net/` | Modo VS: red (`Net`, autoload), protocolo, inicio de partida (`VsMatch`) y servidor de salas (`VsRelay`) |
 | `scripts/ui/` | Menú, editor de equipo, editor de escenarios, tabla de tipos, vista 3D, kit de UI (`UiKit`, `UiDialog`) |
 | `tools/` | Generación de datos, importación de modelos, Blender y exportación |
 | `art/` | Fuentes de arte (`.blend`); Godot las ignora (`.gdignore`) |
@@ -257,6 +259,98 @@ intercambio/amistad, a nivel 30; las de piedra, usando la piedra). Cada evoluci�
 *Cancelar* (con piedra, no se gasta); si se cancela, vuelve a intentarlo al subir de nivel o con *Evolucionar* en su ficha. Puedes cambiar miembros por capturados (máx. 6 en el equipo) y elegir
 4 ataques de los aprendidos. La subida se guarda y se puede continuar; se guarda el récord de pisos.
 Lógica en `scripts/tower_run.gd`, pantalla en `scripts/ui/tower.gd`.
+
+## Combate VS (multijugador)
+
+Uno contra uno entre dos PCs, con tu equipo del editor. Menú principal → **Combate VS**: escribe tu apodo, elige
+equipo (de 1 a 6 Pokémon; en VS todos luchan a **nivel 50**, sin experiencia, evoluciones ni Poké Balls) y
+conéctate de una de dos formas:
+
+- **Por Internet** (recomendado): escribe la dirección del servidor de salas (`dirección` o `dirección:puerto`;
+  se guarda) y *Conectar*. Nadie tiene que abrir puertos. En el vestíbulo puedes:
+  - *Partida rápida*: entras en la primera sala pública que espera rival o se abre una nueva.
+  - *Crear una sala* con nombre; si marcas *Privada* no sale en la lista y se entra con su **código** de 5
+    letras (se ve mientras esperas: pásaselo a tu rival).
+  - *Entrar con un código*, o pulsar *Entrar* en la lista de salas públicas (nombre, anfitrión y ping; se
+    actualiza sola).
+- **IP directa**: uno pulsa *Alojar* (puerto 24680 por defecto; muestra sus IP de la red local) y el otro escribe
+  esa IP y pulsa *Unirse*. En la misma red local funciona tal cual; por Internet, el anfitrión tiene que abrir
+  (redirigir) ese puerto **UDP** en su router.
+
+**Sala:** se ve al rival y su ping. El anfitrión (quien creó la sala) elige tablero (cuadrado o hexagonal) y
+escenario (o al azar); cuando los dos pulsan **¡Listo!** empieza el combate, con el mismo mapa, clima y orden de
+turnos en los dos PCs. Cada uno coloca a su equipo en su zona azul y se juega por turnos de CT como siempre: cuando
+le toca al rival, ves lo que hace.
+
+- **Reloj:** 60 s por turno (se ve arriba, en rojo y con aviso sonoro los últimos 10 s). Si se acaba, tu Pokémon
+  espera; **3 turnos seguidos** sin jugar = derrota. La pausa (Esc) no para el combate; desde ella puedes
+  *Rendirte*.
+- **Cortes de conexión:** por servidor, el juego reconecta solo y al que se cae se le espera 60 s (los dos ven el
+  aviso); si no vuelve, el otro gana por abandono. Por IP directa no hay reconexión: un corte termina la
+  partida como abandono.
+- **Final:** victoria, derrota, empate, abandono o rendición, con *Revancha* (mismos equipos y tablero, mapa
+  nuevo) y *Salir*. Tu **marcador** (victorias · derrotas · empates, en total y contra cada rival) se guarda en
+  este PC y se ve en la pantalla VS, en la sala y al terminar.
+- Los dos tienen que tener **la misma versión** del juego y **los mismos datos** (Pokémon, ataques, objetos): si no,
+  la conexión se rechaza con un mensaje claro. Si las dos partidas dejaran de coincidir (se comprueba una huella
+  del estado tras cada acción), el combate termina sin resultado y lo dice.
+
+Cómo funciona: cada PC simula el combate entero con la misma semilla y solo viajan las acciones (`apply_intent`
+en `battle.gd`), con su huella. El anfitrión valida los equipos; el servidor solo reenvía y pone límites. Un
+cliente modificado podría hacer trampas: para un juego entre amigos se acepta. Detalle en `scripts/net/`.
+
+### Montar el servidor de salas
+
+El servidor es el mismo proyecto sin gráficos (`scripts/net/vs_relay.gd`). Usa **UDP 24680** (o el puerto que
+le pases); necesita una máquina con IP pública (un VPS Linux pequeño basta: no simula combates, solo reenvía).
+
+```bash
+# Probarlo desde el proyecto (en tu PC: los jugadores ponen 127.0.0.1 o tu IP)
+~/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --script tools/vs_server.gd -- 24680
+
+# Build para el VPS (preset "Linux Server": arranca directamente en el servidor)
+~/Godot_v4.7.2-stable_linux.x86_64 --headless --path . --export-release "Linux Server" \
+    ../poke-tactics-builds/server/poke-tactics-server.x86_64
+scp ../poke-tactics-builds/server/poke-tactics-server.x86_64 usuario@mi-vps:/opt/poke-tactics/
+ssh usuario@mi-vps '/opt/poke-tactics/poke-tactics-server.x86_64 --headless -- 24680'   # prueba a mano
+```
+
+Argumentos tras `--`: el puerto y, opcional, `--quiet` (sin registro de conexiones y salas). La build y el juego
+tienen que salir **del mismo commit**: si no, el servidor rechaza a los jugadores por versión o datos.
+
+Como servicio (systemd), en `/etc/systemd/system/poke-tactics-vs.service`:
+
+```ini
+[Unit]
+Description=Poké Tactics: servidor de salas VS
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=poketactics
+Environment=POKE_TACTICS_NO_SAVE=1
+ExecStart=/opt/poke-tactics/poke-tactics-server.x86_64 --headless -- 24680
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo useradd --system --create-home poketactics
+sudo chmod +x /opt/poke-tactics/poke-tactics-server.x86_64
+sudo systemctl daemon-reload && sudo systemctl enable --now poke-tactics-vs
+sudo ufw allow 24680/udp          # y abre el mismo puerto UDP en el cortafuegos del proveedor del VPS
+journalctl -u poke-tactics-vs -f  # registro: quién entra, salas, partidas, cortes
+```
+
+Límites (en `vs_relay.gd`): 256 jugadores, 128 salas, 60 mensajes por segundo por jugador, saludo en 8 s.
+
+**Pruebas del modo VS** (todas con `POKE_TACTICS_NO_SAVE=1`): `tools/vs_smoke.sh` (red: saludo, rechazos,
+servidor, salas, reconexión e inundación), `tools/vs_match.sh partidas semilla puerto` (partidas enteras entre dos
+procesos con la IA; `VS_RELAY=1` para ir por el servidor, quinto argumento `abandona`/`rinde`/`mal`/`corta`) y
+`tools/vs_test.gd` (repetir partidas grabadas acción por acción da el mismo estado).
 
 ## Objetos
 
