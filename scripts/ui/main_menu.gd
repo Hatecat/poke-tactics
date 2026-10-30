@@ -277,7 +277,7 @@ func _start_game() -> void:
 		Game.map = load(_map_paths[_map_select.selected - 1])
 	else:
 		Game.map = null
-		Game.biome = _selected_biome if _selected_biome != RANDOM_BIOME else Game.rng.randi_range(0, Biome.NAMES.size() - 1)
+		Game.biome = _selected_biome if _selected_biome != RANDOM_BIOME else Biome.random_kind(Game.rng)
 	Game.save()
 	Game.roll_enemy_team()
 	_go("battle")

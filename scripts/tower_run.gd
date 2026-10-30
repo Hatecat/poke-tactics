@@ -180,7 +180,7 @@ func prepare_floor() -> void:
 	trainer = {}
 	var count := clampi(2 + floor_number / 3, 2, mini(6, party.size() + 1))
 	var level := maxi(2, average_level() + floor_number / 5 + DIFFICULTY_LEVEL_OFFSET[difficulty])
-	biome = rng.randi_range(0, Biome.NAMES.size() - 1)
+	biome = Biome.random_kind(rng)
 	match floor_kind(floor_number):
 		"leader":
 			trainer = Trainers.leader_for(floor_number)

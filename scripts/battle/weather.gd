@@ -42,6 +42,7 @@ const MOVE_ROUNDS := 4
 
 
 static func roll(biome: Biome.Kind, rng: RandomNumberGenerator) -> Kind:
+	biome = Biome.look(biome)
 	var r := rng.randf()
 	for kind: int in BIOME_ODDS.get(biome, {}):
 		r -= BIOME_ODDS[biome][kind]

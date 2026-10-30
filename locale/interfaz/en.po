@@ -1214,15 +1214,15 @@ msgid "Def. Esp."
 msgstr "Sp. Def"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:111
-#: scripts/game.gd:299
-#: scripts/game.gd:309
-#: scripts/game.gd:334
+#: scripts/game.gd:133
+#: scripts/game.gd:321
+#: scripts/game.gd:331
+#: scripts/game.gd:356
 msgid "Equipo %d"
 msgstr "Team %d"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:239
+#: scripts/game.gd:261
 msgid ""
 "Baja o Media van más fluidas en gráficas integradas.\n"
 "Gráfica en uso: %s"
@@ -1254,15 +1254,15 @@ msgstr "Rivals at level 50."
 msgid "Rivales a nivel 55; evitan exponerse y rematan a los débiles."
 msgstr "Rivals at level 55; they avoid exposure and finish off the weak."
 
-#: scripts/game.gd:50
+#: scripts/game.gd:52
 msgid "Baja"
 msgstr "Low"
 
-#: scripts/game.gd:50
+#: scripts/game.gd:52
 msgid "Media"
 msgstr "Medium"
 
-#: scripts/game.gd:50
+#: scripts/game.gd:52
 msgid "Alta"
 msgstr "High"
 
@@ -1673,6 +1673,10 @@ msgstr "Airport"
 #: scripts/grid/biome.gd:17
 msgid "Cueva submarina"
 msgstr "Underwater cave"
+
+#: scripts/grid/biome.gd:17
+msgid "Test"
+msgstr "Test"
 
 #: scripts/grid/biome.gd:26
 msgid "Hierba"

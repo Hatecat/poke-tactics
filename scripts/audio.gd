@@ -160,7 +160,7 @@ func ambience(name: String) -> void:
 
 ## Pista para el combate según el campo.
 func battle_music(biome: int) -> String:
-	match biome:
+	match Biome.look(biome):
 		Biome.Kind.CAVE, Biome.Kind.UNDERWATER, Biome.Kind.CEMETERY: return "cave"
 		Biome.Kind.GYM: return "gym"
 		Biome.Kind.MEADOW, Biome.Kind.LAKE, Biome.Kind.BEACH: return "battle_heroic"

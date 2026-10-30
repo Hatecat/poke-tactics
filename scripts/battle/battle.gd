@@ -183,7 +183,11 @@ func _start_battle() -> void:
 		for c: Vector2i in zones[team]:
 			_zones[team][c] = true
 	_reset_environment()
+	_board.scenery = Biome.full_view(grid.biome)
 	_board.build(grid)
+	if _board.scenery:
+		_cam_rig.safe_left = _left_panel.position.x + _left_panel.get_combined_minimum_size().x
+		_cam_rig.frame(_board_box(), _board.scenery_reach)
 	if _story():
 		base_weather = StoryRun.weather_kind(_story_step.get("lugar", {}))
 	elif map:
@@ -310,6 +314,15 @@ func _reset_environment() -> void:
 			old.queue_free()
 	CameraRig.build_environment(self, grid.biome)
 	_cam_rig.rotation_step = 90.0 if grid.topology == BoardGrid.Topology.SQUARE else 60.0
+
+
+## Caja que ocupa el tablero en el mundo (casillas y relieve), para encuadrarlo a pantalla completa.
+func _board_box() -> AABB:
+	var box := AABB(grid.to_world(Vector2i.ZERO), Vector3.ZERO)
+	for c in grid.all_cells():
+		var w := grid.to_world(c)
+		box = box.expand(w + Vector3(-0.5, -BoardView.BASE_THICKNESS, -0.5)).expand(w + Vector3(0.5, 0.0, 0.5))
+	return box
 
 
 ## Celda central (aprox.) de la zona de despliegue de un equipo.

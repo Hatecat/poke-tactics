@@ -8,6 +8,8 @@ const BASE_THICKNESS := 0.25
 const TOP_THICKNESS := 0.06
 
 var grid: BoardGrid
+## Bioma del que se toma el aspecto (Test se ve como la Pradera: `Biome.look`).
+var _look := Biome.Kind.MEADOW
 ## En combate, las piezas repetidas de las casillas (caras de arriba, laterales y detalles del suelo) se
 ## agrupan en MultiMesh: se ven igual y se dibujan en muchas menos llamadas. El editor lo deja apagado
 ## para poder rehacer casillas sueltas (`refresh_cell`).
@@ -15,6 +17,29 @@ var batching := false
 ## Lado (en casillas) de cada zona del tablero en que se agrupan: cada cascada de sombra y la cámara solo
 ## dibujan las zonas que ven.
 const CHUNK := 5
+## Combate a pantalla completa (`Biome.full_view`): campo de adorno alrededor del tablero para que el mapa
+## llene la pantalla sin vacío en los bordes. Solo es decorado: sin colisión ni resaltado y fuera de la
+## lógica del tablero (`grid` no lo guarda).
+var scenery := false
+var _building_scenery := false
+## Mallas de las caras de arriba y los laterales agrupados (las mismas en todas las zonas).
+var _batch_meshes: Array[Mesh] = []
+## Alcance del campo de adorno, en veces la media diagonal del tablero: cubre el encuadre de `CameraRig`
+## (que deja sitio al panel de la izquierda) en pantallas de 4:3 a 21:9.
+const SCENERY_REACH := 2.3
+## Radio del campo de adorno alrededor del centro del tablero (0 sin campo): hasta dónde puede ver la cámara.
+var scenery_reach := 0.0
+## Zonas del campo de adorno, más grandes que las del tablero: sus árboles tienen muchos tonos de hoja y con
+## zonas pequeñas saldrían muchos grupos de pocas piezas.
+const SCENERY_CHUNK := 16
+## Cuánto se oscurecen los colores del campo de adorno justo fuera del borde (0-1) y a lo lejos, donde casi se
+## pierde en la sombra, como el bosque que rodea la zona de combate en la referencia del usuario. Árboles y
+## rocas, con una sola sombra (cada tono más sería un grupo más que dibujar).
+const SCENERY_SHADE := 0.5
+const SCENERY_SHADE_FAR := 0.8
+const SCENERY_PROP_SHADE := 0.7
+## Casillas del campo de adorno junto al tablero que llevan hierba y flores.
+const SCENERY_GRASS := 3
 var _cells := {} # Vector2i -> Node3D con todo lo de esa casilla
 var _overlays := {} # Vector2i -> MeshInstance3D
 var _mats := {} # Color -> StandardMaterial3D
@@ -62,6 +87,7 @@ const BEDROCK := {
 
 func build(p_grid: BoardGrid) -> void:
 	grid = p_grid
+	_look = Biome.look(grid.biome)
 	for child in get_children():
 		child.queue_free()
 	_cells.clear()
@@ -71,21 +97,24 @@ func build(p_grid: BoardGrid) -> void:
 	_crystal_lights.clear()
 	_hail_bounce = null
 	_caustic_mesh = null  # su forma depende de la topología
+	_batch_meshes.clear()
 	_tint_noise.seed = 7
 	_tint_noise.frequency = 0.18
-	_grass_noise.seed = grid.width * 131 + grid.height * 17 + grid.biome
+	_grass_noise.seed = grid.width * 131 + grid.height * 17 + _look
 	_grass_noise.frequency = 0.22
 	for c in grid.all_cells():
 		_build_cell(c)
 	if batching:
-		_batch()
-	if grid.biome == Biome.Kind.GYM:
+		_batch(_cells.values())
+	if scenery:
+		_build_scenery()
+	if _look == Biome.Kind.GYM:
 		var dressing := GymDressing.new()
 		add_child(dressing)
 		dressing.setup(grid)
 	var w0 := grid.to_world(Vector2i.ZERO)
 	var w1 := grid.to_world(Vector2i(grid.width - 1, grid.height - 1))
-	var amb := TerrainFx.ambient(grid.biome, Vector3((w0.x + w1.x) * 0.5, 0.0, (w0.z + w1.z) * 0.5),
+	var amb := TerrainFx.ambient(_look, Vector3((w0.x + w1.x) * 0.5, 0.0, (w0.z + w1.z) * 0.5),
 		Vector2(absf(w1.x - w0.x) + 1.0, absf(w1.z - w0.z) + 1.0))
 	if amb:
 		add_child(amb)
@@ -164,11 +193,20 @@ func _process(_delta: float) -> void:
 ## sombra, con la posición de cada una y lo que cada shader necesita por pieza: el color de la losa
 ## (caras de arriba), la altura de la cara de arriba (laterales, que van en una caja de alto 1 escalada)
 ## y la base y altura con viento (detalles del suelo). Los originales se borran.
-func _batch() -> void:
-	var groups := {}  # clave -> [malla, material, sombra, colores?, [[Transform3D, Color custom, Color color]]]
-	var top_mesh := _tile_mesh(TOP_THICKNESS, 0.0)
-	var side_mesh := _tile_mesh(1.0, 0.0)
-	for root: Node3D in _cells.values():
+func _batch(roots: Array) -> void:
+	var groups := {}
+	_collect(roots, groups, CHUNK)
+	_emit(groups)
+
+
+## Saca de `roots` las piezas marcadas con "batch" y las apunta en `groups` (clave: malla, material, sombra y
+## zona de `chunk` casillas -> [[Transform3D, Color custom, Color color]]).
+func _collect(roots: Array, groups: Dictionary, chunk: int) -> void:
+	if _batch_meshes.is_empty():
+		_batch_meshes = [_tile_mesh(TOP_THICKNESS, 0.0), _tile_mesh(1.0, 0.0)]
+	var top_mesh := _batch_meshes[0]
+	var side_mesh := _batch_meshes[1]
+	for root: Node3D in roots:
 		for mi in root.get_children():
 			if not (mi is MeshInstance3D and mi.has_meta("batch")):
 				continue
@@ -181,7 +219,7 @@ func _batch() -> void:
 				"top":
 					mesh = top_mesh
 					color = mi.get_meta("color")
-					mat = _instanced_top_material(mat)
+					mat = _instanced_top_material(mat, mi.has_meta("matte"))
 				"side":
 					mesh = side_mesh
 					custom.r = mi.get_meta("top_y")
@@ -193,12 +231,17 @@ func _batch() -> void:
 					if mat is ShaderMaterial:
 						mat = _instanced_material(mat, "decor")
 			var cell: Vector2i = root.get_meta("cell")
-			var key := [mesh, mat, mi.cast_shadow, cell / CHUNK]
+			# División hacia abajo: el campo de adorno tiene celdas negativas
+			var key := [mesh, mat, mi.cast_shadow, Vector2i(floori(cell.x / float(chunk)), floori(cell.y / float(chunk)))]
 			if not groups.has(key):
 				groups[key] = []
 			groups[key].append([xf, custom, color])
 			root.remove_child(mi)
 			mi.free()
+
+
+## Una MultiMesh por cada grupo de `_collect`.
+func _emit(groups: Dictionary) -> void:
 	for key: Array in groups:
 		var items: Array = groups[key]
 		var mm := MultiMesh.new()
@@ -220,7 +263,8 @@ func _batch() -> void:
 
 ## Material de las caras de arriba agrupadas: el color sale de cada instancia. Los suelos lisos usan un
 ## StandardMaterial con color de vértice (se moja como los demás) y la piedra su shader en modo instancia.
-func _instanced_top_material(mat: Material) -> Material:
+## `matte`: sin brillo (el campo de adorno: el reflejo del cielo aclaraba su sombra hasta un gris azulado).
+func _instanced_top_material(mat: Material, matte := false) -> Material:
 	if mat is ShaderMaterial:  # piedra: una sola copia para todos los colores
 		if not _live_mats.has("stone_inst"):
 			var dup := mat.duplicate() as ShaderMaterial
@@ -228,11 +272,14 @@ func _instanced_top_material(mat: Material) -> Material:
 			_live_mats["stone_inst"] = dup
 		return _live_mats["stone_inst"]
 	var glossy: bool = (mat as StandardMaterial3D).roughness < 0.5
-	var key := "top_glossy" if glossy else "top"
+	var key := "top_glossy" if glossy else "top_matte" if matte else "top"
 	if not _mats.has(key):
 		var m := StandardMaterial3D.new()
 		m.vertex_color_use_as_albedo = true
 		m.vertex_color_is_srgb = true
+		if matte:
+			m.metallic_specular = 0.0
+			m.roughness = 1.0
 		if glossy:
 			m.roughness = 0.15
 			m.metallic_specular = 0.9
@@ -442,7 +489,117 @@ func _contrast(c: Vector2i, color: Color) -> Color:
 	return color
 
 
-func _build_cell(c: Vector2i) -> void:
+## Campo de adorno: un llano alrededor del tablero, con el agua y los caminos que salen por el borde a ras
+## de suelo, y árboles más tupidos cuanto más lejos, como el bosque que rodea un claro. Se monta con las
+## mismas piezas que las casillas (se mece con el viento y se moja con la lluvia), pero más oscuro y sin el
+## ajedrezado, para que se vea dónde acaba el tablero: lo que está alto en el borde queda como un escalón.
+func _build_scenery() -> void:
+	var w0 := grid.to_world(Vector2i.ZERO)
+	var w1 := grid.to_world(Vector2i(grid.width - 1, grid.height - 1))
+	var center := (w0 + w1) * 0.5
+	var reach := Vector2(w1.x - w0.x + 1.0, w1.z - w0.z + 1.0).length() * 0.5 * SCENERY_REACH
+	scenery_reach = reach - 1.0  # el borde del círculo es de casillas enteras
+	var margin := ceili(reach)
+	var noise := FastNoiseLite.new()
+	noise.seed = grid.width * 7 + grid.height * 3
+	noise.frequency = 0.15
+	var extra := {}  # zona -> [celdas]
+	for y in range(-margin, grid.height + margin):
+		for x in range(-margin, grid.width + margin):
+			var c := Vector2i(x, y)
+			if grid.is_inside(c):
+				continue
+			var w := grid.to_world(c)
+			if Vector2(w.x - center.x, w.z - center.z).length() > reach:
+				continue
+			var edge := Vector2i(clampi(x, 0, grid.width - 1), clampi(y, 0, grid.height - 1))
+			var far := _outside(c)
+			var tile: int = grid.tiles[edge]
+			# El agua y los caminos que salen a ras de suelo siguen en línea recta; en las esquinas, hierba.
+			if (x != edge.x and y != edge.y) or tile not in [Biome.Tile.WATER, Biome.Tile.DIRT, Biome.Tile.SAND] \
+					or grid.heights[edge] != 0:
+				tile = Biome.Tile.GRASS
+			var prop := Biome.Prop.NONE
+			var h := hash(c)
+			if tile == Biome.Tile.GRASS and far >= 2:
+				var dense := clampf((far - 1) / 6.0, 0.0, 1.0) * (1.0 if noise.get_noise_2d(x, y) > -0.1 else 0.25)
+				if float(h % 1000) / 1000.0 < dense * 0.3:
+					prop = Biome.Prop.TREE if h % 9 else Biome.Prop.BOULDER
+			grid.heights[c] = 0
+			grid.tiles[c] = tile
+			grid.props[c] = prop
+			var zone := Vector2i(floori(x / float(CHUNK)), floori(y / float(CHUNK)))
+			if not extra.has(zone):
+				extra[zone] = []
+			extra[zone].append(c)
+	# Zona a zona, recogiendo las piezas de cada una al terminarla: con todo suelto a la vez se agotan los
+	# parámetros por instancia de los shaders.
+	_building_scenery = true
+	var groups := {}
+	for zone: Vector2i in extra:
+		var roots := []
+		for c: Vector2i in extra[zone]:
+			_build_cell(c, true)
+			roots.append(_cells[c])
+		if batching:
+			_collect(roots, groups, SCENERY_CHUNK)
+	_emit(groups)
+	_building_scenery = false
+	# Fuera de la lógica: el tablero vuelve a ser solo sus casillas.
+	for zone: Vector2i in extra:
+		for c: Vector2i in extra[zone]:
+			grid.heights.erase(c)
+			grid.tiles.erase(c)
+			grid.props.erase(c)
+
+
+## Sombra del campo de adorno en `c` (0-1, lo que se oscurecen sus colores): ya fuerte junto al borde y casi
+## negra a lo lejos, para que solo destaque la zona de combate. Con manchas suaves (ruido) para que el
+## degradado no se vea a escalones, anillo a anillo.
+func _scenery_dim(c: Vector2i) -> float:
+	var w := grid.to_world(c)
+	var spots := _tint_noise.get_noise_2d(w.x * 0.35, w.z * 0.35) * 0.1
+	return clampf(lerpf(SCENERY_SHADE, SCENERY_SHADE_FAR, smoothstep(1.0, 16.0, _outside(c))) + spots, 0.0, 0.9)
+
+
+## Color del suelo del campo de adorno: el del suelo sin las manchas escalonadas ni el ajedrezado de las
+## casillas (fuera se verían como un mosaico), con su sombra.
+func _scenery_color(c: Vector2i, tile_kind: int) -> Color:
+	var color: Color = Biome.TILE_COLORS[tile_kind]
+	if tile_kind == Biome.Tile.GRASS:
+		var w := grid.to_world(c)
+		color = color.lerp(Color(0.32, 0.55, 0.16), 0.5 + _tint_noise.get_noise_2d(w.x * 0.5, w.z * 0.5) * 0.5)
+	return color.darkened(_scenery_dim(c))
+
+
+## Casillas que separan `c` del tablero (0 = dentro).
+func _outside(c: Vector2i) -> int:
+	return maxi(absi(c.x - clampi(c.x, 0, grid.width - 1)), absi(c.y - clampi(c.y, 0, grid.height - 1)))
+
+
+## Campo de adorno: las piezas con viento de un obstáculo (las hojas y troncos de los árboles) pasan a ser
+## detalles sueltos de la casilla, para que `_batch` las agrupe como la hierba. Son cientos de árboles: uno
+## a uno se dibujaban en miles de llamadas. Solo las tres primeras piezas (tronco y copas grandes, casi
+## toda la silueta) hacen sombra: así no flotan y las cascadas de sombra no dibujan cada hoja.
+func _loose_parts(root: Node3D, prop: Node3D, base_y: float) -> void:
+	var height: float = prop.get_meta("sway_height", 1.0)
+	var i := 0
+	for mi: MeshInstance3D in prop.find_children("*", "MeshInstance3D", true, false):
+		if not mi.material_override is ShaderMaterial or mi.get_child_count() > 0:
+			continue
+		if i not in [0, 2, 3]:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		i += 1
+		var xf := _relative_transform(mi, root)
+		mi.get_parent().remove_child(mi)
+		mi.transform = xf
+		mi.set_meta("batch", "decor")
+		mi.set_meta("sway_base", Vector2(base_y, height))
+		root.add_child(mi)
+
+
+## `decor`: casilla del campo de adorno (sin colisión ni resaltado).
+func _build_cell(c: Vector2i, decor := false) -> void:
 	var root := Node3D.new()
 	root.set_meta("cell", c)
 	add_child(root)
@@ -457,7 +614,7 @@ func _build_cell(c: Vector2i) -> void:
 		surface.mesh = _water_mesh()
 		surface.position = Vector3(top.x, top.y - WATER_DROP, top.z)
 		# En el volcán los puentes cruzan la lava
-		var lava := tile_kind == Biome.Tile.LAVA or tile_kind == Biome.Tile.BRIDGE and grid.biome == Biome.Kind.VOLCANO
+		var lava := tile_kind == Biome.Tile.LAVA or tile_kind == Biome.Tile.BRIDGE and _look == Biome.Kind.VOLCANO
 		if lava:
 			surface.material_override = _live("lava", func() -> ShaderMaterial: return TerrainFx.lava_material())
 			if (c.x * 3 + c.y) % 4 == 0:  # la lava ilumina lo que tiene cerca (una luz cada pocas casillas)
@@ -469,7 +626,7 @@ func _build_cell(c: Vector2i) -> void:
 				root.add_child(light)
 		else:
 			var tint: Array = Biome.gym_style(grid.gym_type).get("water", [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]) \
-					if grid.biome == Biome.Kind.GYM else [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]
+					if _look == Biome.Kind.GYM else [Color(0.1, 0.3, 0.62), Color(0.28, 0.6, 0.86)]
 			surface.material_override = _live("water_%s" % tint[0].to_html(), func() -> ShaderMaterial:
 				return TerrainFx.water_material(tint[0], tint[1]))
 		surface.set_instance_shader_parameter("shore", _shore(c))
@@ -487,6 +644,12 @@ func _build_cell(c: Vector2i) -> void:
 				return TerrainFx.stone_material(col))
 		else:
 			top_mesh.material_override = _material(col, tile_kind in [Biome.Tile.ICE, Biome.Tile.MUD])  # el lodo brilla mojado
+		if decor:
+			top_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF  # llano: no hace sombra a nada
+			# Sin laterales debajo, las juntas entre losas dejarían ver el fondo: justo hasta tocarse, sin solaparse
+			top_mesh.scale = Vector3.ONE * (1.0 / (1.0 - TILE_GAP))
+			top_mesh.scale.y = 1.0
+			top_mesh.set_meta("matte", true)
 		top_mesh.set_meta("batch", "top")
 		top_mesh.set_meta("color", col)
 		root.add_child(top_mesh)
@@ -500,23 +663,21 @@ func _build_cell(c: Vector2i) -> void:
 	side.set_meta("batch", "side")
 	side.set_meta("top_y", top.y)
 	side.set_meta("thickness", side_top + BASE_THICKNESS)
-	root.add_child(side)
+	if decor and not water:
+		side.free()  # el campo de adorno es llano: sus laterales no se ven (el agua sí necesita su lecho)
+	else:
+		root.add_child(side)
 
-	_decorate(root, c, tile_kind, top)
-	if grid.biome == Biome.Kind.UNDERWATER and not water:
+	# El campo de adorno lleva hierba solo junto al tablero; más lejos, césped liso (la hierba de todo el
+	# campo costaba más que el tablero entero)
+	if not decor or _outside(c) <= SCENERY_GRASS:
+		_decorate(root, c, tile_kind, top)
+	if _look == Biome.Kind.UNDERWATER and not water:
 		_caustics(root, top)
 	if tile_kind == Biome.Tile.ROAD:
 		_road_marks(root, c, top)
 	_maybe_puddle(root, c, tile_kind, top)
 	_hail_pile(root, c, tile_kind, top)
-
-	var body := StaticBody3D.new()
-	body.set_meta("cell", c)
-	var shape := CollisionShape3D.new()
-	shape.shape = _tile_mesh(thickness, 0.0).create_convex_shape()
-	body.position = Vector3(top.x, top.y - thickness * 0.5, top.z)
-	body.add_child(shape)
-	root.add_child(body)
 
 	var prop: int = grid.props.get(c, Biome.Prop.NONE)
 	if prop != Biome.Prop.NONE:
@@ -525,6 +686,18 @@ func _build_cell(c: Vector2i) -> void:
 		root.add_child(p)
 		_root_sway(p, top.y)
 		_bake(p)
+		if decor and batching:
+			_loose_parts(root, p, top.y)
+	if decor:
+		return
+
+	var body := StaticBody3D.new()
+	body.set_meta("cell", c)
+	var shape := CollisionShape3D.new()
+	shape.shape = _tile_mesh(thickness, 0.0).create_convex_shape()
+	body.position = Vector3(top.x, top.y - thickness * 0.5, top.z)
+	body.add_child(shape)
+	root.add_child(body)
 
 	var overlay := MeshInstance3D.new()
 	overlay.mesh = _tile_mesh(0.02, 0.08)
@@ -544,15 +717,16 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 	var jitter := 0.85 + float(h % 30) / 100.0
 	node.rotation.y = float(h % 360) * PI / 180.0
 	node.scale = Vector3.ONE * jitter
-	var snowy: bool = grid.biome == Biome.Kind.SNOW or grid.tiles.get(c, 0) == Biome.Tile.SNOW
+	var snowy: bool = _look == Biome.Kind.SNOW or grid.tiles.get(c, 0) == Biome.Tile.SNOW
 	var snow := Color(0.95, 0.97, 1.0)
 	var height := 1.0
 	match prop:
 		Biome.Prop.TREE:
-			var leaf := Color(0.22, 0.48, 0.2) if grid.biome == Biome.Kind.FOREST else Color(0.28, 0.56, 0.24)
-			if grid.biome == Biome.Kind.SWAMP:
+			var leaf := Color(0.22, 0.48, 0.2) if _look == Biome.Kind.FOREST else Color(0.28, 0.56, 0.24)
+			if _look == Biome.Kind.SWAMP:
 				leaf = Color(0.3, 0.38, 0.16)  # sauce de pantano, verde oliva
-			leaf = leaf.lerp(Color(0.45, 0.55, 0.18), float(h % 7) / 20.0)
+			# En el campo de adorno, dos tonos en vez de siete: cada tono es un grupo más que dibujar.
+			leaf = leaf.lerp(Color(0.45, 0.55, 0.18), float(h % 2 * 4 if _building_scenery else h % 7) / 20.0)
 			var bark := 3 if snowy else 4  # con musgo salvo en la nieve
 			_leaf(node, _cyl(0.05, 0.1, 0.62, 7), Vector3(0, 0.31, 0), Color(0.4, 0.27, 0.16), 0.3, 0.0, bark)
 			_leaf(node, _cyl(0.02, 0.04, 0.3, 5), Vector3(0.1, 0.55, 0), Color(0.4, 0.27, 0.16), 0.4, 0.0, bark).rotation.z = -0.8
@@ -574,7 +748,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			height = 1.25
 		Biome.Prop.BOULDER:
 			var stone := Color(0.5, 0.48, 0.46)
-			match grid.biome:
+			match _look:
 				Biome.Kind.DESERT: stone = Color(0.66, 0.47, 0.34)
 				Biome.Kind.CAVE: stone = Color(0.42, 0.41, 0.4)  # gris frío, sin tono café
 				Biome.Kind.SNOW: stone = Color(0.48, 0.5, 0.54)
@@ -602,7 +776,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				top_y = maxf(top_y, (piece[1].y + piece[2].y * 0.5) * size)
 			if snowy:
 				_part(node, _sphere(0.27, 0.12), Vector3(0, top_y - 0.04, 0), snow).scale = Vector3(1.0, 1.0, 0.85) * size
-			elif grid.biome in [Biome.Kind.FOREST, Biome.Kind.SWAMP]:
+			elif _look in [Biome.Kind.FOREST, Biome.Kind.SWAMP]:
 				_part(node, _sphere(0.25, 0.1), Vector3(-0.03, top_y - 0.04, 0), Color(0.3, 0.45, 0.18)).scale = Vector3(1.0, 1.0, 0.8) * size
 		Biome.Prop.CACTUS:
 			var green := Color(0.3, 0.52, 0.27).lerp(Color(0.42, 0.55, 0.3), float(h % 5) / 8.0)
@@ -679,7 +853,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 		Biome.Prop.PILLAR:
 			node.rotation.y = 0.0
 			node.scale = Vector3.ONE
-			_pillar(node, grid.gym_type if grid.biome == Biome.Kind.GYM else "")
+			_pillar(node, grid.gym_type if _look == Biome.Kind.GYM else "")
 			height = 1.4
 		Biome.Prop.STALAGMITE:
 			# Grupo de estalagmitas de caliza: una alta y afilada con dos o tres pequeñas al pie, y cantos sueltos.
@@ -700,12 +874,12 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			# el suelo de alrededor con su color.
 			var tint := Color(0.65, 0.45, 0.95) if h % 3 else Color(0.45, 0.75, 1.0)
 			# En el gimnasio, del color de su tipo (hielo celeste, psíquico magenta, hada rosa); bajo el agua, azules
-			if grid.biome == Biome.Kind.GYM:
+			if _look == Biome.Kind.GYM:
 				tint = {"ice": Color(0.55, 0.85, 1.0), "psychic": Color(0.95, 0.35, 0.75),
 					"fairy": Color(1.0, 0.6, 0.85)}.get(grid.gym_type, tint)
 				if h % 3 == 0:
 					tint = tint.lerp(Color.WHITE, 0.25)
-			elif grid.biome == Biome.Kind.UNDERWATER:
+			elif _look == Biome.Kind.UNDERWATER:
 				tint = Color(0.3, 0.7, 1.0) if h % 3 else Color(0.35, 0.95, 0.9)
 			var base := _part(node, TerrainFx.rock_mesh(h % 4), Vector3(0, 0.03, 0), Color(0.24, 0.22, 0.22))
 			base.scale = Vector3(0.6, 0.22, 0.54)
@@ -741,7 +915,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 				branch.basis = Basis(Vector3(-sin(a), 0, cos(a)), 0.7 + 0.15 * (i % 2))
 				if i % 2 == 0:
 					_leaf(node, _cyl(0.0, 0.04, 0.22, 5), Vector3(cos(a) * 0.24, 0.62, sin(a) * 0.24), Color(0.4, 0.46, 0.3), 0.6, 0.6)
-			if grid.biome == Biome.Kind.GYM and grid.gym_type == "ghost":
+			if _look == Biome.Kind.GYM and grid.gym_type == "ghost":
 				# Gimnasio Fantasma: más alto, con un fuego fatuo morado flotando junto a una rama
 				node.scale *= 1.7
 				var wisp_pos := Vector3(0.28, 0.6, 0.12)
@@ -760,7 +934,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			# puerta, cornisa y a veces una caja en la azotea. No gira, para que las fachadas queden alineadas.
 			node.rotation.y = 0.0
 			node.scale = Vector3.ONE
-			if grid.biome == Biome.Kind.AIRPORT:
+			if _look == Biome.Kind.AIRPORT:
 				node.set_meta("sway_height", _terminal(node, c))
 				return node
 			var walls := [Color(0.62, 0.36, 0.28), Color(0.82, 0.76, 0.62), Color(0.62, 0.64, 0.66), Color(0.7, 0.55, 0.42)]
@@ -1117,7 +1291,7 @@ func _pillar(node: Node3D, type: String) -> void:
 				_part(node, _cyl(0.03, 0.035, 1.0, 5), Vector3(cos(a), 0, sin(a)) * 0.245 + Vector3(0, 0.72, 0), stone.darkened(0.08))
 			_part(node, _cyl(0.33, 0.25, 0.12, 16), Vector3(0, 1.3, 0), stone)
 			_part(node, _unit_box(), Vector3(0, 1.39, 0), stone.darkened(0.12)).scale = Vector3(0.7, 0.07, 0.7)
-			if type == "" and grid.biome == Biome.Kind.GYM:
+			if type == "" and _look == Biome.Kind.GYM:
 				_part(node, _cyl(0.275, 0.275, 0.05, 16), Vector3(0, 0.3, 0), line)
 
 
@@ -1185,7 +1359,7 @@ func _finish(color: Color, roughness: float, metallic: float) -> StandardMateria
 ## Puente de madera sobre el agua: tablones atravesados al paso, vigas por debajo y, en los lados que
 ## dan al agua, barandilla con postes.
 func _bridge(root: Node3D, c: Vector2i, top: Vector3) -> void:
-	var liquid := Biome.Tile.LAVA if grid.biome == Biome.Kind.VOLCANO else Biome.Tile.WATER
+	var liquid := Biome.Tile.LAVA if _look == Biome.Kind.VOLCANO else Biome.Tile.WATER
 	var wood := Color(0.3, 0.24, 0.2) if liquid == Biome.Tile.LAVA else Color(0.52, 0.37, 0.23)  # chamuscada sobre la lava
 	var on_water := func(n: Vector2i) -> bool:
 		return not grid.is_inside(n) or grid.tiles.get(n, 0) in [liquid, Biome.Tile.BRIDGE]
@@ -1253,6 +1427,8 @@ func _root_sway(node: Node3D, base_y: float) -> void:
 ## Parte con viento: `sway` cuánto se dobla, `flutter` cuánto tiemblan las hojas.
 ## `pattern`: textura del shader (1 copa de hojas, 2 agujas de pino, 3 corteza, 4 corteza con musgo).
 func _leaf(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color, sway: float, flutter := 0.0, pattern := 0) -> MeshInstance3D:
+	if _building_scenery:
+		color = color.darkened(SCENERY_PROP_SHADE)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.position = pos
@@ -1288,32 +1464,34 @@ func _live(key: String, make: Callable) -> ShaderMaterial:
 ## Color de la cara de arriba: el del suelo con manchas suaves (hierba más seca o más verde, arena más
 ## clara...), algo más claro cuanto más alto, y un ajedrezado tenue para distinguir las casillas.
 func _tile_color(c: Vector2i, tile_kind: int) -> Color:
+	if _building_scenery:
+		return _scenery_color(c, tile_kind)
 	var color: Color = Biome.TILE_COLORS[tile_kind]
-	if tile_kind == Biome.Tile.GRASS and grid.biome == Biome.Kind.FOREST:
+	if tile_kind == Biome.Tile.GRASS and _look == Biome.Kind.FOREST:
 		color = Color(0.32, 0.56, 0.28)
-	elif tile_kind == Biome.Tile.GRASS and grid.biome == Biome.Kind.SWAMP:
+	elif tile_kind == Biome.Tile.GRASS and _look == Biome.Kind.SWAMP:
 		color = Color(0.36, 0.48, 0.24)  # hierba de pantano, oliva
-	elif tile_kind == Biome.Tile.ROCK and grid.biome == Biome.Kind.DESERT:
+	elif tile_kind == Biome.Tile.ROCK and _look == Biome.Kind.DESERT:
 		color = Color(0.74, 0.52, 0.38)  # arenisca
-	elif grid.biome == Biome.Kind.VOLCANO and tile_kind in [Biome.Tile.ROCK, Biome.Tile.DIRT]:
+	elif _look == Biome.Kind.VOLCANO and tile_kind in [Biome.Tile.ROCK, Biome.Tile.DIRT]:
 		color = Color(0.24, 0.21, 0.2) if tile_kind == Biome.Tile.ROCK else Color(0.46, 0.43, 0.41)  # basalto y ceniza
-	elif grid.biome == Biome.Kind.LAB and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+	elif _look == Biome.Kind.LAB and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Color(0.84, 0.88, 0.92) if tile_kind == Biome.Tile.FLOOR else Color(0.3, 0.78, 0.92)
-	elif grid.biome == Biome.Kind.CEMETERY and tile_kind == Biome.Tile.GRASS:
+	elif _look == Biome.Kind.CEMETERY and tile_kind == Biome.Tile.GRASS:
 		color = Color(0.3, 0.42, 0.26)  # hierba oscura
-	elif grid.biome == Biome.Kind.LIBRARY and tile_kind == Biome.Tile.FLOOR_LINE:
+	elif _look == Biome.Kind.LIBRARY and tile_kind == Biome.Tile.FLOOR_LINE:
 		color = Color(0.55, 0.14, 0.16)  # alfombra granate
-	elif grid.biome == Biome.Kind.STUDIO and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+	elif _look == Biome.Kind.STUDIO and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Color(0.2, 0.2, 0.22) if tile_kind == Biome.Tile.FLOOR else Color(0.95, 0.8, 0.2)  # suelo negro y cinta
-	elif grid.biome == Biome.Kind.AIRPORT and tile_kind == Biome.Tile.FLOOR:
+	elif _look == Biome.Kind.AIRPORT and tile_kind == Biome.Tile.FLOOR:
 		color = Color(0.68, 0.67, 0.64)  # hormigón de la plataforma
-	elif grid.biome == Biome.Kind.UNDERWATER and tile_kind in [Biome.Tile.CAVE, Biome.Tile.ROCK, Biome.Tile.SAND]:
+	elif _look == Biome.Kind.UNDERWATER and tile_kind in [Biome.Tile.CAVE, Biome.Tile.ROCK, Biome.Tile.SAND]:
 		color = Biome.TILE_COLORS[tile_kind].lerp(Color(0.25, 0.45, 0.6), 0.35)  # todo teñido de azul
-	elif grid.biome == Biome.Kind.GYM and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
+	elif _look == Biome.Kind.GYM and tile_kind in [Biome.Tile.FLOOR, Biome.Tile.FLOOR_LINE]:
 		color = Biome.gym_style(grid.gym_type).floor if tile_kind == Biome.Tile.FLOOR else Biome.gym_style(grid.gym_type).line
 	elif tile_kind == Biome.Tile.ICE:
 		# Más azul que la nieve; en el gimnasio de Hielo, cian verdoso para no confundirse con sus líneas azules
-		color = Color(0.58, 0.88, 0.9) if grid.biome == Biome.Kind.GYM else Color(0.5, 0.76, 0.93)
+		color = Color(0.58, 0.88, 0.9) if _look == Biome.Kind.GYM else Color(0.5, 0.76, 0.93)
 	var w := grid.to_world(c)
 	var n := snappedf(_tint_noise.get_noise_2d(w.x, w.z), 0.25)
 	if tile_kind == Biome.Tile.SNOW:
@@ -1333,13 +1511,13 @@ func _tile_color(c: Vector2i, tile_kind: int) -> Color:
 
 
 func _side_material(tile_kind: int) -> ShaderMaterial:
-	var key := "%d_%d_%s" % [tile_kind, grid.biome, grid.gym_type]
+	var key := "%d_%d_%s" % [tile_kind, _look, grid.gym_type]
 	if not _side_mats.has(key):
-		var bedrock: Color = BEDROCK[grid.biome]
-		var top: Color = SIDE_TOP.get(tile_kind, Biome.SIDE_COLORS[grid.biome])
-		if tile_kind == Biome.Tile.ROCK and grid.biome == Biome.Kind.DESERT:
+		var bedrock: Color = BEDROCK[_look]
+		var top: Color = SIDE_TOP.get(tile_kind, Biome.SIDE_COLORS[_look])
+		if tile_kind == Biome.Tile.ROCK and _look == Biome.Kind.DESERT:
 			top = Color(0.66, 0.44, 0.3)
-		if grid.biome == Biome.Kind.GYM:
+		if _look == Biome.Kind.GYM:
 			top = Biome.gym_style(grid.gym_type).side
 		_side_mats[key] = TerrainFx.side_material(top, bedrock)
 	return _side_mats[key]
@@ -1370,7 +1548,7 @@ func _shore(c: Vector2i) -> Vector4:
 	var out := Vector4.ZERO
 	var dirs := [Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(0, -1)]
 	var same := [Biome.Tile.LAVA] if grid.tiles.get(c, 0) == Biome.Tile.LAVA else [Biome.Tile.WATER, Biome.Tile.BRIDGE]
-	if grid.biome == Biome.Kind.VOLCANO:
+	if _look == Biome.Kind.VOLCANO:
 		same = [Biome.Tile.LAVA, Biome.Tile.BRIDGE]
 	for i in 4:
 		var n: Vector2i = c + dirs[i]
@@ -1381,16 +1559,18 @@ func _shore(c: Vector2i) -> Vector4:
 
 ## La hierba crece en zonas: matorrales de hierba alta separados por claros de césped corto.
 func _tall_grass(c: Vector2i) -> bool:
+	if _building_scenery:
+		return false  # el campo de adorno, de césped corto: la hierba alta es lo que más cuesta dibujar
 	if grid.tiles.get(c, -1) != Biome.Tile.GRASS or grid.props.get(c, Biome.Prop.NONE) != Biome.Prop.NONE:
 		return false
-	if grid.biome == Biome.Kind.GYM:
+	if _look == Biome.Kind.GYM:
 		# Gimnasio Planta/Bicho: césped segado en la arena y jardines de hierba alta a los lados
 		var mid := grid.height / 2
 		var side := c.x >= 2 and c.x <= 5 or c.x >= grid.width - 6 and c.x <= grid.width - 3
 		return side and absi(c.y - mid) <= 4
 	var w := grid.to_world(c)
 	var threshold := 0.05
-	match grid.biome:
+	match _look:
 		Biome.Kind.FOREST: threshold = 0.2
 		Biome.Kind.SWAMP: threshold = -0.15  # juncales
 		Biome.Kind.MOUNTAIN, Biome.Kind.DESERT: threshold = 0.35
@@ -1405,8 +1585,8 @@ func _tall_grass(c: Vector2i) -> bool:
 ## orilla, piedrecillas, matojos secos, montoncitos de nieve. Elegidos de forma estable por casilla.
 func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(c) * 31 + grid.biome
-	var b := grid.biome
+	rng.seed = hash(c) * 31 + _look
+	var b := _look
 	var grass := Color(0.45, 0.72, 0.3)
 	match b:
 		Biome.Kind.FOREST: grass = Color(0.3, 0.55, 0.25)
@@ -1464,6 +1644,10 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 				list.append(["reeds", Color(0.4, 0.6, 0.28), 0.9, 0.45])
 			if b in [Biome.Kind.LAKE, Biome.Kind.MEADOW, Biome.Kind.SWAMP] and r2 < (0.45 if b == Biome.Kind.SWAMP else 0.25):
 				list.append(["lily", Color(0.3, 0.58, 0.25), 0.15, 0.3])
+	if _building_scenery:
+		var dim := snappedf(_scenery_dim(c), 0.1)  # pocos tonos: cada uno es una malla distinta
+		for d: Array in list:
+			d[1] = d[1].darkened(dim)
 	for d: Array in list:
 		var kind: String = d[0]
 		var mi := MeshInstance3D.new()
@@ -1473,7 +1657,7 @@ func _decorate(root: Node3D, c: Vector2i, tile_kind: int, top: Vector3) -> void:
 			y -= WATER_DROP + 0.02
 		mi.position = Vector3(top.x, y, top.z)
 		mi.rotation.y = rng.randi_range(0, 3) * PI / 2
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if kind in SHADOW_DECOR \
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if kind in SHADOW_DECOR and not _building_scenery \
 				else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		var sway: float = d[2]
 		if kind == "glowshroom":
@@ -1691,6 +1875,8 @@ func _vcol_material() -> StandardMaterial3D:
 
 
 func _part(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
+	if _building_scenery:
+		color = color.darkened(SCENERY_PROP_SHADE)
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
 	mi.position = pos

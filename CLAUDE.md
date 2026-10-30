@@ -38,6 +38,14 @@ Ver README.md para las reglas y la estructura de carpetas.
   `Biome._clear_prop`, que quita el avión completo.
 - **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
   agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
+- **Bioma `TEST` (Test):** copia de la Pradera para probar el mapa a pantalla completa. `Biome.look(kind)` da el
+  bioma del que se toma el aspecto (Test → Pradera; BoardView usa `_look` en vez de `grid.biome`, y también el cielo,
+  el clima y la música) y `Biome.full_view(kind)` activa la presentación: `BoardView.scenery` monta alrededor del
+  tablero un campo de adorno con las mismas piezas (`_build_scenery`, casillas fuera de la rejilla, sin colisión, más
+  oscuro y sin ajedrezado, hierba solo junto al borde, árboles agrupados con `_loose_parts`; sus colores se oscurecen
+  según la distancia al tablero, `_scenery_dim` y `SCENERY_SHADE*`, como la referencia del usuario) y `CameraRig.frame`
+  encuadra el tablero entero, deja sitio al panel izquierdo (`safe_left` + `h_offset`), recalcula al girar o cambiar
+  la ventana y limita zoom y desplazamiento al campo. `Biome.random_kind` lo deja fuera del azar.
 - **Rendimiento:** en combate `BoardView.batching` agrupa en MultiMesh (por zonas de `CHUNK` casillas) las caras
   de arriba, laterales y detalles marcados con meta `"batch"`; los shaders leen lo de cada pieza de
   `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa.

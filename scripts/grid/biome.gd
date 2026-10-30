@@ -3,7 +3,7 @@ extends RefCounted
 ## Tipos de campo: aspecto (suelo, obstáculos, cielo) y generador procedural.
 ## Por ahora son solo visuales; los efectos (p. ej. potenciar Agua en el lago) vendrán después.
 
-enum Kind { MEADOW, FOREST, MOUNTAIN, DESERT, LAKE, SNOW, CAVE, GYM, SWAMP, CITY, LAB, VOLCANO, BEACH, CEMETERY, STUDIO, LIBRARY, AIRPORT, UNDERWATER }
+enum Kind { MEADOW, FOREST, MOUNTAIN, DESERT, LAKE, SNOW, CAVE, GYM, SWAMP, CITY, LAB, VOLCANO, BEACH, CEMETERY, STUDIO, LIBRARY, AIRPORT, UNDERWATER, TEST }
 enum Tile { GRASS, DIRT, SAND, ROCK, WATER, SNOW, ICE, FLOOR, FLOOR_LINE, CAVE, BRIDGE, MUD, ROAD, LAVA, WOOD }
 ## Obstáculos: bloquean el paso y no se puede estar encima.
 enum Prop { NONE, TREE, PINE, BOULDER, CACTUS, PILLAR, CRYSTAL, STALAGMITE, PALM, DEAD_TREE, BUILDING, LAMP, PARASOL, MACHINE, TANK, VENT, GRAVE, SHELF,
@@ -14,13 +14,13 @@ const NAMES := { # i18n
 	Kind.LAKE: "Lago", Kind.SNOW: "Nieve", Kind.CAVE: "Cueva", Kind.GYM: "Gimnasio", Kind.SWAMP: "Pantano",
 	Kind.CITY: "Ciudad", Kind.LAB: "Laboratorio", Kind.VOLCANO: "Volcán", Kind.BEACH: "Playa",
 	Kind.CEMETERY: "Cementerio", Kind.STUDIO: "Estudio", Kind.LIBRARY: "Librería", Kind.AIRPORT: "Aeropuerto",
-	Kind.UNDERWATER: "Cueva submarina",
+	Kind.UNDERWATER: "Cueva submarina", Kind.TEST: "Test",
 }
 const ICONS := {
 	Kind.MEADOW: "🌼", Kind.FOREST: "🌲", Kind.MOUNTAIN: "⛰", Kind.DESERT: "🌵",
 	Kind.LAKE: "🌊", Kind.SNOW: "❄", Kind.CAVE: "🪨", Kind.GYM: "★", Kind.SWAMP: "🐸", Kind.CITY: "🏙",
 	Kind.LAB: "⚗", Kind.VOLCANO: "🌋", Kind.BEACH: "🏖", Kind.CEMETERY: "🪦", Kind.STUDIO: "🎬", Kind.LIBRARY: "📚",
-	Kind.AIRPORT: "✈", Kind.UNDERWATER: "🐚",
+	Kind.AIRPORT: "✈", Kind.UNDERWATER: "🐚", Kind.TEST: "🧪",
 }
 const TILE_NAMES := { # i18n
 	Tile.GRASS: "Hierba", Tile.DIRT: "Tierra", Tile.SAND: "Arena", Tile.ROCK: "Roca", Tile.WATER: "Agua",
@@ -51,6 +51,7 @@ const SIDE_COLORS := {
 	Kind.CITY: Color(0.5, 0.5, 0.52), Kind.LAB: Color(0.55, 0.58, 0.62), Kind.VOLCANO: Color(0.2, 0.17, 0.16),
 	Kind.BEACH: Color(0.8, 0.7, 0.5), Kind.CEMETERY: Color(0.32, 0.27, 0.22), Kind.STUDIO: Color(0.16, 0.16, 0.18),
 	Kind.LIBRARY: Color(0.42, 0.28, 0.18), Kind.AIRPORT: Color(0.45, 0.45, 0.47), Kind.UNDERWATER: Color(0.2, 0.26, 0.32),
+	Kind.TEST: Color(0.42, 0.32, 0.22),
 }
 ## Cielo (arriba, horizonte), energía del sol y luz ambiente.
 const SKIES := {
@@ -72,6 +73,7 @@ const SKIES := {
 	Kind.LIBRARY: [Color(0.22, 0.15, 0.1), Color(0.55, 0.42, 0.3), 0.85, 0.9],
 	Kind.AIRPORT: [Color(0.35, 0.58, 0.9), Color(0.82, 0.9, 0.98), 1.2, 0.85],
 	Kind.UNDERWATER: [Color(0.02, 0.08, 0.16), Color(0.08, 0.28, 0.4), 0.6, 0.5],
+	Kind.TEST: [Color(0.35, 0.55, 0.85), Color(0.75, 0.85, 0.95), 1.1, 0.8],
 }
 ## Tipos con estilo propio de gimnasio ("" = neutral).
 const GYM_TYPES: PackedStringArray = ["", "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
@@ -122,6 +124,22 @@ const GYM_STYLES := {
 }
 
 
+## Bioma cuyo aspecto toma `kind`: Test es una copia de la Pradera (mismo terreno, detalles, cielo, clima y
+## música) que solo cambia cómo se presenta el mapa en combate (ver `full_view`).
+static func look(kind: Kind) -> Kind:
+	return Kind.MEADOW if kind == Kind.TEST else kind
+
+
+## En combate, el mapa ocupa toda la pantalla: campo alrededor del tablero y cámara que lo encuadra entero.
+static func full_view(kind: Kind) -> bool:
+	return kind == Kind.TEST
+
+
+## Bioma al azar para la partida rápida y la Torre (Test es solo para pruebas y no sale).
+static func random_kind(rng: RandomNumberGenerator) -> Kind:
+	return rng.randi_range(0, Kind.TEST - 1) as Kind
+
+
 ## Estilo del gimnasio de un tipo (el neutral si no tiene).
 static func gym_style(type: String) -> Dictionary:
 	return GYM_STYLES.get(type, GYM_STYLES[""])
@@ -159,7 +177,7 @@ static func generate(grid: BoardGrid, kind: Kind, rng: RandomNumberGenerator,
 	for c in keep_clear:
 		clear[c] = true
 	match kind:
-		Kind.MEADOW: _meadow(grid, rng, clear)
+		Kind.MEADOW, Kind.TEST: _meadow(grid, rng, clear)
 		Kind.FOREST: _forest(grid, rng, clear)
 		Kind.MOUNTAIN: _mountain(grid, rng, clear)
 		Kind.DESERT: _desert(grid, rng, clear)
