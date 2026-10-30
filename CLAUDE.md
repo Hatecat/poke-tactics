@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Poké Tactics — instrucciones para Claude Code
 
 **Clave del proyecto: `poketactics` (o `poketactis`).** Cuando el usuario escriba cualquiera de las dos, retoma este proyecto: lee este
@@ -12,88 +16,86 @@ Juego táctico por turnos con Pokémon (los 151 originales) en Godot 4.7.2, todo
 o hexagonal, modos Partida rápida y Torre de Batallas, editor de equipo, editor de escenarios y tabla de tipos.
 Ver README.md para las reglas y la estructura de carpetas.
 
-## Hecho hasta ahora (octubre 2026)
+## Comandos
 
-- **Estados alterados** con efecto visual (scripts/battle/fx.gd, unit.gd `_set_look`): bloque de hielo, llamas,
-  Zzz, burbujas + tinte morado (veneno), rayos en zigzag + parpadeo amarillo (parálisis), estrellas y pájaros
-  girando (confusión).
-- **Poké Ball** (scripts/battle/ball_fx.gd): salida de cada Pokémon al empezar el combate y captura en la Torre
-  (abrir, absorber, sacudidas, clic o escape). Botones *Captura* y *Salida* en el visor de animaciones.
-- **Terrenos** (scripts/grid/biome.gd): generador con geografía para cada bioma (ríos, lago con playa, macizo
-  nevado, dunas, mesetas, oasis, cueva con estalagmitas). Obstáculos nuevos `STALAGMITE` y `PALM` (al final del
-  enum `Prop`, para no romper mapas guardados).
-- **Pantano y Ciudad** (biomas `SWAMP`, `CITY`), suelos `BRIDGE`, `MUD`, `ROAD` y obstáculos `DEAD_TREE`, `BUILDING`,
-  `LAMP`, todos al final de sus enums. El generador garantiza paso sin agua (`_ensure_dry_path`) y para talla 3
-  (`_ensure_wide_path`); el río del bosque tiene vados o puentes (`_fords`). Para comprobarlo en muchos mapas,
-  genera con `Biome.generate` en un script `--headless` y recorre la huella como `battle.gd` `_fits`.
-- **Laboratorio, Volcán y Playa** (`LAB`, `VOLCANO`, `BEACH`), suelo `LAVA` (solo Fuego y voladores:
-  `effects.lava_blocked`; shader `TerrainFx.LAVA_SHADER`) y obstáculos `PARASOL`, `MACHINE`, `TANK`, `VENT`.
-  **Gimnasio por tipo:** `Biome.GYM_STYLES` / `gym_style()`, guardado en `BoardGrid.gym_type` y `MapData.gym_type`;
-  battle.gd lo toma del líder (`trainer.types[0]`) o al azar.
-  El estadio alrededor (gradas, muros, medalla, estatuas, adornos por tipo) está en `scripts/battle/gym_dressing.gd`,
-  fuera de las casillas; `Unit.fit_model` escala las estatuas.
-- **Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina** (`CEMETERY`, `STUDIO`, `LIBRARY`, `AIRPORT`,
-  `UNDERWATER`), suelo `WOOD` y obstáculos `GRAVE`, `SHELF`, `SPOTLIGHT`, `CAMERA`, `CORAL` y el avión: `PLANE` en
-  la casilla ancla (lo dibuja entero) y `PLANE_PART` en el resto de su huella 3×3. Para quitar obstáculos usa
-  `Biome._clear_prop`, que quita el avión completo.
-- **Terreno vivo** (scripts/battle/terrain_fx.gd + board_view.gd): shaders de viento (árboles, hierba, juncos),
-  agua con oleaje y espuma, laterales con capas, detalles del suelo y partículas de ambiente por bioma.
-- **Mapa a pantalla completa (todos los biomas, combate y editor):** `BoardView.scenery` monta alrededor del
-  tablero un campo de adorno del mismo bioma (`_build_scenery`, casillas fuera de la rejilla, sin colisión, siempre
-  agrupadas en MultiMesh por zonas; suelo = `Biome.default_tile`, los ríos/senderos del borde continúan
-  serpenteando (`_scenery_trail`, `SCENERY_TRAILS`, `SCENERY_BEND`; las carreteras rectas), la Playa tiene mar
-  abierto que sigue su orilla (`_beach_coast`), el agua de fuera se oscurece igual que el suelo, y los adornos salen de `SCENERY_PROPS`, por bioma y con pesos; el Gimnasio deja libre el
-  estadio). Sus colores se oscurecen según la distancia al tablero (`_scenery_dim`, `SCENERY_SHADE*`, como la
-  referencia del usuario). `BoardView.board_box()` + `CameraRig.frame` encuadran el tablero entero, dejan sitio al
-  panel izquierdo (`safe_left` + `h_offset`), recalculan al girar o cambiar la ventana y limitan zoom y desplazamiento
-  al campo. Al pintar en el editor solo se rehacen las casillas de dentro.
-- **Bioma `TEST` (Test):** copia de la Pradera. `Biome.look(kind)` da el bioma del que se toma el aspecto (Test →
-  Pradera; BoardView usa `_look` en vez de `grid.biome`, y también el cielo, el clima y la música).
-  `Biome.random_kind` lo deja fuera del azar.
-- **Rendimiento:** en combate `BoardView.batching` agrupa en MultiMesh (por zonas de `CHUNK` casillas) las caras
-  de arriba, laterales y detalles marcados con meta `"batch"`; los shaders leen lo de cada pieza de
-  `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala igual. El editor no agrupa
-  el tablero (sí el campo de adorno).
-  La hierba tiene una sola cara por hoja (material de dos caras, `TerrainFx._two_sided`).
-  Los obstáculos se funden al construirse (`BoardView._bake`): sus piezas opacas de color liso pasan a una malla
-  con color por vértice por acabado; las de viento, brillo o transparencia, y las que tienen hijos, quedan sueltas
-  (la Librería pasó de ~20.000 llamadas de dibujo a ~500). Las primitivas de `_cyl`/`_sphere`/`_capsule` se
-  comparten: no las modifiques después de crearlas.
-  La "carga" de ~6 s al empezar un combate es casi toda la intro de las Poké Balls (`_send_out_intro`, ~5,5 s);
-  la carga real es de 0,4-1,2 s. Los proyectores de luz (`light_projector`) salían negros con texturas hechas por
-  código: las cáusticas de la cueva submarina son una capa aditiva por casilla (`TerrainFx.CAUSTIC_SHADER`).
-- **Calidad gráfica** (`Game.graphics_quality`, Opciones y Pausa): `Game.apply_graphics` (MSAA/FXAA, atlas y filtro de
-  sombras) + `CameraRig.apply_quality` (SSIL, SSAO, cascadas, PCSS). Alta = como siempre. El juego usa la GPU
-  dedicada solo (Vulkan elige la discreta); en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*`
-  de la misma versión que el driver (si no, corre en la Intel: compruébalo con `RenderingServer.get_video_adapter_name()`).
-- **Pokémon:** `Unit._vivid_materials` usa la textura ajustada de `assets/models/pokemon/tuned/` (de
-  `tools/tune_textures.py`, por píxel y con `TUNE` por especie) o, si no hay, satura la original; `_fix_palette_materials`
-  toma el color del nombre de la pieza en los modelos de paleta (Gastly) y su gas usa `HALO_SHADER` (halo fresnel).
-  Revisión de los 151 (octubre 2026): serpientes suavizadas (`smooth_serpent_weights.py`, Ekans/Arbok/Dratini),
-  brazos de Geodude/Graveler/Hitmonlee/Hitmonchan, Ekans más grueso (`thicken_serpent.py`), cola de Raichu y liana de Victreebel (`smooth_chain.py` una vez en el .blend; `sway_chain.py` tras animate_status), `FLAT_COLORS`
-  para colores lisos (Haunter), metálico solo en tipo Acero, cola de Slowpoke y debilitados (`KO_STYLE`). Para revisarlos todos de un
+En este equipo Godot es el binario `~/Godot_v4.7.2-stable_linux.x86_64` (`tools/export_demo.sh` lo toma de `$GODOT`).
+
+```bash
+G=~/Godot_v4.7.2-stable_linux.x86_64
+$G --path .                                   # jugar
+$G -e --path .                                # editor
+$G --headless --path . --import               # registrar clases nuevas (class_name)
+POKE_TACTICS_NO_SAVE=1 $G --path . --script <prueba>.gd   # partida de prueba (ver "Probar en partida")
+$G --headless --path . --script tools/check_ground.gd [-- especie1,especie2]   # apoyo en el suelo; sale con 1 si falla
+python3 tools/extract_texts.py                # actualizar locale/*.pot tras añadir textos
+tools/export_demo.sh                          # builds Windows + Linux en ../poke-tactics-builds
+```
+
+No hay tests unitarios: la comprobación es una partida real con capturas (y `check_ground.gd` para modelos).
+Los datos (`data/pokemon`, `data/moves`, `data/items`) los generan `tools/build_data.py` / `build_items.py` desde
+Pokémon Showdown y PokeAPI (ver README): retocar un `.tres` a mano se pierde al regenerar.
+
+## Arquitectura
+
+- **Autoloads:** `Game` (scripts/game.gd) guarda todo el estado entre escenas: roster, equipos, `player_team` /
+  `enemy_team`, `mode` (`"quick"`, `"tower"`, `"story"`), `biome`, `weather`, `map`, `rng`, opciones, y
+  `story` (`StoryRun`) / `tower` (`TowerRun`). Las escenas se cambian con `change_scene_to_file` y leen de `Game`.
+  `Audio` lleva música y efectos.
+- **Escenas** (scenes/*.tscn): casi vacías; cada una tiene un script que monta todo por código (menú, editor de
+  equipo, editor de mapas, torre, historia, tabla de tipos, batalla).
+- **Batalla:** `battle.gd` es el controlador (estados `State`, input, IA, UI, final según el modo). Delega en
+  módulos `RefCounted` sin nodos: `TurnManager` (CT estilo FFT), `Combat` (reglas puras: celdas apuntables, área,
+  daño), `Effects` (estados volátiles, habilidades; recibe la batalla en `Effects.new(self)`), `FieldState`
+  (zonas, trampas, terreno), `Weather`, `Items`, `Abilities`. Lo visual va aparte: `BoardView` (tablero 3D,
+  campo de adorno, batching), `Unit` (cada Pokémon), `CameraRig`, `Fx`/`BallFx`/`WeatherFx`/`TerrainFx`,
+  `GymDressing`.
+- **Rejilla:** `BoardGrid` es lógica pura (vecinos, distancias, líneas, posición en el mundo) para cuadrada y hex,
+  siempre con celdas `Vector2i(columna, fila)`. `Biome` define biomas, suelos, obstáculos y el generador;
+  `MapData` es el escenario guardado (`data/maps/*.tres` o `user://`).
+- **Datos:** recursos `PokemonData`, `MoveData`, `ItemData` en scripts/data/; `TeamMember` = especie + ataques
+  elegidos. Mensajes guardados para mostrar más tarde con `Msg`.
+
+## Estado (octubre 2026)
+
+Hechos: 18 biomas (incluido `TEST`, copia de la Pradera fuera del azar) con generador propio y Gimnasio por tipo,
+terreno vivo con shaders, clima visual, estados alterados con efecto, Poké Balls (salida y captura en la Torre),
+mapa a pantalla completa con campo de adorno, calidad gráfica, idiomas (es/en) y el capítulo 1 del modo historia
+(termina en "Continuará... Capítulo 2 · Ciudad Fucsia"; biblia narrativa en
+~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx). Detalle de cada parte en el README.
+
+## Trampas y reglas del código
+
+- **Enums de `Biome`** (`Kind`, suelos, `Prop`): los valores nuevos van siempre al final, o se rompen los mapas
+  guardados. Para quitar un obstáculo usa `Biome._clear_prop` (el avión ocupa 3×3: `PLANE` en el ancla y
+  `PLANE_PART` en el resto). El aspecto se toma de `Biome.look(kind)`, no de `grid.biome` (Test → Pradera).
+- **Generador:** garantiza paso sin agua (`_ensure_dry_path`) y para talla 3 (`_ensure_wide_path`). Para
+  comprobarlo en muchos mapas, genera con `Biome.generate` en un script `--headless` y recorre la huella como
+  `battle.gd` `_fits`. La lava solo la pisan Fuego y voladores (`effects.lava_blocked`).
+- **Rendimiento:** en combate `BoardView.batching` agrupa en MultiMesh por zonas (`CHUNK`) las piezas con meta
+  `"batch"`; sus shaders leen `INSTANCE_CUSTOM` con `instanced = true`. Pieza nueva repetida por casilla → márcala
+  igual. El editor no agrupa el tablero (sí el campo de adorno). Los obstáculos se funden en `BoardView._bake`
+  (quedan sueltas las piezas con viento, brillo, transparencia o hijos). Las primitivas de
+  `_cyl`/`_sphere`/`_capsule` se comparten: no las modifiques después de crearlas.
+  Los ~6 s de "carga" al empezar un combate son la intro de las Poké Balls (`_send_out_intro`); la carga real es
+  de 0,4-1,2 s. `light_projector` sale negro con texturas hechas por código (por eso las cáusticas son una capa
+  aditiva, `TerrainFx.CAUSTIC_SHADER`).
+- **Campo de adorno** (`BoardView._build_scenery`, `SCENERY_*`): fuera de la rejilla, sin colisión; se oscurece
+  con la distancia (`_scenery_dim`). La cámara encuadra con `BoardView.board_box()` + `CameraRig.frame`.
+- **GPU:** en el flatpak hace falta la extensión `org.freedesktop.Platform.GL.nvidia-*` de la misma versión que el
+  driver; si no, corre en la Intel (compruébalo con `RenderingServer.get_video_adapter_name()`).
+- **Modelos de Pokémon:** texturas ajustadas en `assets/models/pokemon/tuned/` (`tools/tune_textures.py`);
+  `Unit._vivid_materials` / `_fix_palette_materials` / `FLAT_COLORS` / `KO_STYLE` en unit.gd. Tras cambiar un
+  animador, vuelve a pasar `animate_status.py --force` (las animaciones de estado salen del idle) y, en Raichu y
+  Victreebel, `sway_chain.py` después. Tras tocar animaciones o modelos, rehaz `tools/bake_ground.gd`
+  (→ `data/pokemon_ground.json`, aplicado por `Unit._lift`; voladores en `bake_ground.FLYERS`) y pasa
+  `tools/check_ground.gd` (y `tools/ground_biomes.gd` para verlo en los 18 biomas). Para revisar los 151 de un
   vistazo: un script que crea un `Unit` por clip (idle, walk, fight_b, fight_d, hit, ko) y hace `seek` + `pause`.
-  El preview del editor/visor (`pokemon_preview.gd` `_fit_width`) reduce el modelo si no cabe a lo ancho.
-  Tras cambiar un animador, vuelve a pasar también `animate_status.py` con `--force` (las de estado salen del idle).
-  **Apoyo:** `data/pokemon_ground.json` (de `tools/bake_ground.gd`) sube o baja cada clip por fotograma con el nodo
-  `Unit._lift`; voladores en `bake_ground.FLYERS`; agua y lava con `Unit.set_surface`. Tras tocar animaciones o modelos,
-  rehaz el bake y pasa `tools/check_ground.gd` (y `tools/ground_biomes.gd` para verlo en los 18 biomas).
-- **Clima** (weather_fx.gd + board_view.gd): la lluvia moja el suelo, forma charcos y hace ondas en el agua; la
-  tormenta de arena va en capas y levanta polvo de las dunas; el granizo cae en bolitas de hielo que rebotan y se
-  acumulan. La fuerza del viento depende del clima (`WIND` en battle.gd).
-
-- **Modo historia** (scripts/story/, data/story/capitulo1.json): `StoryRun` (en `Game.story`, guardado en la
-  sección "story") recorre los pasos del capítulo: "titulo" y "escena" en scenes/story.tscn (`cutscene.gd`, guion
-  en JSON), "combate" en battle.tscn con `Game.mode = "story"`. `DialogueBox` es el cuadro estilo FFT (retratos en
-  assets/portraits/<id>.png), `StoryFigure` la persona provisional y `Unit.ally_ai` el aliado de la IA (Gengar).
-  Biblia narrativa: ~/Documentos/Historia_Kanto_Futuro_Version_1 1.docx. Hecho el capítulo 1 completo
-  (termina en "Continuará... Capítulo 2 · Ciudad Fucsia"). Los ataques que no caben se guardan en
-  `StoryRun.pending_moves` y la escena siguiente pregunta cuál olvidar (`DialogueBox.choose`).
-
-- **Idiomas** (hecho, español e inglés): `Game.language` / `apply_language()`, selector en Opciones; gettext en
-  `locale/<tema>/<idioma>.po` + `<tema>.pot` (ataques/objetos/habilidades con `tools/build_translations.py`; los textos del código
-  y de data/story/*.json con `tools/extract_texts.py`), cargados en `Game._load_translations()`. La clave es el texto en español.
-  Los textos de los capítulos se escriben en español en el JSON y se traducen al mostrarlos (`DialogueBox.say` aplica `tr`).
+- **Modo historia:** `StoryRun` (en `Game.story`, sección "story" del guardado) recorre los pasos de
+  data/story/capituloN.json: "titulo" y "escena" en story.tscn (`cutscene.gd`), "combate" en battle.tscn con
+  `Game.mode = "story"`. Retratos en assets/portraits/<id>.png; `Unit.ally_ai` es el aliado de la IA. Los ataques
+  que no caben van a `StoryRun.pending_moves` y la escena siguiente pregunta cuál olvidar (`DialogueBox.choose`).
+- **Idiomas:** gettext en `locale/<tema>/`; ataques/objetos/habilidades con `tools/build_translations.py`, el
+  resto con `tools/extract_texts.py`. Los capítulos se escriben en español y `DialogueBox.say` aplica `tr`.
 
 ## Cómo trabajar
 
