@@ -442,7 +442,9 @@ Movimiento: `2 + velocidad base / 45` casillas (2 a 6), más `move_modifier`. Se
 
 Los modelos salen con más color que sus texturas (los rips se veían desteñidos con la luz normal) y Gastly es
 una esfera negra envuelta en un halo de gas morado que palpita, transparente en el centro y denso en el borde.
-Las casillas resaltadas (movimiento, alcance, área, orientación) son más intensas y llevan un borde claro.
+Las casillas resaltadas (movimiento, alcance, área, orientación) son más intensas y llevan un borde claro. Las de
+movimiento son azules, y verdes sobre el agua y los suelos azules (hielo, líneas del laboratorio...), donde el azul
+no se vería.
 
 El juego reproduce las acciones `idle`, `walk`, `fight_b` (físico), `fight_d` (especial), `hit` y `ko`, y en
 reposo el clip de su estado: `status_freeze`, `status_sleep`, `status_paralysis`, `status_confusion` o

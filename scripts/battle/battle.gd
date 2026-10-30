@@ -11,7 +11,7 @@ signal intent_applied(entry: Dictionary)
 ## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
 const COLOR_ACTIVE := Color(1.0, 1.0, 1.0, 0.5)
-const COLOR_MOVE := Color(0.22, 0.88, 0.36, 0.62)
+const COLOR_MOVE := Color(0.15, 0.5, 1.0, 0.68)
 const COLOR_RANGE := Color(1.0, 0.68, 0.08, 0.62)
 const COLOR_AREA := Color(1.0, 0.12, 0.08, 0.8)
 const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.7)

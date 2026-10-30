@@ -6,6 +6,8 @@ extends Node3D
 const TILE_GAP := 0.04
 const BASE_THICKNESS := 0.25
 const TOP_THICKNESS := 0.06
+## Resaltado del movimiento sobre suelos azules (agua, hielo...), donde el azul no se ve.
+const HIGHLIGHT_ON_BLUE := Color(0.22, 0.88, 0.36)
 
 var grid: BoardGrid
 ## Bioma del que se toma el aspecto (Test se ve como la Pradera: `Biome.look`).
@@ -546,13 +548,15 @@ func highlight(cells: Array[Vector2i], color: Color, selected := false) -> void:
 			overlay.visible = true
 
 
-## Los resaltados azules (despliegue) no se distinguen sobre el agua ni el hielo: ahí se usa un tono
-## claro (agua) u oscuro (hielo y nieve) que contraste. El resto se hace más opaco sobre el agua y los
-## suelos claros, que si no lo tiñen (el verde del movimiento saldría turquesa), y el verde también sobre
-## la hierba, que es del mismo tono.
+## Los resaltados azules no se distinguen sobre suelos azules: el del movimiento pasa a verde sobre el agua
+## y los suelos azules (hielo, líneas del laboratorio, gimnasio de Agua...); el del despliegue, a un tono
+## claro (agua) u oscuro (hielo y nieve). El resto se hace más opaco sobre el agua y los suelos claros, que
+## si no lo tiñen, y el verde también sobre la hierba, que es del mismo tono.
 func _contrast(c: Vector2i, color: Color) -> Color:
 	var tile: int = grid.tiles.get(c, Biome.Tile.GRASS)
 	if color.b > color.r + 0.3 and color.b >= color.g:
+		if color.a >= 0.4 and (tile == Biome.Tile.WATER or _bluish(_base_color(tile))):
+			return Color(HIGHLIGHT_ON_BLUE, maxf(color.a, 0.78))
 		match tile:
 			Biome.Tile.WATER:
 				return Color(0.85, 1.0, 1.0, maxf(color.a, 0.6))
@@ -569,6 +573,11 @@ func _contrast(c: Vector2i, color: Color) -> Color:
 		Biome.Tile.GRASS when color.g > color.r + 0.3 and color.g > color.b + 0.3:
 			return Color(color, maxf(color.a, 0.75))
 	return color
+
+
+## Suelo de color azul (o cian): ahí un resaltado azul no se ve.
+static func _bluish(color: Color) -> bool:
+	return color.h > 0.45 and color.h < 0.72 and color.s > 0.25
 
 
 ## Campo de adorno: un llano del suelo del bioma alrededor del tablero, con el agua, los caminos y la lava que
