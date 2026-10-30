@@ -67,6 +67,8 @@ const CARD_SELECTED := &"CardSelectedPanel"
 ## Botón grande e inclinado de los menús de pantalla completa (ver `menu_item`).
 const MENU_ITEM := &"MenuItem"
 const MENU_ITEM_PRIMARY := &"MenuItemPrimary"
+## Tarjeta clicable (roster, equipo...): holograma biselado; seleccionada (toggle) con borde ACCENT.
+const CARD_BUTTON := &"CardButton"
 ## Fondo de las pantallas de menú: azul profundo de arriba abajo.
 const BG_TOP := Color(0.1, 0.17, 0.44)
 const BG_MID := Color(0.06, 0.07, 0.23)
@@ -134,7 +136,12 @@ static func theme() -> Theme:
 	primary_rest.shadow_offset = Vector2.ZERO
 	t.set_stylebox("normal", MENU_ITEM_PRIMARY, primary_rest)
 
-	t.set_stylebox("panel", "PanelContainer", _panel_box(SURFACE_0, RADIUS_M, SPACE_3))
+	var base_panel := _panel_box(SURFACE_0, RADIUS_M, SPACE_3)
+	_chamfer(base_panel)
+	base_panel.border_color = Color(NEON, 0.2)
+	base_panel.set_border_width_all(1)
+	t.set_stylebox("panel", "PanelContainer", base_panel)
+	_card_button_styles(t)
 	t.set_type_variation(CARD, &"PanelContainer")
 	t.set_stylebox("panel", CARD, _panel_box(SURFACE_1, RADIUS_M, SPACE_2, false))
 	t.set_type_variation(CARD_SELECTED, &"PanelContainer")
@@ -319,6 +326,33 @@ static func _menu_item_styles(t: Theme, type: StringName, base: Color, hover_col
 	t.set_stylebox("disabled", type, normal)
 
 
+static func _card_button_styles(t: Theme) -> void:
+	t.set_type_variation(CARD_BUTTON, &"Button")
+	var normal := _box(Color(SURFACE_1, 0.85), RADIUS_S, 0)
+	_chamfer(normal)
+	normal.border_color = Color(NEON, 0.12)
+	normal.set_border_width_all(1)
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = Color(SURFACE_2, 0.95)
+	hover.border_color = Color(NEON, 0.75)
+	hover.shadow_color = Color(NEON, 0.25)
+	hover.shadow_size = 8
+	var selected: StyleBoxFlat = normal.duplicate()
+	selected.bg_color = SURFACE_SELECTED
+	selected.border_color = ACCENT
+	selected.set_border_width_all(2)
+	selected.shadow_color = Color(ACCENT, 0.25)
+	selected.shadow_size = 8
+	var selected_hover: StyleBoxFlat = selected.duplicate()
+	selected_hover.bg_color = SURFACE_SELECTED.lightened(0.08)
+	t.set_stylebox("normal", CARD_BUTTON, normal)
+	t.set_stylebox("hover", CARD_BUTTON, hover)
+	t.set_stylebox("pressed", CARD_BUTTON, selected)
+	t.set_stylebox("hover_pressed", CARD_BUTTON, selected_hover)
+	t.set_stylebox("disabled", CARD_BUTTON, normal)
+	t.set_stylebox("focus", CARD_BUTTON, _focus_ring())
+
+
 ## Esquinas biseladas a 45° en lugar de redondas (corte "tecnológico").
 static func _chamfer(s: StyleBoxFlat) -> void:
 	s.corner_detail = 1
@@ -389,6 +423,20 @@ static func flat_style(color: Color, radius := RADIUS_S, margin := 2) -> StyleBo
 	return _styles[key]
 
 
+## Tarjeta (no clicable) con una franja a la izquierda del color dado (p. ej. el del tipo de un ataque).
+## Se comparte por color.
+static func accent_card_style(color: Color) -> StyleBoxFlat:
+	var key := "accent|" + color.to_html()
+	if not _styles.has(key):
+		var st := _box(Color(SURFACE_1, 0.7), RADIUS_S, SPACE_2)
+		_chamfer(st)
+		st.border_color = color
+		st.border_width_left = 5
+		st.content_margin_left = SPACE_4
+		_styles[key] = st
+	return _styles[key]
+
+
 ## Fuente de los títulos: la de siempre con más peso (sin empaquetar fuentes nuevas).
 static func bold_font() -> FontVariation:
 	if not _bold:
@@ -428,8 +476,13 @@ static func title(text: String, size := 30, color := ACCENT) -> Label:
 static func glitch_title(text: String, size := 72) -> Label:
 	var l := title(text, size)
 	var ghosts: Array[Label] = []
-	for item in [[NEON_PINK, -4.0], [NEON, 4.0]]:
-		var g := label(text, size, Color(item[0], 0.7))
+	# En tamaños pequeños el efecto se reduce para que el texto siga limpio.
+	var off := clampf(size / 18.0, 1.5, 4.0)
+	var alpha := 0.7 if size >= 56 else 0.45
+	if size < 56:
+		l.add_theme_constant_override("outline_size", 6)
+	for item in [[NEON_PINK, -off], [NEON, off]]:
+		var g := label(text, size, Color(item[0], alpha))
 		g.add_theme_font_override("font", bold_font())
 		g.show_behind_parent = true
 		g.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -443,10 +496,10 @@ static func glitch_title(text: String, size := 72) -> Label:
 		for k in 4:
 			for i in ghosts.size():
 				var sign := -1.0 if i == 0 else 1.0
-				tw.parallel().tween_property(ghosts[i], "position", Vector2(sign * randf_range(4, 9), randf_range(-2, 2)), 0.04)
+				tw.parallel().tween_property(ghosts[i], "position", Vector2(sign * randf_range(off + 1.0, off * 2.5), randf_range(-2, 2)), 0.04)
 			tw.tween_interval(0.03)
 		for i in ghosts.size():
-			tw.parallel().tween_property(ghosts[i], "position", Vector2(-4.0 if i == 0 else 4.0, 0), 0.06))
+			tw.parallel().tween_property(ghosts[i], "position", Vector2(-off if i == 0 else off, 0), 0.06))
 	return l
 
 
@@ -459,6 +512,33 @@ static func brackets(c: Control, color := Color(NEON, 0.8), arm := 14.0, inset :
 			var dx := arm if corner.x == r.position.x else -arm
 			var dy := arm if corner.y == r.position.y else -arm
 			c.draw_polyline(PackedVector2Array([corner + Vector2(0, dy), corner, corner + Vector2(dx, 0)]), color, 2.0))
+
+
+## Cabecera de las pantallas: botón para volver, barrita, título grande y un código de barras de neón.
+static func screen_header(title_text: String, back_text: String, on_back: Callable) -> HBoxContainer:
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", SPACE_4)
+	var back := ghost_button(back_text, on_back, 18)
+	back.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(back)
+	var bar := Panel.new()
+	bar.custom_minimum_size = Vector2(6, 34)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.add_theme_stylebox_override("panel", flat_style(ACCENT, 3, 0))
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top.add_child(bar)
+	var t := glitch_title(title_text, 34)
+	t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(t)
+	top.add_child(barcode(80, 16))
+	return top
+
+
+## Título de un panel: grueso y claro.
+static func section(text: String, size := 20) -> Label:
+	var l := label(text, size)
+	l.add_theme_font_override("font", bold_font())
+	return l
 
 
 ## Rótulo de sección (encima de un grupo de opciones): grueso y atenuado.
@@ -771,11 +851,11 @@ static func background() -> Control:
 	var hud := Control.new()
 	hud.set_anchors_preset(Control.PRESET_FULL_RECT)
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	brackets(hud, Color(NEON, 0.35), 46.0, 18.0)
+	brackets(hud, Color(NEON, 0.35), 46.0, 6.0)
 	hud.draw.connect(func() -> void:
 		for i in 24:
 			var y := hud.size.y * 0.3 + i * 14.0
-			hud.draw_line(Vector2(18, y), Vector2(18 + (12 if i % 4 == 0 else 6), y), Color(NEON, 0.25), 1.0))
+			hud.draw_line(Vector2(6, y), Vector2(6 + (8 if i % 4 == 0 else 4), y), Color(NEON, 0.25), 1.0))
 	hud.resized.connect(hud.queue_redraw)
 	root.add_child(hud)
 	var scan := _full_rect(_scanline_texture())

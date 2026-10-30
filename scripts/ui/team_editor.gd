@@ -43,10 +43,8 @@ func _ready() -> void:
 	root.add_theme_constant_override("separation", 12)
 	add_child(root)
 
-	var top := HBoxContainer.new()
-	root.add_child(top)
-	top.add_child(UiKit.button("← Menú", func() -> void: get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
-	top.add_child(UiKit.label(tr("  Editor de equipo"), 30, UiKit.ACCENT))
+	root.add_child(UiKit.screen_header(tr("Editor de equipo"), "← Menú", func() -> void:
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")))
 
 	var columns := HBoxContainer.new()
 	columns.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -60,7 +58,7 @@ func _ready() -> void:
 	var roster_col := VBoxContainer.new()
 	roster_col.add_theme_constant_override("separation", 8)
 	roster_panel.add_child(roster_col)
-	roster_col.add_child(UiKit.label(tr("Pokémon disponibles (%d)") % Game.roster.size(), 20))
+	roster_col.add_child(UiKit.section(tr("Pokémon disponibles (%d)") % Game.roster.size()))
 	_roster_search = LineEdit.new()
 	_roster_search.placeholder_text = tr("Buscar por nombre, número o tipo…")
 	_roster_search.clear_button_enabled = true
@@ -99,13 +97,14 @@ func _ready() -> void:
 	_preview.custom_minimum_size = Vector2(240, 240)
 	preview_col.add_child(_preview)
 	var anim_button := UiKit.button(tr("Ver animaciones"), _open_viewer, 15)
+	anim_button.theme_type_variation = UiKit.CARD_BUTTON
 	anim_button.tooltip_text = tr("Reproduce sus animaciones y las de cada ataque")
 	preview_col.add_child(anim_button)
 	_detail = VBoxContainer.new()
 	_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_detail.add_theme_constant_override("separation", 6)
 	preview_row.add_child(_detail)
-	_add_button = UiKit.button(tr("Agregar al equipo"), _add_selected, 20)
+	_add_button = UiKit.primary_button(tr("Agregar al equipo"), _add_selected, 20)
 	detail_col.add_child(_add_button)
 	_moves_box = VBoxContainer.new()
 	_moves_box.add_theme_constant_override("separation", 6)
@@ -132,16 +131,16 @@ func _ready() -> void:
 	_team_name.text_submitted.connect(func(_t: String) -> void: _rename_team())
 	_team_name.focus_exited.connect(_rename_team)
 	name_row.add_child(_team_name)
-	_delete_team = UiKit.button(tr("Borrar"), _confirm_delete_team)
+	_delete_team = UiKit.danger_button(tr("Borrar"), _confirm_delete_team)
 	_delete_team.tooltip_text = tr("Borrar este equipo")
 	name_row.add_child(_delete_team)
 	team_col.add_child(HSeparator.new())
-	_team_title = UiKit.label("", 20)
+	_team_title = UiKit.section("")
 	team_col.add_child(_team_title)
 	_team_box = VBoxContainer.new()
 	_team_box.add_theme_constant_override("separation", 8)
 	team_col.add_child(_team_box)
-	team_col.add_child(UiKit.label(tr("Clic en un miembro del equipo para\nelegir sus ataques. El orden del equipo\nes el orden de despliegue."), 14, Color(1, 1, 1, 0.55)))
+	team_col.add_child(UiKit.hint(tr("Clic en un miembro del equipo para\nelegir sus ataques. El orden del equipo\nes el orden de despliegue.")))
 
 	_viewer = AnimationViewer.new()
 	add_child(_viewer)
@@ -163,7 +162,8 @@ func _build_learnset_box(parent: Control) -> void:
 	_learn_box.add_theme_constant_override("separation", 6)
 	parent.add_child(_learn_box)
 	_learn_box.add_child(HSeparator.new())
-	_learn_hint = UiKit.label("", 18, UiKit.ACCENT)
+	_learn_hint = UiKit.section("", 18)
+	_learn_hint.add_theme_color_override("font_color", UiKit.ACCENT)
 	_learn_box.add_child(_learn_hint)
 	var filters := HBoxContainer.new()
 	filters.add_theme_constant_override("separation", 8)
@@ -187,21 +187,34 @@ func _build_learnset_box(parent: Control) -> void:
 	_learn_box.add_child(_learn_list)
 
 
-## Tarjeta clicable con número, nombre y tipos.
+## Tarjeta clicable con número, nombre, talla y tipos. Se marca (toggle) la que se está viendo.
 func _card(p: PokemonData, callback: Callable, width: float) -> Button:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(width, 62)
+	b.theme_type_variation = UiKit.CARD_BUTTON
+	b.custom_minimum_size = Vector2(width, 64)
+	b.toggle_mode = true
 	b.pressed.connect(callback)
 	var box := VBoxContainer.new()
 	box.set_anchors_preset(Control.PRESET_FULL_RECT)
-	box.offset_left = 10
-	box.offset_top = 6
+	box.offset_left = 12
+	box.offset_top = 7
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_theme_constant_override("separation", 3)
+	box.add_theme_constant_override("separation", 4)
 	b.add_child(box)
-	var title := UiKit.label("#%03d %s  %s" % [p.dex_number, p.species_name, p.size_label()], 16)
-	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(title)
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 6)
+	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(head)
+	var dex := UiKit.label("#%03d" % p.dex_number, 14, Color(UiKit.NEON, 0.85))
+	dex.add_theme_font_override("font", UiKit.bold_font())
+	head.add_child(dex)
+	var name_label := UiKit.label(p.species_name, 16)
+	name_label.add_theme_font_override("font", UiKit.bold_font())
+	head.add_child(name_label)
+	head.add_child(UiKit.label(p.size_label(), 14, UiKit.TEXT_DIM))
+	for l in head.get_children():
+		(l as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		(l as Label).vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	box.add_child(UiKit.type_row(p.types, true))
 	b.tooltip_text = p.size_description()
 	return b
@@ -231,7 +244,15 @@ func _show(p: PokemonData) -> void:
 	_species = p
 	_preview.show_pokemon(p)
 	UiKit.clear(_detail)
-	_detail.add_child(UiKit.label("#%03d %s" % [p.dex_number, p.species_name], 28))
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation", UiKit.SPACE_3)
+	var dex := UiKit.label("#%03d" % p.dex_number, 22, UiKit.NEON)
+	dex.add_theme_font_override("font", UiKit.bold_font())
+	dex.size_flags_vertical = Control.SIZE_SHRINK_END
+	name_row.add_child(dex)
+	name_row.add_child(UiKit.title(p.species_name, 30, UiKit.TEXT))
+	_detail.add_child(name_row)
+	_mark_selected()
 	_detail.add_child(UiKit.type_row(p.types))
 	_detail.add_child(_abilities_row(p))
 	_detail.add_child(_gender_row(p))
@@ -244,24 +265,24 @@ func _show(p: PokemonData) -> void:
 	grid.add_theme_constant_override("h_separation", 10)
 	_detail.add_child(grid)
 	for i in stats.size():
-		grid.add_child(UiKit.label(tr(UiKit.STAT_NAMES[i]), 15, Color(1, 1, 1, 0.75)))
+		grid.add_child(UiKit.label(tr(UiKit.STAT_NAMES[i]), 15, UiKit.TEXT_DIM))
 		var bar := ProgressBar.new()
 		bar.max_value = STAT_MAX
 		bar.value = stats[i]
 		bar.show_percentage = false
-		bar.custom_minimum_size = Vector2(160, 14)
+		bar.custom_minimum_size = Vector2(180, 10)
 		bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var fill := StyleBoxFlat.new()
-		fill.bg_color = Color.from_hsv(clampf(stats[i] / STAT_MAX, 0.0, 1.0) * 0.33, 0.7, 0.9)
-		fill.set_corner_radius_all(3)
-		bar.add_theme_stylebox_override("fill", fill)
+		# Color por valor en 8 escalones, para compartir los estilos entre barras.
+		var step := roundf(clampf(stats[i] / STAT_MAX, 0.0, 1.0) * 8.0) / 8.0
+		bar.add_theme_stylebox_override("fill", UiKit.flat_style(Color.from_hsv(step * 0.33, 0.7, 0.95), 2, 0))
+		bar.add_theme_stylebox_override("background", UiKit.flat_style(Color(1, 1, 1, 0.08), 2, 0))
 		grid.add_child(bar)
 		grid.add_child(UiKit.label(str(stats[i]), 15))
 	var tiles := clampi(2 + roundi(p.base_speed / 45.0), 2, 6) + p.move_modifier
 	var swim := ""
 	if "water" in p.types:
 		swim = " " + tr("(%d nadando)") % ((tiles - mini(p.move_modifier, 0)) * 2)
-	_detail.add_child(UiKit.label(tr("Movimiento %d%s · Salto %d · Talla %s") % [tiles, swim, p.jump, p.size_label()], 15, UiKit.ACCENT))
+	_detail.add_child(UiKit.label(tr("Movimiento %d%s · Salto %d · Talla %s") % [tiles, swim, p.jump, p.size_label()], 15, UiKit.NEON))
 
 	var profile := TypeChart.defensive_profile(p.types)
 	for group in [[tr("Débil a"), [4.0, 2.0]], [tr("Resiste"), [0.5, 0.25]], [tr("Inmune a"), [0.0]]]:
@@ -275,7 +296,7 @@ func _show(p: PokemonData) -> void:
 					row.add_child(UiKit.type_chip(t, true, suffix))
 		if row.get_child_count() > 0:
 			var line := HBoxContainer.new()
-			var l := UiKit.label(group[0] + ":", 15, Color(1, 1, 1, 0.75))
+			var l := UiKit.label(group[0] + ":", 15, UiKit.TEXT_DIM)
 			l.custom_minimum_size.x = 80
 			line.add_child(l)
 			line.add_child(row)
@@ -289,13 +310,13 @@ func _show(p: PokemonData) -> void:
 func _gender_row(p: PokemonData) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label(tr("Género:"), 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Género:"), 15, UiKit.TEXT_DIM))
 	var options := TeamMember.genders_for(p)
 	if options == [0]:
 		row.add_child(UiKit.label(tr("sin género"), 15))
 		return row
 	if p.male_ratio > 0.0 and p.male_ratio < 1.0:
-		row.add_child(UiKit.label("(%d%% ♂ / %d%% ♀)" % [roundi(p.male_ratio * 100), roundi((1.0 - p.male_ratio) * 100)], 13, Color(1, 1, 1, 0.5)))
+		row.add_child(UiKit.hint("(%d%% ♂ / %d%% ♀)" % [roundi(p.male_ratio * 100), roundi((1.0 - p.male_ratio) * 100)]))
 	for g in options:
 		var b := UiKit.button(TeamMember.GENDER_SYMBOLS[g], func() -> void:
 			if _member:
@@ -315,7 +336,7 @@ func _gender_row(p: PokemonData) -> Control:
 func _item_row() -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label(tr("Objeto:"), 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Objeto:"), 15, UiKit.TEXT_DIM))
 	var pick := OptionButton.new()
 	# Algunos sprites son grandes: se limita el icono en el botón y en la lista.
 	pick.add_theme_constant_override("icon_max_width", 24)
@@ -344,7 +365,7 @@ func _item_row() -> Control:
 func _abilities_row(p: PokemonData) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	row.add_child(UiKit.label(tr("Habilidad:"), 15, Color(1, 1, 1, 0.75)))
+	row.add_child(UiKit.label(tr("Habilidad:"), 15, UiKit.TEXT_DIM))
 	if _member:
 		var pick := OptionButton.new()
 		for i in p.abilities.size():
@@ -361,7 +382,7 @@ func _abilities_row(p: PokemonData) -> Control:
 		row.add_child(pick)
 	else:
 		for id in p.abilities:
-			var l := UiKit.label(Abilities.display_name(id), 15, UiKit.ACCENT if id in Abilities.IMPLEMENTED else Color(1, 1, 1, 0.5))
+			var l := UiKit.label(Abilities.display_name(id), 15, UiKit.ACCENT if id in Abilities.IMPLEMENTED else UiKit.TEXT_DIM)
 			l.tooltip_text = Abilities.describe(id)
 			l.mouse_filter = Control.MOUSE_FILTER_PASS
 			row.add_child(l)
@@ -373,28 +394,40 @@ func _refresh_moves() -> void:
 	var moves: Array[MoveData] = _member.moves if _member else _species.moves
 	var caption := tr("Ataques de tu %s (%d/%d)") % [_species.species_name, moves.size(), TeamMember.MAX_MOVES] \
 		if _member else tr("Ataques por defecto")
-	_moves_box.add_child(UiKit.label(caption, 20, UiKit.ACCENT))
+	var caption_label := UiKit.section(caption)
+	caption_label.add_theme_color_override("font_color", UiKit.ACCENT)
+	_moves_box.add_child(caption_label)
 	for m in moves:
+		# Cada ataque en su tarjeta, con la franja del color de su tipo.
+		var card := PanelContainer.new()
+		card.add_theme_stylebox_override("panel", UiKit.accent_card_style(TypeChart.color(m.type)))
 		var row := HBoxContainer.new()
-		row.add_theme_constant_override("separation", 10)
+		row.add_theme_constant_override("separation", 12)
+		card.add_child(row)
 		var head := VBoxContainer.new()
 		head.custom_minimum_size.x = 150
-		head.add_child(UiKit.label(tr(m.display_name), 17))
-		head.add_child(UiKit.type_chip(m.type, true))
+		head.add_theme_constant_override("separation", 6)
+		var move_name := UiKit.label(tr(m.display_name), 17)
+		move_name.add_theme_font_override("font", UiKit.bold_font())
+		head.add_child(move_name)
+		var chips := HBoxContainer.new()
+		chips.add_theme_constant_override("separation", 4)
+		chips.add_child(UiKit.type_chip(m.type, true))
+		chips.add_child(UiKit.category_chip(m.category))
+		head.add_child(chips)
 		row.add_child(head)
-		var desc := UiKit.label(Combat.describe(m), 14, Color(1, 1, 1, 0.8))
+		var desc := UiKit.label(Combat.describe(m), 15, UiKit.TEXT_DIM)
 		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		desc.tooltip_text = tr(m.flavor)
 		desc.mouse_filter = Control.MOUSE_FILTER_PASS
 		row.add_child(desc)
 		if _member:
-			var remove := UiKit.button("✕", _forget_move.bind(m))
+			var remove := UiKit.ghost_button("✕", _forget_move.bind(m))
 			remove.tooltip_text = tr("Olvidar este ataque")
 			remove.custom_minimum_size = Vector2(44, 44)
 			remove.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			row.add_child(remove)
-		_moves_box.add_child(row)
-		_moves_box.add_child(HSeparator.new())
+		_moves_box.add_child(card)
 	_learn_box.visible = _member != null
 	if _member:
 		_refresh_learnset()
@@ -498,30 +531,42 @@ func _refresh_team() -> void:
 			var m := Game.player_team[i]
 			var row := HBoxContainer.new()
 			var card := _card(m.data, _select_member.bind(m), 260)
+			card.set_meta("member", m)
 			if m.gender and TeamMember.display(m.data, m.gender) != m.data.species_name:
 				var sym := UiKit.label(TeamMember.GENDER_SYMBOLS[m.gender], 18, Color(0.5, 0.75, 1.0) if m.gender == 1 else Color(1.0, 0.55, 0.75))
 				sym.position = Vector2(232, 6)
 				sym.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				card.add_child(sym)
 			row.add_child(card)
-			var remove := UiKit.button("✕", func() -> void:
+			var remove := UiKit.ghost_button("✕", func() -> void:
 				Game.remove_from_team(i)
 				if _member == m:
 					_select_species(m.data)
 				_refresh_team())
 			remove.tooltip_text = tr("Quitar del equipo")
-			remove.custom_minimum_size = Vector2(52, 62)
+			remove.custom_minimum_size = Vector2(52, 64)
 			row.add_child(remove)
 			_team_box.add_child(row)
 		else:
-			var empty := UiKit.panel()
-			empty.custom_minimum_size = Vector2(320, 62)
-			empty.self_modulate = Color(1, 1, 1, 0.35)
-			var l := UiKit.label(tr("— vacío —"), 15, Color(1, 1, 1, 0.5))
+			var empty := UiKit.panel(UiKit.CARD)
+			empty.custom_minimum_size = Vector2(320, 64)
+			empty.self_modulate = Color(1, 1, 1, 0.4)
+			var l := UiKit.hint(tr("— vacío —"))
 			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			empty.add_child(l)
 			_team_box.add_child(empty)
+	_mark_selected()
 	_refresh_add_button()
+
+
+## Marca la tarjeta de lo que se está viendo: el miembro del equipo o, si no, la especie del roster.
+func _mark_selected() -> void:
+	for card in _roster_grid.get_children():
+		(card as Button).set_pressed_no_signal(_member == null and card.get_meta("species") == _species)
+	for row in _team_box.get_children():
+		var card := row.get_child(0)
+		if card is Button:
+			(card as Button).set_pressed_no_signal(_member != null and card.get_meta("member") == _member)
 
 
 func _refresh_add_button() -> void:
