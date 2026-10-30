@@ -128,6 +128,13 @@ func focus(target: Vector3, follow := -1.0) -> void:
 	tw.tween_property(self, "position", _clamped(Vector3(target.x, 0.0, target.z) * follow), 0.4).set_trans(Tween.TRANS_SINE)
 
 
+## Gira la vista media vuelta sin animación (el invitado del modo VS mira desde el otro lado del tablero).
+func turn_around() -> void:
+	_yaw += 180.0
+	rotation_degrees.y = _yaw
+	_refit()
+
+
 func rotate_view(dir: int) -> void:
 	_yaw += dir * rotation_step
 	_refit()

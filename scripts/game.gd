@@ -80,6 +80,10 @@ var rng := RandomNumberGenerator.new()
 ## Semilla del próximo combate (0 = al azar). Con la misma semilla, el mismo campo, clima y equipos, y las
 ## mismas acciones, el combate sale igual: el modo VS la comparte entre los dos PCs. No se guarda.
 var battle_seed := 0
+## Partida VS en curso (ver VsMatch): lado, semilla, tablero, equipos y apodos. Vacío fuera del modo VS.
+var vs := {}
+## Apodo en el modo VS.
+var nick := ""
 
 
 func _ready() -> void:
@@ -306,6 +310,7 @@ func save() -> void:
 	cfg.set_value("options", "battle_speed", battle_speed)
 	cfg.set_value("options", "graphics_quality", graphics_quality)
 	cfg.set_value("options", "language", language)
+	cfg.set_value("options", "nick", nick)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("story", "run", story.to_dict() if story else {})
@@ -343,6 +348,7 @@ func _load_save() -> void:
 			teams.append(slot)
 		current_team = clampi(cfg.get_value("teams", "current", 0), 0, teams.size() - 1)
 		difficulty = cfg.get_value("options", "difficulty", Difficulty.NORMAL)
+		nick = str(cfg.get_value("options", "nick", ""))
 		volumes.merge(cfg.get_value("options", "volumes", {}), true)
 		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
 		graphics_quality = clampi(cfg.get_value("options", "graphics_quality", Quality.HIGH), Quality.LOW, Quality.HIGH) as Quality

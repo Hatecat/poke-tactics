@@ -2,8 +2,8 @@ extends Node3D
 ## Controlador de la batalla: monta el tablero, gestiona turnos, input, IA y UI.
 
 enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, FACING, GAME_OVER }
-## Quién decide las acciones de un equipo: el jugador con clics o la IA.
-enum Driver { HUMAN, AI }
+## Quién decide las acciones de un equipo: el jugador con clics, la IA o, en el modo VS, el rival por red.
+enum Driver { HUMAN, AI, REMOTE }
 
 ## Se emite al aplicar una intención (ver apply_intent), con "unit", "turn" y la huella del estado al terminarla.
 signal intent_applied(entry: Dictionary)
@@ -118,9 +118,24 @@ var _story_fired := {}
 var _turn_count := 0
 var _dialogue: DialogueBox
 
+# Modo VS (ver VsMatch y Net)
+## Intenciones del rival recibidas y aún sin aplicar: {"a": acción, "d": su huella}.
+var _remote_queue: Array[Dictionary] = []
+var _waiting_remote := false
+var _deploy_sent := false
+## Colocación del rival recibida ([índice en units, celda] por Pokémon) o null.
+var _their_deploy: Variant = null
+## Revancha pedida: [yo, el rival].
+var _rematch: Array[bool] = [false, false]
+var _rematch_button: Button
+## Cómo acabó la partida VS ("" mientras se juega; ver _vs_finish).
+var _vs_result := ""
+
 
 func _ready() -> void:
-	if Game.battle_seed != 0:
+	if _vs():
+		rng.seed = Game.vs.seed
+	elif Game.battle_seed != 0:
 		rng.seed = Game.battle_seed
 	else:
 		rng.randomize()
@@ -139,6 +154,16 @@ func _ready() -> void:
 			var m := StoryRun.member(d, rng)
 			if m:
 				enemy_team.append(m)
+	elif _vs():
+		# VS: cada PC ve su equipo como el 0 y el del rival lo mueve la red.
+		topology = Game.vs.topology
+		player_team = Game.vs.teams[Game.vs.side].duplicate()
+		enemy_team = Game.vs.teams[1 - Game.vs.side].duplicate()
+		drivers.assign([Driver.HUMAN, Driver.REMOTE])
+		intent_applied.connect(_send_intent)
+		Net.message.connect(_on_net_message)
+		Net.opponent_left.connect(_on_opponent_gone)
+		Net.failed.connect(_on_opponent_gone)
 	else:
 		topology = Game.topology
 		player_team = Game.player_team.duplicate()
@@ -173,7 +198,7 @@ func _start_battle() -> void:
 	units.clear()
 	active = null
 	effects = Effects.new(self)
-	var map := Game.map
+	var map := Game.map if not _vs() else null
 	var zones: Array = []
 	_story_fired.clear()
 	_turn_count = 0
@@ -192,7 +217,7 @@ func _start_battle() -> void:
 		var clear: Array[Vector2i] = []
 		clear.append_array(zones[0])
 		clear.append_array(zones[1])
-		var kind: Biome.Kind = Game.tower.biome if _tower() else Game.biome
+		var kind: Biome.Kind = Game.tower.biome if _tower() else (Game.vs.biome if _vs() else Game.biome)
 		# Gimnasio del tipo del líder o entrenador; si no hay, un estilo al azar
 		var types: Array = Game.tower.trainer.get("types", []) if _trainer_battle() else []
 		grid.gym_type = types[0] if not types.is_empty() else Biome.GYM_TYPES[rng.randi_range(0, Biome.GYM_TYPES.size() - 1)]
@@ -201,18 +226,25 @@ func _start_battle() -> void:
 		_zones[team] = {}
 		for c: Vector2i in zones[team]:
 			_zones[team][c] = true
+	if _vs() and Game.vs.side == 1:
+		# El invitado despliega en la zona del anfitrión rival: el tablero es el mismo en los dos PCs.
+		_zones.reverse()
 	_reset_environment()
 	# Mapa a pantalla completa: campo alrededor del tablero y cámara que lo encuadra entero
 	_board.scenery = true
 	_board.build(grid)
 	_cam_rig.safe_left = _left_panel.position.x + _left_panel.get_combined_minimum_size().x
 	_cam_rig.frame(_board.board_box(), _board.scenery_reach)
+	if _vs() and Game.vs.side == 1:
+		_cam_rig.turn_around()
 	if _story():
 		base_weather = StoryRun.weather_kind(_story_step.get("lugar", {}))
 	elif map:
 		base_weather = map.weather
 	elif _tower():
 		base_weather = Game.tower.weather
+	elif _vs():
+		base_weather = Weather.roll(grid.biome, rng)
 	elif Game.weather >= 0:
 		base_weather = Game.weather
 	else:
@@ -222,8 +254,12 @@ func _start_battle() -> void:
 	Audio.music(Audio.battle_music(grid.biome))
 
 	var p_anchor := _zone_center(0)
-	for i in player_team.size():
-		_spawn(player_team[i], 0, p_anchor + Vector2i((i - player_team.size() / 2) * 3, 0))
+	# VS: el equipo del anfitrión sale siempre primero, para que `units` (y el RNG del CT inicial) vayan en el
+	# mismo orden en los dos PCs.
+	var host_first: bool = not (_vs() and Game.vs.side == 1)
+	if not host_first:
+		_spawn_team(enemy_team, 1)
+	_spawn_team(player_team, 0)
 	if _story():
 		# Aliados que juega la IA desde el principio (Gengar acompañando a Cristina).
 		for d: Dictionary in _story_step.get("aliados", []):
@@ -237,10 +273,8 @@ func _start_battle() -> void:
 			var member := TeamMember.from_dict(e, Game.find_species)
 			if member:
 				_spawn(member, 1, e.get("cell", _zone_center(1)), false)
-	else:
-		var e_anchor := _zone_center(1)
-		for i in enemy_team.size():
-			_spawn(enemy_team[i], 1, e_anchor + Vector2i((i - enemy_team.size() / 2) * 3, 0))
+	elif host_first:
+		_spawn_team(enemy_team, 1)
 	_banner_box.visible = false
 	_log_label.clear()
 	var where: String = map.map_name if map else tr(Biome.NAMES[grid.biome])
@@ -366,11 +400,18 @@ func _zone_center(team: int) -> Vector2i:
 
 ## `in_zone`: buscar el hueco dentro de la zona de despliegue (los rivales fijos de un
 ## escenario se colocan donde diga el mapa).
+## Saca a un equipo en su zona, en fila alrededor del centro.
+func _spawn_team(members: Array[TeamMember], team: int) -> void:
+	var anchor := _zone_center(team)
+	for i in members.size():
+		_spawn(members[i], team, anchor + Vector2i((i - members.size() / 2) * 3, 0))
+
+
 func _spawn(member: TeamMember, team: int, near: Vector2i, in_zone := true) -> void:
 	var u := Unit.new()
 	_units_root.add_child(u)
 	u.set_meta("member", member)
-	var level: int = member.level if _tower() or _story() else (Unit.LEVEL if team == 0 else Game.DIFFICULTY_LEVELS[Game.difficulty])
+	var level: int = member.level if _tower() or _story() or _vs() else (Unit.LEVEL if team == 0 else Game.DIFFICULTY_LEVELS[Game.difficulty])
 	u.setup(member, team, level)
 	var allowed := _in_zone.bind(team) if in_zone else func(c: Vector2i) -> bool: return true
 	_place(u, _find_free_anchor(u, near, allowed))
@@ -432,11 +473,13 @@ func _refresh_deploy() -> void:
 		u.set_active(u == _deploy_selected)
 
 
-func _can_deploy(u: Unit, anchor: Vector2i) -> bool:
-	return _can_stand(u, anchor) and grid.footprint(anchor, u.data.size).all(_in_zone.bind(0))
+func _can_deploy(u: Unit, anchor: Vector2i, team := 0) -> bool:
+	return _can_stand(u, anchor) and grid.footprint(anchor, u.data.size).all(_in_zone.bind(team))
 
 
 func _deploy_click(c: Vector2i) -> void:
+	if _deploy_sent:
+		return
 	var clicked := _unit_at(c)
 	if clicked and clicked.team == 0 and not clicked.ally_ai:
 		_deploy_selected = clicked if clicked != _deploy_selected else null
@@ -455,6 +498,12 @@ func _deploy_click(c: Vector2i) -> void:
 func _finish_deploy() -> void:
 	if state != State.DEPLOY:
 		return
+	# VS: se manda la colocación propia y se empieza cuando también ha llegado la del rival.
+	if _vs():
+		if not _deploy_sent:
+			_send_deploy()
+		if _their_deploy == null or not _apply_their_deploy():
+			return
 	_deploy_selected = null
 	for u in units:
 		u.set_active(false)
@@ -513,6 +562,8 @@ func _others_at(u: Unit, cells: Array[Vector2i]) -> Array[Unit]:
 # --- Bucle de turnos ---------------------------------------------------------
 
 func _next_turn() -> void:
+	if state == State.GAME_OVER:
+		return
 	state = State.BUSY
 	_board.clear_highlights()
 	if _check_game_over():
@@ -560,6 +611,8 @@ func _next_turn() -> void:
 		return
 	if _human_turn():
 		_show_menu()
+	elif _driver(active) == Driver.REMOTE:
+		_wait_remote()
 	else:
 		_set_actions_enabled(false)
 		await _run_ai(active)
@@ -651,12 +704,14 @@ func _end_turn() -> void:
 ## Después de moverse o actuar: fin del combate, fin del turno si se debilitó o, si juega el jugador, el menú o
 ## la orientación. La IA sigue su turno por su cuenta.
 func _after_action() -> void:
-	if _check_game_over():
+	if state == State.GAME_OVER or _check_game_over():
 		return
 	_refresh_turn_order()
 	if not active.is_alive():
 		# Se debilitó con su propio ataque (Doble Filo, Explosión...): no hay nada que orientar.
 		_end_turn()
+	elif _driver(active) == Driver.REMOTE:
+		_wait_remote()
 	elif not _human_turn():
 		return
 	elif moved and acted:
@@ -689,9 +744,15 @@ func _face_cell(u: Unit, c: Vector2i) -> void:
 
 
 func _check_game_over() -> bool:
+	# Los aliados de la IA no cuentan: si caen todos los tuyos, pierdes.
+	var wiped: Array[bool] = []
 	for team in 2:
-		# Los aliados de la IA no cuentan: si caen todos los tuyos, pierdes.
-		if not units.any(func(u: Unit) -> bool: return u.team == team and u.is_alive() and not u.ally_ai):
+		wiped.append(not units.any(func(u: Unit) -> bool: return u.team == team and u.is_alive() and not u.ally_ai))
+	if _vs() and (wiped[0] or wiped[1]):
+		_vs_finish("draw" if wiped[0] and wiped[1] else ("win" if wiped[1] else "lose"))
+		return true
+	for team in 2:
+		if wiped[team]:
 			state = State.GAME_OVER
 			_set_actions_enabled(false)
 			_banner.text = tr("¡Victoria!") if team == 1 else tr("Derrota...")
@@ -918,11 +979,23 @@ func _driver(u: Unit) -> Driver:
 ## Huella del estado que decide el combate: turno, clima, campo, RNG y cada Pokémon. Dos PCs que simulan la
 ## misma partida deben tener la misma después de cada intención (modo VS).
 func state_digest() -> int:
+	# Los equipos van por lado (0 = anfitrión): en VS cada PC se ve a sí mismo como el equipo 0.
 	var f := effects.field
+	var tailwind := f.tailwind.duplicate()
+	if _side(0) == 1:
+		tailwind.reverse()
+	var zones := f.zones.map(func(z: Dictionary) -> Dictionary:
+		var c := z.duplicate()
+		c.team = _side(z.team)
+		return c)
+	var traps := {}
+	for c: Vector2i in f.traps:
+		traps[c] = f.traps[c].duplicate()
+		traps[c].team = _side(f.traps[c].team)
 	var values: Array = [_turn_count, units.find(active), moved, acted, _extra_ct, weather, base_weather, _weather_turns,
-		rng.state, f.zones, f.traps, f.terrain, f.terrain_turns, f.trick_room, f.gravity, f.tailwind, _balls_used]
+		rng.state, zones, traps, f.terrain, f.terrain_turns, f.trick_room, f.gravity, tailwind, _balls_used]
 	for u in units:
-		values.append([u.team, u.data.id, u.level, u.cell, u.hp, u.max_hp, u.status, u.status_turns, u.ct, u.stages,
+		values.append([_side(u.team), u.data.id, u.level, u.cell, u.hp, u.max_hp, u.status, u.status_turns, u.ct, u.stages,
 			u.stage_turns, u.pp, u.ability, u.item, u.consumed_item, u.choice_lock, u.volatiles, u.protect_streak,
 			u.facing, u.position, u.moves])
 	return Protocol.digest(_digest_value(values))
@@ -1987,7 +2060,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				if state == State.FACING:
 					apply_intent({"kind": "wait"})
 			KEY_R:
-				if state == State.GAME_OVER:
+				if state == State.GAME_OVER and not _vs():
 					_start_battle()
 
 
@@ -2045,7 +2118,11 @@ func _build_ui() -> void:
 	_pause = PauseMenu.new()
 	_pause.quit_text = tr("Volver al editor") if Game.testing_map else \
 		(tr("Salir (el piso se reintenta después)") if _tower() else tr("Abandonar (volver al menú)"))
-	_pause.quit_requested.connect(_go_to_menu)
+	if _vs():
+		_pause.quit_text = tr("Rendirse (cuenta como derrota)")
+		_pause.quit_requested.connect(_surrender)
+	else:
+		_pause.quit_requested.connect(_go_to_menu)
 	add_child(_pause)
 
 	# Panel derecho: orden de turnos.
@@ -2616,3 +2693,218 @@ func _flash_turn(text: String, color: Color) -> void:
 
 func _log(text: String) -> void:
 	_log_label.append_text(text + "\n")
+
+
+# --- Modo VS -----------------------------------------------------------------
+# El rival juega en otro PC. Cada intención propia sale por Net con su huella (_send_intent); las del rival se
+# encolan y se aplican con apply_intent cuando la batalla le espera (_pump_remote), y su huella se compara con
+# la nuestra. Una intención ilegal o una huella distinta terminan la partida sin resultado.
+
+func _vs() -> bool:
+	return Game.mode == "vs" and not Game.vs.is_empty()
+
+
+## Lado (0 = anfitrión, 1 = invitado) de un equipo local.
+func _side(team: int) -> int:
+	return 1 - team if _vs() and Game.vs.side == 1 else team
+
+
+func _rival_nick() -> String:
+	return Game.vs.nicks[1 - Game.vs.side] if _vs() else ""
+
+
+func _send_intent(entry: Dictionary) -> void:
+	if _driver(active) == Driver.REMOTE:
+		return
+	var action := entry.duplicate()
+	action.erase("digest")
+	Net.send({"t": "intent", "a": action, "d": entry.digest})
+
+
+## Turno del rival: espera sus intenciones.
+func _wait_remote() -> void:
+	_set_actions_enabled(false)
+	_board.clear_highlights()
+	_hint_label.text = tr("Turno de {rival}…").format({"rival": _rival_nick()})
+	_waiting_remote = true
+	_pump_remote.call_deferred()
+
+
+## Aplica la siguiente intención del rival si la batalla la está esperando.
+func _pump_remote() -> void:
+	if not _waiting_remote or _remote_queue.is_empty() or state == State.GAME_OVER:
+		return
+	_waiting_remote = false
+	var msg: Dictionary = _remote_queue.pop_front()
+	var index := intent_log.size()
+	if not await apply_intent(msg.a):
+		_desync()
+		return
+	if intent_log[index].digest != msg.d:
+		_desync()
+
+
+func _on_net_message(msg: Dictionary) -> void:
+	match msg.t:
+		"intent":
+			if msg.get("a") is Dictionary and msg.get("d") is int:
+				_remote_queue.append(msg)
+				_pump_remote()
+		"deploy":
+			if _their_deploy == null and msg.get("cells") is Array:
+				_their_deploy = msg.cells
+				if _deploy_sent:
+					_finish_deploy()
+		"digest":
+			# El rival ha visto que nuestras partidas ya no coinciden.
+			_vs_finish("desync")
+		"surrender":
+			_vs_finish("surrender")
+		"rematch":
+			_rematch[1] = true
+			_try_rematch()
+		"start":
+			# Revancha preparada por el anfitrión.
+			if Game.vs.side == 1 and _rematch[0] and _rematch[1]:
+				var same_team: bool = msg.get("teams") is Array and msg.teams.size() == 2 and msg.teams[1] == Game.vs.team_data[1]
+				var why := VsMatch.apply_start(msg, 1) if same_team else "format"
+				if why.is_empty():
+					get_tree().change_scene_to_file("res://scenes/battle.tscn")
+				else:
+					_hint_label.text = VsMatch.reason_text(why)
+
+
+## Manda la colocación propia y espera la del rival.
+func _send_deploy() -> void:
+	_deploy_sent = true
+	var cells := []
+	for i in units.size():
+		if units[i].team == 0:
+			cells.append([i, units[i].cell])
+	Net.send({"t": "deploy", "cells": cells})
+	_deploy_selected = null
+	_deploy_box.visible = false
+	_refresh_deploy()
+	_hint_label.text = tr("Esperando a que {rival} coloque a su equipo…").format({"rival": _rival_nick()})
+
+
+## Coloca al equipo del rival como dice su mensaje "deploy". Si la colocación no es posible (fuera de su zona,
+## encima de otro...), la partida termina sin resultado.
+func _apply_their_deploy() -> bool:
+	var theirs := units.filter(func(u: Unit) -> bool: return u.team == 1)
+	var placed := {}
+	for e: Variant in _their_deploy:
+		if not (e is Array and e.size() == 2 and e[0] is int and e[1] is Vector2i) or e[0] < 0 or e[0] >= units.size() \
+				or units[e[0]].team != 1 or placed.has(e[0]):
+			_desync()
+			return false
+		placed[e[0]] = e[1]
+	if placed.size() != theirs.size():
+		_desync()
+		return false
+	# Se levantan todos antes de colocarlos, para que uno no estorbe el sitio nuevo de otro.
+	for u: Unit in theirs:
+		u.footprint = []
+	for i: int in placed:
+		var u := units[i]
+		if not _can_deploy(u, placed[i], 1):
+			_desync()
+			return false
+		_place(u, placed[i])
+		u.position = grid.footprint_center(u.footprint)
+	return true
+
+
+func _desync() -> void:
+	Net.send({"t": "digest"})
+	_vs_finish("desync")
+
+
+## Me rindo (desde la pausa): cuenta como derrota.
+func _surrender() -> void:
+	if state == State.GAME_OVER:
+		_leave_vs()
+		return
+	Net.send({"t": "surrender"})
+	_vs_finish("gave_up")
+
+
+func _on_opponent_gone(_code: String) -> void:
+	if state != State.GAME_OVER:
+		_vs_finish("left")
+	elif _rematch_button:
+		_rematch_button.disabled = true
+		_hint_label.text = tr("{rival} se ha ido.").format({"rival": _rival_nick()})
+
+
+## Fin de una partida VS. `result`: "win", "lose", "draw", "left" (el rival se fue), "surrender" (se rindió el
+## rival), "gave_up" (me rendí) o "desync" (sin resultado).
+func _vs_finish(result: String) -> void:
+	if not _vs_result.is_empty():
+		return
+	_vs_result = result
+	state = State.GAME_OVER
+	_waiting_remote = false
+	_remote_queue.clear()
+	_set_actions_enabled(false)
+	_deploy_box.visible = false
+	_board.clear_highlights()
+	var won := result in ["win", "left", "surrender"]
+	match result:
+		"win":
+			_banner.text = tr("¡Victoria!")
+		"lose":
+			_banner.text = tr("Derrota...")
+		"draw":
+			_banner.text = tr("Empate")
+		"left":
+			_banner.text = tr("¡Victoria! {rival} se ha ido.").format({"rival": _rival_nick()})
+		"surrender":
+			_banner.text = tr("¡Victoria! {rival} se ha rendido.").format({"rival": _rival_nick()})
+		"gave_up":
+			_banner.text = tr("Te has rendido.")
+		"desync":
+			_banner.text = tr("Las partidas se han desincronizado: termina sin resultado.")
+	_log("[b]%s[/b]" % _banner.text)
+	UiKit.clear(_banner_buttons)
+	_rematch_button = null
+	if result not in ["left", "desync"] and not Net.opponent.is_empty():
+		_rematch_button = UiKit.primary_button(tr("Revancha"), _ask_rematch, 22)
+		_banner_buttons.add_child(_rematch_button)
+	_banner_buttons.add_child(UiKit.button(tr("Salir"), _leave_vs, 22))
+	_banner_box.visible = true
+	Audio.music("")
+	Audio.ambience("")
+	if result != "desync":
+		Audio.sfx("victory" if won else "defeat", 0.0, 1.0, 0.0)
+	if active:
+		active.set_active(false)
+
+
+func _ask_rematch() -> void:
+	if _rematch[0]:
+		return
+	_rematch[0] = true
+	_rematch_button.disabled = true
+	_hint_label.text = tr("Esperando a que {rival} acepte la revancha…").format({"rival": _rival_nick()})
+	Net.send({"t": "rematch"})
+	_try_rematch()
+
+
+## Los dos quieren revancha: el anfitrión prepara otra semilla con los mismos equipos y tablero.
+func _try_rematch() -> void:
+	if not (_rematch[0] and _rematch[1]) or Game.vs.side != 0:
+		return
+	var msg := VsMatch.make_start(Game.vs.team_data[0], Game.vs.team_data[1], Game.vs.topology,
+		Game.vs.biome_choice, Game.vs.nicks)
+	Net.send(msg)
+	VsMatch.apply_start(msg, 0)
+	get_tree().change_scene_to_file("res://scenes/battle.tscn")
+
+
+func _leave_vs() -> void:
+	get_tree().paused = false
+	Net.close()
+	Game.vs = {}
+	Game.mode = "quick"
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")

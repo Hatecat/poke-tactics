@@ -26,7 +26,7 @@ msgid "Arrastra el modelo para girarlo. ← → cambian de Pokémon."
 msgstr ""
 
 #: scripts/ui/animation_viewer.gd:92
-#: scripts/ui/main_menu.gd:412
+#: scripts/ui/main_menu.gd:413
 msgid "Cerrar"
 msgstr ""
 
@@ -172,7 +172,7 @@ msgid "Historia"
 msgstr ""
 
 #: scripts/ui/main_menu.gd:62
-#: scripts/ui/main_menu.gd:176
+#: scripts/ui/main_menu.gd:177
 msgid "Partida rápida"
 msgstr ""
 
@@ -187,143 +187,151 @@ msgid "(piso %d)"
 msgstr ""
 
 #: scripts/ui/main_menu.gd:65
+#: scripts/ui/vs_menu.gd:45
+msgid "Combate VS"
+msgstr ""
+
+#: scripts/ui/main_menu.gd:66
 #: scripts/ui/team_editor.gd:46
 msgid "Editor de equipo"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:66
+#: scripts/ui/main_menu.gd:67
 #: scripts/ui/map_editor.gd:329
 msgid "Editor de escenarios"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:67
+#: scripts/ui/main_menu.gd:68
 #: scripts/ui/type_chart_screen.gd:31
 msgid "Tabla de tipos"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:68
-#: scripts/ui/main_menu.gd:332
+#: scripts/ui/main_menu.gd:69
+#: scripts/ui/main_menu.gd:333
 msgid "Opciones"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:69
-#: scripts/ui/main_menu.gd:399
+#: scripts/ui/main_menu.gd:70
+#: scripts/ui/main_menu.gd:400
 msgid "Acerca de"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:70
+#: scripts/ui/main_menu.gd:71
 msgid "Salir"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:74
+#: scripts/ui/main_menu.gd:75
 msgid "vacío"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:183
+#: scripts/ui/main_menu.gd:184
 #: scripts/ui/tower.gd:125
 msgid "Tu equipo:"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:198
+#: scripts/ui/main_menu.gd:199
 msgid "Dificultad:"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:215
+#: scripts/ui/main_menu.gd:216
 msgid "Escenario:"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:227
+#: scripts/ui/main_menu.gd:228
 #: scripts/ui/map_editor.gd:356
 #: scripts/ui/tower.gd:75
 msgid "Tablero"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:231
+#: scripts/ui/main_menu.gd:232
 msgid "▦  Cuadrícula"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:231
+#: scripts/ui/main_menu.gd:232
 msgid "⬢  Hexágonos"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:240
+#: scripts/ui/main_menu.gd:241
 msgid "Campo"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:246
+#: scripts/ui/main_menu.gd:247
 msgid "🎲  Aleatorio"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:258
+#: scripts/ui/main_menu.gd:259
 msgid "Clima"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:262
+#: scripts/ui/main_menu.gd:263
 msgid "🎲 Aleatorio"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:274
+#: scripts/ui/main_menu.gd:275
 msgid "El rival se genera al azar (Pokémon y ataques), con tantos Pokémon como tu equipo."
 msgstr ""
 
-#: scripts/ui/main_menu.gd:279
+#: scripts/ui/main_menu.gd:280
 #: scripts/ui/tower.gd:409
+#: scripts/ui/vs_menu.gd:126
 msgid "Cancelar"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:280
+#: scripts/ui/main_menu.gd:281
 msgid "¡A combatir!"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:287
+#: scripts/ui/main_menu.gd:288
 msgid "Partida rápida (¡arma tu equipo!)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/main_menu.gd:291
+#: scripts/ui/main_menu.gd:292
+#: scripts/ui/vs_menu.gd:82
 msgid "%s  (%d Pokémon)"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:294
+#: scripts/ui/main_menu.gd:295
 msgid "Generado al azar"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:305
+#: scripts/ui/main_menu.gd:306
+#: scripts/ui/vs_menu.gd:187
 msgid "Este equipo está vacío: elige otro o complétalo en el editor."
 msgstr ""
 
-#: scripts/ui/main_menu.gd:341
+#: scripts/ui/main_menu.gd:342
 #: scripts/ui/pause_menu.gd:27
 msgid "General"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:341
+#: scripts/ui/main_menu.gd:342
 #: scripts/ui/pause_menu.gd:27
 msgid "Música"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:341
+#: scripts/ui/main_menu.gd:342
 #: scripts/ui/pause_menu.gd:27
 msgid "Efectos"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:360
+#: scripts/ui/main_menu.gd:361
 msgid "Velocidad de combate"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:365
+#: scripts/ui/main_menu.gd:366
 msgid "Calidad gráfica"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:368
+#: scripts/ui/main_menu.gd:369
 msgid "Idioma"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:371
+#: scripts/ui/main_menu.gd:372
 msgid "Listo"
 msgstr ""
 
-#: scripts/ui/main_menu.gd:378
+#: scripts/ui/main_menu.gd:379
 msgid ""
 "[center][b]Poké Tactics[/b] es un proyecto de fans, gratuito y sin ánimo de lucro.\n"
 "No está afiliado a Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.[/center]\n"
@@ -401,6 +409,7 @@ msgstr ""
 #: scripts/ui/team_editor.gd:46
 #: scripts/ui/tower.gd:32
 #: scripts/ui/type_chart_screen.gd:31
+#: scripts/ui/vs_menu.gd:45
 msgid "← Menú"
 msgstr ""
 
@@ -1185,16 +1194,130 @@ msgstr ""
 msgid "Def. Esp."
 msgstr ""
 
+#: scripts/ui/vs_menu.gd:71
+msgid "Tu apodo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:74
+#: scripts/net/protocol.gd:73
+msgid "Entrenador"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:79
+msgid "Tu equipo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:91
+msgid "En VS todos los Pokémon luchan a nivel 50."
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:97
+msgid "Alojar una partida"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:100
+msgid "Puerto:"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:103
+msgid "Alojar"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:107
+msgid "Unirse a una partida"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:111
+msgid "IP del anfitrión"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:115
+msgid "Unirse"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:138
+msgid "Sala"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:148
+msgid "Tablero (lo elige el anfitrión)"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:150
+msgid "Cuadrado"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:151
+msgid "Hexagonal"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:155
+msgid "Escenario al azar"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:159
+msgid "El anfitrión elige el tablero."
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:162
+msgid "¡Listo!"
+msgstr ""
+
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:133
-#: scripts/game.gd:321
-#: scripts/game.gd:331
-#: scripts/game.gd:356
+#: scripts/ui/vs_menu.gd:198
+msgid ""
+"Esperando a un rival en el puerto {port}.\n"
+"Tu IP en la red local: [b]{ips}[/b]"
+msgstr ""
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:201
+msgid "Conectando con {ip}…"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:203
+msgid "Conectado."
+msgstr ""
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:216
+msgid "Rival: [b]{nick}[/b]  ·  {ping} ms"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:217
+msgid "Tú: listo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:217
+msgid "Tú: eligiendo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:218
+msgid "Rival: listo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:218
+msgid "Rival: eligiendo"
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:237
+msgid "Escribe la IP del anfitrión."
+msgstr ""
+
+#: scripts/ui/vs_menu.gd:250
+msgid "No se pudo abrir la conexión (¿el puerto está en uso?)."
+msgstr ""
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/game.gd:140
+#: scripts/game.gd:329
+#: scripts/game.gd:339
+#: scripts/game.gd:365
 msgid "Equipo %d"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:261
+#: scripts/game.gd:268
 msgid ""
 "Baja o Media van más fluidas en gráficas integradas.\n"
 "Gráfica en uso: %s"
@@ -1786,10 +1909,6 @@ msgstr ""
 msgid "Mesa de lectura"
 msgstr ""
 
-#: scripts/net/protocol.gd:73
-msgid "Entrenador"
-msgstr ""
-
 #: scripts/net/protocol.gd:118
 msgid "El otro jugador tiene otra versión del juego."
 msgstr ""
@@ -1820,4 +1939,16 @@ msgstr ""
 
 #: scripts/net/protocol.gd:131
 msgid "Error de red."
+msgstr ""
+
+#: scripts/net/vs_match.gd:103
+msgid "El equipo debe tener de 1 a 6 Pokémon."
+msgstr ""
+
+#: scripts/net/vs_match.gd:105
+msgid "El equipo del rival tiene algo que no se puede usar."
+msgstr ""
+
+#: scripts/net/vs_match.gd:106
+msgid "Los datos de la partida no son válidos."
 msgstr ""

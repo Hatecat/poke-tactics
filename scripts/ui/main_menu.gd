@@ -62,6 +62,7 @@ func _ready() -> void:
 	_play_button = _menu_button(left, "⚔", tr("Partida rápida"), _open_map_dialog)
 	var tower_text := tr("Torre de Batallas") + ("  " + tr("(piso %d)") % Game.tower.floor_number if Game.tower and not Game.tower.finished and Game.tower.picks_left == 0 else "")
 	_menu_button(left, "🏆", tower_text, _go.bind("tower"))
+	_menu_button(left, "⇄", tr("Combate VS"), _go.bind("vs"))
 	_menu_button(left, "★", tr("Editor de equipo"), _go.bind("team_editor"))
 	_menu_button(left, "▦", tr("Editor de escenarios"), _go.bind("map_editor"))
 	_menu_button(left, "◈", tr("Tabla de tipos"), _go.bind("type_chart"))
