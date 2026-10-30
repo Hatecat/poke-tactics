@@ -80,7 +80,7 @@ Si retocas un `.tres` a mano, ten en cuenta que volver a ejecutar `build_data.py
 ## Campos
 
 Pradera, Bosque, Montaña, Desierto, Lago, Nieve, Cueva, Gimnasio, Pantano, Ciudad, Laboratorio, Volcán, Playa,
-Cementerio, Estudio, Librería, Aeropuerto y Cueva submarina. Además, **Test**: la Pradera tal cual (mismo
+Cementerio, Estudio, Biblioteca, Aeropuerto y Cueva submarina. Además, **Test**: la Pradera tal cual (mismo
 generador, suelos, obstáculos, cielo, clima y música); no sale al elegir campo al azar ni en la Torre.
 En combate y en el editor el mapa se ve a pantalla completa: el tablero queda encuadrado entero y rodeado de un
 campo más oscuro de su propio bioma (bosque de pinos, dunas con cactus, calles con edificios, gradas del gimnasio…).
@@ -376,8 +376,7 @@ de roca o puentes de madera chamuscada, ceniza, fumarolas humeantes, troncos cal
 orilla irregular, muelle de madera, sombrillas, palmeras, conchas y dunas con hierba tierra adentro. Cementerio:
 noche con neblina, hierba oscura, caminos de tierra, hileras de lápidas (losa o cruz), árboles secos, faroles y
 fuegos fatuos. Estudio: plató a oscuras con escenario elevado de madera, cinta amarilla alrededor, focos con viseras que lo
-apuntan y lo alumbran con un cono de luz visible, y cámaras con piloto rojo que lo enfocan. Librería: parqué, alfombras granates en los pasillos y filas de
-estanterías llenas de libros de colores, con polvo al trasluz. Aeropuerto: pista de dos carriles con línea central,
+apuntan y lo alumbran con un cono de luz visible, y cámaras con piloto rojo que lo enfocan. Biblioteca: tarima, alfombras granates en los pasillos, estanterías corridas de dos caras con libros de todos los tamaños (escaleras, globos y pilas encima), mesas de lectura con lámpara de banquero encendida, columnas junto a la alfombra, luz cálida con polvo en el aire y, fuera del tablero, más salas de estanterías en hileras. Aeropuerto: pista de dos carriles con línea central,
 calle de rodaje, plataforma con aviones aparcados (ocupan 3×3), terminal acristalada con cubierta en voladizo y torre de control, y farolas. Cueva submarina: caverna
 inundada en azul con islotes de roca y arena, corales que se mecen, algas, cristales azules al pie de las paredes, cáusticas (la red de luz del oleaje) que ondulan sobre el fondo y burbujas que suben. El río del bosque tiene dos cruces de 3 casillas (vado de tierra o
 puente con barandilla), y al final de la generación se abre, si hace falta, un paso sin agua y uno de 3 casillas

@@ -698,16 +698,14 @@ func _member_detail(m: TeamMember) -> Control:
 	col.add_child(UiKit.label(tr("Ataques (%d/4) — clic para quitar o añadir") % m.moves.size(), 18, UiKit.ACCENT))
 	for mv in m.known:
 		var on := mv in m.moves
-		var b := UiKit.button("%s %s  [%s]%s" % ["✓" if on else "  ", tr(mv.display_name), tr(Combat.TYPE_NAMES[mv.type]),
-			("  · " + tr("Pot %d") % mv.power) if mv.power > 0 else ""], func() -> void:
+		var b := UiKit.move_button(mv, "%s %s" % ["✓" if on else "  ", tr(mv.display_name)],
+			tr("Pot %d") % mv.power if mv.power > 0 else "", func() -> void:
 			if on and m.moves.size() > 1:
 				m.moves.erase(mv)
 			elif not on and m.moves.size() < TeamMember.MAX_MOVES:
 				m.moves.append(mv)
 			Game.save()
-			_refresh(), 15)
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.tooltip_text = Combat.describe(mv)
+			_refresh(), "", 15)
 		b.modulate = Color.WHITE if on else Color(1, 1, 1, 0.6)
 		col.add_child(b)
 	if m.known.is_empty():

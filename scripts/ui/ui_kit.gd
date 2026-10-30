@@ -9,7 +9,10 @@ const TYPE_ABBR := { # i18n
 	"fighting": "LUC", "poison": "VEN", "ground": "TIE", "flying": "VOL", "psychic": "PSÍ", "bug": "BIC",
 	"rock": "ROC", "ghost": "FAN", "dragon": "DRA", "dark": "SIN", "steel": "ACE", "fairy": "HAD",
 }
-const STAT_NAMES := ["PS", "Ataque", "Defensa", "At. Esp.", "Def. Esp.", "Velocidad"] # i18n
+## Abreviatura y color de cada categoría de ataque (MoveData.Category), como los iconos de los juegos.
+const CATEGORY_ABBR := ["Fís.", "Esp.", "Est."] # i18n
+const CATEGORY_COLORS := [Color(0.86, 0.33, 0.16), Color(0.25, 0.42, 0.82), Color(0.5, 0.52, 0.58)]
+const STAT_NAMES :=["PS", "Ataque", "Defensa", "At. Esp.", "Def. Esp.", "Velocidad"] # i18n
 
 
 static func theme() -> Theme:
@@ -85,6 +88,84 @@ static func type_row(types: PackedStringArray, short := false) -> HBoxContainer:
 	for t in types:
 		row.add_child(type_chip(t, short))
 	return row
+
+
+## Botón de un ataque: etiqueta del color de su tipo, nombre, icono de su categoría (Físico, Especial o Estado)
+## y `extra` a la derecha (PP, potencia...). `type` es el tipo que se muestra si no es el del ataque (Bola Clima).
+static func move_button(move: MoveData, name_text: String, extra: String, callback: Callable, type := "", size := 17) -> Button:
+	var b := button("", callback, size)
+	b.custom_minimum_size.y = size + 22
+	b.tooltip_text = Combat.describe(move)
+	var row := HBoxContainer.new()
+	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.offset_left = 10
+	row.offset_right = -10
+	row.add_theme_constant_override("separation", 8)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(row)
+	var chip := type_chip(type if type else move.type, true)
+	chip.custom_minimum_size.x = 44
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(chip)
+	var l := label(name_text, size)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(l)
+	row.add_child(category_chip(move.category))
+	if extra:
+		var e := label(extra, size - 3, Color(1, 1, 1, 0.75))
+		e.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(e)
+	# El botón no es un contenedor: se ensancha a mano para que quepa todo sin cortar el nombre.
+	var fit := func() -> void: b.custom_minimum_size.x = row.get_combined_minimum_size().x + 20
+	row.minimum_size_changed.connect(fit)
+	fit.call()
+	# Los botones desactivados (sin PP, ya atacó) atenúan también su contenido.
+	b.draw.connect(func() -> void: row.modulate.a = 0.4 if b.disabled else 1.0)
+	return b
+
+
+## Etiqueta de la categoría de un ataque: icono (estallido, ondas o círculo) y abreviatura sobre su color.
+static func category_chip(category: MoveData.Category) -> PanelContainer:
+	var chip := PanelContainer.new()
+	chip.add_theme_stylebox_override("panel", _box(CATEGORY_COLORS[category], 4, 2))
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 4)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(row)
+	var icon := Control.new()
+	icon.custom_minimum_size = Vector2(14, 14)
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	icon.draw.connect(_draw_category_icon.bind(icon, category))
+	row.add_child(icon)
+	var l := label(TranslationServer.translate(CATEGORY_ABBR[category]), 13)
+	l.add_theme_constant_override("outline_size", 4)
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.5))
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(l)
+	return chip
+
+
+## Físico: estallido de ocho puntas. Especial: ondas concéntricas. Estado: anillo con un punto (como los juegos).
+static func _draw_category_icon(icon: Control, category: MoveData.Category) -> void:
+	var c := icon.size * 0.5
+	var r := minf(icon.size.x, icon.size.y) * 0.5
+	match category:
+		MoveData.Category.PHYSICAL:
+			var pts := PackedVector2Array()
+			for i in 16:
+				pts.append(c + Vector2.from_angle(TAU * i / 16.0 - PI * 0.5) * (r if i % 2 == 0 else r * 0.45))
+			icon.draw_colored_polygon(pts, Color.WHITE)
+		MoveData.Category.SPECIAL:
+			icon.draw_arc(c, r - 1.0, 0.0, TAU, 20, Color.WHITE, 1.6, true)
+			icon.draw_arc(c, r * 0.5, 0.0, TAU, 14, Color.WHITE, 1.6, true)
+			icon.draw_circle(c, r * 0.16, Color.WHITE)
+		_:
+			icon.draw_arc(c, r - 1.0, 0.0, TAU, 20, Color.WHITE, 1.8, true)
+			icon.draw_circle(c, r * 0.32, Color.WHITE)
 
 
 static func type_bbcode(type: String) -> String:

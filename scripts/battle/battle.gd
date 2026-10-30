@@ -6,7 +6,7 @@ enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, FACING, GAME_OVER }
 ## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
 const COLOR_ACTIVE := Color(1.0, 1.0, 1.0, 0.5)
-const COLOR_MOVE := Color(0.15, 0.5, 1.0, 0.68)
+const COLOR_MOVE := Color(0.22, 0.88, 0.36, 0.62)
 const COLOR_RANGE := Color(1.0, 0.68, 0.08, 0.62)
 const COLOR_AREA := Color(1.0, 0.12, 0.08, 0.8)
 const COLOR_HOVER := Color(1.0, 1.0, 1.0, 0.7)
@@ -62,6 +62,8 @@ var weather := Weather.Kind.CLEAR
 var _weather_turns := 0
 var _weather_fx: WeatherFx
 var _weather_label: RichTextLabel
+## Torre: piso en curso y rival, arriba del panel derecho.
+var _tower_label: RichTextLabel
 var _extra_ct := 0.0
 ## Estados volátiles, efectos de campo y habilidades (scripts/battle/effects.gd).
 var effects: Effects
@@ -230,6 +232,7 @@ func _start_battle() -> void:
 	_log(tr("%s · %s · %s %s. Coloca a tu equipo en la zona azul.") % [where,
 		tr("tablero cuadrado") if grid.topology == BoardGrid.Topology.SQUARE else tr("tablero hexagonal"),
 		Weather.ICONS[weather], tr(Weather.NAMES[weather])])
+	_refresh_tower_label()
 	if _trainer_battle():
 		var t: Dictionary = Game.tower.trainer
 		_log(tr("[b]¡%s quiere luchar![/b] (%s) Sus Pokémon no se pueden capturar.") % [Trainers.full_name(t), Trainers.types_text(t.types)])
@@ -283,6 +286,22 @@ func _set_weather(kind: Weather.Kind, turns: int) -> void:
 	_board.set_rain(kind == Weather.Kind.RAIN)
 	_board.set_hail(kind == Weather.Kind.HAIL)
 	_refresh_weather_label()
+
+
+## Piso de la Torre y contra quién se lucha (entrenador o líder con sus tipos, o salvajes).
+func _refresh_tower_label() -> void:
+	if _tower_label == null:
+		return
+	var run := Game.tower
+	var rival := tr("Pokémon salvajes")
+	if _trainer_battle():
+		rival = "[color=#%s]%s[/color]\n[font_size=14][color=#aaaaaa]%s[/color][/font_size]" % [
+			(Color(1.0, 0.8, 0.3) if run.trainer.leader else Color(1.0, 0.65, 0.55)).to_html(false),
+			Trainers.full_name(run.trainer), Trainers.types_text(run.trainer.types)]
+	elif TowerRun.legendary_floor(run.floor_number):
+		rival += "\n[font_size=14][color=#aaaaaa]%s[/color][/font_size]" % tr("¡se siente algo poderoso!")
+	_tower_label.text = "[font_size=20][color=#%s][b]%s[/b][/color][/font_size]\n%s" % [
+		UiKit.ACCENT.to_html(false), tr("Piso %d") % run.floor_number, rival]
 
 
 func _refresh_weather_label() -> void:
@@ -391,7 +410,7 @@ func _refresh_deploy() -> void:
 	if _deploy_selected:
 		_board.highlight(_deploy_selected.footprint, COLOR_ACTIVE)
 		if _can_deploy(_deploy_selected, hover_cell):
-			_board.highlight(grid.footprint(hover_cell, _deploy_selected.data.size), COLOR_HOVER)
+			_board.highlight(grid.footprint(hover_cell, _deploy_selected.data.size), COLOR_HOVER, true)
 	for u in units:
 		u.set_active(u == _deploy_selected)
 
@@ -760,7 +779,7 @@ func _on_hover(c: Vector2i) -> void:
 			_board.highlight(_destinations, COLOR_MOVE)
 			if c in _destinations:
 				_board.highlight(_path_to(c), COLOR_HOVER)
-				_board.highlight(grid.footprint(c, active.data.size), COLOR_HOVER)
+				_board.highlight(grid.footprint(c, active.data.size), COLOR_MOVE, true)
 		State.PICK_TARGET:
 			_board.clear_highlights()
 			_board.highlight(_targets, COLOR_RANGE)
@@ -771,7 +790,7 @@ func _on_hover(c: Vector2i) -> void:
 			if c in _targets and _throwing:
 				var t := _unit_at(c)
 				if t:
-					_board.highlight(t.footprint, COLOR_AREA)
+					_board.highlight(t.footprint, COLOR_AREA, true)
 					_preview_label.text = tr("%s: %d%% de captura · %s: %d") % [t.display_name(), roundi(TowerRun.catch_chance(t, _ball_kind) * 100),
 						TowerRun.BALLS[_ball_kind].name, _balls_left(_ball_kind)]
 			elif c in _targets:
@@ -780,6 +799,7 @@ func _on_hover(c: Vector2i) -> void:
 				var path: Array[Vector2i] = res.path
 				_board.highlight(path, COLOR_HOVER)
 				_board.highlight(area, COLOR_AREA)
+				_board.highlight([c] as Array[Vector2i], COLOR_AREA, true)
 				if selected_move.special:
 					_preview_label.text = _special_preview(selected_move, c)
 				else:
@@ -1898,6 +1918,14 @@ func _build_ui() -> void:
 	right.offset_right = -16
 	var right_box := VBoxContainer.new()
 	right.add_child(right_box)
+	if _tower():
+		_tower_label = RichTextLabel.new()
+		_tower_label.bbcode_enabled = true
+		_tower_label.fit_content = true
+		_tower_label.scroll_active = false
+		_tower_label.custom_minimum_size.x = 196
+		right_box.add_child(_tower_label)
+		right_box.add_child(HSeparator.new())
 	_weather_label = RichTextLabel.new()
 	_weather_label.bbcode_enabled = true
 	_weather_label.fit_content = true
@@ -2288,10 +2316,9 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		list = u.usable_moves()
 	for move in list:
 		var left: int = u.pp.get(move, move.pp)
-		var pp_text := "" if move.id == "struggle" else tr("   PP %d/%d") % [left, move.pp]
+		var pp_text := "" if move.id == "struggle" else tr("PP %d/%d") % [left, move.pp]
 		var shown_type := Combat.move_type(move)
-		var b := _button("%s  [%s]%s" % [tr(move.display_name), tr(Combat.TYPE_NAMES.get(shown_type, shown_type)), pp_text],
-			_begin_pick_target.bind(move))
+		var b := UiKit.move_button(move, tr(move.display_name), pp_text, _begin_pick_target.bind(move), shown_type)
 		b.set_meta("no_pp", left <= 0)
 		var accent := StyleBoxFlat.new()
 		accent.bg_color = Color(0.18, 0.22, 0.3)
@@ -2302,7 +2329,6 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		accent.content_margin_top = 8
 		accent.content_margin_bottom = 8
 		b.add_theme_stylebox_override("normal", accent)
-		b.tooltip_text = Combat.describe(move)
 		_actions_box.add_child(b)
 		_attack_buttons.append(b)
 	if _tower() and not _trainer_battle():

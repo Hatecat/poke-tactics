@@ -57,10 +57,26 @@ const SCENERY_PROPS := {
 	Biome.Kind.BEACH: [0.2, [Biome.Prop.PALM, 6], [Biome.Prop.PARASOL, 2], [Biome.Prop.BOULDER, 2]],
 	Biome.Kind.CEMETERY: [0.35, [Biome.Prop.GRAVE, 6], [Biome.Prop.DEAD_TREE, 3], [Biome.Prop.PINE, 1]],
 	Biome.Kind.STUDIO: [0.12, [Biome.Prop.CAMERA, 5], [Biome.Prop.PILLAR, 3], [Biome.Prop.SHELF, 2]],
-	Biome.Kind.LIBRARY: [0.35, [Biome.Prop.SHELF, 9], [Biome.Prop.PILLAR, 1]],
+	Biome.Kind.LIBRARY: [0.35, [Biome.Prop.SHELF, 9], [Biome.Prop.PILLAR, 1]],  # en hileras: `_library_scenery`
 	Biome.Kind.AIRPORT: [0.15, [Biome.Prop.TREE, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.LAMP, 2]],
 	Biome.Kind.UNDERWATER: [0.3, [Biome.Prop.CORAL, 6], [Biome.Prop.BOULDER, 2], [Biome.Prop.STALAGMITE, 2]],
 }
+## Estanterías: medio fondo, baldas y su separación; hileras de libros distintas (`_book_row`) y su medio
+## ancho; colores de las tapas (piel, tela y papel de biblioteca antigua).
+const SHELF_DEPTH := 0.29
+const SHELF_LEVELS := 4
+const SHELF_STEP := 0.335
+const BOOK_ROWS := 16
+const BOOK_ROW_HALF := 0.45
+const BOOK_COLORS := [Color(0.45, 0.1, 0.1), Color(0.34, 0.08, 0.08), Color(0.12, 0.3, 0.18), Color(0.1, 0.16, 0.35),
+	Color(0.62, 0.44, 0.16), Color(0.6, 0.47, 0.32), Color(0.34, 0.2, 0.11), Color(0.09, 0.08, 0.09),
+	Color(0.82, 0.77, 0.64), Color(0.12, 0.33, 0.36), Color(0.3, 0.13, 0.28), Color(0.52, 0.3, 0.14)]
+## Biomas cuyo campo de adorno funde sus obstáculos por zonas (`_merge_baked`): cientos de muebles iguales.
+const SCENERY_MERGED := [Biome.Kind.LIBRARY]
+## Biblioteca: cada cuántas casillas cortan las hileras de estanterías del campo de adorno.
+const LIBRARY_BAY := 7
+## Muebles que se unen con los iguales de al lado (al cambiar uno en el editor se rehacen los vecinos).
+const JOINED_PROPS := [Biome.Prop.SHELF, Biome.Prop.DESK]
 ## Suelos que, si salen por el borde a ras de suelo, siguen fuera del tablero (ríos, caminos, lava...).
 const SCENERY_TRAILS := [Biome.Tile.WATER, Biome.Tile.DIRT, Biome.Tile.SAND, Biome.Tile.LAVA, Biome.Tile.ROAD,
 	Biome.Tile.MUD, Biome.Tile.ICE]
@@ -261,8 +277,11 @@ func _collect(roots: Array, groups: Dictionary, chunk: int) -> void:
 					if mat is ShaderMaterial:
 						mat = _instanced_material(mat, "decor")
 			var cell: Vector2i = root.get_meta("cell")
-			# División hacia abajo: el campo de adorno tiene celdas negativas
-			var key := [mesh, mat, mi.cast_shadow, Vector2i(floori(cell.x / float(chunk)), floori(cell.y / float(chunk)))]
+			# División hacia abajo: el campo de adorno tiene celdas negativas. Las hileras de libros van todas
+			# juntas (una MultiMesh por variante): por zonas serían cientos de llamadas para unas pocas cajas.
+			var zone := Vector2i.ZERO if mi.get_meta("batch") == "books" else \
+				Vector2i(floori(cell.x / float(chunk)), floori(cell.y / float(chunk)))
+			var key := [mesh, mat, mi.cast_shadow, zone]
 			if not groups.has(key):
 				groups[key] = []
 			groups[key].append([xf, custom, color])
@@ -292,15 +311,16 @@ func _emit(groups: Dictionary) -> void:
 
 
 ## Material de las caras de arriba agrupadas: el color sale de cada instancia. Los suelos lisos usan un
-## StandardMaterial con color de vértice (se moja como los demás) y la piedra su shader en modo instancia.
+## StandardMaterial con color de vértice (se moja como los demás) y la piedra y la tarima su shader en modo instancia.
 ## `matte`: sin brillo (el campo de adorno: el reflejo del cielo aclaraba su sombra hasta un gris azulado).
 func _instanced_top_material(mat: Material, matte := false) -> Material:
-	if mat is ShaderMaterial:  # piedra: una sola copia para todos los colores
-		if not _live_mats.has("stone_inst"):
+	if mat is ShaderMaterial:  # piedra o tarima: una sola copia de cada shader para todos los colores
+		var key := "top_inst_%d" % (mat as ShaderMaterial).shader.get_instance_id()
+		if not _live_mats.has(key):
 			var dup := mat.duplicate() as ShaderMaterial
 			dup.set_shader_parameter("instanced", true)
-			_live_mats["stone_inst"] = dup
-		return _live_mats["stone_inst"]
+			_live_mats[key] = dup
+		return _live_mats[key]
 	var glossy: bool = (mat as StandardMaterial3D).roughness < 0.5
 	var key := "top_glossy" if glossy else "top_matte" if matte else "top"
 	if not _mats.has(key):
@@ -336,9 +356,12 @@ func _instanced_material(mat: ShaderMaterial, kind: String) -> ShaderMaterial:
 
 ## Reconstruye una casilla (el editor la llama al cambiar altura, suelo u obstáculo).
 func refresh_cell(c: Vector2i) -> void:
-	if _cells.has(c):
-		_cells[c].queue_free()
-	_build_cell(c)
+	for n: Vector2i in [c] + Array(grid.neighbors(c)):
+		if n != c and grid.props.get(n, Biome.Prop.NONE) not in JOINED_PROPS:
+			continue
+		if _cells.has(n):
+			_cells[n].queue_free()
+		_build_cell(n)
 
 
 ## Fuerza del viento (1 = brisa normal): mece más o menos árboles, hierba y agua.
@@ -498,24 +521,37 @@ func clear_highlights() -> void:
 		overlay.visible = false
 
 
-func highlight(cells: Array[Vector2i], color: Color) -> void:
+## `selected`: la casilla que señala el jugador (destino, objetivo), con su propio estilo.
+func highlight(cells: Array[Vector2i], color: Color, selected := false) -> void:
 	for c in cells:
 		var overlay: MeshInstance3D = _overlays.get(c)
 		if overlay:
-			overlay.material_override = _highlight_material(_contrast(c, color))
+			overlay.material_override = _highlight_material(_contrast(c, color), selected)
 			overlay.visible = true
 
 
-## Los resaltados azules (movimiento, despliegue) no se distinguen sobre el agua ni el hielo:
-## ahí se usa un tono claro (agua) u oscuro (hielo y nieve) que contraste.
+## Los resaltados azules (despliegue) no se distinguen sobre el agua ni el hielo: ahí se usa un tono
+## claro (agua) u oscuro (hielo y nieve) que contraste. El resto se hace más opaco sobre el agua y los
+## suelos claros, que si no lo tiñen (el verde del movimiento saldría turquesa), y el verde también sobre
+## la hierba, que es del mismo tono.
 func _contrast(c: Vector2i, color: Color) -> Color:
-	if not (color.b > color.r + 0.3 and color.b >= color.g):
+	var tile: int = grid.tiles.get(c, Biome.Tile.GRASS)
+	if color.b > color.r + 0.3 and color.b >= color.g:
+		match tile:
+			Biome.Tile.WATER:
+				return Color(0.85, 1.0, 1.0, maxf(color.a, 0.6))
+			Biome.Tile.ICE, Biome.Tile.SNOW:
+				return Color(0.1, 0.3, 0.95, maxf(color.a, 0.6))
 		return color
-	match grid.tiles.get(c, Biome.Tile.GRASS):
+	if color.a < 0.4:  # alcance de las Poké Balls: un velo, no una opción
+		return color
+	match tile:
 		Biome.Tile.WATER:
-			return Color(0.85, 1.0, 1.0, maxf(color.a, 0.6))
-		Biome.Tile.ICE, Biome.Tile.SNOW:
-			return Color(0.1, 0.3, 0.95, maxf(color.a, 0.6))
+			return Color(color, maxf(color.a, 0.82))
+		Biome.Tile.SAND, Biome.Tile.SNOW, Biome.Tile.ICE:
+			return Color(color, maxf(color.a, 0.74))
+		Biome.Tile.GRASS when color.g > color.r + 0.3 and color.g > color.b + 0.3:
+			return Color(color, maxf(color.a, 0.75))
 	return color
 
 
@@ -563,7 +599,9 @@ func _build_scenery() -> void:
 			var prop := Biome.Prop.NONE
 			var h := hash(c)
 			var props: Array = SCENERY_PROPS.get(_look, [])
-			if tile == ground and far >= 2 and not props.is_empty():
+			if tile == ground and far >= 2 and _look == Biome.Kind.LIBRARY:
+				prop = _library_scenery(x, y, h)
+			elif tile == ground and far >= 2 and not props.is_empty():
 				var dense := clampf((far - 1) / 6.0, 0.0, 1.0) * (1.0 if noise.get_noise_2d(x, y) > -0.1 else 0.25)
 				if float(h % 1000) / 1000.0 < dense * props[0]:
 					prop = _pick_weighted(props, (h >> 10) % 1000 / 1000.0)
@@ -584,6 +622,8 @@ func _build_scenery() -> void:
 			_build_cell(c, true)
 			roots.append(_cells[c])
 		_collect(roots, groups, SCENERY_CHUNK)  # también en el editor: el campo de adorno no se edita
+		if _look in SCENERY_MERGED:
+			_merge_baked(roots)
 	_emit(groups)
 	_building_scenery = false
 	# Fuera de la lógica: el tablero vuelve a ser solo sus casillas.
@@ -678,6 +718,37 @@ func _scenery_color(c: Vector2i, tile_kind: int) -> Color:
 		var w := grid.to_world(c)
 		color = color.lerp(Color(0.32, 0.55, 0.16), 0.5 + _tint_noise.get_noise_2d(w.x * 0.5, w.z * 0.5) * 0.5)
 	return color.darkened(_scenery_dim(c))
+
+
+## Biblioteca: fuera del tablero siguen las salas de estanterías, en hileras corridas (las filas pares, como
+## las del tablero) cortadas por pasillos cada pocas casillas, con columnas donde se cruzan.
+func _library_scenery(x: int, y: int, h: int) -> int:
+	if posmod(y, 2) != 0:
+		return Biome.Prop.NONE
+	if posmod(x, LIBRARY_BAY) == 0:
+		return Biome.Prop.PILLAR if posmod(y, 4) == 0 else Biome.Prop.NONE
+	return Biome.Prop.NONE if h % 23 == 0 else Biome.Prop.SHELF
+
+
+## Funde en una malla por acabado los obstáculos ya fundidos (`_bake`) de una zona del campo de adorno: cada
+## uno era una llamada de dibujo, y otra por cada cascada de sombra.
+func _merge_baked(roots: Array) -> void:
+	var holder := Node3D.new()
+	add_child(holder)
+	var meshes := []
+	for root: Node3D in roots:
+		for mi: MeshInstance3D in root.find_children("*", "MeshInstance3D", true, false):
+			var m := mi.material_override as StandardMaterial3D
+			if m == null or not m.vertex_color_use_as_albedo or mi.has_meta("batch") or mi.get_child_count() > 0:
+				continue
+			var xf := _relative_transform(mi, self)
+			mi.get_parent().remove_child(mi)
+			mi.transform = xf
+			holder.add_child(mi)
+			meshes.append(mi.mesh)
+	_bake(holder)
+	for mesh in meshes:  # mallas de un solo uso: no hace falta guardar sus datos
+		_mesh_arrays.erase(mesh)
 
 
 ## Obstáculo de una lista de `SCENERY_PROPS` ([densidad, [obstáculo, peso]...]) según `r` (0-1).
@@ -775,6 +846,9 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 		if tile_kind in [Biome.Tile.CAVE, Biome.Tile.ROCK]:
 			top_mesh.material_override = _live("stone_%s" % col.to_html(), func() -> ShaderMaterial:
 				return TerrainFx.stone_material(col))
+		elif tile_kind == Biome.Tile.WOOD:
+			top_mesh.material_override = _live("wood_%s" % col.to_html(), func() -> ShaderMaterial:
+				return TerrainFx.wood_material(col))
 		else:
 			top_mesh.material_override = _material(col, tile_kind in [Biome.Tile.ICE, Biome.Tile.MUD])  # el lodo brilla mojado
 		if decor:
@@ -819,6 +893,13 @@ func _build_cell(c: Vector2i, decor := false) -> void:
 		root.add_child(p)
 		_root_sway(p, top.y)
 		_bake(p)
+		# Piezas que se agrupan aparte (hileras de libros): pasan a la casilla, donde las busca `_collect`
+		for mi: MeshInstance3D in p.find_children("*", "MeshInstance3D", true, false):
+			if mi.has_meta("batch"):
+				var xf := _relative_transform(mi, root)
+				mi.get_parent().remove_child(mi)
+				mi.transform = xf
+				root.add_child(mi)
 		if decor:
 			_loose_parts(root, p, top.y)
 	if decor:
@@ -1209,26 +1290,127 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			node.rotation.x = float(h % 5 - 2) * 0.04
 			height = 0.6
 		Biome.Prop.SHELF:
-			# Estantería: mueble de madera con cuatro baldas llenas de libros de colores y alturas distintas.
-			node.rotation.y = 0.0
+			# Estantería de dos caras: zócalo, baldas con canto, tabla central, cornisa y, en los extremos de
+			# cada hilera, los costados. Las de al lado se unen en un mueble corrido (sin costados entre medias).
+			# Los libros van en hileras ya hechas (`_book_row`) que se agrupan como la hierba.
+			var j := _joins(c, prop)
+			node.rotation.y = PI / 2 if j.turned else 0.0
 			node.scale = Vector3.ONE
-			var wood := Color(0.42, 0.26, 0.15)
-			_part(node, _unit_box(), Vector3(0, 0.75, 0), wood.darkened(0.25)).scale = Vector3(0.94, 1.5, 0.5)
-			var spines := [Color(0.6, 0.15, 0.15), Color(0.15, 0.3, 0.55), Color(0.2, 0.45, 0.25), Color(0.75, 0.6, 0.25), Color(0.4, 0.2, 0.45)]
+			var x0: float = -0.5 if j.neg else -0.46
+			var x1: float = 0.5 if j.pos else 0.46
+			var w := x1 - x0
+			var cx := (x0 + x1) * 0.5
+			var d := SHELF_DEPTH
+			var wood := Color(0.36, 0.2, 0.11)
+			var inner := Color(0.2, 0.11, 0.07)
+			_part(node, _unit_box(), Vector3(cx, 0.045, 0), wood.darkened(0.35)).scale = Vector3(w, 0.09, d * 2.0 + 0.02)
+			_part(node, _unit_box(), Vector3(cx, 0.76, 0), inner).scale = Vector3(w, 1.34, 0.02)
+			var ix0 := x0 + (0.0 if j.neg else 0.045)
+			var ix1 := x1 - (0.0 if j.pos else 0.045)
+			for k in [-1, 1]:
+				if not (j.neg if k < 0 else j.pos):
+					_part(node, _unit_box(), Vector3(x0 + 0.0225 if k < 0 else x1 - 0.0225, 0.74, 0), wood).scale = Vector3(0.045, 1.42, d * 2.0)
+			if j.pos:  # montante compartido con la siguiente
+				_part(node, _unit_box(), Vector3(0.5, 0.76, 0), wood).scale = Vector3(0.03, 1.34, d * 2.0)
+			for level in SHELF_LEVELS:
+				var y := 0.09 + level * SHELF_STEP
+				if level > 0:
+					_part(node, _unit_box(), Vector3((ix0 + ix1) * 0.5, y, 0), wood).scale = Vector3(ix1 - ix0, 0.025, d * 2.0 - 0.01)
+				for side in [-1, 1]:
+					_part(node, _unit_box(), Vector3((ix0 + ix1) * 0.5, y + 0.005, side * (d - 0.008)), wood.lightened(0.1)).scale = \
+						Vector3(ix1 - ix0, 0.035, 0.016)
+					var row := MeshInstance3D.new()
+					row.mesh = _book_row((h + level * 5 + (side + 1) * 11) % BOOK_ROWS)
+					row.material_override = _books_material()
+					row.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+					row.transform = Transform3D(Basis(Vector3.UP, 0.0 if side > 0 else PI).scaled(Vector3((ix1 - ix0 - 0.02) / (BOOK_ROW_HALF * 2.0), 1, 1)),
+						Vector3((ix0 + ix1) * 0.5, y + (0.0125 if level > 0 else 0.0), side * (d - 0.02)))
+					row.set_meta("batch", "books")
+					node.add_child(row)
+			var top_y := 0.09 + SHELF_LEVELS * SHELF_STEP
+			var over := Vector2(0.0 if j.neg else 0.025, 0.0 if j.pos else 0.025)
+			_part(node, _unit_box(), Vector3(cx + (over.y - over.x) * 0.5, top_y + 0.03, 0), wood).scale = Vector3(w + over.x + over.y, 0.06, d * 2.0 + 0.06)
+			_part(node, _unit_box(), Vector3(cx, top_y + 0.075, 0), wood.lightened(0.12)).scale = Vector3(w + (over.x + over.y) * 0.4, 0.03, d * 2.0 + 0.02)
+			_part(node, _unit_box(), Vector3(cx, top_y + 0.092, 0), inner.lightened(0.1)).scale = Vector3(w - 0.1, 0.006, d * 2.0 - 0.08)
+			if h % 9 == 0 and not _building_scenery:
+				_library_ladder(node, cx, d, top_y, 1 if h & 2 else -1)
+			if h % 5 == 1:  # libros tumbados encima
+				for i in 2 + h % 2:
+					var book := _part(node, _unit_box(), Vector3(cx - 0.2 + 0.01 * i, top_y + 0.115 + i * 0.04, 0.02 * i), BOOK_COLORS[(h + i * 3) % BOOK_COLORS.size()])
+					book.scale = Vector3(0.24 - 0.02 * i, 0.04, 0.17)
+					book.rotation.y = 0.15 * (i - 1)
+			elif h % 7 == 3:  # globo terráqueo
+				_part(node, _cyl(0.05, 0.07, 0.03, 10), Vector3(cx + 0.18, top_y + 0.11, 0), Color(0.55, 0.42, 0.2))
+				_part(node, _cyl(0.012, 0.012, 0.08, 6), Vector3(cx + 0.18, top_y + 0.16, 0), Color(0.55, 0.42, 0.2))
+				_part(node, _sphere(0.09, 0.18), Vector3(cx + 0.18, top_y + 0.28, 0), Color(0.28, 0.45, 0.42))
+				_part(node, _sphere(0.05, 0.08), Vector3(cx + 0.2, top_y + 0.32, 0.05), Color(0.62, 0.55, 0.32))
+			elif h % 11 == 6:  # jarrón
+				_part(node, _cyl(0.035, 0.06, 0.2, 10), Vector3(cx - 0.15, top_y + 0.2, 0), Color(0.2, 0.32, 0.36))
+				_part(node, _sphere(0.065, 0.1), Vector3(cx - 0.15, top_y + 0.15, 0), Color(0.2, 0.32, 0.36))
+			height = top_y + 0.1
+		Biome.Prop.DESK:
+			# Mesa de lectura de madera con tapete verde, sillas a los dos lados y lámpara de banquero encendida
+			# (las de al lado se unen en una mesa larga), un libro abierto y alguno apilado.
+			var j := _joins(c, prop)
+			node.rotation.y = PI / 2 if j.turned else 0.0
+			node.scale = Vector3.ONE
+			var x0: float = -0.5 if j.neg else -0.44
+			var x1: float = 0.5 if j.pos else 0.44
+			var cx := (x0 + x1) * 0.5
+			var wood := Color(0.4, 0.22, 0.12)
+			_part(node, _unit_box(), Vector3(cx, 0.52, 0), wood).scale = Vector3(x1 - x0, 0.045, 0.74)
+			_part(node, _unit_box(), Vector3(0, 0.545, 0), Color(0.15, 0.3, 0.2)).scale = Vector3(0.78, 0.006, 0.5)
+			_part(node, _unit_box(), Vector3(cx, 0.46, 0), wood.darkened(0.3)).scale = Vector3(x1 - x0 - (0.0 if j.neg else 0.06) - (0.0 if j.pos else 0.06), 0.07, 0.62)
+			for k in [-1, 1]:
+				if j.neg if k < 0 else j.pos:
+					continue
+				var lx := (x0 + 0.07) if k < 0 else (x1 - 0.07)
+				for z in [-0.29, 0.29]:
+					_part(node, _cyl(0.024, 0.03, 0.46, 8), Vector3(lx, 0.23, z), wood.darkened(0.15))
+				_part(node, _unit_box(), Vector3(lx, 0.1, 0), wood.darkened(0.25)).scale = Vector3(0.03, 0.03, 0.56)
 			for side in [-1, 1]:
-				for shelf in 4:
-					var y := 0.12 + shelf * 0.36
-					_part(node, _unit_box(), Vector3(0, y - 0.02, side * 0.18), wood).scale = Vector3(0.92, 0.03, 0.16)
-					var x := -0.42
-					var i := 0
-					while x < 0.38:
-						var w := 0.05 + float((h >> (i % 8)) % 3) * 0.02
-						var tall := 0.2 + float((h + i * 7 + shelf) % 4) * 0.025
-						var book := _part(node, _unit_box(), Vector3(x + w * 0.5, y + tall * 0.5, side * 0.2), spines[(h + i + shelf * 3) % 5])
-						book.scale = Vector3(w * 0.9, tall, 0.14)
-						x += w
-						i += 1
-			height = 1.5
+				if (h >> (side + 1)) % 4 == 0:
+					continue  # un sitio sin silla
+				var chair := Node3D.new()
+				chair.position = Vector3(float((h >> (side + 3)) % 5 - 2) * 0.04, 0, side * (0.36 + float((h >> (side + 5)) % 3) * 0.03))
+				chair.rotation.y = (0.0 if side > 0 else PI) + float((h >> (side + 7)) % 5 - 2) * 0.08
+				node.add_child(chair)
+				var cw := wood.darkened(0.2)
+				_part(chair, _unit_box(), Vector3(0, 0.29, 0), cw).scale = Vector3(0.3, 0.035, 0.27)
+				_part(chair, _unit_box(), Vector3(0, 0.315, 0), Color(0.45, 0.1, 0.12)).scale = Vector3(0.26, 0.02, 0.23)
+				for lx in [-0.13, 0.13]:
+					for lz in [-0.11, 0.11]:
+						_part(chair, _unit_box(), Vector3(lx, 0.14, lz), cw).scale = Vector3(0.025, 0.28, 0.025)
+					_part(chair, _unit_box(), Vector3(lx, 0.5, 0.125), cw).scale = Vector3(0.03, 0.42, 0.03)
+				_part(chair, _unit_box(), Vector3(0, 0.62, 0.125), cw).scale = Vector3(0.28, 0.13, 0.025)
+			var lamp_x := 0.24 if h & 1 else -0.24
+			var brass := Color(0.7, 0.55, 0.25)
+			_part(node, _cyl(0.055, 0.065, 0.02, 10), Vector3(lamp_x, 0.552, 0.05), brass)
+			_part(node, _cyl(0.008, 0.008, 0.2, 6), Vector3(lamp_x, 0.66, 0.05), brass)
+			var shade := _part(node, _cyl(0.05, 0.05, 0.24, 10), Vector3(lamp_x, 0.77, 0.05), Color.WHITE)
+			shade.rotation.z = PI / 2
+			_glow(shade, Color(0.1, 0.45, 0.22), 0.7)
+			_glow(_part(node, _sphere(0.028, 0.04), Vector3(lamp_x, 0.735, 0.05), Color.WHITE), Color(1.0, 0.85, 0.55), 4.0)
+			if not _building_scenery:
+				var light := OmniLight3D.new()
+				light.light_color = Color(1.0, 0.8, 0.52)
+				light.light_energy = 0.9
+				light.omni_range = 2.2
+				light.omni_attenuation = 1.6
+				light.position = Vector3(lamp_x, 0.72, 0.05)
+				node.add_child(light)
+			var bx := -lamp_x * 0.6
+			_part(node, _unit_box(), Vector3(bx, 0.552, -0.04), BOOK_COLORS[h % BOOK_COLORS.size()]).scale = Vector3(0.27, 0.01, 0.19)
+			for k in [-1, 1]:
+				var page := _part(node, _unit_box(), Vector3(bx + k * 0.065, 0.565, -0.04), Color(0.9, 0.86, 0.74))
+				page.scale = Vector3(0.125, 0.012, 0.17)
+				page.rotation.z = -k * 0.1
+			if h % 3 == 0:
+				for i in 2 + h % 2:
+					var book := _part(node, _unit_box(), Vector3(lamp_x * 0.2, 0.567 + i * 0.035, 0.18), BOOK_COLORS[(h + i * 5) % BOOK_COLORS.size()])
+					book.scale = Vector3(0.2 - 0.015 * i, 0.033, 0.14)
+					book.rotation.y = 0.2 * i - 0.1
+			height = 0.8
 		Biome.Prop.SPOTLIGHT:
 			# Foco de plató: trípode, caja negra con viseras y la lente encendida; alumbra el escenario.
 			var black := Color(0.1, 0.1, 0.11)
@@ -1332,6 +1514,142 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			height = 0.6
 	node.set_meta("sway_height", height * jitter)
 	return node
+
+
+## Hacia dónde se une el mueble de `c` (estantería, mesa) con los iguales de al lado y a la misma altura:
+## {neg, pos: hay uno en ese extremo; turned: la hilera va en columna (solo en el tablero cuadrado)}. Los
+## extremos son los del eje local x (con `turned`, -z y +z del mundo).
+func _joins(c: Vector2i, prop: int) -> Dictionary:
+	var same := func(n: Vector2i) -> bool:
+		return grid.props.get(n, Biome.Prop.NONE) == prop and grid.heights.get(n, 0) == grid.heights.get(c, 0)
+	var row := [same.call(c + Vector2i(-1, 0)), same.call(c + Vector2i(1, 0))]
+	if grid.topology == BoardGrid.Topology.SQUARE and not (row[0] or row[1]):
+		var col := [same.call(c + Vector2i(0, 1)), same.call(c + Vector2i(0, -1))]
+		if col[0] or col[1]:
+			return {"neg": col[0], "pos": col[1], "turned": true}  # girado 90°: el x local mira a -z
+	return {"neg": row[0], "pos": row[1], "turned": false}
+
+
+## Escalera de biblioteca apoyada en una cara de la estantería (`side` 1 o -1), con su barra de latón arriba.
+func _library_ladder(node: Node3D, cx: float, d: float, top_y: float, side: int) -> void:
+	var wood := Color(0.5, 0.33, 0.18)
+	var foot := 0.15
+	var tilt := atan2(foot, top_y)
+	var length := sqrt(top_y * top_y + foot * foot)
+	var x := cx + 0.12
+	for k in [-1, 1]:
+		var rail := _part(node, _unit_box(), Vector3(x + k * 0.15, top_y * 0.5, side * (d + 0.02 + foot * 0.5)), wood)
+		rail.scale = Vector3(0.025, length, 0.03)
+		rail.rotation.x = -tilt * side
+	for i in 5:
+		var t := (i + 1) / 6.0
+		_part(node, _unit_box(), Vector3(x, top_y * t, side * (d + 0.02 + foot * (1.0 - t))), wood).scale = Vector3(0.3, 0.02, 0.03)
+	var bar := _part(node, _cyl(0.01, 0.01, 0.9, 6), Vector3(cx, top_y - 0.04, side * (d + 0.025)), Color(0.75, 0.6, 0.3))
+	bar.rotation.z = PI / 2
+
+
+## Material de las hileras de libros (color de vértice), más oscuro en el campo de adorno.
+func _books_material() -> StandardMaterial3D:
+	var key := "books_far" if _building_scenery else "books"
+	if not _mats.has(key):
+		var m := StandardMaterial3D.new()
+		m.vertex_color_use_as_albedo = true
+		m.vertex_color_is_srgb = true
+		m.albedo_color = Color.WHITE.darkened(SCENERY_PROP_SHADE) if _building_scenery else Color.WHITE
+		_mats[key] = m
+	return _mats[key]
+
+
+## Hilera de libros de una balda (malla compartida, con color de vértice): de pie con lomos, grosores,
+## alturas y fondos distintos, alguno con bandas doradas o etiqueta, huecos con un libro inclinado y pilas
+## tumbadas. Las últimas variantes son baldas medio vacías. Va de -BOOK_ROW_HALF a BOOK_ROW_HALF en x, de
+## pie en y = 0 y con los lomos en z = 0 (los libros hacia -z). Solo caras visibles: sin la de abajo ni la
+## de atrás.
+func _book_row(variant: int) -> ArrayMesh:
+	var key := "books_%d" % variant
+	if _prims.has(key):
+		return _prims[key]
+	var rng := RandomNumberGenerator.new()
+	rng.seed = variant * 7919 + 13
+	var a := [PackedVector3Array(), PackedVector3Array(), PackedColorArray(), PackedInt32Array()]
+	var sparse := variant >= BOOK_ROWS - 2
+	var end := BOOK_ROW_HALF - (rng.randf_range(0.35, 0.55) if sparse else 0.0)
+	var x := -BOOK_ROW_HALF
+	var lean := 0.0  # hueco a la izquierda: el libro siguiente se apoya en él
+	while x < end - 0.03:
+		var r := rng.randf()
+		if r < 0.08 and end - x > 0.22:
+			var w := rng.randf_range(0.15, 0.2)
+			var y := 0.0
+			for i in rng.randi_range(2, 4):
+				var t := rng.randf_range(0.028, 0.045)
+				var depth := rng.randf_range(0.15, 0.2)
+				var xf := Transform3D(Basis(Vector3.UP, rng.randf_range(-0.08, 0.08)), Vector3(x + w * 0.5, y + t * 0.5, -depth * 0.5 - 0.01))
+				_box_into(a, xf, Vector3(w * rng.randf_range(0.85, 1.0), t, depth), _book_color(rng))
+				y += t
+			x += w + 0.015
+			lean = 0.0
+			continue
+		if r < 0.14 and lean == 0.0 and end - x > 0.12:
+			lean = rng.randf_range(0.04, 0.08)
+			x += lean
+			continue
+		var t := rng.randf_range(0.026, 0.062)
+		var tall := rng.randf_range(0.19, 0.29)
+		var depth := rng.randf_range(0.16, 0.23)
+		var col := _book_color(rng)
+		var basis := Basis()
+		var center := Vector3(x + t * 0.5, tall * 0.5, -depth * 0.5 - rng.randf_range(0.0, 0.025))
+		if lean > 0.0:
+			# Se apoya en la esquina de abajo a la derecha y cae hacia el hueco
+			var ang := minf(asin(clampf(lean / tall, 0.0, 1.0)), 0.4)
+			basis = Basis(Vector3.BACK, ang)
+			center = Vector3(x + t, 0.0, center.z) + basis * Vector3(-t * 0.5, tall * 0.5, 0.0)
+			lean = 0.0
+		var xf := Transform3D(basis, center)
+		_box_into(a, xf, Vector3(t, tall, depth), col)
+		var face := depth * 0.5 + 0.002
+		if rng.randf() < 0.35:
+			var band := Color(0.8, 0.64, 0.3) if rng.randf() < 0.7 else col.lightened(0.35)
+			for k in [-1, 1]:
+				_box_into(a, xf * Transform3D(Basis(), Vector3(0, k * tall * 0.32, face)), Vector3(t * 0.94, 0.012, 0.004), band, true)
+		elif rng.randf() < 0.2:
+			_box_into(a, xf * Transform3D(Basis(), Vector3(0, tall * 0.18, face)), Vector3(t * 0.7, 0.04, 0.004), Color(0.86, 0.8, 0.66), true)
+		x += t + rng.randf_range(0.0, 0.004)
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = a[0]
+	arrays[Mesh.ARRAY_NORMAL] = a[1]
+	arrays[Mesh.ARRAY_COLOR] = a[2]
+	arrays[Mesh.ARRAY_INDEX] = a[3]
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	_prims[key] = mesh
+	return mesh
+
+
+## Color de tapa de un libro: piel, tela o papel, con algo de variación.
+func _book_color(rng: RandomNumberGenerator) -> Color:
+	var col: Color = BOOK_COLORS[rng.randi_range(0, BOOK_COLORS.size() - 1)]
+	var v := rng.randf_range(-0.12, 0.12)
+	return col.lightened(v) if v > 0.0 else col.darkened(-v)
+
+
+## Añade a `a` ([vértices, normales, colores, índices]) una caja de medidas `size` con la transformación `xf`.
+## Sin la cara de abajo ni la de atrás (-z); `front_only`: solo la de delante (bandas y etiquetas del lomo).
+func _box_into(a: Array, xf: Transform3D, size: Vector3, color: Color, front_only := false) -> void:
+	var hs := size * 0.5
+	var faces := [Vector3.BACK] if front_only else [Vector3.BACK, Vector3.UP, Vector3.LEFT, Vector3.RIGHT]
+	for n: Vector3 in faces:
+		# Dos ejes de la cara, en el orden que deja el triángulo mirando hacia fuera
+		var u := Vector3.UP if absf(n.y) < 0.5 else Vector3.RIGHT
+		var v := n.cross(u)
+		var base: int = a[0].size()
+		for corner in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+			a[0].append(xf * ((n + u * corner.x + v * corner.y) * hs))
+			a[1].append((xf.basis * n).normalized())
+			a[2].append(color)
+		a[3].append_array([base, base + 2, base + 1, base, base + 3, base + 2])
 
 
 ## Columna del gimnasio con la forma de su tipo (los que no tienen otro obstáculo): clásica de mármol
@@ -1922,7 +2240,8 @@ func _bake(node: Node3D) -> void:
 		# Las que llevan piezas colgando (la pantalla con su imagen encendida) se quedan sueltas
 		var m := mi.material_override as StandardMaterial3D
 		if m == null or m.emission_enabled or m.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED \
-				or m.albedo_texture or mi.mesh == null or mi.mesh.get_surface_count() != 1 or mi.get_child_count() > 0:
+				or m.albedo_texture or mi.mesh == null or mi.mesh.get_surface_count() != 1 or mi.get_child_count() > 0 \
+				or mi.has_meta("batch"):
 			continue
 		if not _mesh_arrays.has(mi.mesh):  # las primitivas compartidas se leen una sola vez
 			_mesh_arrays[mi.mesh] = mi.mesh.surface_get_arrays(0)
@@ -2101,13 +2420,16 @@ func _material(color: Color, glossy := false) -> StandardMaterial3D:
 
 
 ## Resaltado de casilla (movimiento, alcance, área, orientación...): el color con un borde más claro y
-## opaco para que cada opción se distinga aunque esté pegada a otras.
+## opaco para que cada opción se distinga aunque esté pegada a otras, y un filo oscuro por fuera para que
+## también se lea sobre suelos claros (agua con reflejos, arena, nieve). La casilla señalada (`selected`)
+## lleva un borde blanco ancho y late, así no depende del color del suelo ni se confunde con las de alrededor.
 const HIGHLIGHT_SHADER := "
 shader_type spatial;
 render_mode unshaded, shadows_disabled, depth_draw_never;
 uniform vec4 color : source_color;
 uniform float half_size = 0.4;
 uniform bool hex = false;
+uniform bool selected = false;
 varying vec2 lp;
 
 void vertex() {
@@ -2117,23 +2439,35 @@ void vertex() {
 void fragment() {
 	vec2 p = abs(lp);
 	float d = half_size - (hex ? max(p.x, dot(p, vec2(0.5, 0.8660254))) : max(p.x, p.y));
-	float edge = 1.0 - smoothstep(0.035, 0.065, d);
-	ALBEDO = mix(color.rgb, mix(color.rgb, vec3(1.0), 0.45), edge);
-	ALPHA = mix(color.a, min(1.0, color.a + 0.3), edge);
+	float rim = 1.0 - smoothstep(0.012, 0.022, d);
+	if (selected) {
+		float beat = 0.5 + 0.5 * sin(TIME * 5.0);
+		float dark = 1.0 - smoothstep(0.03, 0.04, d);
+		float band = (1.0 - smoothstep(0.085, 0.1, d)) * (1.0 - dark);
+		vec3 fill = color.rgb * (0.95 + 0.2 * beat);
+		ALBEDO = mix(mix(fill, vec3(1.0), band * (0.8 + 0.2 * beat)), vec3(0.03, 0.04, 0.06), dark);
+		ALPHA = max(mix(0.92, 1.0, band), dark * 0.95);
+	} else {
+		float edge = 1.0 - smoothstep(0.035, 0.065, d);
+		ALBEDO = mix(mix(color.rgb, mix(color.rgb, vec3(1.0), 0.45), edge), vec3(0.03, 0.04, 0.06), rim * 0.8);
+		ALPHA = max(mix(color.a, min(1.0, color.a + 0.3), edge), rim * 0.55);
+	}
 }
 "
 var _highlight_mats := {}
 
 
-func _highlight_material(color: Color) -> ShaderMaterial:
-	if not _highlight_mats.has(color):
+func _highlight_material(color: Color, selected := false) -> ShaderMaterial:
+	var key := [color, selected]
+	if not _highlight_mats.has(key):
 		var m := ShaderMaterial.new()
 		m.shader = TerrainFx.shader(HIGHLIGHT_SHADER)
 		m.set_shader_parameter("color", color)
 		m.set_shader_parameter("half_size", (1.0 - TILE_GAP - 0.16) * 0.5)
 		m.set_shader_parameter("hex", grid.topology != BoardGrid.Topology.SQUARE)
-		_highlight_mats[color] = m
-	return _highlight_mats[color]
+		m.set_shader_parameter("selected", selected)
+		_highlight_mats[key] = m
+	return _highlight_mats[key]
 
 
 func _overlay_material(color: Color) -> StandardMaterial3D:

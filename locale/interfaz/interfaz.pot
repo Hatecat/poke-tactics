@@ -229,7 +229,7 @@ msgid "Escenario:"
 msgstr ""
 
 #: scripts/ui/main_menu.gd:182
-#: scripts/ui/map_editor.gd:347
+#: scripts/ui/map_editor.gd:353
 #: scripts/ui/tower.gd:76
 msgid "Tablero"
 msgstr ""
@@ -341,184 +341,184 @@ msgid ""
 "Hecho con [url=https://godotengine.org]Godot Engine[/url] (MIT), [url=https://www.blender.org]Blender[/url] y [url=https://gltf-transform.dev]glTF Transform[/url]."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:71
+#: scripts/ui/map_editor.gd:73
 msgid "Nuevo escenario"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:91
+#: scripts/ui/map_editor.gd:93
 msgid "Escenario generado."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:91
+#: scripts/ui/map_editor.gd:93
 msgid "Escenario vacío creado."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:121
+#: scripts/ui/map_editor.gd:126
 msgid "Sin nombre"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:198
+#: scripts/ui/map_editor.gd:203
 msgid "Rival quitado."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:206
+#: scripts/ui/map_editor.gd:211
 msgid "%s no cabe ahí."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:210
+#: scripts/ui/map_editor.gd:215
 msgid "%s colocado (%d rivales)."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:265
+#: scripts/ui/map_editor.gd:270
 msgid "Guardado en %s"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:265
+#: scripts/ui/map_editor.gd:270
 msgid "No se pudo guardar."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:271
+#: scripts/ui/map_editor.gd:276
 msgid "Falta la zona azul (despliegue del jugador)."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:274
+#: scripts/ui/map_editor.gd:279
 msgid "Falta la zona roja o algún rival colocado."
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:284
+#: scripts/ui/map_editor.gd:289
 msgid "Cargado: %s"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:324
+#: scripts/ui/map_editor.gd:329
 #: scripts/ui/tower.gd:34
 msgid "← Menú"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:327
+#: scripts/ui/map_editor.gd:332
 msgid "  Editor de escenarios  "
 msgstr ""
 
-#: scripts/ui/map_editor.gd:329
+#: scripts/ui/map_editor.gd:334
 msgid "Nombre del escenario"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:332
+#: scripts/ui/map_editor.gd:337
 msgid "💾 Guardar"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:336
+#: scripts/ui/map_editor.gd:341
 msgid "Cargar"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:337
+#: scripts/ui/map_editor.gd:342
 msgid "▶ Probar"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:352
+#: scripts/ui/map_editor.gd:358
 msgid "Ancho "
 msgstr ""
 
-#: scripts/ui/map_editor.gd:354
+#: scripts/ui/map_editor.gd:360
 msgid "  Alto "
 msgstr ""
 
-#: scripts/ui/map_editor.gd:357
+#: scripts/ui/map_editor.gd:363
 #: scripts/ui/tower.gd:80
 msgid "▦ Cuadrícula"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:358
+#: scripts/ui/map_editor.gd:364
 #: scripts/ui/tower.gd:80
 msgid "⬢ Hexágonos"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/map_editor.gd:366
+#: scripts/ui/map_editor.gd:372
 msgid "Gimnasio: %s"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:366
+#: scripts/ui/map_editor.gd:372
 msgid "neutral"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:367
+#: scripts/ui/map_editor.gd:373
 msgid "Estilo del gimnasio (solo cuenta en el campo Gimnasio)"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:382
+#: scripts/ui/map_editor.gd:388
 msgid "Generar al azar"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:383
+#: scripts/ui/map_editor.gd:389
 msgid "Vacío"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:384
+#: scripts/ui/map_editor.gd:390
 msgid "Cambiar tamaño o tablero rehace el mapa."
 msgstr ""
 
-#: scripts/ui/map_editor.gd:387
+#: scripts/ui/map_editor.gd:393
 msgid "Herramienta"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:389
+#: scripts/ui/map_editor.gd:395
 msgid "⛰ Altura"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:389
+#: scripts/ui/map_editor.gd:395
 msgid "🟩 Suelo"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:389
+#: scripts/ui/map_editor.gd:395
 msgid "🌲 Obstáculo"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:390
+#: scripts/ui/map_editor.gd:396
 msgid "🔵 Zona jugador"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:390
+#: scripts/ui/map_editor.gd:396
 msgid "🔴 Zona rival"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:390
+#: scripts/ui/map_editor.gd:396
 msgid "👾 Rival"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:401
+#: scripts/ui/map_editor.gd:407
 msgid "Pincel"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:401
+#: scripts/ui/map_editor.gd:407
 msgid "1 casilla"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:401
+#: scripts/ui/map_editor.gd:407
 msgid "Radio 1"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:401
+#: scripts/ui/map_editor.gd:407
 msgid "Radio 2"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:403
+#: scripts/ui/map_editor.gd:409
 #: scripts/grid/biome.gd:27
 msgid "Suelo"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:405
+#: scripts/ui/map_editor.gd:411
 msgid "Obstáculo"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:406
+#: scripts/ui/map_editor.gd:412
 msgid "Rival"
 msgstr ""
 
-#: scripts/ui/map_editor.gd:423
+#: scripts/ui/map_editor.gd:429
 msgid "Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara"
 msgstr ""
 
@@ -559,7 +559,7 @@ msgid "Continuar"
 msgstr ""
 
 #: scripts/ui/pause_menu.gd:51
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:15
 msgid "Velocidad"
 msgstr ""
 
@@ -999,46 +999,46 @@ msgstr ""
 msgid "Pot %d"
 msgstr ""
 
-#: scripts/ui/tower.gd:714
+#: scripts/ui/tower.gd:712
 msgid "(sin ataques aprendidos por nivel)"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:731
+#: scripts/ui/tower.gd:729
 msgid "%s no reacciona: %s."
 msgstr ""
 
-#: scripts/ui/tower.gd:751
+#: scripts/ui/tower.gd:749
 msgid "¿Abandonar esta subida? Se pierde el equipo (el récord se conserva)."
 msgstr ""
 
-#: scripts/ui/tower.gd:752
+#: scripts/ui/tower.gd:750
 msgid "Abandonar"
 msgstr ""
 
-#: scripts/ui/tower.gd:753
+#: scripts/ui/tower.gd:751
 msgid "Seguir"
 msgstr ""
 
-#: scripts/ui/tower.gd:774
+#: scripts/ui/tower.gd:772
 msgid "Fin de la subida"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:775
+#: scripts/ui/tower.gd:773
 msgid "Llegaste al piso %d. Récord: piso %d."
 msgstr ""
 
-#: scripts/ui/tower.gd:778
+#: scripts/ui/tower.gd:776
 msgid "Tu equipo final:"
 msgstr ""
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/tower.gd:778
+#: scripts/ui/tower.gd:776
 msgid "%s Nv.%d"
 msgstr ""
 
-#: scripts/ui/tower.gd:779
+#: scripts/ui/tower.gd:777
 msgid "Nueva subida"
 msgstr ""
 
@@ -1162,23 +1162,35 @@ msgstr ""
 msgid "HAD"
 msgstr ""
 
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:13
+msgid "Fís."
+msgstr ""
+
+#: scripts/ui/ui_kit.gd:13
+msgid "Esp."
+msgstr ""
+
+#: scripts/ui/ui_kit.gd:13
+msgid "Est."
+msgstr ""
+
+#: scripts/ui/ui_kit.gd:15
 msgid "PS"
 msgstr ""
 
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:15
 msgid "Ataque"
 msgstr ""
 
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:15
 msgid "Defensa"
 msgstr ""
 
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:15
 msgid "At. Esp."
 msgstr ""
 
-#: scripts/ui/ui_kit.gd:12
+#: scripts/ui/ui_kit.gd:15
 msgid "Def. Esp."
 msgstr ""
 
@@ -1630,7 +1642,7 @@ msgid "Estudio"
 msgstr ""
 
 #: scripts/grid/biome.gd:16
-msgid "Librería"
+msgid "Biblioteca"
 msgstr ""
 
 #: scripts/grid/biome.gd:16
@@ -1777,4 +1789,8 @@ msgstr ""
 
 #: scripts/grid/biome.gd:36
 msgid "Coral"
+msgstr ""
+
+#: scripts/grid/biome.gd:37
+msgid "Mesa de lectura"
 msgstr ""

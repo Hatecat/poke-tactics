@@ -7,13 +7,13 @@ enum Kind { MEADOW, FOREST, MOUNTAIN, DESERT, LAKE, SNOW, CAVE, GYM, SWAMP, CITY
 enum Tile { GRASS, DIRT, SAND, ROCK, WATER, SNOW, ICE, FLOOR, FLOOR_LINE, CAVE, BRIDGE, MUD, ROAD, LAVA, WOOD }
 ## Obstáculos: bloquean el paso y no se puede estar encima.
 enum Prop { NONE, TREE, PINE, BOULDER, CACTUS, PILLAR, CRYSTAL, STALAGMITE, PALM, DEAD_TREE, BUILDING, LAMP, PARASOL, MACHINE, TANK, VENT, GRAVE, SHELF,
-	SPOTLIGHT, CAMERA, PLANE, PLANE_PART, CORAL }
+	SPOTLIGHT, CAMERA, PLANE, PLANE_PART, CORAL, DESK }
 
 const NAMES := { # i18n
 	Kind.MEADOW: "Pradera", Kind.FOREST: "Bosque", Kind.MOUNTAIN: "Montaña", Kind.DESERT: "Desierto",
 	Kind.LAKE: "Lago", Kind.SNOW: "Nieve", Kind.CAVE: "Cueva", Kind.GYM: "Gimnasio", Kind.SWAMP: "Pantano",
 	Kind.CITY: "Ciudad", Kind.LAB: "Laboratorio", Kind.VOLCANO: "Volcán", Kind.BEACH: "Playa",
-	Kind.CEMETERY: "Cementerio", Kind.STUDIO: "Estudio", Kind.LIBRARY: "Librería", Kind.AIRPORT: "Aeropuerto",
+	Kind.CEMETERY: "Cementerio", Kind.STUDIO: "Estudio", Kind.LIBRARY: "Biblioteca", Kind.AIRPORT: "Aeropuerto",
 	Kind.UNDERWATER: "Cueva submarina", Kind.TEST: "Test",
 }
 const ICONS := {
@@ -34,6 +34,7 @@ const PROP_NAMES := { # i18n
 	Prop.LAMP: "Farola", Prop.PARASOL: "Sombrilla", Prop.MACHINE: "Máquina", Prop.TANK: "Incubadora",
 	Prop.VENT: "Fumarola", Prop.GRAVE: "Lápida", Prop.SHELF: "Estantería", Prop.SPOTLIGHT: "Foco",
 	Prop.CAMERA: "Cámara", Prop.PLANE: "Avión", Prop.PLANE_PART: "Avión", Prop.CORAL: "Coral",
+	Prop.DESK: "Mesa de lectura",
 }
 const TILE_COLORS := {
 	Tile.GRASS: Color(0.4, 0.66, 0.34), Tile.DIRT: Color(0.58, 0.45, 0.3), Tile.SAND: Color(0.88, 0.78, 0.52),
@@ -594,25 +595,42 @@ static func _cemetery(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictio
 			grid.props[c] = Prop.DEAD_TREE
 
 
-## Librería: suelo de parqué con alfombras en los pasillos centrales y estanterías en filas paralelas, con
-## huecos para pasar, iguales en las dos mitades.
+## Biblioteca: suelo de tarima con alfombras en los pasillos centrales; en cada mitad, dos hileras de
+## estanterías corridas desde las paredes hasta el pasillo, cortadas por un paso; una fila de mesas de lectura
+## más cerca del centro y columnas a los lados de la alfombra. Iguales en las dos mitades (simetría central).
 static func _library(grid: BoardGrid, rng: RandomNumberGenerator, clear: Dictionary) -> void:
 	var mx := grid.width / 2
 	var my := grid.height / 2
 	for c in grid.all_cells():
 		if absi(c.x - mx) <= 1 and c.x != mx + 1 or absi(c.y - my) <= 0:
 			grid.tiles[c] = Tile.FLOOR_LINE  # alfombra
-	var put := func(c: Vector2i) -> void:
+	var put := func(c: Vector2i, prop: Prop) -> void:
 		for m in [c, Vector2i(grid.width - 1 - c.x, grid.height - 1 - c.y)]:
-			if grid.is_inside(m) and not clear.has(m) and grid.tiles[m] == Tile.WOOD:
-				grid.props[m] = Prop.SHELF
-	for y in range(my - 6, my, 2):
-		var x := rng.randi_range(1, 2)
-		while x < grid.width - 1:
-			var run := rng.randi_range(3, 5)
-			for i in run:
-				put.call(Vector2i(x + i, y))
-			x += run + rng.randi_range(1, 2)
+			if grid.is_inside(m) and not clear.has(m) and grid.tiles[m] == Tile.WOOD and grid.props[m] == Prop.NONE:
+				grid.props[m] = prop
+	var aisle := mx - 2  # última columna libre antes de la alfombra (y su simétrica al otro lado)
+	# Hileras de estanterías (cada mitad: filas my-6 y my-4) a ambos lados del pasillo central, con un paso
+	for y in [my - 6, my - 4]:
+		for half in 2:
+			var from := 1 if half == 0 else mx + 2
+			var to := aisle - 1 if half == 0 else grid.width - 2
+			var gap := rng.randi_range(from + 2, to - 2)
+			for x in range(from, to + 1):
+				if absi(x - gap) > (1 if rng.randf() < 0.3 else 0):
+					put.call(Vector2i(x, y), Prop.SHELF)
+	# Mesas de lectura de dos o tres casillas en la fila de my-2, separadas por sillas libres
+	for half in 2:
+		var x := 2 if half == 0 else mx + 3
+		var limit := aisle - 1 if half == 0 else grid.width - 2
+		while x + 1 <= limit:
+			var length := mini(rng.randi_range(2, 3), limit - x + 1)
+			for i in length:
+				put.call(Vector2i(x + i, my - 2), Prop.DESK)
+			x += length + 2
+	# Columnas a los lados de la alfombra, a la altura de las estanterías
+	for y in [my - 6, my - 2]:
+		put.call(Vector2i(aisle, y), Prop.PILLAR)
+		put.call(Vector2i(mx + 1, y), Prop.PILLAR)
 
 
 ## Estudio: plató a oscuras con un escenario elevado de madera en el centro rodeado de cinta de marcas,

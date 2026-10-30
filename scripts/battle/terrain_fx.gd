@@ -415,6 +415,71 @@ void fragment() {
 }
 "
 
+## Tarima: tablas largas a lo largo del eje x, cada fila desplazada, con juntas oscuras entre tablas, un tono
+## por tabla, vetas alargadas y barniz que brilla algo más donde la madera es más lisa. Solo arriba.
+const WOOD_SHADER := "
+shader_type spatial;
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform float wet = 0.0;
+uniform bool instanced = false;  // en una MultiMesh: el color de cada casilla es el de la instancia (sRGB)
+varying vec3 wpos;
+varying vec3 wnormal;
+
+float hash13(vec3 p) {
+	p = fract(p * 0.1031);
+	p += dot(p, p.zyx + 31.32);
+	return fract((p.x + p.y) * p.z);
+}
+
+float vnoise(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(hash13(i), hash13(i + vec3(1, 0, 0)), f.x),
+			mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
+		mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x),
+			mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+
+void vertex() {
+	wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	wnormal = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz;
+}
+
+void fragment() {
+	vec3 c = albedo.rgb;
+	if (instanced) {
+		vec3 s = COLOR.rgb;
+		c = mix(pow((s + vec3(0.055)) / 1.055, vec3(2.4)), s / 12.92, lessThan(s, vec3(0.04045)));
+	}
+	float rough = 0.85;
+	if (wnormal.y > 0.5) {
+		const float WIDTH = 0.19;
+		const float LENGTH = 1.15;
+		float row = floor(wpos.z / WIDTH);
+		float along = wpos.x + hash13(vec3(row, 2.0, 7.0)) * LENGTH;
+		vec2 id = vec2(floor(along / LENGTH), row);
+		float tone = hash13(vec3(id, 3.0));
+		float fy = fract(wpos.z / WIDTH);
+		float fx = fract(along / LENGTH);
+		float seam = min(min(fy, 1.0 - fy) * WIDTH, min(fx, 1.0 - fx) * LENGTH);
+		float gap = smoothstep(0.003, 0.009, seam);
+		// Vetas: ruido muy estirado a lo largo de la tabla, con nudos sueltos
+		float grain = vnoise(vec3(along * 2.5, wpos.z * 55.0, tone * 17.0));
+		float streak = vnoise(vec3(along * 0.8, wpos.z * 14.0, tone * 5.0));
+		float knot = smoothstep(0.05, 0.0, length(vec2(fract(along * 0.9 + tone) - 0.5, (fy - 0.5) * 0.4)) - 0.02)
+			* step(0.8, hash13(vec3(id, 11.0)));
+		c *= mix(0.8, 1.14, tone) * mix(0.9, 1.07, grain) * mix(0.92, 1.05, streak);
+		c *= mix(1.0, 0.6, knot);
+		c *= mix(0.45, 1.0, gap);
+		rough = mix(0.32, 0.6, grain * 0.6 + (1.0 - gap));
+	}
+	ALBEDO = c * (1.0 - 0.25 * wet);
+	ROUGHNESS = mix(rough, 0.2, wet);
+	SPECULAR = 0.45;
+}
+"
+
 ## Cristal: caras planas talladas, lo de detrás desviado y teñido (refracción), velos y vetas por dentro,
 ## bordes que brillan y un latido de luz como el resto de lo que brilla.
 const CRYSTAL_SHADER := "
@@ -499,6 +564,13 @@ static func foliage_material(color: Color, sway: float, flutter := 0.0, vcol := 
 static func stone_material(color: Color) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = shader(STONE_SHADER)
+	m.set_shader_parameter("albedo", color)
+	return m
+
+
+static func wood_material(color: Color) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = shader(WOOD_SHADER)
 	m.set_shader_parameter("albedo", color)
 	return m
 

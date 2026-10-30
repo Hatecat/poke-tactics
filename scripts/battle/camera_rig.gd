@@ -256,6 +256,10 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 		env.fog_enabled = true  # calima de humo y ceniza
 		env.fog_light_color = Color(0.55, 0.32, 0.24)
 		env.fog_density = 0.006
+	elif biome == Biome.Kind.LIBRARY:
+		env.fog_enabled = true  # aire con polvo, cálido, que apaga las salas del fondo
+		env.fog_light_color = Color(0.32, 0.22, 0.13)
+		env.fog_density = 0.012
 	var world_env := WorldEnvironment.new()
 	world_env.name = "WorldEnvironment"
 	world_env.environment = env
@@ -266,6 +270,8 @@ static func build_environment(parent: Node, biome: Biome.Kind) -> void:
 	sun.rotation_degrees = Vector3(-48, SUN_YAW, 0)
 	sun.shadow_enabled = true
 	sun.light_energy = sky_info[2] if cave else minf(sky_info[2] * 1.4, 1.5)  # tope: la arena y la nieve no se queman
+	if biome == Biome.Kind.LIBRARY:
+		sun.light_color = Color(1.0, 0.84, 0.62)  # luz de tarde que entra por los ventanales
 	# Sombras reales: el sol es un disco, no un punto, así que el borde de la sombra se difumina según la
 	# distancia entre el objeto y el suelo (nítida al pie, suave lejos). Su largo y su forma salen de la
 	# geometría de cada objeto: una piedra da una sombra corta y nítida; un árbol, una larga y difusa.
