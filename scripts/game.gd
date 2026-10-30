@@ -77,6 +77,9 @@ var editor_map: MapData
 ## La batalla actual es una prueba lanzada desde el editor de escenarios.
 var testing_map := false
 var rng := RandomNumberGenerator.new()
+## Semilla del próximo combate (0 = al azar). Con la misma semilla, el mismo campo, clima y equipos, y las
+## mismas acciones, el combate sale igual: el modo VS la comparte entre los dos PCs. No se guarda.
+var battle_seed := 0
 
 
 func _ready() -> void:

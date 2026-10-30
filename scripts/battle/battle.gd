@@ -2,6 +2,11 @@ extends Node3D
 ## Controlador de la batalla: monta el tablero, gestiona turnos, input, IA y UI.
 
 enum State { BUSY, DEPLOY, MENU, PICK_MOVE, PICK_TARGET, FACING, GAME_OVER }
+## Quién decide las acciones de un equipo: el jugador con clics o la IA.
+enum Driver { HUMAN, AI }
+
+## Se emite al aplicar una intención (ver apply_intent), con "unit", "turn" y la huella del estado al terminarla.
+signal intent_applied(entry: Dictionary)
 
 ## Tamaño de los tableros generados al azar.
 const BOARD_SIZE := Vector2i(20, 20)
@@ -50,6 +55,13 @@ var state := State.BUSY
 var selected_move: MoveData
 var hover_cell := Vector2i(-1, -1)
 var rng := RandomNumberGenerator.new()
+## Intenciones aplicadas en este combate, en orden (las de intent_applied).
+var intent_log: Array[Dictionary] = []
+var _applying := false
+## Quién mueve cada equipo (los aliados de la historia, `Unit.ally_ai`, siempre los lleva la IA).
+var drivers: Array[Driver] = [Driver.HUMAN, Driver.AI]
+## El turno de la unidad activa ya terminó (se están aplicando sus efectos de fin de turno).
+var _turn_over := false
 
 var _reach := {} # celda -> celda anterior (para reconstruir caminos)
 var _destinations: Array[Vector2i] = []
@@ -108,7 +120,10 @@ var _dialogue: DialogueBox
 
 
 func _ready() -> void:
-	rng.randomize()
+	if Game.battle_seed != 0:
+		rng.seed = Game.battle_seed
+	else:
+		rng.randomize()
 	Engine.time_scale = Game.battle_time_scale()
 	if _tower():
 		# Torre de Batallas: equipo, rivales salvajes, campo y clima los decide el piso.
@@ -162,6 +177,7 @@ func _start_battle() -> void:
 	var zones: Array = []
 	_story_fired.clear()
 	_turn_count = 0
+	intent_log.clear()
 	if _story():
 		var built := StoryRun.build_grid(_story_step.get("lugar", {}))
 		grid = built.grid
@@ -509,6 +525,7 @@ func _next_turn() -> void:
 	if previous:
 		previous.set_active(false)
 	active = turns.advance(units)
+	_turn_over = false
 	active.set_active(true)
 	if _weather_turns > 0:
 		_weather_turns -= 1
@@ -541,13 +558,15 @@ func _next_turn() -> void:
 		await _wait(0.6)
 		_next_turn.call_deferred()
 		return
-	if active.team == 0 and not active.ally_ai:
+	if _human_turn():
 		_show_menu()
 	else:
 		_set_actions_enabled(false)
 		await _run_ai(active)
-		_ai_face(active)
-		_end_turn()
+		# La IA mira hacia el rival más cercano y termina el turno (si no terminó ya: debilitado o fin del combate).
+		if not _turn_over and state != State.GAME_OVER:
+			var foe := effects._nearest_foe(active)
+			apply_intent({"kind": "face", "to": foe.cell} if foe else {"kind": "wait"})
 
 
 ## Al empezar el turno: lo que decide si puede actuar (sueño, congelación, parálisis,
@@ -614,6 +633,7 @@ func _end_of_turn(u: Unit) -> void:
 
 
 func _end_turn() -> void:
+	_turn_over = true
 	state = State.BUSY
 	_set_actions_enabled(false)
 	_board.clear_highlights()
@@ -628,6 +648,8 @@ func _end_turn() -> void:
 	_next_turn.call_deferred()
 
 
+## Después de moverse o actuar: fin del combate, fin del turno si se debilitó o, si juega el jugador, el menú o
+## la orientación. La IA sigue su turno por su cuenta.
 func _after_action() -> void:
 	if _check_game_over():
 		return
@@ -635,6 +657,8 @@ func _after_action() -> void:
 	if not active.is_alive():
 		# Se debilitó con su propio ataque (Doble Filo, Explosión...): no hay nada que orientar.
 		_end_turn()
+	elif not _human_turn():
+		return
 	elif moved and acted:
 		_choose_facing()
 	else:
@@ -662,13 +686,6 @@ func _choose_facing() -> void:
 func _face_cell(u: Unit, c: Vector2i) -> void:
 	var dir := grid.direction_towards(u.cell, c)
 	u.face_towards(grid.to_world(grid.step(u.cell, dir)) + (u.position - grid.to_world(u.cell)))
-
-
-## La IA mira hacia el rival más cercano.
-func _ai_face(u: Unit) -> void:
-	var foe := effects._nearest_foe(u)
-	if foe and u.is_alive():
-		_face_cell(u, foe.cell)
 
 
 func _check_game_over() -> bool:
@@ -734,32 +751,17 @@ func _begin_pick_target(move: MoveData) -> void:
 func _on_cell_clicked(c: Vector2i) -> void:
 	match state:
 		State.FACING:
-			_face_cell(active, c)
-			_end_turn()
+			apply_intent({"kind": "face", "to": c})
 		State.DEPLOY:
 			_deploy_click(c)
 		State.PICK_MOVE:
 			if c in _destinations:
-				state = State.BUSY
-				_set_actions_enabled(false)
-				_board.clear_highlights()
-				await _move_unit(active, _path_to(c))
-				moved = true
-				_after_action()
+				apply_intent({"kind": "move", "to": c})
 		State.PICK_TARGET:
 			if c in _targets and _throwing:
-				state = State.BUSY
-				_throwing = false
-				_set_actions_enabled(false)
-				await _throw_ball(c)
-				acted = true
-				_after_action()
+				apply_intent({"kind": "ball", "ball": _ball_kind, "target": c})
 			elif c in _targets:
-				state = State.BUSY
-				_set_actions_enabled(false)
-				await _use_move(active, selected_move, c)
-				acted = true
-				_after_action()
+				apply_intent({"kind": "attack", "move": selected_move.id, "target": c})
 
 
 func _on_hover(c: Vector2i) -> void:
@@ -810,11 +812,145 @@ func _on_hover(c: Vector2i) -> void:
 func _cancel() -> void:
 	_throwing = false
 	if state == State.FACING:
-		_end_turn()
+		apply_intent({"kind": "wait"})
 		return
 	if state == State.PICK_MOVE or state == State.PICK_TARGET:
 		_preview_label.text = ""
 		_show_menu()
+
+
+# --- Intenciones -------------------------------------------------------------
+# Cada acción de un turno (clic del jugador, IA o, en el modo VS, el rival por red) se describe como datos y
+# pasa por apply_intent, así que todas siguen el mismo camino y dos PCs con la misma semilla simulan igual:
+#   {"kind": "move", "to": celda}                    moverse (por el camino más corto, como con el clic)
+#   {"kind": "attack", "move": id, "target": celda}  usar un ataque
+#   {"kind": "ball", "ball": tipo, "target": celda}  lanzar una Poké Ball (Torre)
+#   {"kind": "face", "to": celda}                    mirar hacia `to` y terminar el turno
+#   {"kind": "wait"}                                 terminar el turno sin girarse
+# Opcionales: "unit" (índice en `units`) y "turn" (`_turn_count`); si vienen y no cuadran, no es legal.
+
+## Ejecuta una acción de la unidad activa. Si no es legal ahora mismo devuelve false sin tocar nada; si lo es,
+## la aplica, la apunta en intent_log, emite intent_applied y sigue como el clic (menú, orientación o turno
+## siguiente; la IA continúa por su cuenta).
+func apply_intent(action: Dictionary) -> bool:
+	if not _intent_legal(action):
+		return false
+	_applying = true
+	var entry := action.duplicate()
+	entry["unit"] = units.find(active)
+	entry["turn"] = _turn_count
+	state = State.BUSY
+	_throwing = false
+	_set_actions_enabled(false)
+	_board.clear_highlights()
+	match action.kind:
+		"move":
+			await _move_unit(active, _path_to(action.to))
+			moved = true
+		"attack":
+			await _use_move(active, _move_by_id(active, action.move), action.target)
+			acted = true
+		"ball":
+			_ball_kind = action.ball
+			await _throw_ball(action.target)
+			acted = true
+		"face":
+			_face_cell(active, action.to)
+	_applying = false
+	entry["digest"] = state_digest()
+	intent_log.append(entry)
+	intent_applied.emit(entry)
+	if action.kind in ["face", "wait"]:
+		_end_turn()
+	else:
+		_after_action()
+	return true
+
+
+## La intención se puede aplicar ahora: le toca a esa unidad, en ese turno, y la acción es posible.
+func _intent_legal(action: Dictionary) -> bool:
+	if _applying or _turn_over or active == null or state in [State.DEPLOY, State.GAME_OVER]:
+		return false
+	if action.has("unit") and action.unit != units.find(active):
+		return false
+	if action.has("turn") and action.turn != _turn_count:
+		return false
+	match action.get("kind"):
+		"move":
+			if moved or not active.is_alive() or not active.can_move() or typeof(action.get("to")) != TYPE_VECTOR2I:
+				return false
+			_compute_reach(active)
+			return action.to in _destinations
+		"attack":
+			if acted or not active.is_alive() or not active.can_attack() or typeof(action.get("target")) != TYPE_VECTOR2I:
+				return false
+			var move := _move_by_id(active, action.get("move"))
+			return move != null and action.target in _move_targets(active, move, active.footprint)
+		"ball":
+			if acted or not active.is_alive() or not _tower() or _trainer_battle() or typeof(action.get("target")) != TYPE_VECTOR2I:
+				return false
+			var kind: Variant = action.get("ball")
+			return kind is String and TowerRun.BALLS.has(kind) and _balls_left(kind) > 0 and action.target in _ball_targets()
+		"face":
+			return active.is_alive() and typeof(action.get("to")) == TYPE_VECTOR2I and grid.is_inside(action.to)
+		"wait":
+			return true
+	return false
+
+
+## Ataque de `u` con ese id entre los que puede usar ahora (Forcejeo incluido); null si no.
+func _move_by_id(u: Unit, id: Variant) -> MoveData:
+	for mv in u.usable_moves():
+		if mv.id == id:
+			return mv
+	return null
+
+
+## Le toca a un Pokémon que mueve el jugador (no la IA).
+func _human_turn() -> bool:
+	return active != null and _driver(active) == Driver.HUMAN
+
+
+func _driver(u: Unit) -> Driver:
+	return Driver.AI if u.ally_ai else drivers[u.team]
+
+
+## Huella del estado que decide el combate: turno, clima, campo, RNG y cada Pokémon. Dos PCs que simulan la
+## misma partida deben tener la misma después de cada intención (modo VS).
+func state_digest() -> int:
+	var f := effects.field
+	var values: Array = [_turn_count, units.find(active), moved, acted, _extra_ct, weather, base_weather, _weather_turns,
+		rng.state, f.zones, f.traps, f.terrain, f.terrain_turns, f.trick_room, f.gravity, f.tailwind, _balls_used]
+	for u in units:
+		values.append([u.team, u.data.id, u.level, u.cell, u.hp, u.max_hp, u.status, u.status_turns, u.ct, u.stages,
+			u.stage_turns, u.pp, u.ability, u.item, u.consumed_item, u.choice_lock, u.volatiles, u.protect_streak,
+			u.facing, u.position, u.moves])
+	return Protocol.digest(_digest_value(values))
+
+
+## Valor apto para la huella: Pokémon → su índice, recursos → su id, floats redondeados (el último bit puede
+## variar entre sistemas) y diccionarios con las claves en orden.
+func _digest_value(v: Variant) -> Variant:
+	match typeof(v):
+		TYPE_FLOAT:
+			return snappedf(v, 0.001)
+		TYPE_VECTOR2, TYPE_VECTOR3:
+			return v.snapped(Vector3.ONE * 0.001 if v is Vector3 else Vector2.ONE * 0.001)
+		TYPE_ARRAY:
+			return (v as Array).map(_digest_value)
+		TYPE_DICTIONARY:
+			var pairs: Array = []
+			for k in v:
+				pairs.append([_digest_value(k), _digest_value(v[k])])
+			pairs.sort_custom(func(a: Array, b: Array) -> bool: return var_to_str(a[0]) < var_to_str(b[0]))
+			return pairs
+		TYPE_OBJECT:
+			if v is Unit:
+				return ["unit", units.find(v)]
+			if v is Resource:
+				return v.get("id") if v.get("id") != null else v.resource_path
+			return v.get_class()
+	return v
 
 
 ## Área real de un ataque lanzado desde `from` (celdas del atacante) hacia `target`:
@@ -1560,11 +1696,9 @@ func _run_ai(u: Unit) -> void:
 	if best_move == null:
 		best_dest = _closest_to_enemy(u, options)
 	if best_dest != u.cell:
-		await _move_unit(u, _path_to(best_dest))
-		moved = true
+		await apply_intent({"kind": "move", "to": best_dest})
 	if best_move:
-		await _use_move(u, best_move, best_target)
-		acted = true
+		await apply_intent({"kind": "attack", "move": best_move.id, "target": best_target})
 
 
 ## Difícil: cuánto peligro corre `u` en su posición actual (rivales que pueden alcanzarlo
@@ -1844,14 +1978,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_ESCAPE:
 				# Esc cancela lo que se esté eligiendo; si no hay nada, abre la pausa.
 				if state == State.FACING:
-					_end_turn()
+					apply_intent({"kind": "wait"})
 				elif state == State.PICK_MOVE or state == State.PICK_TARGET:
 					_cancel()
 				else:
 					_pause.open()
 			KEY_ENTER, KEY_KP_ENTER:
 				if state == State.FACING:
-					_end_turn()
+					apply_intent({"kind": "wait"})
 			KEY_R:
 				if state == State.GAME_OVER:
 					_start_battle()
@@ -2212,12 +2346,7 @@ func _begin_pick_ball(kind: String) -> void:
 	_throwing = true
 	_ball_kind = kind
 	selected_move = null
-	_targets.clear()
-	for foe in units:
-		if foe.team == 1 and foe.is_alive():
-			for c in foe.footprint:
-				if grid.distance_to_set(active.footprint, c) <= BALL_RANGE:
-					_targets.append(c)
+	_targets = _ball_targets()
 	var reach: Array[Vector2i] = []
 	for c in active.footprint:
 		for n in grid.cells_in_range(c, 1, BALL_RANGE):
@@ -2228,6 +2357,17 @@ func _begin_pick_ball(kind: String) -> void:
 	_board.highlight(_ball_reach, COLOR_BALL_RANGE)
 	_board.highlight(_targets, COLOR_RANGE)
 	_hint_label.text = tr("%s: elige un Pokémon salvaje (alcance %d · clic derecho: cancelar)") % [tr(TowerRun.BALLS[kind].name), BALL_RANGE]
+
+
+## Casillas de los salvajes al alcance de una Poké Ball lanzada por la unidad activa.
+func _ball_targets() -> Array[Vector2i]:
+	var found: Array[Vector2i] = []
+	for foe in units:
+		if foe.team == 1 and foe.is_alive():
+			for c in foe.footprint:
+				if grid.distance_to_set(active.footprint, c) <= BALL_RANGE:
+					found.append(c)
+	return found
 
 
 func _throw_ball(target: Vector2i) -> void:
