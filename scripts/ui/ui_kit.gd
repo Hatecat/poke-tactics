@@ -437,6 +437,43 @@ static func accent_card_style(color: Color) -> StyleBoxFlat:
 	return _styles[key]
 
 
+## Da a un botón los estados de CardButton con una franja del color dado a la izquierda (botones de ataque).
+## Los estilos se crean una vez por color.
+static func accent_button(b: Button, color: Color) -> void:
+	var key := "accent_button|" + color.to_html()
+	if not _styles.has(key):
+		var t := theme()
+		var states := {}
+		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			var st: StyleBoxFlat = t.get_stylebox(state, CARD_BUTTON).duplicate()
+			st.border_color = color if state in ["normal", "disabled"] else st.border_color
+			st.border_width_left = 6
+			st.content_margin_left = SPACE_4
+			states[state] = st
+		_styles[key] = states
+	b.theme_type_variation = CARD_BUTTON
+	for state: String in _styles[key]:
+		b.add_theme_stylebox_override(state, _styles[key][state])
+
+
+## Barra de PS: verde, amarilla o roja según lo que queda (estilos compartidos).
+static func hp_bar(width := 200.0) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(width, 8)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_theme_stylebox_override("background", flat_style(Color(1, 1, 1, 0.08), 3, 0))
+	return bar
+
+
+static func set_hp(bar: ProgressBar, hp: int, max_hp: int) -> void:
+	bar.max_value = max_hp
+	bar.value = hp
+	var ratio := float(hp) / maxf(1.0, max_hp)
+	var color := SUCCESS if ratio > 0.5 else (ACCENT if ratio > 0.2 else DANGER)
+	bar.add_theme_stylebox_override("fill", flat_style(color, 3, 0))
+
+
 ## Fuente de los títulos: la de siempre con más peso (sin empaquetar fuentes nuevas).
 static func bold_font() -> FontVariation:
 	if not _bold:

@@ -74,6 +74,7 @@ var _cam_rig: CameraRig
 var _camera: Camera3D
 
 var _info_label: RichTextLabel
+var _hp_bar: ProgressBar
 var _move_button: Button
 var _wait_button: Button
 var _attack_buttons: Array[Button] = []
@@ -1880,6 +1881,9 @@ func _build_ui() -> void:
 	_info_label.scroll_active = false
 	_info_label.custom_minimum_size.x = 300
 	left_box.add_child(_info_label)
+	_hp_bar = UiKit.hp_bar(300)
+	_hp_bar.visible = false
+	left_box.add_child(_hp_bar)
 	left_box.add_child(HSeparator.new())
 	_actions_box = VBoxContainer.new()
 	left_box.add_child(_actions_box)
@@ -1892,9 +1896,9 @@ func _build_ui() -> void:
 	_deploy_box.add_theme_constant_override("separation", 8)
 	_deploy_box.visible = false
 	left_box.add_child(_deploy_box)
-	var deploy_help := UiKit.label(tr("Elige un Pokémon tuyo y luego\nuna casilla azul para moverlo."), 15, Color(1, 1, 1, 0.75))
+	var deploy_help := UiKit.hint(tr("Elige un Pokémon tuyo y luego\nuna casilla azul para moverlo."))
 	_deploy_box.add_child(deploy_help)
-	var go := UiKit.button(tr("¡Comenzar combate!"), _finish_deploy, 20)
+	var go := UiKit.primary_button(tr("¡Comenzar combate!"), _finish_deploy, 20)
 	go.custom_minimum_size.y = 48
 	_deploy_box.add_child(go)
 	# Diálogos de la historia: en su propia capa, por encima de los paneles del combate.
@@ -1916,6 +1920,7 @@ func _build_ui() -> void:
 	right.anchor_right = 1.0
 	right.offset_left = -236
 	right.offset_right = -16
+	right.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	var right_box := VBoxContainer.new()
 	right.add_child(right_box)
 	if _tower():
@@ -1933,8 +1938,8 @@ func _build_ui() -> void:
 	_weather_label.custom_minimum_size.x = 196
 	right_box.add_child(_weather_label)
 	right_box.add_child(HSeparator.new())
-	var title := Label.new()
-	title.text = tr("Orden si terminas ahora")
+	var title := UiKit.section(tr("Orden si terminas ahora"), 16)
+	title.add_theme_color_override("font_color", UiKit.NEON)
 	right_box.add_child(title)
 	right_box.add_child(HSeparator.new())
 	_order_box = VBoxContainer.new()
@@ -1991,9 +1996,20 @@ func _build_ui() -> void:
 	_hint_label.offset_top = 16
 	_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_hint_label.add_theme_constant_override("outline_size", 6)
-	_hint_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	root.add_child(_hint_label)
+	# Pastilla detrás de la pista: solo se ve cuando hay texto.
+	_hint_label.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_hint_label.offset_top = 0
+	_hint_label.add_theme_font_override("font", UiKit.bold_font())
+	var hint_pill := UiKit.panel(UiKit.CARD)
+	hint_pill.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	hint_pill.offset_top = 12
+	hint_pill.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	hint_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hint_pill.self_modulate.a = 0.0
+	hint_pill.add_child(_hint_label)
+	_hint_label.minimum_size_changed.connect(func() -> void:
+		hint_pill.self_modulate.a = 0.0 if _hint_label.text.is_empty() else 0.92)
+	root.add_child(hint_pill)
 
 	var keys := Label.new()
 	keys.text = tr("Clic: seleccionar · Clic der.: cancelar · Esc: pausa · Q/E: rotar · Rueda: zoom · WASD/botón central: mover cámara")
@@ -2003,9 +2019,20 @@ func _build_ui() -> void:
 	keys.offset_right = -16
 	keys.offset_bottom = -16
 	keys.add_theme_font_size_override("font_size", 14)
-	keys.add_theme_constant_override("outline_size", 5)
-	keys.add_theme_color_override("font_outline_color", Color.BLACK)
-	root.add_child(keys)
+	keys.add_theme_color_override("font_color", UiKit.TEXT_DIM)
+	keys.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	keys.offset_right = 0
+	keys.offset_bottom = 0
+	var keys_pill := UiKit.panel(UiKit.CARD)
+	keys_pill.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	keys_pill.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	keys_pill.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	keys_pill.offset_right = -16
+	keys_pill.offset_bottom = -12
+	keys_pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	keys_pill.self_modulate.a = 0.85
+	keys_pill.add_child(keys)
+	root.add_child(keys_pill)
 
 	_banner_box = VBoxContainer.new()
 	_banner_box.set_anchors_preset(Control.PRESET_CENTER)
@@ -2016,9 +2043,10 @@ func _build_ui() -> void:
 	root.add_child(_banner_box)
 	_banner = Label.new()
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_banner.add_theme_font_size_override("font_size", 56)
+	_banner.theme_type_variation = UiKit.TITLE
+	_banner.add_theme_font_size_override("font_size", 60)
 	_banner.add_theme_constant_override("outline_size", 14)
-	_banner.add_theme_color_override("font_outline_color", Color.BLACK)
+	_banner.add_theme_constant_override("shadow_offset_y", 6)
 	_banner_box.add_child(_banner)
 	_banner_buttons = HBoxContainer.new()
 	_banner_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -2031,6 +2059,7 @@ func _build_ui() -> void:
 	_turn_flash.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_turn_flash.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_turn_flash.add_theme_font_size_override("font_size", 30)
+	_turn_flash.add_theme_font_override("font", UiKit.bold_font())
 	_turn_flash.add_theme_constant_override("outline_size", 10)
 	_turn_flash.add_theme_color_override("font_outline_color", Color.BLACK)
 	_turn_flash.modulate.a = 0.0
@@ -2044,16 +2073,16 @@ func _tower() -> bool:
 func _fill_banner_buttons(victory: bool) -> void:
 	UiKit.clear(_banner_buttons)
 	if _tower():
-		_banner_buttons.add_child(UiKit.button(tr("Continuar"), _finish_tower.bind(victory), 22))
+		_banner_buttons.add_child(UiKit.primary_button(tr("Continuar"), _finish_tower.bind(victory), 22))
 		return
 	if _story():
 		if victory:
-			_banner_buttons.add_child(UiKit.button(tr("Continuar"), _finish_story, 22))
+			_banner_buttons.add_child(UiKit.primary_button(tr("Continuar"), _finish_story, 22))
 		else:
-			_banner_buttons.add_child(UiKit.button(tr("Reintentar"), _start_battle, 22))
+			_banner_buttons.add_child(UiKit.primary_button(tr("Reintentar"), _start_battle, 22))
 			_banner_buttons.add_child(UiKit.button(tr("Menú principal"), _go_to_menu, 22))
 		return
-	_banner_buttons.add_child(UiKit.button(tr("Revancha"), _start_battle, 22))
+	_banner_buttons.add_child(UiKit.primary_button(tr("Revancha"), _start_battle, 22))
 	_banner_buttons.add_child(UiKit.button(tr("Nuevo rival"), func() -> void:
 		Game.roll_enemy_team()
 		enemy_team = Game.enemy_team.duplicate()
@@ -2294,8 +2323,10 @@ func _panel(parent: Control, pos: Vector2, min_size: Vector2) -> PanelContainer:
 
 func _button(text: String, callback: Callable) -> Button:
 	var b := Button.new()
+	b.theme_type_variation = UiKit.CARD_BUTTON
 	b.text = text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.custom_minimum_size.y = UiKit.CONTROL_H
 	b.pressed.connect(callback)
 	return b
 
@@ -2320,15 +2351,7 @@ func _rebuild_attack_buttons(u: Unit) -> void:
 		var shown_type := Combat.move_type(move)
 		var b := UiKit.move_button(move, tr(move.display_name), pp_text, _begin_pick_target.bind(move), shown_type)
 		b.set_meta("no_pp", left <= 0)
-		var accent := StyleBoxFlat.new()
-		accent.bg_color = Color(0.18, 0.22, 0.3)
-		accent.border_color = TypeChart.color(shown_type)
-		accent.border_width_left = 6
-		accent.set_corner_radius_all(6)
-		accent.content_margin_left = 14
-		accent.content_margin_top = 8
-		accent.content_margin_bottom = 8
-		b.add_theme_stylebox_override("normal", accent)
+		UiKit.accent_button(b, TypeChart.color(shown_type))
 		_actions_box.add_child(b)
 		_attack_buttons.append(b)
 	if _tower() and not _trainer_battle():
@@ -2407,6 +2430,8 @@ func _refresh_info(u: Unit) -> void:
 			boosts.append(tr("[color=#%s]%s %+d[/color] (%d t.)") % ["ffaa55" if u.stages[key] > 0 else "6fa0ff",
 				tr(Unit.STAT_SHORT[key]), u.stages[key], u.stage_turns.get(key, 0)])
 	var vols := u.volatiles_text()
+	UiKit.set_hp(_hp_bar, u.hp, u.max_hp)
+	_hp_bar.visible = true
 	_info_label.text = tr("[b]%s[/b]  Nv.%d\n%s\n[font_size=14]Habilidad: %s · Objeto: %s[/font_size]\nPS %d/%d%s\n%sAtq %d · Def %d\nAtE %d · DfE %d\nVel %d · CT %d\nMov %s · Salto %d · Talla %s\n%s[font_size=14]Débil a: %s[/font_size]") % [
 		u.display_name(), u.level, " / ".join(types), Abilities.display_name(u.ability), tr(u.item.display_name) if u.item else "—", u.hp, u.max_hp,
 		("  (" + st + ")") if st else "", ("[color=#cc99ff]%s[/color]\n" % vols) if vols else "",
@@ -2430,7 +2455,14 @@ func _refresh_turn_order() -> void:
 		var l := Label.new()
 		l.text = "%s%d. %s" % ["▶ " if i == 0 else "   ", i + 1, order[i].display_name()]
 		l.add_theme_color_override("font_color", Unit.TEAM_COLORS[order[i].team].lightened(0.3))
-		_order_box.add_child(l)
+		if i == 0:
+			# El que actúa ahora, en una tarjeta marcada.
+			l.add_theme_font_override("font", UiKit.bold_font())
+			var card := UiKit.panel(UiKit.CARD_SELECTED)
+			card.add_child(l)
+			_order_box.add_child(card)
+		else:
+			_order_box.add_child(l)
 
 
 func _flash_turn(text: String, color: Color) -> void:
