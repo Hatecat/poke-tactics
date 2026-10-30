@@ -7,7 +7,11 @@ extends SceneTree
 ##     POKE_TACTICS_NO_SAVE=1 godot --headless --fixed-fps 60 --path . --script tools/vs_match_test.gd -- join [partidas] [puerto] [semilla]
 ##
 ## Un quinto argumento cambia lo que hace el invitado en la primera partida, para probar los finales: "abandona"
-## (cierra la red en el turno 6), "rinde" (se rinde en el turno 6) o "mal" (usa otra semilla: se desincroniza).
+## (cierra la red en el turno 6), "rinde" (se rinde en el turno 6), "mal" (usa otra semilla: se desincroniza) o
+## "corta" (en el turno 6 se le corta la conexión de golpe: con relay debe reconectar y seguir).
+##
+## Con la variable de entorno VS_RELAY=1 los dos van por el servidor de salas (tools/vs_server.gd en ese
+## puerto) con emparejamiento rápido; el primero en llegar crea la sala y hace de anfitrión.
 ##
 ## tools/vs_match.sh lanza los dos y compara sus resultados. Sale con 1 si alguna partida se desincroniza, no
 ## termina o se agota el tiempo.
@@ -72,7 +76,12 @@ func _run() -> void:
 		if _results.size() < _games:
 			printerr("[%s] red: %s" % [_role, code])
 			_finish(1))
-	var err: Error = _net.host(port) if _role == "host" else _net.join("127.0.0.1", port)
+	var err: Error
+	if OS.get_environment("VS_RELAY") == "1":
+		_net.connected.connect(func() -> void: _net.send({"t": "room_join", "code": ""}), CONNECT_ONE_SHOT)
+		err = _net.join_relay("127.0.0.1", port)
+	else:
+		err = _net.host(port) if _role == "host" else _net.join("127.0.0.1", port)
 	if err != OK:
 		printerr("[%s] no se pudo abrir la red" % _role)
 		_finish(1)
@@ -107,12 +116,12 @@ func _on_message(msg: Dictionary) -> void:
 	match msg.t:
 		"ready":
 			_their_team = msg.team
-			if _role == "host":
+			if _net.side == 0:
 				var start: Dictionary = _vm.make_start(_team_data, _their_team, randi() % 2, -1, [_net.nick, _net.opponent.nick])
 				_net.send(start)
 				_begin(start, 0)
 		"start":
-			if _role == "join":
+			if _net.side == 1:
 				_begin(msg, 1)
 
 
@@ -142,13 +151,16 @@ func _play_one() -> String:
 	var shown := -1
 	while b._vs_result.is_empty() and b._turn_count <= MAX_TURNS:
 		await process_frame
-		if _mode in ["abandona", "rinde"] and b._turn_count >= 6:
+		if _mode in ["abandona", "rinde", "corta"] and b._turn_count >= 6:
 			print("[%s] %s en el turno %d" % [_role, _mode, b._turn_count])
 			if _mode == "abandona":
 				_net.close()
 				_finish(0)
 				return "abandona"
-			b._surrender()
+			if _mode == "corta":
+				_net._peer.close()
+			else:
+				b._surrender()
 			_mode = ""
 		if b._turn_count != shown and b._turn_count % 10 == 0:
 			shown = b._turn_count

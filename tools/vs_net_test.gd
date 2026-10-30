@@ -5,7 +5,8 @@ extends SceneTree
 ##
 ## Roles:
 ##   host           aloja con `Net.host` y devuelve los "intent" que le lleguen
-##   join | relay   se conecta (`Net.join` / `Net.join_relay`), manda PINGS intents, mide el RTT y se despide
+##   join | relay   se conecta (`Net.join` / `Net.join_relay` con emparejamiento rápido), manda PINGS intents,
+##                  mide el RTT y se despide
 ##   bad-version    saluda con otra versión del protocolo: espera el rechazo "version"
 ##   bad-data       saluda con otra huella de datos: espera el rechazo "data"
 ##   unreachable    se conecta a un puerto sin nadie: espera el fallo "unreachable"
@@ -41,7 +42,10 @@ func _run() -> void:
 	if _role == "host" and args.size() > 1:
 		port = int(args[1])
 	_net.nick = "Prueba-" + _role
-	_net.connected.connect(func() -> void: print("[%s] saludo aceptado (protocolo %d, datos %s)" % [_role, Protocol.VERSION, Protocol.data_hash()]))
+	_net.connected.connect(func() -> void:
+		print("[%s] saludo aceptado (protocolo %d, datos %s)" % [_role, Protocol.VERSION, Protocol.data_hash()])
+		if _role == "relay":
+			_net.send({"t": "room_join", "code": ""}))
 	_net.opponent_found.connect(_on_opponent)
 	_net.message.connect(_on_message)
 	_net.opponent_left.connect(func(code: String) -> void: print("[%s] el rival se fue: %s" % [_role, Protocol.reason_text(code)]))
@@ -98,14 +102,14 @@ func _on_opponent() -> void:
 func _ping() -> void:
 	var n := _rtts.size()
 	_sent[n] = Time.get_ticks_usec()
-	_net.send({"t": "intent", "n": n})
+	_net.send({"t": "intent", "k": n})
 
 
 func _on_message(msg: Dictionary) -> void:
 	match msg.t:
 		"intent":
 			if msg.get("echo", false):
-				_rtts.append((Time.get_ticks_usec() - _sent[msg.n]) / 1000.0)
+				_rtts.append((Time.get_ticks_usec() - _sent[msg.k]) / 1000.0)
 				if _rtts.size() < PINGS:
 					_ping()
 				else:
@@ -116,7 +120,7 @@ func _on_message(msg: Dictionary) -> void:
 					_net.send({"t": "ready"})
 					_finish(0)
 			else:
-				_net.send({"t": "intent", "n": msg.n, "echo": true})
+				_net.send({"t": "intent", "k": msg.k, "echo": true})
 		"ready":
 			print("[%s] el rival terminó; RTT ENet %d ms" % [_role, _net.rtt()])
 			_finish(0)

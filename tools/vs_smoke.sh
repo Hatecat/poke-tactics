@@ -2,7 +2,8 @@
 # Prueba de humo de la red del modo VS en esta máquina (procesos headless con tools/vs_net_test.gd):
 #   1. directo: anfitrión e invitado se saludan e intercambian intents
 #   2. el anfitrión rechaza otra versión y otros datos
-#   3. relay: tools/vs_server.gd empareja a dos clientes y reenvía; también rechaza versión y datos
+#   3. relay: tools/vs_server.gd empareja a dos clientes y reenvía; también rechaza versión y datos;
+#      salas, emparejamiento rápido y reconexión con tools/vs_lobby_test.gd
 #   4. dirección sin nadie: "unreachable"
 # Sale con 0 si todo va bien. Uso: tools/vs_smoke.sh [puerto]
 set -uo pipefail
@@ -42,7 +43,7 @@ pkill -f "vs_net_test.gd -- host $P2"; wait "$HOST" 2>/dev/null
 
 echo "== relay"
 P3=$((PORT + 2))
-"$G" --headless --path . --script tools/vs_server.gd -- "$P3" 2>&1 | grep -v '^Godot Engine\|^$' | sed 's/^/  srv| /' & SERVER=$!
+"$G" --headless --path . --script tools/vs_server.gd -- "$P3" --quiet 2>&1 | grep -v '^Godot Engine\|^$' | sed 's/^/  srv| /' & SERVER=$!
 sleep 1
 run bad bad-version 127.0.0.1 "$P3"; check "servidor rechaza otra versión" $?
 run bad bad-data 127.0.0.1 "$P3"; check "servidor rechaza otros datos" $?
@@ -50,6 +51,8 @@ run A relay 127.0.0.1 "$P3" & A=$!
 sleep 0.5
 run B relay 127.0.0.1 "$P3"; check "relay: segundo cliente" $?
 wait "$A"; check "relay: primer cliente" $?
+"$G" --headless --path . --script tools/vs_lobby_test.gd -- "$P3" 2>&1 | grep -E '^(OK|FALLO)' | sed 's/^/  salas| /'
+check "salas y reconexión (vs_lobby_test)" "${PIPESTATUS[0]}"
 pkill -f "tools/vs_server.gd -- $P3"; wait "$SERVER" 2>/dev/null
 
 echo "== sin nadie"

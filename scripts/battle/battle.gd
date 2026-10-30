@@ -164,6 +164,10 @@ func _ready() -> void:
 		Net.message.connect(_on_net_message)
 		Net.opponent_left.connect(_on_opponent_gone)
 		Net.failed.connect(_on_opponent_gone)
+		Net.reconnecting.connect(_on_link_state.bind("reconnecting"))
+		Net.reconnected.connect(_on_link_state.bind("reconnected"))
+		Net.opponent_paused.connect(_on_link_state.bind("paused"))
+		Net.opponent_back.connect(_on_link_state.bind("back"))
 	else:
 		topology = Game.topology
 		player_team = Game.player_team.duplicate()
@@ -2829,9 +2833,10 @@ func _surrender() -> void:
 	_vs_finish("gave_up")
 
 
-func _on_opponent_gone(_code: String) -> void:
+## El rival se fue ("left": gano por abandono) o se perdió la conexión ("lost": sin resultado).
+func _on_opponent_gone(code: String) -> void:
 	if state != State.GAME_OVER:
-		_vs_finish("left")
+		_vs_finish("left" if code == "left" else "lost")
 	elif _rematch_button:
 		_rematch_button.disabled = true
 		_hint_label.text = tr("{rival} se ha ido.").format({"rival": _rival_nick()})
@@ -2865,20 +2870,38 @@ func _vs_finish(result: String) -> void:
 			_banner.text = tr("Te has rendido.")
 		"desync":
 			_banner.text = tr("Las partidas se han desincronizado: termina sin resultado.")
+		"lost":
+			_banner.text = tr("Se perdió la conexión: termina sin resultado.")
 	_log("[b]%s[/b]" % _banner.text)
 	UiKit.clear(_banner_buttons)
 	_rematch_button = null
-	if result not in ["left", "desync"] and not Net.opponent.is_empty():
+	if result not in ["left", "desync", "lost"] and not Net.opponent.is_empty():
 		_rematch_button = UiKit.primary_button(tr("Revancha"), _ask_rematch, 22)
 		_banner_buttons.add_child(_rematch_button)
 	_banner_buttons.add_child(UiKit.button(tr("Salir"), _leave_vs, 22))
 	_banner_box.visible = true
 	Audio.music("")
 	Audio.ambience("")
-	if result != "desync":
+	if result not in ["desync", "lost"]:
 		Audio.sfx("victory" if won else "defeat", 0.0, 1.0, 0.0)
 	if active:
 		active.set_active(false)
+
+
+## Cortes de conexión con el servidor en plena partida (Net se reconecta solo): aviso en el registro y en la pista.
+func _on_link_state(what: String) -> void:
+	if state == State.GAME_OVER:
+		return
+	var text: String = {
+		"reconnecting": tr("Se perdió la conexión: reconectando… (hasta {s} s)"),
+		"reconnected": tr("Conexión recuperada."),
+		"paused": tr("{rival} perdió la conexión: se le espera hasta {s} s."),
+		"back": tr("{rival} ha vuelto."),
+	}[what].format({"rival": _rival_nick(), "s": Protocol.RECONNECT_TIME})
+	_log("[i]%s[/i]" % text)
+	_hint_label.text = text
+	if what in ["reconnected", "back"] and _waiting_remote:
+		_hint_label.text = tr("Turno de {rival}…").format({"rival": _rival_nick()})
 
 
 func _ask_rematch() -> void:

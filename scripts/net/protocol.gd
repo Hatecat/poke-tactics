@@ -6,15 +6,19 @@ extends RefCounted
 ## `bytes_to_var` no puede crear nada ejecutable). Lo usan el autoload `Net` (clientes) y tools/vs_server.gd (relay).
 
 ## Súbelo cuando cambie la forma de algún mensaje o la manera de simular una acción.
-const VERSION := 1
+const VERSION := 2
 const DEFAULT_PORT := 24680
 ## Tamaño máximo de un paquete (un resync con el estado completo cabe de sobra).
 const MAX_PACKET := 64 * 1024
 const NICK_MAX := 16
+const ROOM_NAME_MAX := 24
+## Segundos que el servidor guarda el sitio de un jugador que perdió la conexión en plena partida.
+const RECONNECT_TIME := 60
 
 ## Campos obligatorios de cada mensaje y su tipo. Un mensaje con otro tipo o sin estos campos se descarta.
 const FIELDS := {
 	# Saludo: el que se conecta lo manda; el otro lado (anfitrión o servidor) responde welcome o reject.
+	# hello puede llevar "token" (reconexión al servidor); welcome del servidor trae "token" y "resumed".
 	"hello": {"v": TYPE_INT, "data": TYPE_STRING, "nick": TYPE_STRING},
 	"welcome": {"v": TYPE_INT, "data": TYPE_STRING},
 	"reject": {"code": TYPE_STRING},
@@ -22,11 +26,19 @@ const FIELDS := {
 	"match": {"nick": TYPE_STRING, "side": TYPE_INT},
 	# El rival se fue (abandono, desconexión...).
 	"gone": {"code": TYPE_STRING},
-	# Salas (F4).
+	# Salas del servidor. lobby_list: petición vacía o respuesta con "rooms"; room_create {name, public};
+	# room_join {code} ("" = emparejamiento rápido); room: la sala en la que estás; lobby_error: no se pudo.
 	"lobby_list": {},
 	"room_create": {},
-	"room_join": {},
+	"room_join": {"code": TYPE_STRING},
 	"room_leave": {},
+	"room": {"code": TYPE_STRING},
+	"lobby_error": {"code": TYPE_STRING},
+	# El rival perdió la conexión y el servidor le espera RECONNECT_TIME / ha vuelto.
+	"peer_lost": {},
+	"peer_back": {},
+	# Tras una reconexión: "ya tengo hasta tu mensaje got", el otro reenvía los siguientes.
+	"resume": {"got": TYPE_INT},
 	# Partida: el relay los reenvía al rival tal cual.
 	"ready": {},
 	"start": {},
@@ -39,7 +51,7 @@ const FIELDS := {
 }
 
 ## Mensajes de la partida: van de un jugador al otro (el relay los reenvía sin mirarlos).
-const GAME_TYPES := ["ready", "start", "deploy", "intent", "digest", "resync", "surrender", "rematch"]
+const GAME_TYPES := ["ready", "start", "deploy", "intent", "digest", "resync", "surrender", "rematch", "resume"]
 
 ## Carpetas cuyos datos cambian las reglas: si no coinciden en los dos PCs, la partida se desincronizaría.
 const DATA_DIRS := ["res://data/pokemon/", "res://data/moves/", "res://data/items/"]
@@ -69,8 +81,13 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 
 ## Apodo limpio: sin saltos de línea ni espacios de más y como mucho NICK_MAX letras.
 static func clean_nick(nick: String) -> String:
-	nick = " ".join(nick.strip_escapes().split(" ", false)).left(NICK_MAX)
+	nick = clean_text(nick, NICK_MAX)
 	return nick if not nick.is_empty() else TranslationServer.translate("Entrenador")
+
+
+## Texto de una línea sin caracteres de control ni espacios de más, recortado a `max_len`.
+static func clean_text(text: String, max_len: int) -> String:
+	return " ".join(text.strip_escapes().split(" ", false)).left(max_len)
 
 
 ## Huella de los datos del juego (Pokémon, ataques, objetos y habilidades). Se calcula con el contenido de los
@@ -128,4 +145,14 @@ static func reason_text(code: String) -> String:
 			return TranslationServer.translate("El rival se ha ido.")
 		"lost":
 			return TranslationServer.translate("Se perdió la conexión.")
+		"flood":
+			return TranslationServer.translate("Demasiados mensajes: el servidor cerró la conexión.")
+		"server_full":
+			return TranslationServer.translate("El servidor está lleno. Prueba más tarde.")
+		"not_found":
+			return TranslationServer.translate("No hay ninguna sala con ese código.")
+		"room_full":
+			return TranslationServer.translate("Esa sala ya tiene dos jugadores.")
+		"rooms_full":
+			return TranslationServer.translate("El servidor no admite más salas ahora mismo.")
 	return TranslationServer.translate("Error de red.")
