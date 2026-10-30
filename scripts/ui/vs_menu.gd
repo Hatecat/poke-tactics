@@ -106,6 +106,7 @@ func _build_setup() -> PanelContainer:
 	_team_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_team_hint)
 	box.add_child(UiKit.hint(tr("En VS todos los Pokémon luchan a nivel 50.")))
+	box.add_child(UiKit.label(tr("Tu marcador: {record}").format({"record": Game.vs_record_text()}), 16, UiKit.TEXT_DIM))
 	box.add_child(HSeparator.new())
 
 	_connect_box = VBoxContainer.new()
@@ -352,6 +353,8 @@ func _refresh_rival() -> void:
 		return
 	var ping := Net.rtt()
 	_rival_label.text = tr("Rival: [b]{nick}[/b]  ·  {ping} ms").format({"nick": Net.opponent.nick, "ping": ping if ping >= 0 else "—"})
+	if Game.vs_record.rivals.has(Net.opponent.nick):
+		_rival_label.text += "\n" + tr("Contra {nick}: {record}").format({"nick": Net.opponent.nick, "record": Game.vs_record_text(Net.opponent.nick)})
 	var mine := tr("Tú: listo") if _ready_sent else tr("Tú: eligiendo")
 	var theirs := tr("Rival: listo") if _their_team_data != null else tr("Rival: eligiendo")
 	_ready_label.text = "%s  ·  %s" % [mine, theirs]
@@ -494,6 +497,8 @@ func _back() -> void:
 
 func _on_opponent() -> void:
 	Audio.sfx("ui_place", -4.0)
+	if not get_window().has_focus():
+		DisplayServer.window_request_attention()
 	_refresh()
 
 
@@ -536,6 +541,7 @@ func _on_message(msg: Dictionary) -> void:
 				_status.text = "[color=#ff8a80]%s[/color]" % VsMatch.reason_text(why)
 				return
 			_their_team_data = msg.team
+			Audio.sfx("ui_confirm", -4.0)
 			_refresh()
 			_try_start()
 		"start":

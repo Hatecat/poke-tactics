@@ -1,10 +1,12 @@
 class_name PauseMenu
 extends CanvasLayer
-## Menú de pausa (Esc): continuar, volumen y abandonar. Pausa el árbol mientras está abierto.
+## Menú de pausa (Esc): continuar, volumen y abandonar. Pausa el árbol mientras está abierto (salvo con
+## `pauses_tree = false`: en VS el rival sigue jugando).
 
 signal quit_requested
 
 var quit_text := tr("Abandonar (volver al menú)")
+var pauses_tree := true
 var _root: UiDialog
 
 
@@ -54,7 +56,7 @@ func is_open() -> bool:
 
 func open() -> void:
 	_root.visible = true
-	get_tree().paused = true
+	get_tree().paused = pauses_tree
 
 
 func close() -> void:

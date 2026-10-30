@@ -84,6 +84,8 @@ var battle_seed := 0
 var vs := {}
 ## Apodo en el modo VS.
 var nick := ""
+## Marcador VS: {"total": {"win", "lose", "draw"}, "rivals": {apodo: {...}}}.
+var vs_record := {"total": {"win": 0, "lose": 0, "draw": 0}, "rivals": {}}
 ## Servidor de salas del modo VS ("dirección" o "dirección:puerto").
 var vs_server := ""
 
@@ -299,6 +301,23 @@ func speed_slider(on_change := Callable()) -> HBoxContainer:
 	return row
 
 
+## Apunta en el marcador VS una partida contra `rival` ("win", "lose" o "draw"; "" no cuenta) y guarda.
+func add_vs_result(rival: String, result: String) -> void:
+	if result not in ["win", "lose", "draw"]:
+		return
+	vs_record.total[result] = int(vs_record.total.get(result, 0)) + 1
+	if not vs_record.rivals.has(rival):
+		vs_record.rivals[rival] = {"win": 0, "lose": 0, "draw": 0}
+	vs_record.rivals[rival][result] = int(vs_record.rivals[rival].get(result, 0)) + 1
+	save()
+
+
+## Marcador VS como texto ("3 V · 1 D · 0 E"); `rival` vacío = el total.
+func vs_record_text(rival := "") -> String:
+	var r: Dictionary = vs_record.total if rival.is_empty() else vs_record.rivals.get(rival, {})
+	return tr("{w} V · {l} D · {d} E").format({"w": int(r.get("win", 0)), "l": int(r.get("lose", 0)), "d": int(r.get("draw", 0))})
+
+
 func save() -> void:
 	# Las pruebas automáticas lo ponen para no tocar el guardado del jugador.
 	if OS.has_environment("POKE_TACTICS_NO_SAVE"):
@@ -314,6 +333,7 @@ func save() -> void:
 	cfg.set_value("options", "language", language)
 	cfg.set_value("options", "nick", nick)
 	cfg.set_value("options", "vs_server", vs_server)
+	cfg.set_value("options", "vs_record", vs_record)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("story", "run", story.to_dict() if story else {})
@@ -353,6 +373,9 @@ func _load_save() -> void:
 		difficulty = cfg.get_value("options", "difficulty", Difficulty.NORMAL)
 		nick = str(cfg.get_value("options", "nick", ""))
 		vs_server = str(cfg.get_value("options", "vs_server", ""))
+		var record: Variant = cfg.get_value("options", "vs_record", {})
+		if record is Dictionary and record.get("total") is Dictionary and record.get("rivals") is Dictionary:
+			vs_record = record
 		volumes.merge(cfg.get_value("options", "volumes", {}), true)
 		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
 		graphics_quality = clampi(cfg.get_value("options", "graphics_quality", Quality.HIGH), Quality.LOW, Quality.HIGH) as Quality

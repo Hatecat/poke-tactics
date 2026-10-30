@@ -38,6 +38,12 @@ const VOLATILE_VALUE := {"wrapped": 14.0, "vortex": 16.0, "confusion": 18.0, "le
 ## Pausa entre golpes de un multigolpe.
 const MULTIHIT_DELAY := 0.28
 const DEPLOY_ROWS := 4
+## VS: segundos por turno; al acabarse, el Pokémon espera. MAX_TIMEOUTS seguidos = derrota por inactividad.
+const TURN_TIME := 60
+const MAX_TIMEOUTS := 3
+## VS: segundos desde CLOCK_WARN avisa con sonido; RIVAL_GRACE de margen sobre el reloj del rival.
+const CLOCK_WARN := 10
+const RIVAL_GRACE := 30
 const COLOR_DEPLOY := Color(0.3, 0.6, 1.0, 0.3)
 
 ## Equipos y tablero salen del autoload Game (menú principal / editor de equipo).
@@ -130,6 +136,18 @@ var _rematch: Array[bool] = [false, false]
 var _rematch_button: Button
 ## Cómo acabó la partida VS ("" mientras se juega; ver _vs_finish).
 var _vs_result := ""
+## Reloj de turno VS: hora (Time.get_ticks_msec) en que se acaba el turno en curso; 0 = parado.
+var _clock_until := 0
+## El turno del reloj es nuestro (si no, es del rival).
+var _clock_mine := false
+## Último segundo mostrado (para el tictac).
+var _clock_shown := -1
+## Turnos seguidos que se nos acabó el tiempo; a MAX_TIMEOUTS, derrota por inactividad.
+var _timeouts := 0
+var _timing_out := false
+## El rival perdió la conexión y el servidor le espera: su reloj no corre.
+var _rival_paused := false
+var _clock_label: Label
 
 
 func _ready() -> void:
@@ -613,6 +631,7 @@ func _next_turn() -> void:
 		await _wait(0.6)
 		_next_turn.call_deferred()
 		return
+	_start_clock()
 	if _human_turn():
 		_show_menu()
 	elif _driver(active) == Driver.REMOTE:
@@ -691,6 +710,7 @@ func _end_of_turn(u: Unit) -> void:
 
 func _end_turn() -> void:
 	_turn_over = true
+	_clock_until = 0
 	state = State.BUSY
 	_set_actions_enabled(false)
 	_board.clear_highlights()
@@ -2124,6 +2144,7 @@ func _build_ui() -> void:
 		(tr("Salir (el piso se reintenta después)") if _tower() else tr("Abandonar (volver al menú)"))
 	if _vs():
 		_pause.quit_text = tr("Rendirse (cuenta como derrota)")
+		_pause.pauses_tree = false
 		_pause.quit_requested.connect(_surrender)
 	else:
 		_pause.quit_requested.connect(_go_to_menu)
@@ -2279,6 +2300,19 @@ func _build_ui() -> void:
 	_turn_flash.add_theme_color_override("font_outline_color", Color.BLACK)
 	_turn_flash.modulate.a = 0.0
 	root.add_child(_turn_flash)
+
+	_clock_label = Label.new()
+	_clock_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_clock_label.offset_top = 112
+	_clock_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_clock_label.add_theme_font_size_override("font_size", 22)
+	_clock_label.add_theme_font_override("font", UiKit.bold_font())
+	_clock_label.add_theme_constant_override("outline_size", 8)
+	_clock_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_clock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clock_label.visible = false
+	root.add_child(_clock_label)
 
 
 func _tower() -> bool:
@@ -2630,7 +2664,8 @@ func _set_actions_enabled(enabled: bool) -> void:
 		b.disabled = not enabled or acted or b.get_meta("no_pp", false) or (active != null and not active.can_attack())
 	_wait_button.disabled = not enabled
 	if not enabled:
-		_hint_label.text = "" if state == State.GAME_OVER else tr("Turno rival...") if active and active.team == 1 else ""
+		_hint_label.text = "" if state == State.GAME_OVER or not active or active.team != 1 else \
+			tr("Turno de {rival}…").format({"rival": _rival_nick()}) if _vs() else tr("Turno rival...")
 
 
 func _refresh_info(u: Unit) -> void:
@@ -2720,6 +2755,8 @@ func _rival_nick() -> String:
 func _send_intent(entry: Dictionary) -> void:
 	if _driver(active) == Driver.REMOTE:
 		return
+	if not _timing_out:
+		_timeouts = 0
 	var action := entry.duplicate()
 	action.erase("digest")
 	Net.send({"t": "intent", "a": action, "d": entry.digest})
@@ -2763,7 +2800,7 @@ func _on_net_message(msg: Dictionary) -> void:
 			# El rival ha visto que nuestras partidas ya no coinciden.
 			_vs_finish("desync")
 		"surrender":
-			_vs_finish("surrender")
+			_vs_finish("rival_idle" if msg.get("why") == "idle" else "surrender")
 		"rematch":
 			_rematch[1] = true
 			_try_rematch()
@@ -2842,19 +2879,23 @@ func _on_opponent_gone(code: String) -> void:
 		_hint_label.text = tr("{rival} se ha ido.").format({"rival": _rival_nick()})
 
 
-## Fin de una partida VS. `result`: "win", "lose", "draw", "left" (el rival se fue), "surrender" (se rindió el
-## rival), "gave_up" (me rendí) o "desync" (sin resultado).
+## Fin de una partida VS. `result`: "win", "lose", "draw", "left" (el rival se fue o no responde), "surrender"
+## (se rindió el rival), "rival_idle" (el rival no jugó MAX_TIMEOUTS turnos), "gave_up" (me rendí), "idle" (no
+## jugué MAX_TIMEOUTS turnos), "desync" o "lost" (sin resultado).
 func _vs_finish(result: String) -> void:
 	if not _vs_result.is_empty():
 		return
 	_vs_result = result
+	_clock_until = 0
 	state = State.GAME_OVER
 	_waiting_remote = false
 	_remote_queue.clear()
 	_set_actions_enabled(false)
 	_deploy_box.visible = false
 	_board.clear_highlights()
-	var won := result in ["win", "left", "surrender"]
+	var won := result in ["win", "left", "surrender", "rival_idle"]
+	Game.add_vs_result(_rival_nick(), {"win": "win", "left": "win", "surrender": "win", "rival_idle": "win", "lose": "lose", "gave_up": "lose",
+		"idle": "lose", "draw": "draw"}.get(result, ""))
 	match result:
 		"win":
 			_banner.text = tr("¡Victoria!")
@@ -2868,11 +2909,24 @@ func _vs_finish(result: String) -> void:
 			_banner.text = tr("¡Victoria! {rival} se ha rendido.").format({"rival": _rival_nick()})
 		"gave_up":
 			_banner.text = tr("Te has rendido.")
+		"idle":
+			_banner.text = tr("Derrota: {n} turnos seguidos sin jugar.").format({"n": MAX_TIMEOUTS})
+		"rival_idle":
+			_banner.text = tr("¡Victoria! {rival} no jugó {n} turnos seguidos.").format({"rival": _rival_nick(), "n": MAX_TIMEOUTS})
 		"desync":
 			_banner.text = tr("Las partidas se han desincronizado: termina sin resultado.")
 		"lost":
 			_banner.text = tr("Se perdió la conexión: termina sin resultado.")
 	_log("[b]%s[/b]" % _banner.text)
+	var note := UiKit.label(tr("Contra {rival}: {record}     |     Total: {total}").format({"rival": _rival_nick(),
+		"record": Game.vs_record_text(_rival_nick()), "total": Game.vs_record_text()}), 19, UiKit.TEXT)
+	note.add_theme_font_override("font", UiKit.bold_font())
+	var pill := UiKit.panel(UiKit.CARD)
+	pill.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	pill.self_modulate.a = 0.92
+	pill.add_child(note)
+	_banner_box.add_child(pill)
+	_banner_box.move_child(pill, 1)
 	UiKit.clear(_banner_buttons)
 	_rematch_button = null
 	if result not in ["left", "desync", "lost"] and not Net.opponent.is_empty():
@@ -2892,6 +2946,13 @@ func _vs_finish(result: String) -> void:
 func _on_link_state(what: String) -> void:
 	if state == State.GAME_OVER:
 		return
+	if what == "paused":
+		_rival_paused = true
+	elif what == "back":
+		_rival_paused = false
+		# El rival vuelve con el turno a medias: se le da un turno entero desde ahora.
+		if _clock_until > 0 and not _clock_mine:
+			_clock_until = Time.get_ticks_msec() + TURN_TIME * 1000
 	var text: String = {
 		"reconnecting": tr("Se perdió la conexión: reconectando… (hasta {s} s)"),
 		"reconnected": tr("Conexión recuperada."),
@@ -2902,6 +2963,63 @@ func _on_link_state(what: String) -> void:
 	_hint_label.text = text
 	if what in ["reconnected", "back"] and _waiting_remote:
 		_hint_label.text = tr("Turno de {rival}…").format({"rival": _rival_nick()})
+
+
+## Arranca el reloj del turno que empieza (solo en VS). Si el turno es nuestro y la ventana no tiene el foco,
+## la ventana pide atención.
+func _start_clock() -> void:
+	if not _vs():
+		return
+	_clock_mine = _human_turn()
+	_clock_until = Time.get_ticks_msec() + TURN_TIME * 1000
+	_clock_shown = -1
+	if _clock_mine and not get_window().has_focus():
+		DisplayServer.window_request_attention()
+
+
+func _process(_delta: float) -> void:
+	if _clock_until == 0:
+		_clock_label.visible = false
+		return
+	var left_ms := _clock_until - Time.get_ticks_msec()
+	var secs := maxi(0, ceili(left_ms / 1000.0))
+	_clock_label.visible = true
+	if _clock_mine:
+		_clock_label.text = tr("⏱ {s} s").format({"s": secs})
+		_clock_label.add_theme_color_override("font_color", UiKit.DANGER.lightened(0.2) if secs <= CLOCK_WARN else UiKit.TEXT)
+		if secs != _clock_shown:
+			_clock_shown = secs
+			if secs == CLOCK_WARN:
+				Audio.sfx("ui_error", -6.0, 1.0, 0.0)
+			elif secs < CLOCK_WARN and secs > 0 and secs <= 5:
+				Audio.sfx("ui_click", -4.0, 1.2, 0.0)
+		# Se espera a que acabe la animación en curso (moverse, atacar) para pasar el turno.
+		if left_ms <= 0 and state in [State.MENU, State.PICK_MOVE, State.PICK_TARGET, State.FACING]:
+			_time_out()
+	else:
+		_clock_label.text = tr("⏱ {rival}: {s} s").format({"rival": _rival_nick(), "s": secs})
+		_clock_label.add_theme_color_override("font_color", UiKit.TEXT_DIM)
+		# Su reloj lo lleva su PC; si pasa de largo (programa colgado o trucado), gana el que espera. Mientras
+		# reconecta no cuenta (al volver, _on_link_state le da un turno entero).
+		if not _rival_paused and _waiting_remote and left_ms < -RIVAL_GRACE * 1000:
+			_log("[i]%s[/i]" % tr("{rival} no responde.").format({"rival": _rival_nick()}))
+			_vs_finish("left")
+
+
+## Se nos acabó el tiempo: el Pokémon espera (como "Terminar turno" sin girarse). A la MAX_TIMEOUTS seguida,
+## derrota por inactividad.
+func _time_out() -> void:
+	_clock_until = 0
+	_timeouts += 1
+	_log("[i]%s[/i]" % tr("Se acabó el tiempo: {name} pasa el turno.").format({"name": active.display_name()}))
+	if _timeouts >= MAX_TIMEOUTS:
+		Net.send({"t": "surrender", "why": "idle"})
+		_vs_finish("idle")
+		return
+	_preview_label.text = ""
+	_timing_out = true
+	apply_intent({"kind": "wait"})
+	_timing_out = false
 
 
 func _ask_rematch() -> void:
