@@ -223,7 +223,8 @@ _STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: col
 TWEAKS = {
     "machop": _STRONG_ARMS,
     "machoke": _STRONG_ARMS,
-    "machamp": dict(_STRONG_ARMS, arm2_drop=40),
+    # Par de arriba de Machamp: flexionado, con los puños hacia arriba y delante, no en cruz.
+    "machamp": dict(_STRONG_ARMS, arm2_drop=48, elbow2=55),
     "golem": {"arm_drop": 62, "elbow": 45, "legs_in": 10},  # brazos largos: doblados, para que no parezcan patas
     # Los cuatro brazos iban muy abiertos: doblados, con los puños arriba.
     "graveler": {"arm_drop": 45, "arm_fwd": 22, "elbow": 55},
@@ -240,11 +241,34 @@ TWEAKS = {
     # sueltos con el codo algo doblado y la mano colgando (no tiesos como palos).
     "hitmonlee": {"arm_drop": 78, "arm_fwd": 8, "elbow": -10, "crouch": 12, "bounce": 7, "idle_arms": 2.2},
     "hitmonchan": {"arm_drop": 68, "arm_fwd": 30, "elbow": 95},
+    # Humanoides de brazos largos: a 45° quedaban casi en cruz, con las manos lejos del cuerpo. Cuelgan a los
+    # costados con el codo algo doblado; los de tripa ancha (Electabuzz, Poliwag) o vestido (Jynx) un poco menos.
+    "hypno": {"arm_drop": 72, "arm_fwd": 12, "elbow": 12},
+    "jynx": {"arm_drop": 62, "arm_fwd": 18, "elbow": 15},
+    "electabuzz": {"arm_drop": 70, "arm_fwd": 18, "elbow": 15},
+    "magmar": {"arm_drop": 62, "arm_fwd": 15, "elbow": 15},
+    "mrmime": {"arm_drop": 64, "arm_fwd": 15, "elbow": 15},
+    "pinsir": {"arm_drop": 70, "arm_fwd": 12, "elbow": 15},
+    "meowth": {"arm_drop": 66, "arm_fwd": 15},
+    "golduck": {"arm_drop": 68, "arm_fwd": 12, "elbow": 12},
+    "mankey": {"arm_drop": 66, "arm_fwd": 15, "elbow": 12},
+    "primeape": {"arm_drop": 60, "arm_fwd": 15, "elbow": 12},
+    "poliwhirl": {"arm_drop": 76, "arm_fwd": 12, "elbow": 20},
+    "poliwrath": {"arm_drop": 76, "arm_fwd": 12, "elbow": 30},
     # La cola del rip sale hacia arriba desde la cadera: cae al suelo y sigue tendida detrás, como en el artwork.
     "slowpoke": {"hold": {"Tail1": [("PITCH", -45)], "Tail2": [("PITCH", -25)], "Tail3": [("PITCH", 33)],
                           "Tail4": [("PITCH", 25)], "Tail7": [("PITCH", 5)], "Tail8": [("PITCH", 5)]}},
     # Ave de suelo: alas plegadas a los costados (el puerro, en la mano izquierda, queda bajo el ala).
     "farfetchd": {"arm_drop": 80, "arm_fwd": 0, "hold": {"FeelerB1": [("PITCH", -90)]}},
+    # La cola larguísima del rip baja en diagonal desde la cadera: volando quedaba como un palo colgando hasta el
+    # suelo. Sube desde la base y ondula en S detrás del ave, como las plumas largas del artwork.
+    # Las tres cabezas salían en paralelo, como tres postes: los cuellos de los lados se abren en abanico, sus
+    # cabezas miran algo afuera (y se enderezan) y la del centro se alza un poco.
+    "dodrio": {"hold": {"NeckB1": [("ROLL", 20)], "NeckB2": [("ROLL", 4)], "HeadB": [("ROLL", -22), ("YAW", 18)],
+                        "NeckC1": [("ROLL", -20)], "NeckC2": [("ROLL", -4)], "HeadC": [("ROLL", 22), ("YAW", -18)],
+                        "NeckA1": [("PITCH", -4)], "HeadA": [("PITCH", -6)]}},
+    "articuno": {"hold": {"Tail1": [("PITCH", 30)], "Tail3": [("PITCH", 8)], "Tail6": [("PITCH", -6)],
+                          "Tail10": [("PITCH", -7)], "Tail14": [("PITCH", 6)], "Tail17": [("PITCH", 5)]}},
 }.get(Path(bpy.data.filepath).stem, {})
 
 # Estilos por especie, que cambian todas las acciones:
@@ -346,7 +370,7 @@ def arm_(side, fwd=0, up=0, inward=0, bend=0, pair=""):
                               (PITCH, 0 if ARM_AHEAD[side + pair] else -TWEAKS.get("arm_fwd", 25)),
                               (ROLL, ARM_LOWER[side + pair] * s)],
         side + "ForeArm" + pair: [(ELBOW[side + pair],
-                                   bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow", 0) + bend)],
+                                   bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow" + pair, TWEAKS.get("elbow", 0)) + bend)],
     }
 
 
