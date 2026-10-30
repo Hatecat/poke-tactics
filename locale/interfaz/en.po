@@ -175,6 +175,7 @@ msgstr "Story"
 
 #: scripts/ui/main_menu.gd:62
 #: scripts/ui/main_menu.gd:177
+#: scripts/ui/vs_menu.gd:197
 msgid "Partida rápida"
 msgstr "Quick battle"
 
@@ -189,7 +190,7 @@ msgid "(piso %d)"
 msgstr "(floor %d)"
 
 #: scripts/ui/main_menu.gd:65
-#: scripts/ui/vs_menu.gd:45
+#: scripts/ui/vs_menu.gd:60
 msgid "Combate VS"
 msgstr "VS Battle"
 
@@ -275,7 +276,6 @@ msgstr "The rival is random (Pokémon and moves), with as many Pokémon as your 
 
 #: scripts/ui/main_menu.gd:280
 #: scripts/ui/tower.gd:409
-#: scripts/ui/vs_menu.gd:126
 msgid "Cancelar"
 msgstr "Cancel"
 
@@ -289,7 +289,7 @@ msgstr "Quick battle (build your team!)"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
 #: scripts/ui/main_menu.gd:292
-#: scripts/ui/vs_menu.gd:82
+#: scripts/ui/vs_menu.gd:99
 msgid "%s  (%d Pokémon)"
 msgstr "%s  (%d Pokémon)"
 
@@ -298,7 +298,7 @@ msgid "Generado al azar"
 msgstr "Randomly generated"
 
 #: scripts/ui/main_menu.gd:306
-#: scripts/ui/vs_menu.gd:187
+#: scripts/ui/vs_menu.gd:311
 msgid "Este equipo está vacío: elige otro o complétalo en el editor."
 msgstr "This team is empty: pick another one or fill it in the editor."
 
@@ -429,7 +429,7 @@ msgstr "Loaded: %s"
 #: scripts/ui/team_editor.gd:46
 #: scripts/ui/tower.gd:32
 #: scripts/ui/type_chart_screen.gd:31
-#: scripts/ui/vs_menu.gd:45
+#: scripts/ui/vs_menu.gd:60
 msgid "← Menú"
 msgstr "← Menu"
 
@@ -1225,77 +1225,183 @@ msgstr "Sp. Atk"
 msgid "Def. Esp."
 msgstr "Sp. Def"
 
-#: scripts/ui/vs_menu.gd:71
+#: scripts/ui/vs_menu.gd:88
 msgid "Tu apodo"
 msgstr "Your nickname"
 
-#: scripts/ui/vs_menu.gd:74
-#: scripts/net/protocol.gd:73
+#: scripts/ui/vs_menu.gd:91
+#: scripts/net/protocol.gd:85
 msgid "Entrenador"
 msgstr "Trainer"
 
-#: scripts/ui/vs_menu.gd:79
+#: scripts/ui/vs_menu.gd:96
 msgid "Tu equipo"
 msgstr "Your team"
 
-#: scripts/ui/vs_menu.gd:91
+#: scripts/ui/vs_menu.gd:108
 msgid "En VS todos los Pokémon luchan a nivel 50."
 msgstr "In VS, every Pokémon battles at level 50."
 
-#: scripts/ui/vs_menu.gd:97
+#: scripts/ui/vs_menu.gd:119
+msgid "Por Internet"
+msgstr "Online"
+
+#: scripts/ui/vs_menu.gd:119
+msgid "IP directa"
+msgstr "Direct IP"
+
+#: scripts/ui/vs_menu.gd:129
+msgid "Servidor de salas"
+msgstr "Lobby server"
+
+#: scripts/ui/vs_menu.gd:133
+msgid "dirección:puerto"
+msgstr "address:port"
+
+#: scripts/ui/vs_menu.gd:136
+msgid "Conectar"
+msgstr "Connect"
+
+#: scripts/ui/vs_menu.gd:140
+msgid "Los dos jugadores os conectáis al mismo servidor: no hace falta abrir puertos."
+msgstr "Both players connect to the same server: no need to open ports."
+
+#: scripts/ui/vs_menu.gd:148
 msgid "Alojar una partida"
 msgstr "Host a match"
 
-#: scripts/ui/vs_menu.gd:100
+#: scripts/ui/vs_menu.gd:151
 msgid "Puerto:"
 msgstr "Port:"
 
-#: scripts/ui/vs_menu.gd:103
+#: scripts/ui/vs_menu.gd:154
 msgid "Alojar"
 msgstr "Host"
 
-#: scripts/ui/vs_menu.gd:107
+#: scripts/ui/vs_menu.gd:158
 msgid "Unirse a una partida"
 msgstr "Join a match"
 
-#: scripts/ui/vs_menu.gd:111
+#: scripts/ui/vs_menu.gd:162
 msgid "IP del anfitrión"
 msgstr "Host's IP"
 
-#: scripts/ui/vs_menu.gd:115
+#: scripts/ui/vs_menu.gd:166
 msgid "Unirse"
 msgstr "Join"
 
-#: scripts/ui/vs_menu.gd:138
+#: scripts/ui/vs_menu.gd:170
+msgid "Fuera de tu red local, el anfitrión tiene que abrir ese puerto (UDP) en su router."
+msgstr "Outside your local network, the host has to open that port (UDP) on their router."
+
+#: scripts/ui/vs_menu.gd:183
+msgid "Salir de la sala"
+msgstr "Leave room"
+
+#: scripts/ui/vs_menu.gd:185
+msgid "Desconectar"
+msgstr "Disconnect"
+
+#: scripts/ui/vs_menu.gd:200
+msgid "Te une a la primera sala pública que espera rival, o abre una."
+msgstr "Joins the first public room waiting for a rival, or opens one."
+
+#: scripts/ui/vs_menu.gd:203
+msgid "Crear una sala"
+msgstr "Create a room"
+
+#: scripts/ui/vs_menu.gd:208
+msgid "Nombre de la sala"
+msgstr "Room name"
+
+#: scripts/ui/vs_menu.gd:211
+msgid "Privada"
+msgstr "Private"
+
+#: scripts/ui/vs_menu.gd:212
+msgid "No sale en la lista: solo se entra con el código."
+msgstr "Not listed: it can only be joined with its code."
+
+#: scripts/ui/vs_menu.gd:214
+msgid "Crear"
+msgstr "Create"
+
+#: scripts/ui/vs_menu.gd:219
+msgid "Entrar con un código"
+msgstr "Join with a code"
+
+#: scripts/ui/vs_menu.gd:224
+msgid "Código"
+msgstr "Code"
+
+#: scripts/ui/vs_menu.gd:227
+#: scripts/ui/vs_menu.gd:451
+msgid "Entrar"
+msgstr "Join"
+
+#: scripts/ui/vs_menu.gd:234
+msgid "Salas públicas"
+msgstr "Public rooms"
+
+#: scripts/ui/vs_menu.gd:238
+msgid "Actualizar"
+msgstr "Refresh"
+
+#: scripts/ui/vs_menu.gd:258
 msgid "Sala"
 msgstr "Room"
 
-#: scripts/ui/vs_menu.gd:148
+#: scripts/ui/vs_menu.gd:268
 msgid "Tablero (lo elige el anfitrión)"
 msgstr "Board (the host chooses)"
 
-#: scripts/ui/vs_menu.gd:150
+#: scripts/ui/vs_menu.gd:270
 msgid "Cuadrado"
 msgstr "Square"
 
-#: scripts/ui/vs_menu.gd:151
+#: scripts/ui/vs_menu.gd:271
 msgid "Hexagonal"
 msgstr "Hexagonal"
 
-#: scripts/ui/vs_menu.gd:155
+#: scripts/ui/vs_menu.gd:275
 msgid "Escenario al azar"
 msgstr "Random arena"
 
-#: scripts/ui/vs_menu.gd:159
+#: scripts/ui/vs_menu.gd:279
 msgid "El anfitrión elige el tablero."
 msgstr "The host chooses the board."
 
-#: scripts/ui/vs_menu.gd:162
+#: scripts/ui/vs_menu.gd:282
 msgid "¡Listo!"
 msgstr "Ready!"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/vs_menu.gd:198
+#: scripts/ui/vs_menu.gd:328
+msgid "Conectando con el servidor {server}…"
+msgstr "Connecting to server {server}…"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:330
+msgid "Conectado al servidor {server}."
+msgstr "Connected to server {server}."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:332
+#: scripts/ui/vs_menu.gd:442
+msgid "Sala de {nick}"
+msgstr "{nick}'s room"
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:333
+msgid ""
+"[b]{name}[/b]  ·  código [b][color=#ffcc40]{code}[/color][/b]\n"
+"Esperando a un rival. Pásale el código para que entre."
+msgstr ""
+"[b]{name}[/b]  ·  code [b][color=#ffcc40]{code}[/color][/b]\n"
+"Waiting for a rival. Give them the code to join."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:336
 msgid ""
 "Esperando a un rival en el puerto {port}.\n"
 "Tu IP en la red local: [b]{ips}[/b]"
@@ -1304,53 +1410,74 @@ msgstr ""
 "Your local network IP: [b]{ips}[/b]"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/vs_menu.gd:201
+#: scripts/ui/vs_menu.gd:339
 msgid "Conectando con {ip}…"
 msgstr "Connecting to {ip}…"
 
-#: scripts/ui/vs_menu.gd:203
+#: scripts/ui/vs_menu.gd:341
 msgid "Conectado."
 msgstr "Connected."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/ui/vs_menu.gd:216
+#: scripts/ui/vs_menu.gd:354
 msgid "Rival: [b]{nick}[/b]  ·  {ping} ms"
 msgstr "Opponent: [b]{nick}[/b]  ·  {ping} ms"
 
-#: scripts/ui/vs_menu.gd:217
+#: scripts/ui/vs_menu.gd:355
 msgid "Tú: listo"
 msgstr "You: ready"
 
-#: scripts/ui/vs_menu.gd:217
+#: scripts/ui/vs_menu.gd:355
 msgid "Tú: eligiendo"
 msgstr "You: choosing"
 
-#: scripts/ui/vs_menu.gd:218
+#: scripts/ui/vs_menu.gd:356
 msgid "Rival: listo"
 msgstr "Opponent: ready"
 
-#: scripts/ui/vs_menu.gd:218
+#: scripts/ui/vs_menu.gd:356
 msgid "Rival: eligiendo"
 msgstr "Opponent: choosing"
 
-#: scripts/ui/vs_menu.gd:237
+#: scripts/ui/vs_menu.gd:378
+msgid "Escribe la dirección del servidor."
+msgstr "Enter the server address."
+
+#: scripts/ui/vs_menu.gd:405
+msgid "Escribe el código de la sala."
+msgstr "Enter the room code."
+
+#: scripts/ui/vs_menu.gd:427
+msgid "No hay salas públicas. Crea una o usa Partida rápida."
+msgstr "No public rooms. Create one or use Quick match."
+
+#. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
+#: scripts/ui/vs_menu.gd:444
+msgid "{nick}  ·  {ping} ms"
+msgstr "{nick}  ·  {ping} ms"
+
+#: scripts/ui/vs_menu.gd:449
+msgid "En partida"
+msgstr "In a match"
+
+#: scripts/ui/vs_menu.gd:463
 msgid "Escribe la IP del anfitrión."
 msgstr "Type the host's IP."
 
-#: scripts/ui/vs_menu.gd:250
+#: scripts/ui/vs_menu.gd:476
 msgid "No se pudo abrir la conexión (¿el puerto está en uso?)."
 msgstr "Couldn't open the connection (is the port in use?)."
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:140
-#: scripts/game.gd:329
-#: scripts/game.gd:339
-#: scripts/game.gd:365
+#: scripts/game.gd:142
+#: scripts/game.gd:332
+#: scripts/game.gd:342
+#: scripts/game.gd:369
 msgid "Equipo %d"
 msgstr "Team %d"
 
 #. %s, %d y {...} se rellenan con datos del juego: déjalos tal cual.
-#: scripts/game.gd:268
+#: scripts/game.gd:270
 msgid ""
 "Baja o Media van más fluidas en gráficas integradas.\n"
 "Gráfica en uso: %s"
@@ -1944,35 +2071,55 @@ msgstr "Coral"
 msgid "Mesa de lectura"
 msgstr "Reading table"
 
-#: scripts/net/protocol.gd:118
+#: scripts/net/protocol.gd:135
 msgid "El otro jugador tiene otra versión del juego."
 msgstr "The other player has a different version of the game."
 
-#: scripts/net/protocol.gd:120
+#: scripts/net/protocol.gd:137
 msgid "Los datos del juego no coinciden con los del otro jugador."
 msgstr "Your game data doesn't match the other player's."
 
-#: scripts/net/protocol.gd:122
+#: scripts/net/protocol.gd:139
 msgid "La partida ya tiene dos jugadores."
 msgstr "This match already has two players."
 
-#: scripts/net/protocol.gd:124
+#: scripts/net/protocol.gd:141
 msgid "El otro lado no respondió a tiempo."
 msgstr "The other side didn't respond in time."
 
-#: scripts/net/protocol.gd:126
+#: scripts/net/protocol.gd:143
 msgid "No se pudo conectar. Revisa la dirección y el puerto."
 msgstr "Couldn't connect. Check the address and port."
 
-#: scripts/net/protocol.gd:128
+#: scripts/net/protocol.gd:145
 msgid "El rival se ha ido."
 msgstr "Your opponent left."
 
-#: scripts/net/protocol.gd:130
+#: scripts/net/protocol.gd:147
 msgid "Se perdió la conexión."
 msgstr "The connection was lost."
 
-#: scripts/net/protocol.gd:131
+#: scripts/net/protocol.gd:149
+msgid "Demasiados mensajes: el servidor cerró la conexión."
+msgstr "Too many messages: the server closed the connection."
+
+#: scripts/net/protocol.gd:151
+msgid "El servidor está lleno. Prueba más tarde."
+msgstr "The server is full. Try again later."
+
+#: scripts/net/protocol.gd:153
+msgid "No hay ninguna sala con ese código."
+msgstr "There is no room with that code."
+
+#: scripts/net/protocol.gd:155
+msgid "Esa sala ya tiene dos jugadores."
+msgstr "That room already has two players."
+
+#: scripts/net/protocol.gd:157
+msgid "El servidor no admite más salas ahora mismo."
+msgstr "The server can't take more rooms right now."
+
+#: scripts/net/protocol.gd:158
 msgid "Error de red."
 msgstr "Network error."
 

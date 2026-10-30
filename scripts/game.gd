@@ -84,6 +84,8 @@ var battle_seed := 0
 var vs := {}
 ## Apodo en el modo VS.
 var nick := ""
+## Servidor de salas del modo VS ("dirección" o "dirección:puerto").
+var vs_server := ""
 
 
 func _ready() -> void:
@@ -311,6 +313,7 @@ func save() -> void:
 	cfg.set_value("options", "graphics_quality", graphics_quality)
 	cfg.set_value("options", "language", language)
 	cfg.set_value("options", "nick", nick)
+	cfg.set_value("options", "vs_server", vs_server)
 	cfg.set_value("tower", "run", tower.to_dict() if tower and not tower.finished else {})
 	cfg.set_value("tower", "best", tower_best)
 	cfg.set_value("story", "run", story.to_dict() if story else {})
@@ -349,6 +352,7 @@ func _load_save() -> void:
 		current_team = clampi(cfg.get_value("teams", "current", 0), 0, teams.size() - 1)
 		difficulty = cfg.get_value("options", "difficulty", Difficulty.NORMAL)
 		nick = str(cfg.get_value("options", "nick", ""))
+		vs_server = str(cfg.get_value("options", "vs_server", ""))
 		volumes.merge(cfg.get_value("options", "volumes", {}), true)
 		battle_speed = clampi(cfg.get_value("options", "battle_speed", BATTLE_SPEED_MAX), BATTLE_SPEED_MIN, BATTLE_SPEED_MAX)
 		graphics_quality = clampi(cfg.get_value("options", "graphics_quality", Quality.HIGH), Quality.LOW, Quality.HIGH) as Quality
