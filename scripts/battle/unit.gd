@@ -35,13 +35,16 @@ const STAT_SHORT := {"attack": "Atq", "defense": "Def", "sp_attack": "AtE", "sp_
 	"accuracy": "Pre", "evasion": "Eva", "crit": "Crít"}
 const STAT_LABELS := {"attack": "Ataque", "defense": "Defensa", "sp_attack": "At. Esp.", "sp_defense": "Def. Esp.", # i18n
 	"speed": "Velocidad", "accuracy": "Precisión", "evasion": "Evasión", "crit": "Índice crítico"}
+## Segundos que se queda la pose final del debilitado antes de desvanecerse.
+const KO_HOLD := 0.3
 ## El índice de crítico va de 0 a 3 (no se puede bajar).
 const MAX_CRIT_STAGE := 3
-## Pokémon que sueltan gas todo el rato (Fx.toxic_gas): colores al salir y al deshacerse.
+## Pokémon que sueltan gas todo el rato (Fx.toxic_gas): colores al salir y al deshacerse. Translúcido desde el
+## principio: más opaco salían bolas rosas sólidas en vez de gas.
 const GAS := {
-	"koffing": [Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3)],
-	"weezing": [Color(0.6, 0.38, 0.75, 0.75), Color(0.55, 0.7, 0.3)],
-	"gastly": [Color(0.55, 0.35, 0.72, 0.6), Color(0.78, 0.6, 0.95)],
+	"koffing": [Color(0.6, 0.38, 0.75, 0.4), Color(0.55, 0.7, 0.3)],
+	"weezing": [Color(0.6, 0.38, 0.75, 0.4), Color(0.55, 0.7, 0.3)],
+	"gastly": [Color(0.55, 0.35, 0.72, 0.35), Color(0.78, 0.6, 0.95)],
 }
 
 var data: PokemonData
@@ -581,7 +584,8 @@ func take_damage(amount: int) -> void:
 		var ko_time := play("ko")
 		# Fuera del tablero: sin anillo, nombre ni colisión (no tapa los clics) y el modelo se desvanece.
 		hide_overlays()
-		_fade_out(clampf(ko_time, 0.6, 1.4))
+		# Se ve la caída entera (1,75 s) y un momento la pose final antes de encogerse.
+		_fade_out(clampf(ko_time + KO_HOLD, 0.6, 2.2))
 		fainted.emit(self)
 	elif amount > 0:
 		var duration := play("hit")
@@ -868,6 +872,11 @@ func _load_model() -> void:
 	_lift.position.y = ground_offset()
 
 
+## Color de las llamas por especie (núcleo, borde). La crin de Rapidash, como la de Ponyta: naranja y roja (con
+## el amarillo general, sumada sobre el cuerpo claro, salía casi blanca).
+const FIRE_COLORS := {"rapidash": [Color(1.0, 0.55, 0.12), Color(0.9, 0.22, 0.04)]}
+
+
 ## Las llamas de los rips (Rapidash, Magmar: FireCore / FireSten) traen máscaras en gris que en los
 ## juegos colorea un shader propio; con el material normal se ven negras. Se cambian por fuego aditivo.
 func _fix_fire_materials() -> void:
@@ -891,7 +900,8 @@ func _fix_fire_materials() -> void:
 				continue
 			var fire := StandardMaterial3D.new()
 			fire.albedo_texture = mat.albedo_texture
-			fire.albedo_color = Color(1.0, 0.85, 0.35) if mat.resource_name.begins_with("FireCore") else Color(1.0, 0.45, 0.1)
+			var colors: Array = FIRE_COLORS.get(data.id, [Color(1.0, 0.85, 0.35), Color(1.0, 0.45, 0.1)])
+			fire.albedo_color = colors[0] if mat.resource_name.begins_with("FireCore") else colors[1]
 			fire.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 			fire.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 			fire.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -941,8 +951,9 @@ uniform vec4 color : source_color;
 void fragment() {
 	float rim = 1.0 - abs(dot(NORMAL, VIEW));
 	float breath = 0.85 + 0.15 * sin(TIME * 2.4);
-	ALBEDO = color.rgb * 1.6;
-	ALPHA = clamp(color.a * (0.18 + 2.4 * rim * rim), 0.0, 1.0) * breath;
+	// Bruma: casi transparente de frente y más densa (y más clara) en el borde, sin llegar a opaca.
+	ALBEDO = mix(color.rgb * 1.4, vec3(0.86, 0.74, 1.0), rim * rim * 0.45);
+	ALPHA = clamp(color.a * (0.07 + 1.25 * rim * rim * rim), 0.0, 0.75) * breath;
 }
 "
 
@@ -958,6 +969,8 @@ static var _vivid_textures := {}
 ## melocotón en vez de naranja). Se sube la saturación y algo el contraste: el blanco sigue blanco.
 const VIVID_SATURATION := 1.6
 const VIVID_CONTRAST := 1.08
+## Metal de los Pokémon de tipo acero (multiplica el de su textura): gris acero que se ve con cualquier cielo.
+const STEEL_METALLIC := 0.5
 ## Versión ajustada de cada textura (tools/tune_textures.py): satura según cada píxel y oscurece los claros
 ## saturados para que el sol del tablero no los queme (Charizard salía amarillo). Si no hay, se usa la saturación de arriba.
 const TUNED_DIR := "res://assets/models/pokemon/tuned/"
@@ -977,9 +990,13 @@ func _vivid_materials() -> void:
 				continue
 			mat.set_meta("vivid", true)
 			# Algunos rips marcan como metal pieles y lodos (Haunter, Grimer, Beedrill, Koffing): solo reflejaban el
-			# cielo y el color no se veía. Metal de verdad solo en los de tipo acero (Magnemite, Magneton).
-			if mat.metallic > 0.4 and not "steel" in data.types:
-				mat.metallic = 0.0
+			# cielo y el color no se veía. Metal de verdad solo en los de tipo acero (Magnemite, Magneton), y a
+			# medias: su textura los deja casi espejo (metal 0,94, rugosidad 0,3) y salían negros con el cielo oscuro.
+			if mat.metallic > 0.4:
+				if "steel" in data.types:
+					mat.metallic = STEEL_METALLIC
+				else:
+					mat.metallic = 0.0
 			if mat.albedo_texture:
 				mat.albedo_texture = _vivid_texture(mat.albedo_texture)
 			elif FLAT_COLORS.get(data.id, {}).has(mat.resource_name):

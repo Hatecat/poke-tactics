@@ -98,6 +98,13 @@ o IP directa). Detalle de cada parte en el README.
   (→ `data/pokemon_ground.json`, aplicado por `Unit._lift`; voladores en `bake_ground.FLYERS`) y pasa
   `tools/check_ground.gd` (y `tools/ground_biomes.gd` para verlo en los 18 biomas). Para revisar los 151 de un
   vistazo: un script que crea un `Unit` por clip (idle, walk, fight_b, fight_d, hit, ko) y hace `seek` + `pause`.
+- **Debilitado (`animate_status.py`, 42 fotogramas):** según el cuerpo (`_body_kind`): bípedo (rodillas que ceden
+  con los pies clavados por IK a mano, `_two_bone_ik`, y cae de lado; sin rodilla, cae entero), cuadrúpedo (se
+  echa sobre la barriga), alado (`WINGED`: baja nivelado y se posa horizontal), levitador (`FLOATING`: se hunde;
+  los de gas se deshinchan) o el de siempre; serpientes, el suyo de `animate_serpent.py`. `Unit.KO_HOLD` deja ver
+  la pose final antes de encogerse. El IK solo cambia giros (`_set_rotation`): los rips traen huesos con escala
+  desigual. Retoques de malla de un rip (péndulo de Hypno, llamas de Rapidash, Snorlax subdividido, pesos de las
+  costuras de Magnemite/Magneton): `tools/blender/fix_props.py`, se puede repetir.
 - **Modo historia:** `StoryRun` (en `Game.story`, sección "story" del guardado) recorre los pasos de
   data/story/capituloN.json: "titulo" y "escena" en story.tscn (`cutscene.gd`), "combate" en battle.tscn con
   `Game.mode = "story"`. Retratos en assets/portraits/<id>.png; `Unit.ally_ai` es el aliado de la IA. Los ataques

@@ -35,7 +35,8 @@ EXPOSURE = 0.24
 CONTRAST = 1.05
 
 # Por especie o por textura (el principio del nombre del archivo; gana el más largo): hue (grados que gira el tono),
-# sat (saturación objetivo), pull, bright (multiplica el brillo), exposure (en vez de EXPOSURE).
+# sat (saturación objetivo), pull, bright (multiplica el brillo), exposure (en vez de EXPOSURE), grow_dark (píxeles que
+# engordan pupilas y párpados sobre el blanco del ojo).
 # Referencia: los colores oficiales (artwork de Sugimori / Pokémon HOME).
 TUNE = {
     # Crema pálido, no limón (solo el cuerpo: las llamas siguen naranjas).
@@ -59,6 +60,16 @@ TUNE = {
     # Roca gris media: con el sol del tablero la textura (gris claro) salía casi blanca.
     "geodude_pm0074_00_Body": {"bright": 0.72},
     "graveler_pm0075_00_Body": {"bright": 0.75},
+    # Las pupilas de Magikarp (5 píxeles en la textura) desaparecían en el tablero.
+    "magikarp_pm0129_00_Eye1": {"grow_dark": 3},
+    # Eevee salía marrón chocolate: el castaño claro del artwork (algo más claro y menos saturado; el collar crema
+    # apenas cambia).
+    "eevee": {"sat": 0.6, "bright": 1.15},
+    # El naranja de Growlithe tiraba a salmón: naranja franco, sin tocar la melena crema (BodyB1).
+    "growlithe_pm0058_00_BodyA1": {"hue": 6, "sat": 0.82},
+    # Cuerpo de Weezing: la textura es malva muy oscuro; el artwork es morado medio (el humo y la boca no cambian).
+    "weezing_0": {"hue": -12, "sat": 0.45, "bright": 1.6},
+    "weezing_Image_0": {"hue": -12, "sat": 0.45, "bright": 1.6},
     # Las texturas de Grimer y Muk son lavanda azulado: en los juegos el shader las tiñe de morado.
     "grimer": {"hue": 55, "bright": 0.68, "sat": 0.62},
     "muk": {"hue": 50, "bright": 0.72, "sat": 0.62},
@@ -94,6 +105,22 @@ def _smoothstep(a, b, x):
     return t * t * (3 - 2 * t)
 
 
+def _grow_dark(rgb, px):
+    """Engorda `px` píxeles los trazos negros (pupilas, párpados) solo sobre el blanco del ojo: en las texturas
+    pequeñas la pupila mide 5 píxeles y con los mipmaps del tablero se borraba."""
+    lum = rgb.mean(-1)
+    chroma = rgb.max(-1) - rgb.min(-1)
+    ink = (lum < 0.25) & (chroma < 0.15)  # negro de verdad: no el borde marrón del iris
+    white = (lum > 0.6) & (chroma < 0.25)
+    near = ink.copy()
+    for dy in range(-px, px + 1):
+        for dx in range(-px, px + 1):
+            if dx * dx + dy * dy <= px * px:
+                near |= np.roll(np.roll(ink, dy, 0), dx, 1)
+    tone = rgb[ink].mean(0) if ink.any() else np.array([0.08, 0.08, 0.1])
+    return np.where((near & white)[..., None], tone, rgb)
+
+
 def tune(img, opts):
     a = np.asarray(img.convert("RGBA")).astype(np.float64) / 255.0
     rgb, alpha = a[..., :3], a[..., 3:]
@@ -104,6 +131,8 @@ def tune(img, opts):
     v = v * (1 - opts.get("exposure", EXPOSURE) * s * v) * opts.get("bright", 1.0)
     out = _hsv_to_rgb(h, s, np.clip(v, 0, 1))
     out = np.clip((out - 0.5) * CONTRAST + 0.5, 0, 1)
+    if opts.get("grow_dark"):
+        out = _grow_dark(out, opts["grow_dark"])
     return Image.fromarray((np.concatenate([out, alpha], -1) * 255 + 0.5).astype(np.uint8), "RGBA")
 
 

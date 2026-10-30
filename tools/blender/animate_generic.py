@@ -57,8 +57,9 @@ ROOTS = [b for b in BONES if b.parent is None]
 # "DROP" (baja el hueso hacia el suelo) o "FWD" (lo lleva hacia delante); DROP y FWD van espejados por lado).
 TWEAKS = {
     "butterfree": {"hover": True, "freq": 4, "wings": r"[LR]Feeler[AB]\d*", "flap": (32, 10, 0.04, 6)},
-    # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho.
-    "venomoth": {"hover": True, "freq": 3, "wings": r"[LR]Feeler[AB]\d*", "flap": (40, 20, 0.15, 4)},
+    # La polilla bate más lento y amplio, con las alas de detrás muy retrasadas: un batido en ocho. Con 40° y 20° de
+    # alzado las alas pasaban de la vertical y se cerraban como un tulipán delante de la cara: baten por debajo.
+    "venomoth": {"hover": True, "freq": 3, "wings": r"[LR]Feeler[AB]\d*", "flap": (26, -8, 0.12, 4)},
     "magikarp": {"amp": 16, "freq": 2},
     "tentacool": {"amp": 14},
     "tentacruel": {"amp": 12},
@@ -92,7 +93,10 @@ TWEAKS = {
     "krabby": {"amp": 6, "legs": True, "crab": True},
     "kingler": {"amp": 6, "legs": True, "crab": True},
     # Rips con esqueletos propios (Bone001..., L_UpperArm...): sin la convención de Charmander.
-    "zubat": {"hover": True, "amp": 24, "freq": 3},
+    # Las alas (Bone001-005 y Bone006-010) iban como apéndices sueltos, cada una a su ritmo: una arriba y la otra
+    # colgando. Ahora baten juntas y espejadas, con la punta algo retrasada, como un murciélago.
+    "zubat": {"hover": True, "amp": 24, "freq": 3, "wings": r"Bone0(0[1-9]|10)", "flap": (34, 8, 0.0, 4),
+              "flap_follow": (0.08, 0.55)},
     # Moltres bate despacio y amplio (un batido por segundo) y la punta del ala llega tarde: ondula como un ave.
     "moltres": {"hover": True, "freq": 2, "wings": r"[LR]_(UpperArm|Forearm|Hand|Wing_ex)", "flap": (36, 10, 0.0, 2),
                 "flap_follow": (0.11, 0.6)},
@@ -103,6 +107,9 @@ TWEAKS = {
     "wigglytuff": {"amp": 8},
     "haunter": {"float": True, "amp": 10},
     "magnemite": {"float": True, "amp": 4},
+    # La mandíbula del rip va abierta de par en par en todas las poses (parecía desencajada): entreabierta, enseñando
+    # los colmillos; el vaivén de apéndices la sigue moviendo un poco.
+    "gyarados": {"hold": {r"LowerBeak": -18}},
 }.get(NAME, {})
 AMP = TWEAKS.get("amp", 10)
 FREQ = TWEAKS.get("freq", 1)
