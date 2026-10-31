@@ -7,6 +7,9 @@ encima de ella (salían como rayas en el aire). Se borran los triangulitos y el 
 los dedos de la mano derecha: la varilla se orienta para que en el idle (frame 1, ya animado) caiga recta hacia
 abajo (más corta: la del rip llegaba al suelo) y el aro queda en el plano de la varilla, como una moneda colgando. Va pesado entero a RHand, así que en
 las demás acciones se mueve con la mano. Se puede repetir: si la varilla ya cuelga de la mano no hace nada.
+Si el esqueleto trae los huesos del péndulo y del pulgar (añadidos a mano, de la punta de los dedos al aro y de la
+base del pulgar a su punta), se les dan pesos: el péndulo entero a Pendulum (animate_pokemon.py lo deja colgando
+y oscilando) y el pulgar a RThumb, fundido con la mano en su base.
 rapidash, snorlax, magnemite y magneton: ver sus funciones (_weld_weights para los imanes).
 Después: tools/blender/export_animations.py.
 """
@@ -41,6 +44,97 @@ def _hand_rest_to_idle(bone):
 
 
 def hypno():
+    _hang_pendulum()
+    _hypno_bones()
+
+
+# Huesos añadidos a mano en Blender (con los nombres que les puso el editor) y los que llevan en el juego
+HYPNO_BONES = {"RHand.001": "Pendulum", "RHand.002": "RThumb"}
+THUMB_RADIUS = 6.0  # cm del rip: vértices a menos de esto del hueso del pulgar van con él (se funde hasta 1,5×)
+
+
+def _hypno_bones():
+    """Pesos de los huesos del péndulo y del pulgar. Sin pesos, la malla seguía a RHand y los huesos no movían
+    nada. El péndulo (las piezas sueltas pesadas enteras a la mano, junto al hueso) va entero a Pendulum; el
+    pulgar, a RThumb según lo cerca que esté del hueso y lo lejos de su base, quitándoselo a la mano y al
+    antebrazo en la misma proporción."""
+    from mathutils.geometry import intersect_point_line
+    bones = arm.data.bones
+    for old, new in HYPNO_BONES.items():
+        if old in bones and new not in bones:
+            bones[old].name = new
+    if not all(n in bones for n in HYPNO_BONES.values()):
+        print("hypno: sin huesos de péndulo y pulgar; pesos sin tocar")
+        return
+    hand = next(b.name for b in bones if _canon(b.name) == "RHand")
+    o = next(o for o in bpy.context.scene.objects if o.type == "MESH" and hand in o.vertex_groups)
+    to_arm = arm.matrix_world.inverted() @ o.matrix_world
+    me = o.data
+    groups = {g.index: g.name for g in o.vertex_groups}
+
+    def near(p, bone):
+        b = bones[bone]
+        q, t = intersect_point_line(p, b.head_local, b.tail_local)
+        t = max(0.0, min(1.0, t))
+        return (p - b.head_local.lerp(b.tail_local, t)).length, t
+
+    # Piezas sueltas (componentes conexas) del péndulo
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    seen, pend = set(), set()
+    pb_len = bones["Pendulum"].length
+    for v in bm.verts:
+        if v.index in seen:
+            continue
+        comp, st = [], [v]
+        seen.add(v.index)
+        while st:
+            x = st.pop()
+            comp.append(x.index)
+            for e in x.link_edges:
+                y = e.other_vert(x)
+                if y.index not in seen:
+                    seen.add(y.index)
+                    st.append(y)
+        if len(comp) < 30 and all(near(to_arm @ me.vertices[i].co, "Pendulum")[0] < 0.4 * pb_len for i in comp):
+            pend.update(comp)
+    bm.free()
+    weights = {}
+    for v in me.vertices:
+        p = to_arm @ v.co
+        if v.index in pend:
+            weights[v.index] = ("Pendulum", 1.0)
+            continue
+        d, t = near(p, "RThumb")
+        if d > 1.5 * THUMB_RADIUS or not any(groups[g.group] in (hand, hand.replace("Hand", "ForeArm"))
+                                             for g in v.groups):
+            continue
+        dh = min(near(p, n)[0] for n in (hand, hand.replace("Hand", "ForeArm")))
+        if dh <= d:
+            continue
+        w = min(1.0, (1.5 * THUMB_RADIUS - d) / (0.5 * THUMB_RADIUS)) * _smooth01((t - 0.15) / 0.35)
+        if w > 0.01:
+            weights[v.index] = ("RThumb", w)
+    for name in HYPNO_BONES.values():
+        if name in o.vertex_groups:
+            o.vertex_groups.remove(o.vertex_groups[name])
+        o.vertex_groups.new(name=name)
+    for i, (name, w) in weights.items():
+        v = me.vertices[i]
+        for g in list(v.groups):  # el resto, en proporción, para que sumen 1
+            if g.weight > 0:
+                o.vertex_groups[g.group].add([i], g.weight * (1 - w), "REPLACE")
+        o.vertex_groups[name].add([i], w, "REPLACE")
+    print(f"hypno: {len(pend)} vértices al péndulo, {sum(1 for n, _ in weights.values() if n == 'RThumb')} "
+          f"al pulgar")
+
+
+def _smooth01(x):
+    x = max(0.0, min(1.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def _hang_pendulum():
     hand = next(b.name for b in arm.data.bones if _canon(b.name) == "RHand")
     o = next(o for o in bpy.context.scene.objects if o.type == "MESH" and hand in o.vertex_groups)
     gi = o.vertex_groups[hand].index

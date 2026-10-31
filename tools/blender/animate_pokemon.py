@@ -221,6 +221,13 @@ def _tail_lift(chain):
 #   legs_in: grados que se cierran las piernas; hold: giros fijos de otros huesos (eje PITCH/YAW/ROLL, grados);
 #   local: pose fija de un hueso tal como se posó a mano en Blender (location y rotation_quaternion locales del
 #   pose bone, que se copian del panel): sigue a su padre en todas las acciones (el puerro de Farfetch'd);
+#   pose: giro extra (cuaternión local) que se suma al final del giro generado de cada hueso en las acciones de
+#   pose_clips: copia una pose hecha a mano sobre el idle (giro_a_mano = giro_generado @ pose) y el resto de la
+#   animación sigue balanceándose encima (los brazos al frente de Drowzee);
+#   pendulum: péndulo que cuelga de la mano (Hypno): bone, el hueso del péndulo; grip, el punto de la mano (en su
+#   reposo) del que cuelga; thumb, el pulgar, que apunta a ese punto para sujetarlo; swing, grados que oscila
+#   de lado a lado (un vaivén por cada 24 fotogramas). En cada fotograma apunta hacia abajo, haga lo que haga
+#   la mano;
 #   crouch: grados que se doblan las piernas en reposo (4); bounce: grados extra de rebote en el idle (dos por
 #   ciclo, con la cadera bajando lo que encogen las piernas); idle_arms: cuánto más se balancean los brazos.
 _STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: colgando junto al cuerpo
@@ -247,7 +254,10 @@ TWEAKS = {
     "hitmonchan": {"arm_drop": 68, "arm_fwd": 30, "elbow": 95},
     # Humanoides de brazos largos: a 45° quedaban casi en cruz, con las manos lejos del cuerpo. Cuelgan a los
     # costados con el codo algo doblado; los de tripa ancha (Electabuzz, Poliwag) o vestido (Jynx) un poco menos.
-    "hypno": {"arm_drop": 72, "arm_fwd": 12, "elbow": 12},
+    "hypno": {"arm_drop": 72, "arm_fwd": 12, "elbow": 12, 
+              # El péndulo cuelga de un punto entre la punta del pulgar y el índice (en el reposo de la mano)
+              "pendulum": {"bone": "Pendulum", "swing": 14, "hand": "RHand", "thumb": "RThumb",
+                           "grip": (-109.5, -12.7, 91.9)}},
     "jynx": {"arm_drop": 62, "arm_fwd": 18, "elbow": 15},
     "electabuzz": {"arm_drop": 70, "arm_fwd": 18, "elbow": 15},
     "magmar": {"arm_drop": 62, "arm_fwd": 15, "elbow": 15},
@@ -266,6 +276,10 @@ TWEAKS = {
     # colgaban como manos abiertas) y echadas atrás, con la punta junto a la cola. La izquierda, la del puerro, cruza
     # por delante de la barriga como en el anime. El puerro, posado a mano en Blender: cruza el pecho en diagonal bajo
     # el ala, con lo blanco asomando junto a la punta y las hojas hacia el otro hombro.
+    "drowzee": {"pose_clips": ("idle", "walk"),
+                "pose": {"LArm": (0.8718, -0.097, 0.1083, -0.4677), "LForeArm": (0.9798, 0, 0, 0.1999),
+                         "LHand": (0.9407, -0.2822, 0.1881, 0), "RArm": (0.933, -0.0692, -0.052, 0.3493),
+                         "RHand": (0.9407, -0.2822, -0.1881, 0)}},
     "farfetchd": {"arm_drop": 76, "arm_fwd": -55, "arm_twist": 90, "hold": {"LArm": [("PITCH", -85), ("ROLL", 30)]},
                   "local": {"FeelerB1": ((0.0372, -0.109, -0.0304), (0.9067, 0.3793, -0.1755, 0.0563)),
                             "FeelerB3": ((0, 0, 0), (0.9967, 0.0724, -0.0345, 0.015))}},
@@ -1129,6 +1143,42 @@ def flap(act):
                 pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
 
 
+def pendulum(act):
+    """Péndulo colgando de la mano (TWEAKS "pendulum"): en cada fotograma su cabeza se lleva al punto de agarre
+    de la mano, el pulgar apunta a ese punto y el péndulo se gira para colgar hacia abajo en el mundo, inclinado
+    de lado a lado por el vaivén. Va después de las demás claves: necesita la pose de la mano ya evaluada.
+    Ciclo cerrado: el primer y el último fotograma coinciden."""
+    cfg = TWEAKS.get("pendulum")
+    pb = PB.get(cfg["bone"]) if cfg else None
+    if pb is None:
+        return
+    hand, thumb = PB[cfg["hand"]], PB.get(cfg.get("thumb", ""))
+    sc = bpy.context.scene
+    f0, f1 = int(act.frame_start), int(act.frame_end)
+    swings = max(1, round((f1 - f0) / 24))
+
+    def base(p):  # el hueso con giro y desplazamiento nulos, siguiendo a su padre
+        return p.parent.matrix @ p.parent.bone.matrix_local.inverted() @ p.bone.matrix_local
+
+    for frame in range(f0, f1 + 1):
+        sc.frame_set(frame)
+        grip = hand.matrix @ hand.bone.matrix_local.inverted() @ Vector(cfg["grip"])
+        if thumb:
+            m = base(thumb).to_3x3()
+            thumb.rotation_mode = "QUATERNION"
+            thumb.rotation_quaternion = Vector((0, 1, 0)).rotation_difference(
+                (m.inverted() @ (grip - base(thumb).translation)).normalized())
+            thumb.keyframe_insert("rotation_quaternion", frame=frame, group=thumb.name)
+        a = math.radians(cfg.get("swing", 0)) * math.sin(2 * math.pi * swings * (frame - f0) / max(1, f1 - f0))
+        want = Quaternion(BACK, a) @ -UP
+        m = base(pb)
+        pb.rotation_mode = "QUATERNION"
+        pb.location = m.inverted() @ grip
+        pb.rotation_quaternion = Vector((0, 1, 0)).rotation_difference((m.to_3x3().inverted() @ want).normalized())
+        pb.keyframe_insert("location", frame=frame, group=pb.name)
+        pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
+
+
 def build(name, keys):
     keys = styled(name, keys)
     if QUAD and name not in ("idle", "walk"):
@@ -1152,6 +1202,8 @@ def build(name, keys):
             if name in BASE_ROTS:
                 rots = BASE_ROTS[name] + (rots or [])
             pb.rotation_quaternion = lquat(name, rots) if rots else Quaternion()
+            if name in TWEAKS.get("pose", {}) and act.name in TWEAKS.get("pose_clips", ()):
+                pb.rotation_quaternion = pb.rotation_quaternion @ Quaternion(TWEAKS["pose"][name])
             pb.location = B[name].matrix_local.to_3x3().inverted() @ offset if name in ROOTS else Vector()
             if name in TWEAKS.get("local", {}):
                 pb.location, pb.rotation_quaternion = (Vector(v) if len(v) == 3 else Quaternion(v)
@@ -1159,6 +1211,7 @@ def build(name, keys):
             pb.keyframe_insert("location", frame=frame, group=pb.name)
             pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
     flap(act)
+    pendulum(act)
 
 
 def main():

@@ -653,7 +653,7 @@ Ajustes que no se deducen del esqueleto:
   más cerradas, pecho bajo y manos bajo los hombros en cuadrúpedos de patas cortas, `arm_twist` para alas que en
   pose en T miran al frente y al bajarlas parecían manos abiertas: Farfetch'd las pliega contra el costado y lleva
   el ala del puerro por delante de la barriga; `local` fija la pose de un hueso tal como se posó a mano en
-  Blender (location y rotation_quaternion del pose bone): así va su puerro, cruzando el pecho bajo el ala...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
+  Blender (location y rotation_quaternion del pose bone): así va su puerro, cruzando el pecho bajo el ala; `pose` suma un giro hecho a mano sobre el idle a las acciones de `pose_clips`, sin quitarles el balanceo: los brazos de Drowzee al frente en el idle y al caminar; `pendulum` deja el péndulo de Hypno colgando de entre el pulgar y el índice, siempre hacia abajo y con un vaivén de lado a lado...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
 - `STYLES` en `animate_pokemon.py`: forma de moverse distinta de la de su esqueleto. `fly` (Beedrill) vuela con
   las piernas colgando y aletea rápido los huesos de `wings`; las aves (Pidgey, Zapdos...) usan el mismo
   estilo con `flap` (fotogramas por batido y grados) para un aleteo lento y amplio; `lotus` (Abra) levita con las piernas cruzadas;
