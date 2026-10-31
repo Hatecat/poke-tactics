@@ -24,6 +24,7 @@ const CHUNK := 5
 ## lógica del tablero (`grid` no lo guarda).
 var scenery := false
 var _building_scenery := false
+var _city_variants := {}  # edificios del campo de adorno ya hechos: clave -> [altura, [[malla, material]...]]
 ## Relieve del campo de adorno (biomas naturales): una malla de terreno sin colisión sustituye al suelo llano
 ## de fuera, con dunas, lomas, laderas o paredes de roca según el bioma. `_relief_at` da la altura de cada
 ## casilla de fuera, para asentar en ella sus árboles y rocas.
@@ -89,8 +90,10 @@ const BOOK_ROW_HALF := 0.45
 const BOOK_COLORS := [Color(0.45, 0.1, 0.1), Color(0.34, 0.08, 0.08), Color(0.12, 0.3, 0.18), Color(0.1, 0.16, 0.35),
 	Color(0.62, 0.44, 0.16), Color(0.6, 0.47, 0.32), Color(0.34, 0.2, 0.11), Color(0.09, 0.08, 0.09),
 	Color(0.82, 0.77, 0.64), Color(0.12, 0.33, 0.36), Color(0.3, 0.13, 0.28), Color(0.52, 0.3, 0.14)]
-## Biomas cuyo campo de adorno funde sus obstáculos por zonas (`_merge_baked`): cientos de muebles iguales.
-const SCENERY_MERGED := [Biome.Kind.LIBRARY]
+## Edificios distintos en el campo de adorno de la Ciudad (`_scenery_building`).
+const CITY_VARIANTS := 40
+## Biomas cuyo campo de adorno funde sus obstáculos por zonas (`_merge_baked`): cientos de muebles o casas.
+const SCENERY_MERGED := [Biome.Kind.LIBRARY, Biome.Kind.CITY]
 ## Biblioteca: cada cuántas casillas cortan las hileras de estanterías del campo de adorno.
 const LIBRARY_BAY := 7
 ## Muebles que se unen con los iguales de al lado (al cambiar uno en el editor se rehacen los vecinos).
@@ -1450,25 +1453,7 @@ func _prop_node(prop: int, c: Vector2i) -> Node3D:
 			if _look == Biome.Kind.AIRPORT:
 				node.set_meta("sway_height", _terminal(node, c))
 				return node
-			var walls := [Color(0.62, 0.36, 0.28), Color(0.82, 0.76, 0.62), Color(0.62, 0.64, 0.66), Color(0.7, 0.55, 0.42)]
-			var wall: Color = walls[h % 4]
-			var floors := 1 + (h >> 2) % 3
-			var tall := 0.45 * floors + 0.2
-			_part(node, _unit_box(), Vector3(0, tall * 0.5, 0), wall).scale = Vector3(0.9, tall, 0.9)
-			_part(node, _unit_box(), Vector3(0, tall + 0.03, 0), wall.darkened(0.3)).scale = Vector3(0.96, 0.06, 0.96)
-			var glass := Color(0.35, 0.5, 0.62)
-			for f in floors:
-				var y := 0.42 + 0.45 * f
-				for side in 4:
-					var out := Vector3(cos(side * PI / 2), 0, sin(side * PI / 2))
-					var across := Vector3(-out.z, 0, out.x)
-					for k in [-1, 1]:
-						var win := _part(node, _unit_box(), Vector3(0, y, 0) + out * 0.452 + across * 0.2 * k, glass.lightened(0.15 * ((h >> (f + side)) % 2)))
-						win.scale = Vector3(0.02, 0.2, 0.02) + (across * 0.16).abs()
-			_part(node, _unit_box(), Vector3(0, 0.15, 0.452), wall.darkened(0.45)).scale = Vector3(0.2, 0.3, 0.02)
-			if (h >> 5) % 2 == 0:
-				_part(node, _unit_box(), Vector3(0.18, tall + 0.14, -0.15), Color(0.55, 0.56, 0.58)).scale = Vector3(0.25, 0.2, 0.22)
-			height = tall
+			height = _scenery_building(node, h) if _building_scenery else _city_building(node, h)
 		Biome.Prop.LAMP:
 			# Farola: poste negro con brazo y un farol que brilla tenue.
 			node.scale = Vector3.ONE
@@ -2107,6 +2092,165 @@ func _pillar(node: Node3D, type: String) -> void:
 				_part(node, _cyl(0.275, 0.275, 0.05, 16), Vector3(0, 0.3, 0), line)
 
 
+## Edificio del campo de adorno de la Ciudad: una de CITY_VARIANTS variantes, cada una hecha y fundida una sola
+## vez (cientos de edificios pieza a pieza alargaban la carga). Devuelve la altura de los muros.
+func _scenery_building(node: Node3D, h: int) -> float:
+	var key := hash(h % CITY_VARIANTS)
+	if not _city_variants.has(key):
+		var model := Node3D.new()
+		var tall := _city_building(model, key)
+		_bake(model)
+		var parts := []
+		for mi: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+			parts.append([mi.mesh, mi.material_override])
+		model.free()
+		_city_variants[key] = [tall, parts]
+	for part: Array in _city_variants[key][1]:
+		var mi := MeshInstance3D.new()
+		mi.mesh = part[0]
+		mi.material_override = part[1]
+		node.add_child(mi)
+	return _city_variants[key][0]
+
+
+## Edificio de la Ciudad, según `h`: casa de 1 o 2 plantas con tejado a dos aguas, chimenea, contraventanas y
+## porche, o bloque de 2 o 3 plantas con cornisas entre plantas, pretil, depósito o máquinas en la azotea y a
+## veces una tienda con toldo de rayas en la planta baja. Ventanas con marco, alféizar y cristal con brillo; la
+## puerta da a +z. Fuera del tablero (campo de adorno) se queda la silueta, sin los detalles pequeños. Devuelve
+## la altura de los muros.
+func _city_building(node: Node3D, h: int) -> float:
+	const W := 0.86  # ancho del cuerpo
+	const FH := 0.4  # alto de cada planta
+	const BASE := 0.08  # zócalo
+	var walls := [Color(0.68, 0.38, 0.3), Color(0.9, 0.82, 0.66), Color(0.74, 0.75, 0.76), Color(0.84, 0.64, 0.44),
+		Color(0.64, 0.76, 0.84), Color(0.72, 0.82, 0.68), Color(0.9, 0.7, 0.68)]
+	var wall: Color = walls[h % walls.size()]
+	var trim := Color(0.95, 0.93, 0.88)
+	var detail := not _building_scenery
+	var house := (h >> 3) % 3 == 0
+	var floors := 1 + (h >> 5) % 2 if house else 2 + (h >> 5) % 2
+	var shop := not house and (h >> 6) % 2 == 0
+	var top := BASE + FH * floors
+	var glass_color := Color(0.3, 0.44, 0.56).darkened(SCENERY_PROP_SHADE if _building_scenery else 0.0)
+	var glass := _finish(glass_color, 0.08, 0.3)
+	var accent: Color = [Color(0.25, 0.45, 0.3), Color(0.24, 0.36, 0.6), Color(0.55, 0.22, 0.2), Color(0.4, 0.3, 0.22)][(h >> 7) % 4]
+	_part(node, _unit_box(), Vector3(0, BASE * 0.5, 0), wall.darkened(0.45)).scale = Vector3(W + 0.03, BASE, W + 0.03)
+	_part(node, _unit_box(), Vector3(0, BASE + FH * floors * 0.5, 0), wall).scale = Vector3(W, FH * floors, W)
+	# Pieza pegada a una fachada: `out` es la cara, `along` el desplazamiento por ella, `stand` cuánto sale
+	var face := func(out: Vector3, along: float, y: float, size: Vector3, stand: float, color: Color) -> MeshInstance3D:
+		var across := Vector3(-out.z, 0, out.x)
+		var p := _part(node, _unit_box(), Vector3(0, y, 0) + out * (W * 0.5 + stand) + across * along, color)
+		p.scale = across.abs() * size.x + Vector3(0, size.y, 0) + out.abs() * size.z
+		return p
+	var window := func(out: Vector3, along: float, y: float, shutters: bool) -> void:
+		if detail:
+			face.call(out, along, y, Vector3(0.2, 0.25, 0.02), 0.0, trim)  # marco
+			face.call(out, along, y - 0.135, Vector3(0.24, 0.025, 0.06), 0.02, trim.darkened(0.08))  # alféizar
+			if shutters:
+				for k in [-1, 1]:
+					face.call(out, along + k * 0.15, y, Vector3(0.07, 0.25, 0.02), 0.005, accent)
+		face.call(out, along, y, Vector3(0.15, 0.2, 0.02), 0.008, Color.WHITE).material_override = glass
+	var front := Vector3(0, 0, 1)
+	for f in floors:
+		var y := BASE + FH * f + FH * 0.55
+		for side in 4:
+			var out := Vector3(cos(side * PI / 2), 0, sin(side * PI / 2)).round()
+			var ground_front := f == 0 and out == front
+			if ground_front and shop:
+				continue
+			for k in [-1, 1]:
+				window.call(out, (0.27 if ground_front else 0.2) * k, y, house and not ground_front)
+		if f > 0 and detail:  # cornisa entre plantas
+			_part(node, _unit_box(), Vector3(0, BASE + FH * f, 0), trim.darkened(0.12)).scale = Vector3(W + 0.025, 0.025, W + 0.025)
+	# Puerta (o el escaparate de la tienda)
+	if shop:
+		var awning: Color = [Color(0.85, 0.25, 0.22), Color(0.2, 0.5, 0.75), Color(0.25, 0.6, 0.35), Color(0.9, 0.6, 0.15)][(h >> 8) % 4]
+		face.call(front, 0.0, BASE + 0.15, Vector3(0.7, 0.28, 0.02), 0.0, wall.darkened(0.55))  # hueco
+		face.call(front, -0.1, BASE + 0.16, Vector3(0.44, 0.24, 0.02), 0.008, Color.WHITE).material_override = glass
+		face.call(front, 0.24, BASE + 0.13, Vector3(0.14, 0.26, 0.02), 0.008, accent)  # puerta de la tienda
+		face.call(front, 0.0, BASE + 0.34, Vector3(0.6, 0.06, 0.02), 0.01, trim)  # rótulo
+		# Toldo inclinado: lona a rayas (lisa fuera del tablero)
+		var hold := Node3D.new()
+		hold.position = Vector3(0, BASE + 0.31, W * 0.5)
+		hold.rotation.x = 0.5
+		node.add_child(hold)
+		var stripes := 6 if detail else 1
+		for i in stripes:
+			var col: Color = awning if i % 2 == 0 else trim
+			var piece := _part(hold, _unit_box(), Vector3(-0.36 + 0.72 * (i + 0.5) / stripes, 0, 0.11), col)
+			piece.scale = Vector3(0.72 / stripes, 0.015, 0.22)
+	else:
+		face.call(front, 0.0, BASE + 0.15, Vector3(0.2, 0.3, 0.02), 0.0, trim)
+		face.call(front, 0.0, BASE + 0.14, Vector3(0.14, 0.26, 0.02), 0.008, accent.darkened(0.2))
+		if detail:
+			face.call(front, 0.0, BASE - 0.02, Vector3(0.26, 0.04, 0.1), 0.04, wall.darkened(0.35))  # escalón
+			face.call(front, 0.04, BASE + 0.13, Vector3(0.02, 0.02, 0.02), 0.02, Color(0.85, 0.75, 0.35))  # pomo
+		# Porche (casa) o marquesina (bloque) sobre la puerta
+		face.call(front, 0.0, BASE + 0.32, Vector3(0.32, 0.03, 0.14), 0.07, trim.darkened(0.1))
+	if house:
+		_gable_roof(node, top, W, h, wall)
+	else:
+		# Azotea: pretil alrededor, tapa y depósito de agua o máquinas de clima
+		var cap := wall.darkened(0.25)
+		_part(node, _unit_box(), Vector3(0, top + 0.005, 0), cap.darkened(0.2)).scale = Vector3(W - 0.02, 0.01, W - 0.02)
+		for side in 4:
+			var out := Vector3(cos(side * PI / 2), 0, sin(side * PI / 2)).round()
+			var across := Vector3(-out.z, 0, out.x)
+			var p := _part(node, _unit_box(), Vector3(0, top + 0.04, 0) + out * (W * 0.5 - 0.01), cap)
+			p.scale = across.abs() * (W + 0.04) + Vector3(0, 0.08, 0) + out.abs() * 0.05
+		if (h >> 9) % 2 == 0:
+			var metal := Color(0.5, 0.52, 0.55)
+			for k in 4:
+				var leg := Vector3(0.06 * (1 if k % 2 else -1), 0, 0.06 * (1 if k >= 2 else -1))
+				_part(node, _unit_box(), Vector3(0.16, top + 0.07, -0.14) + leg, metal.darkened(0.3)).scale = Vector3(0.02, 0.14, 0.02)
+			_part(node, _cyl(0.11, 0.11, 0.18, 12), Vector3(0.16, top + 0.23, -0.14), Color(0.62, 0.5, 0.38))
+			_part(node, _cyl(0.0, 0.12, 0.06, 12), Vector3(0.16, top + 0.35, -0.14), Color(0.45, 0.36, 0.28))
+		else:
+			for k in (2 if detail else 1):
+				var box := _part(node, _bevel_box(), Vector3(-0.18 + 0.3 * k, top + 0.08, -0.16), Color(0.82, 0.83, 0.84))
+				box.scale = Vector3(0.2, 0.14, 0.16)
+				if detail:
+					_part(node, _cyl(0.05, 0.05, 0.01, 10), Vector3(-0.18 + 0.3 * k, top + 0.155, -0.16), Color(0.3, 0.31, 0.33))
+	return top
+
+
+## Tejado a dos aguas de una casa de la Ciudad sobre muros de ancho `w` y alto `top`: hastiales del color del muro,
+## faldones de teja con hileras, cumbrera y chimenea de ladrillo.
+func _gable_roof(node: Node3D, top: float, w: float, h: int, wall: Color) -> void:
+	var tile: Color = [Color(0.7, 0.32, 0.22), Color(0.36, 0.38, 0.44), Color(0.45, 0.3, 0.24), Color(0.3, 0.45, 0.48)][(h >> 10) % 4]
+	var rise := 0.3
+	var run := w * 0.5
+	# Hastial: un prisma (caja girada 45° y aplastada) que llena el triángulo de las dos fachadas laterales
+	var gable := Node3D.new()
+	gable.position = Vector3(0, top, 0)
+	gable.scale = Vector3(1, rise / run, 1)
+	node.add_child(gable)
+	var prism := _part(gable, _unit_box(), Vector3.ZERO, wall)
+	prism.rotation.x = PI / 4
+	prism.scale = Vector3(w - 0.01, w / sqrt(2.0), w / sqrt(2.0))
+	# Faldones con alero
+	var slope := atan2(rise, run)
+	var length := Vector2(run + 0.08, rise + 0.08 * rise / run).length()
+	var rows := 3 if not _building_scenery else 0
+	for s in [-1, 1]:
+		var hold := Node3D.new()
+		hold.position = Vector3(0, top + rise, 0)
+		hold.rotation.x = s * slope
+		node.add_child(hold)
+		var slab := _part(hold, _unit_box(), Vector3(0, 0.02, s * length * 0.5), tile)
+		slab.scale = Vector3(w + 0.12, 0.04, length)
+		for i in rows:  # hileras de teja
+			var row := _part(hold, _unit_box(), Vector3(0, 0.045, s * length * (0.25 + 0.25 * i)), tile.darkened(0.18))
+			row.scale = Vector3(w + 0.12, 0.012, 0.025)
+	_part(node, _unit_box(), Vector3(0, top + rise + 0.035, 0), tile.darkened(0.25)).scale = Vector3(w + 0.14, 0.05, 0.06)
+	# Chimenea
+	var chim := Vector3(0.22 * (1 if h % 2 else -1), 0, -0.14)
+	var brick := Color(0.6, 0.32, 0.26)
+	var base_y := top + rise * (1.0 - absf(chim.z) / run)
+	_part(node, _unit_box(), Vector3(chim.x, base_y + 0.08, chim.z), brick).scale = Vector3(0.1, 0.3, 0.1)
+	_part(node, _unit_box(), Vector3(chim.x, base_y + 0.24, chim.z), brick.darkened(0.3)).scale = Vector3(0.13, 0.03, 0.13)
+
+
 ## Tramo de la terminal del aeropuerto (una casilla de la fila): fachada de cristal con montantes blancos,
 ## zócalo de hormigón y cubierta en voladizo; la casilla central lleva la torre de control. Devuelve la altura.
 func _terminal(node: Node3D, c: Vector2i) -> float:
@@ -2631,13 +2775,23 @@ func _bake(node: Node3D) -> void:
 		var colors = arrays[Mesh.ARRAY_COLOR]
 		var nb := xf.basis.inverse().transposed()
 		var base: int = g[0].size()
-		for i in verts.size():
-			g[0].append(xf * verts[i])
-			g[1].append((nb * normals[i]).normalized())
-			var col: Color = m.albedo_color
-			if m.vertex_color_use_as_albedo and colors != null:
-				col *= colors[i]
-			g[2].append(col)
+		g[0].append_array(xf * verts)  # de una vez (en el motor): vértice a vértice era lo más lento de la carga
+		var turned := Transform3D(nb, Vector3.ZERO) * normals
+		if not (nb.is_conformal() and nb.get_scale().is_equal_approx(Vector3.ONE)):  # solo giro: siguen unitarias
+			for i in turned.size():
+				turned[i] = turned[i].normalized()
+		g[1].append_array(turned)
+		var tinted := m.vertex_color_use_as_albedo and colors != null
+		if tinted and m.albedo_color == Color.WHITE:  # ya fundida (_merge_baked): el color va en los vértices
+			g[2].append_array(colors)
+		else:
+			var cols := PackedColorArray()
+			cols.resize(verts.size())
+			cols.fill(m.albedo_color)
+			if tinted:
+				for i in verts.size():
+					cols[i] *= colors[i]
+			g[2].append_array(cols)
 		var indices = arrays[Mesh.ARRAY_INDEX]
 		if indices == null:
 			for i in verts.size():

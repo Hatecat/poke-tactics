@@ -476,8 +476,9 @@ hojas con foliolos que cuelgan, cocos) y matorrales de cactus de tres tipos (col
 flores y nopal con tunas). Lago: cuenca
 central con playa de arena. Nieve: ventisqueros con sombras azuladas, estanque de hielo agrietado, neveros sobre la roca y pinares nevados. Cueva: crestas de roca,
 charcas, estalagmitas y cristales. Pantano: terreno bajo con pozas, lodazales, juncales, nenúfares, sauces, árboles
-secos, luciérnagas y bruma verdosa. Ciudad: calles de dos carriles con línea discontinua, manzanas de edificios de
-1 a 3 plantas, farolas y un parque con fuente. Laboratorio: paneles con líneas guía luminosas, plataforma central
+secos, luciérnagas y bruma verdosa. Ciudad: calles de dos carriles con línea discontinua, manzanas con casas de tejado a
+dos aguas (chimenea, contraventanas, porche) y bloques de pisos con cornisas, azotea con depósito o máquinas de clima
+y a veces una tienda con toldo de rayas, farolas y un parque con fuente. Laboratorio: paneles con líneas guía luminosas, plataforma central
 elevada, bancos de consolas con pantallas y pilotos, e incubadoras de cristal con líquido que brilla. Volcán: crestas
 de basalto, río y pozas de lava (costra agrietada que se desliza sobre roca fundida que late y alumbra) con dos pasos
 de roca o puentes de madera chamuscada, ceniza, fumarolas humeantes, troncos calcinados, brasas que suben y calima. Playa: el mar en un costado con
