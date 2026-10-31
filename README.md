@@ -629,6 +629,18 @@ los huesos del .blend y rehace los pesos sin tocar las acciones (luego hay que v
 blender --background --python tools/blender/setup_animations.py -- chansey --reweight
 ```
 
+Como la plantilla no tiene hueso de hombro, en los de brazo gordo y pegado al cuerpo (Drowzee, Snorlax) la piel
+de la axila y el costado iban casi enteros con el brazo: al bajarlo se metían en el torso, parecían más delgados
+y el cuerpo se estrechaba como si tuvieran cintura. `smooth_shoulder_weights.py` pasa al tronco el peso de brazo
+de la axila y del costado que queda fuera del radio del brazo (solo las especies de su `SPECIES`, con la zona en
+alturas del modelo); no toca huesos ni acciones. Se puede repetir (la segunda pasada no hace nada; `--force`
+rehace desde los pesos originales y `--dry-run` solo informa). Tras un `--reweight` hay que volver a pasarlo con
+`--force`. Después, exportar y `bake_ground.gd`:
+
+```bash
+blender --background art/blender/snorlax.blend --python tools/blender/smooth_shoulder_weights.py
+```
+
 Para medir un modelo nuevo, render ortográfico de frente, de lado y desde arriba con una rejilla de 0,1 alturas.
 
 El export sobrescribe `assets/models/pokemon/charmander.glb`; Godot lo reimporta solo. Las acciones que dejes
