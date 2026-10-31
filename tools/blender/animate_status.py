@@ -228,8 +228,9 @@ def head_rot(pitch=0.0, roll=0.0, yaw=0.0):
             @ Quaternion(LEFT, math.radians(pitch)))
 
 
-def pose(phase, t=None, head=None, **kw):
-    return {"phase": phase, "body": body(**kw), "head": head}
+def pose(phase, t=None, head=None, bones=None, **kw):
+    """`bones`: giros extra de otros huesos ({nombre: head_rot(...)}), como el de la cabeza."""
+    return {"phase": phase, "body": body(**kw), "head": head, "bones": bones or {}}
 
 
 # ---------- poses por fotograma: f va de 0 a n-1; t = f / (n-1) es la vuelta del bucle ----------
@@ -442,9 +443,16 @@ def _bone_level():
     return max(-20.0, min(85.0, math.degrees(math.atan2(d.dot(UP), d.dot(FWD)))))
 
 
-# Con la cola larga colgando (Articuno), tumbarlo del todo la dejaba de punta hacia el cielo.
-LEVEL_MAX = {"articuno": 55}
-LEVEL = min(_bone_level(), LEVEL_MAX.get(NAME, 90)) if KO_BODY == "winged" else 0.0
+LEVEL = _bone_level() if KO_BODY == "winged" else 0.0
+# Colas largas de los que vuelan erguidos (Articuno): al tumbar el cuerpo quedaban de punta hacia el cielo, como un
+# palo. Su base gira al revés que el cuerpo (grados por grado de LEVEL) para que quede tendida detrás, en el suelo.
+TAIL_KO = {"articuno": ("Tail1", float(os.environ.get("TAIL_KO", "0.8")))}.get(NAME)
+if TAIL_KO and TAIL_KO[0] not in {pb.name for pb in PB}:
+    TAIL_KO = None
+
+
+def _tail_ko(e):
+    return {TAIL_KO[0]: head_rot(pitch=-TAIL_KO[1] * LEVEL * e)} if TAIL_KO else None
 
 
 def _smooth(x):
@@ -524,10 +532,12 @@ def ko_winged(f, n):
         flap = 6 / ILEN + total * (1 - (1 - x) ** 2)  # cada vez más lento
         wob = 10 * math.sin(3 * math.pi * x) * (1 - x)
         return pose(flap, pitch=-12 * (1 - e) + LEVEL * e, roll=SIDE * (wob + 14 * e),
-                    lift=0.02 * (1 - e) - HOVER * e, pivot=CENTER, head=head_rot(pitch=-20 + 45 * e))
+                    lift=0.02 * (1 - e) - HOVER * e, pivot=CENTER, head=head_rot(pitch=-20 + 45 * e),
+                    bones=_tail_ko(e))
     bounce = 0.025 * math.sin(math.pi * (f - 30) / 5) if f <= 35 else 0.0
     return pose(6 / ILEN + total, pitch=LEVEL, roll=SIDE * (14 + 4 * min(1.0, (f - 30) / 8)), lift=-HOVER + bounce,
-                pivot=CENTER, head=head_rot(pitch=25 + 15 * min(1.0, (f - 30) / 8), roll=6 * SIDE))
+                pivot=CENTER, head=head_rot(pitch=25 + 15 * min(1.0, (f - 30) / 8), roll=6 * SIDE),
+                bones=_tail_ko(1.0))
 
 
 def ko_float(f, n):
@@ -664,6 +674,10 @@ def build(name):
                 m = rest.inverted() @ k["body"] @ rest @ m
             elif pb == HEAD and k["head"] is not None:
                 q = Quaternion((rest.to_3x3().inverted() @ k["head"].axis).normalized(), k["head"].angle)
+                m = m @ q.to_matrix().to_4x4()
+            elif pb.name in k.get("bones", {}):
+                r = k["bones"][pb.name]
+                q = Quaternion((rest.to_3x3().inverted() @ r.axis).normalized(), r.angle)
                 m = m @ q.to_matrix().to_4x4()
             pb.rotation_mode = "QUATERNION"
             pb.matrix_basis = m

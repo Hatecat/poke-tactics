@@ -36,7 +36,8 @@ CONTRAST = 1.05
 
 # Por especie o por textura (el principio del nombre del archivo; gana el más largo): hue (grados que gira el tono),
 # sat (saturación objetivo), pull, bright (multiplica el brillo), exposure (en vez de EXPOSURE), grow_dark (píxeles que
-# engordan pupilas y párpados sobre el blanco del ojo).
+# engordan pupilas y párpados sobre el blanco del ojo), pad (píxeles que el color de cada isla de UV se extiende sobre
+# el fondo negro).
 # Referencia: los colores oficiales (artwork de Sugimori / Pokémon HOME).
 TUNE = {
     # Crema pálido, no limón (solo el cuerpo: las llamas siguen naranjas).
@@ -71,6 +72,9 @@ TUNE = {
     "weezing_0": {"hue": -12, "sat": 0.45, "bright": 1.6},
     "weezing_Image_0": {"hue": -12, "sat": 0.45, "bright": 1.6},
     # Las texturas de Grimer y Muk son lavanda azulado: en los juegos el shader las tiñe de morado.
+    # Las islas de UV de Lapras van sobre negro sin margen: con los mipmaps el negro se colaba por las costuras y la
+    # barriga y el cuello salían cruzados de rayas.
+    "lapras": {"pad": 16},
     "grimer": {"hue": 55, "bright": 0.68, "sat": 0.62},
     "muk": {"hue": 50, "bright": 0.72, "sat": 0.62},
 }
@@ -121,9 +125,51 @@ def _grow_dark(rgb, px):
     return np.where((near & white)[..., None], tone, rgb)
 
 
+def _spread(mask, px, grow):
+    """Engorda (`grow`) o adelgaza la máscara `px` píxeles (vecindad cuadrada)."""
+    out = mask.copy()
+    for dy in range(-px, px + 1):
+        for dx in range(-px, px + 1):
+            moved = np.roll(np.roll(mask, dy, 0), dx, 1)
+            out = (out | moved) if grow else (out & moved)
+    return out
+
+
+def _pad(rgb, px):
+    """Extiende `px` píxeles el color de cada isla de UV sobre el fondo negro, para que el filtrado y los mipmaps no
+    mezclen el negro en las costuras. Fondo = el negro de las zonas anchas y el que se une a ellas (las rendijas
+    entre islas; los trazos de ojos y bocas, rodeados de color, no) y el borde ya mezclado con él."""
+    black = rgb.max(-1) < 0.05
+    background = _spread(_spread(black, 4, False), 4, True) & black
+    while True:  # inunda el negro unido al fondo
+        grown = background.copy()
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            grown |= np.roll(np.roll(background, dy, 0), dx, 1)
+        grown &= black
+        if (grown == background).all():
+            break
+        background = grown
+    empty = _spread(background, 4, True)
+    out = np.where(empty[..., None], 0.0, rgb)
+    filled = ~empty
+    for _ in range(px + 2):
+        acc = np.zeros_like(out)
+        cnt = np.zeros(filled.shape)
+        for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)):
+            f = np.roll(np.roll(filled, dy, 0), dx, 1)
+            acc += np.roll(np.roll(out, dy, 0), dx, 1) * f[..., None]
+            cnt += f
+        grow = ~filled & (cnt > 0)
+        out[grow] = acc[grow] / cnt[grow][:, None]
+        filled |= grow
+    return out
+
+
 def tune(img, opts):
     a = np.asarray(img.convert("RGBA")).astype(np.float64) / 255.0
     rgb, alpha = a[..., :3], a[..., 3:]
+    if opts.get("pad"):
+        rgb = _pad(rgb, opts["pad"])
     h, s, v = _rgb_to_hsv(rgb)
     h = (h + opts.get("hue", 0) / 360.0) % 1.0
     w = _smoothstep(GRAY_LO, GRAY_HI, s) * opts.get("pull", SAT_PULL)

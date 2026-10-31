@@ -12,9 +12,9 @@ config_version=5
 
 config/name="poke-tactics"
 run/main_scene="res://scenes/main_menu.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
 run/main_scene.dedicated_server="res://scenes/vs_server.tscn"
 run/flush_stdout_on_print.dedicated_server=true
-config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
@@ -29,16 +29,15 @@ window/size/viewport_height=900
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor]
+
+export/convert_text_resources_to_binary=false
+
 [internationalization]
 
 locale/fallback="es"
 
 [rendering]
 
-anti_aliasing/quality/msaa_3d=2
-lights_and_shadows/directional_shadow/size=4096
 lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
-
-[editor]
-
-export/convert_text_resources_to_binary=false
+anti_aliasing/quality/msaa_3d=2
