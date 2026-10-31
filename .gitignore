@@ -3,3 +3,4 @@ __pycache__/
 *.blend1
 .tmp-ui/
 .tmp-vs/
+.tmp_mejora/
