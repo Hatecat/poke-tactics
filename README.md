@@ -650,7 +650,10 @@ Ajustes que no se deducen del esqueleto:
 - `PROPS` en `setup_animations.py`: accesorios sueltos que se cuelgan de un hueso al importar (las cucharas de
   Alakazam en sus manos, la cría de Kangaskhan en la bolsa).
 - `TWEAKS` en `animate_pokemon.py`: postura por especie (cuánto bajan, se abren y se doblan los brazos, piernas
-  más cerradas, pecho bajo y manos bajo los hombros en cuadrúpedos de patas cortas...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
+  más cerradas, pecho bajo y manos bajo los hombros en cuadrúpedos de patas cortas, `arm_twist` para alas que en
+  pose en T miran al frente y al bajarlas parecían manos abiertas: Farfetch'd las pliega contra el costado y lleva
+  el ala del puerro por delante de la barriga; `local` fija la pose de un hueso tal como se posó a mano en
+  Blender (location y rotation_quaternion del pose bone): así va su puerro, cruzando el pecho bajo el ala...). Las colas que atraviesan el suelo se levantan solas y las patas de cuadrúpedo que no lo tocan, se bajan.
 - `STYLES` en `animate_pokemon.py`: forma de moverse distinta de la de su esqueleto. `fly` (Beedrill) vuela con
   las piernas colgando y aletea rápido los huesos de `wings`; las aves (Pidgey, Zapdos...) usan el mismo
   estilo con `flap` (fotogramas por batido y grados) para un aleteo lento y amplio; `lotus` (Abra) levita con las piernas cruzadas;
@@ -666,7 +669,8 @@ Ajustes que no se deducen del esqueleto:
 - **Color:** las texturas de los rips salen desteñidas con la luz del juego y el sol del tablero quemaba los
   colores claros (Charizard amarillo). `python3 tools/tune_textures.py [especies]` escribe una versión ajustada
   de cada textura en `assets/models/pokemon/tuned/` (los originales no se tocan) y `Unit` la usa si existe;
-  `TUNE` corrige especies sueltas frente a sus colores oficiales. Después, `godot --headless --path . --import`.
+  `TUNE` corrige especies sueltas frente a sus colores oficiales (y `brow` rellena de piel la malla del ojo y pinta
+  párpados y cejas que el alfa del rip dejaba invisibles: la mirada seria y la V de Farfetch'd). Después, `godot --headless --path . --import`.
   Los modelos de color liso sin textura (Haunter) toman su color de `FLAT_COLORS` en `unit.gd`, y las piezas con
   metálico alto pierden el brillo metálico salvo en los de tipo Acero (salían grisáceas).
 - **Apoyo en el suelo:** `Unit.fit_model` apoya el modelo con el primer fotograma del reposo, y lo que las

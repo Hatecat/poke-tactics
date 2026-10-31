@@ -216,7 +216,11 @@ def _tail_lift(chain):
 # Ajustes por especie (el nombre del .blend), sobre lo que la herramienta deduce del esqueleto:
 #   arm_drop / arm2_drop: grados que bajan los brazos (y el segundo par) desde la horizontal (45 y 20);
 #   arm_fwd: grados que se adelantan los brazos (25); elbow: flexión extra de los codos;
+#   arm_twist: grados que gira el brazo sobre su largo antes de bajarlo (alas de ave que, en pose en T, miran al
+#   frente: giradas, al bajar quedan planas contra el costado);
 #   legs_in: grados que se cierran las piernas; hold: giros fijos de otros huesos (eje PITCH/YAW/ROLL, grados);
+#   local: pose fija de un hueso tal como se posó a mano en Blender (location y rotation_quaternion locales del
+#   pose bone, que se copian del panel): sigue a su padre en todas las acciones (el puerro de Farfetch'd);
 #   crouch: grados que se doblan las piernas en reposo (4); bounce: grados extra de rebote en el idle (dos por
 #   ciclo, con la cadera bajando lo que encogen las piernas); idle_arms: cuánto más se balancean los brazos.
 _STRONG_ARMS = {"arm_drop": 70, "arm_fwd": 8, "elbow": 20}  # brazos largos: colgando junto al cuerpo
@@ -258,8 +262,13 @@ TWEAKS = {
     # La cola del rip sale hacia arriba desde la cadera: cae al suelo y sigue tendida detrás, como en el artwork.
     "slowpoke": {"hold": {"Tail1": [("PITCH", -45)], "Tail2": [("PITCH", -25)], "Tail3": [("PITCH", 33)],
                           "Tail4": [("PITCH", 25)], "Tail7": [("PITCH", 5)], "Tail8": [("PITCH", 5)]}},
-    # Ave de suelo: alas plegadas a los costados (el puerro, en la mano izquierda, queda bajo el ala).
-    "farfetchd": {"arm_drop": 80, "arm_fwd": 0, "hold": {"FeelerB1": [("PITCH", -90)]}},
+    # Ave de suelo: alas plegadas a los costados, planas (el rip las trae en T mirando al frente: sin girarlas
+    # colgaban como manos abiertas) y echadas atrás, con la punta junto a la cola. La izquierda, la del puerro, cruza
+    # por delante de la barriga como en el anime. El puerro, posado a mano en Blender: cruza el pecho en diagonal bajo
+    # el ala, con lo blanco asomando junto a la punta y las hojas hacia el otro hombro.
+    "farfetchd": {"arm_drop": 76, "arm_fwd": -55, "arm_twist": 90, "hold": {"LArm": [("PITCH", -85), ("ROLL", 30)]},
+                  "local": {"FeelerB1": ((0.0372, -0.109, -0.0304), (0.9067, 0.3793, -0.1755, 0.0563)),
+                            "FeelerB3": ((0, 0, 0), (0.9967, 0.0724, -0.0345, 0.015))}},
     # La cola larguísima del rip baja en diagonal desde la cadera: volando quedaba como un palo colgando hasta el
     # suelo. Sube desde la base y ondula en S detrás del ave, como las plumas largas del artwork.
     # Las tres cabezas salían en paralelo, como tres postes: los cuellos de los lados se abren en abanico, sus
@@ -368,7 +377,7 @@ def arm_(side, fwd=0, up=0, inward=0, bend=0, pair=""):
     return {
         side + "Arm" + pair: [(YAW, -s * (inward - TWEAKS.get("arm_out", 0))), (PITCH, -fwd), (ROLL, -s * up),
                               (PITCH, 0 if ARM_AHEAD[side + pair] else -TWEAKS.get("arm_fwd", 25)),
-                              (ROLL, ARM_LOWER[side + pair] * s)],
+                              (ROLL, ARM_LOWER[side + pair] * s), (PITCH, TWEAKS.get("arm_twist", 0))],
         side + "ForeArm" + pair: [(ELBOW[side + pair],
                                    bend if ARM_AHEAD[side + pair] else 25 + TWEAKS.get("elbow" + pair, TWEAKS.get("elbow", 0)) + bend)],
     }
@@ -1144,6 +1153,9 @@ def build(name, keys):
                 rots = BASE_ROTS[name] + (rots or [])
             pb.rotation_quaternion = lquat(name, rots) if rots else Quaternion()
             pb.location = B[name].matrix_local.to_3x3().inverted() @ offset if name in ROOTS else Vector()
+            if name in TWEAKS.get("local", {}):
+                pb.location, pb.rotation_quaternion = (Vector(v) if len(v) == 3 else Quaternion(v)
+                                                       for v in TWEAKS["local"][name])
             pb.keyframe_insert("location", frame=frame, group=pb.name)
             pb.keyframe_insert("rotation_quaternion", frame=frame, group=pb.name)
     flap(act)

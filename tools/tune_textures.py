@@ -37,8 +37,12 @@ CONTRAST = 1.05
 # Por especie o por textura (el principio del nombre del archivo; gana el más largo): hue (grados que gira el tono),
 # sat (saturación objetivo), pull, bright (multiplica el brillo), exposure (en vez de EXPOSURE), grow_dark (píxeles que
 # engordan pupilas y párpados sobre el blanco del ojo), pad (píxeles que el color de cada isla de UV se extiende sobre
-# el fondo negro).
+# el fondo negro), brow (ceja pintada en la textura del ojo: ver `_paint_brow`).
 # Referencia: los colores oficiales (artwork de Sugimori / Pokémon HOME).
+_FARFETCHD_BROW = {"frames": [(0, 192), (128, 192), (0, 128), (128, 64)], "size": (128, 64), "skin": (6, 30),
+                   "lid": [(12, 42), (48, 25)], "lid_width": 3.0,
+                   "line": [(18, 51), (46, 33), (64, 27), (82, 33), (110, 51)], "width": 5.5,
+                   "color": (0.13, 0.09, 0.08)}
 TUNE = {
     # Crema pálido, no limón (solo el cuerpo: las llamas siguen naranjas).
     "ninetales": {"sat": 0.36, "pull": 0.8},
@@ -75,6 +79,12 @@ TUNE = {
     # Las islas de UV de Lapras van sobre negro sin margen: con los mipmaps el negro se colaba por las costuras y la
     # barriga y el cuello salían cruzados de rayas.
     "lapras": {"pad": 16},
+    # La malla del ojo de Farfetch'd cubre también la frente, pero el alfa del rip solo deja ver el blanco y la ceja
+    # en V del artwork no salía (la banda oscura que trae es un rectángulo marrón). Se pintan en cada fotograma del
+    # atlas el párpado (tapa en diagonal lo alto del ojo, con su línea oscura: la mirada seria del artwork) y la
+    # ceja apoyada encima.
+    "farfetchd_1": {"brow": _FARFETCHD_BROW},
+    "farfetchd_Image_1": {"brow": _FARFETCHD_BROW},
     "grimer": {"hue": 55, "bright": 0.68, "sat": 0.62},
     "muk": {"hue": 50, "bright": 0.72, "sat": 0.62},
 }
@@ -165,6 +175,57 @@ def _pad(rgb, px):
     return out
 
 
+def _dist_to_line(xx, yy, pts):
+    """Distancia de cada píxel a la polilínea `pts`."""
+    dist = np.full(xx.shape, np.inf)
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        dx, dy = x1 - x0, y1 - y0
+        t = np.clip(((xx - x0) * dx + (yy - y0) * dy) / (dx * dx + dy * dy), 0, 1)
+        dist = np.minimum(dist, np.hypot(xx - x0 - t * dx, yy - y0 - t * dy))
+    return dist
+
+
+def _paint_brow(rgb, alpha, brow):
+    """Piel, párpados y ceja en cada fotograma del atlas del ojo (`frames`: esquina de cada uno; coordenadas en píxeles
+    del fotograma, que mide `size`). El párpado (`lid`, polilínea del ojo izquierdo de la imagen, espejada para el
+    otro) tapa con el color de la piel (`skin`: un píxel del fondo del fotograma) lo que queda del ojo por encima de
+    la línea, y la línea se pinta oscura (`lid_width`); la ceja es la polilínea `line` de grosor `width`. Ojo: en el
+    atlas lo de arriba de la cara queda abajo de la imagen. Los bordes se suavizan un píxel."""
+    h, w = alpha.shape[:2]
+    fw = brow["size"][0]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float64)
+    color = np.array(brow["color"])
+    eye = alpha[..., 0] > 0.5
+    # El ojo engordado un píxel, para que el párpado tape también el contorno.
+    near = eye | np.roll(eye, 1, 0) | np.roll(eye, -1, 0) | np.roll(eye, 1, 1) | np.roll(eye, -1, 1)
+    for fx, fy in brow["frames"]:
+        inside = (xx >= fx) & (xx < fx + fw) & (yy >= fy) & (yy < fy + brow["size"][1])
+        skin = rgb[fy + brow["skin"][1], fx + brow["skin"][0]].copy()
+        # La malla cubre toda la zona de los ojos: lo que no es ojo, opaco y del color de la piel (con el alfa del
+        # rip se veía debajo un parche gris liso del cuerpo, sin textura).
+        a = alpha[..., 0]
+        rgb[inside] = rgb[inside] * a[inside][:, None] + skin * (1 - a[inside][:, None])
+        alpha[inside] = 1.0
+        for mirror in (False, True):
+            pts = [(fx + (fw - x if mirror else x), fy + y) for x, y in brow["lid"]]
+            pts.sort()
+            lid_y = np.interp(xx, [p[0] for p in pts], [p[1] for p in pts])
+            half = (xx >= fx + fw / 2) if mirror else (xx < fx + fw / 2)
+            zone = inside & half & near
+            cover = zone & (yy > lid_y)
+            rgb[cover] = skin
+            alpha[cover] = 1.0
+            edge = zone[..., None] * (1.0 - _smoothstep(brow["lid_width"] / 2 - 0.5, brow["lid_width"] / 2 + 0.5,
+                                                        _dist_to_line(xx, yy, pts)))[..., None]
+            rgb = rgb * (1 - edge) + color * edge
+            alpha = np.maximum(alpha, edge)
+        pts = [(fx + x, fy + y) for x, y in brow["line"]]
+        m = (1.0 - _smoothstep(brow["width"] / 2 - 0.5, brow["width"] / 2 + 0.5, _dist_to_line(xx, yy, pts)))[..., None]
+        rgb = rgb * (1 - m) + color * m
+        alpha = np.maximum(alpha, m)
+    return rgb, alpha
+
+
 def tune(img, opts):
     a = np.asarray(img.convert("RGBA")).astype(np.float64) / 255.0
     rgb, alpha = a[..., :3], a[..., 3:]
@@ -179,6 +240,8 @@ def tune(img, opts):
     out = np.clip((out - 0.5) * CONTRAST + 0.5, 0, 1)
     if opts.get("grow_dark"):
         out = _grow_dark(out, opts["grow_dark"])
+    if opts.get("brow"):
+        out, alpha = _paint_brow(out, alpha, opts["brow"])
     return Image.fromarray((np.concatenate([out, alpha], -1) * 255 + 0.5).astype(np.uint8), "RGBA")
 
 
