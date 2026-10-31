@@ -62,14 +62,16 @@ void vertex() {
 	if (COLOR.g > 0.1) {
 		float side = COLOR.g > 0.75 ? 1.0 : -1.0;
 		vec3 shoulder = vec3(0.17 * side, 0.6, 0.0);
-		float a = 0.15 + 0.05 * sin(TIME * 1.3 + phase);  // en reposo, sobre las rodillas
+		// a > 0 sube el brazo por delante (la cara mira a -z); con el giro al revés los brazos en alto se iban
+		// hacia atrás, por detrás de la cabeza
+		float a = -0.15 - 0.05 * sin(TIME * 1.3 + phase);  // en reposo, sobre las rodillas
 		if (mood > 0.75) {
-			a = mix(a, 2.6 + 0.25 * sin(TIME * 7.0 + phase), wave);  // brazos arriba, agitándolos
+			a = mix(a, 2.35 + 0.2 * sin(TIME * 7.0 + phase), wave);  // brazos arriba, algo adelantados, agitándolos
 		} else if (mood > 0.25) {
-			a = mix(a, 1.05, wave);  // brazos al frente
+			a = mix(a, 0.75, wave);  // brazos al frente
 			VERTEX.x -= side * wave * (0.04 + 0.04 * sin(TIME * 12.0 + phase)) * smoothstep(0.45, 0.2, VERTEX.y);
 		}
-		VERTEX = turn_x(VERTEX, shoulder, -a);
+		VERTEX = turn_x(VERTEX, shoulder, a);
 	}
 	if (part < 3.5 || part > 5.5) {  // torso, cabeza y brazos se inclinan hacia la arena al animarse
 		VERTEX = turn_x(VERTEX, vec3(0.0, 0.25, 0.0), -0.12 * wave * step(0.25, mood));
